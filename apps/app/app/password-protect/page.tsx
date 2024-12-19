@@ -9,7 +9,7 @@ export default function PasswordProtect() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const router = useRouter();
-  const CORRECT_PASSWORD = process.env.SITE_PASSWORD;
+  const CORRECT_PASSWORD = process.env.NEXT_PUBLIC_SITE_PASSWORD;
   const LOCAL_STORAGE_KEY = 'isVerified';
 
   useEffect(() => {
@@ -25,6 +25,8 @@ export default function PasswordProtect() {
     try {
       if (password === CORRECT_PASSWORD) {
         
+        localStorage.setItem(LOCAL_STORAGE_KEY,'true');
+
         // Set cookie with all necessary attributes
         document.cookie = `isVerified=true; path=/; SameSite=Strict; secure=${window.location.protocol === 'https:'}`;
         
