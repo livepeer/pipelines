@@ -56,6 +56,13 @@ export default function Stream({
     fetchStream();
   }, [fetchStream]);
 
+  useEffect(() => {
+    const isVerified = localStorage.getItem('isVerified');
+    if (isVerified !== 'true') {
+      router.push('/password-protect');
+    }
+  }, [router]);
+
   const handleSaveStream = async () => {
     if (streamFormRef.current) {
       if (streamFormRef.current.isFormValid()) {
