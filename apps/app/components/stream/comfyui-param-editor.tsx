@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, {useEffect, useState} from "react";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Switch } from "@repo/design-system/components/ui/switch";
 import { AnimatePresence, motion } from "framer-motion";
@@ -33,6 +33,12 @@ const ComfyUIParamsEditor = ({
     const [currentJsonString, setCurrentJsonString] = useState<string>(
         typeof value === "string" ? value : JSON.stringify(value, null, 2)
     );
+
+    useEffect(() => {
+        setCurrentJsonString(
+            typeof value === "string" ? value : JSON.stringify(value, null, 2)
+        );
+    }, [value]);
 
     const toggleNode = (nodeId: string) => {
         setExpandedNodes((prev) => ({
