@@ -48,7 +48,7 @@ const dummyPlaybackIds = [
   {
     playbackId: "f7e3yqwbx82y3hrq",
     socialHandle: "Anonymous",
-    socialUrl: "anonymous"
+    socialUrl: null
   },  
   {
     playbackId: "4d38e0sni4esvlkd",
