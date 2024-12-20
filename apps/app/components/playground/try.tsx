@@ -57,7 +57,9 @@ export default function Try({
   };
 
   const constructUpdateValues = (inputValues: any) => {
+    console.log(inputValues)
     if (pipeline.type == "comfyui") {
+      console.log(inputValues["json"])
       return {
         prompt: JSON.parse(JSON.stringify(inputValues["json"])),
       };
