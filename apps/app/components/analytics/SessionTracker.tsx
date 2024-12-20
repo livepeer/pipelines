@@ -111,7 +111,6 @@ function handleSessionEnd() {
         $current_url: window.location.href,
       },
     };
-	console.log("handleSessionEnd data:", data);
     navigator.sendBeacon('/api/mixpanel', JSON.stringify(data));
     localStorage.removeItem('mixpanel_session_id');
   }
@@ -120,48 +119,24 @@ function handleSessionEnd() {
 export default function SessionTracker() {
   const { user, authenticated, ready } = usePrivy();
 
-  // Track user creation
-  useEffect(() => {
-    if (!ready) return;
-    
-    // Only track when user becomes authenticated for the first time
-    if (authenticated && user?.id) {
-      const isNewUser = !localStorage.getItem('user_created');
-      
-      if (isNewUser) {
-        track('User Created Account', {
-          distinct_id: user.id,
-          $user_id: user.id,
-          wallet_address: user.wallet?.address,
-          email: user.email?.address,
-          created_at: new Date().toISOString()
-        });
-        
-        localStorage.setItem('user_created', 'true');
-      }
-    }
-  }, [authenticated, ready, user]);
-
   // Existing session tracking
   useEffect(() => {
     if (!ready) return;
 
     const initSession = async () => {
       const distinctId = await handleDistinctId(authenticated ? user : null);
-      const sessionId = await handleSessionId(authenticated ? user : null, distinctId);
+      const sessionId = await handleSessionId(authenticated ? user : null, distinctId || '');
       if (authenticated) {
-        setCookies(distinctId, sessionId, user?.id);
+        setCookies(distinctId || '', sessionId || '', user?.id || '');
       } else {
-        setCookies(distinctId, sessionId);
+        setCookies(distinctId || '', sessionId || '');
       }
     };
 
     initSession();
 
     return () => {
-      if (authenticated) {
-        handleSessionEnd();
-      }
+      handleSessionEnd();
     };
   }, [user, authenticated, ready]);
 

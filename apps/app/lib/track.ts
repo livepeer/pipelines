@@ -48,7 +48,7 @@ const track = async (
     },
   };
 
-  console.log("Tracking event via fetch:", eventName, data.properties);
+  console.log("Tracking event:", eventName);
 
   try {
     const response = await fetch(`/api/mixpanel`, {
