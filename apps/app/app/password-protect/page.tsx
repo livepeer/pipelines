@@ -49,20 +49,16 @@ export default function PasswordProtect() {
     <div className="h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-lg p-6 bg-card rounded-lg shadow-lg">
         <div className="mb-4 text-center">
-          <h2 className="text-2xl muted-text-foreground mb-2 break-words">
-            Livepeer Pipelines are in closed beta 
-          </h2>
           <p className="text-muted-foreground break-words">
-            Access is limited to{' '}
             <a 
               href="https://discord.gg/livepeer" 
               target="_blank" 
               rel="noopener noreferrer"
               className="text-primary underline break-words"
             >
-               Livepeer Discord 
+              Join the Waitlist
             </a>
-            {' '}members
+            {' '}or 
           </p>
           <p className="text-muted-foreground break-words">
             <a 
@@ -71,7 +67,7 @@ export default function PasswordProtect() {
               rel="noopener noreferrer"
               className="text-primary underline break-words"
             >
-                Learn about Video AI Pipelines
+                Learn more about Video AI Pipelines
             </a>
           </p>
         </div>
