@@ -6,26 +6,40 @@ import { usePrivy } from '@privy-io/react-auth';
 import mixpanel from 'mixpanel-browser';
 import { mixpanel as mixpanelConfig } from '@/lib/env';
 
-function identifyUser(userId: string, anonymousId: string) {
+function identifyUser(userId: string, anonymousId: string, user: any) {
   try {
-   
     console.log("identifyUser userId:", userId);
+    
+    // First, create the alias if it doesn't exist
+    if (anonymousId !== userId) {
+      console.log("mixpanel.alias", userId, anonymousId);
+      mixpanel.alias(userId, anonymousId);
+    }
+
+    // Then identify the user
     mixpanel.identify(userId);
-    console.log("mixpanel.identify(userId);");
-
-    mixpanel.people.set({
-      $userId: userId,
-      last_login: new Date().toISOString(),
-      authenticated: true
-    });
-
-    mixpanel.register({
+    
+    // Set user properties
+    const userProperties = {
+      $name: userId,  // This helps ensure the user shows up in Mixpanel
+      distinct_id: userId,
       user_id: userId,
-      user_type: 'authenticated'
-    });
+      user_type: 'authenticated',
+      $last_login: new Date().toISOString(),
+      authenticated: true
+    };
+    
+    // Set regular properties that can change
+    console.log("Setting user properties:", userProperties);
+    mixpanel.people.set(userProperties);
+    mixpanel.register(userProperties);
 
-    mixpanel.alias(userId, anonymousId);
-    console.log("mixpanel.alias(userId, anonymousId);");
+    // Set first login timestamp - will only be set once
+    mixpanel.people.set_once({
+      $first_login: new Date().toISOString(),
+      first_wallet_address: user?.wallet?.address,
+      first_email: user?.email?.address
+    });
 
   } catch (error) {
     console.error("Error identifying user:", error);
@@ -35,23 +49,21 @@ function identifyUser(userId: string, anonymousId: string) {
 async function handleDistinctId(user: any) {
   let distinctId = localStorage.getItem('mixpanel_distinct_id');
   
-  if (user?.id && distinctId && user.id !== distinctId) {
-	identifyUser(user.id, distinctId);
-  }
-
-  if (user) {
-    localStorage.setItem('mixpanel_user_id', user.id);
-    localStorage.setItem('mixpanel_distinct_id', user.id);
-    distinctId = user.id;
-  }
-
   if (!distinctId) {
     distinctId = crypto.randomUUID();
     localStorage.setItem('mixpanel_distinct_id', distinctId);
     mixpanel.identify(distinctId);
   }
 
-  identifyUser(user?.id, distinctId);
+  // Only handle user identification if there is an authenticated user
+  if (user?.id) {
+    if (distinctId !== user.id) {
+      identifyUser(user.id, distinctId, user);
+    }
+    localStorage.setItem('mixpanel_user_id', user.id);
+    localStorage.setItem('mixpanel_distinct_id', user.id);
+    distinctId = user.id;
+  }
 
   return distinctId;
 }
@@ -107,19 +119,46 @@ function handleSessionEnd() {
 
 export default function SessionTracker() {
   const { user, authenticated, ready } = usePrivy();
+
+  // Track user creation
   useEffect(() => {
-    if (!ready) return; // Don't initialize until Privy is ready and user is authenticated
+    if (!ready) return;
+    
+    // Only track when user becomes authenticated for the first time
+    if (authenticated && user?.id) {
+      const isNewUser = !localStorage.getItem('user_created');
+      
+      if (isNewUser) {
+        track('User Created Account', {
+          distinct_id: user.id,
+          $user_id: user.id,
+          wallet_address: user.wallet?.address,
+          email: user.email?.address,
+          created_at: new Date().toISOString()
+        });
+        
+        localStorage.setItem('user_created', 'true');
+      }
+    }
+  }, [authenticated, ready, user]);
+
+  // Existing session tracking
+  useEffect(() => {
+    if (!ready) return;
 
     const initSession = async () => {
-      const distinctId = await handleDistinctId(user);
-      const sessionId = await handleSessionId(user, distinctId);
-      setCookies(distinctId, sessionId, user?.id);
+      const distinctId = await handleDistinctId(authenticated ? user : null);
+      const sessionId = await handleSessionId(authenticated ? user : null, distinctId);
+      if (authenticated) {
+        setCookies(distinctId, sessionId, user?.id);
+      } else {
+        setCookies(distinctId, sessionId);
+      }
     };
 
     initSession();
 
     return () => {
-      // Only end session if we're unmounting while authenticated
       if (authenticated) {
         handleSessionEnd();
       }
