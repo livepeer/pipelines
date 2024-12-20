@@ -56,7 +56,7 @@ export default function PasswordProtect() {
               rel="noopener noreferrer"
               className="text-primary underline break-words"
             >
-              Join the Waitlist
+              Join the Discord for access
             </a>
             {' '}or 
           </p>
