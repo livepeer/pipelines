@@ -52,7 +52,6 @@ async function handleDistinctId(user: any) {
   if (!distinctId) {
     distinctId = crypto.randomUUID();
     localStorage.setItem('mixpanel_distinct_id', distinctId);
-    mixpanel.identify(distinctId);
   }
 
   // Only handle user identification if there is an authenticated user
