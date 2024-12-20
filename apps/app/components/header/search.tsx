@@ -14,6 +14,7 @@ import React, { useState, useEffect } from "react";
 import track from "@/lib/track";
 import { fetchPipelines, fetchFeaturedPipelines } from "./fetchPipelines";
 import { LoaderCircleIcon } from "lucide-react";
+import {Badge} from "@repo/design-system/components/ui/badge";
 
 
 const PipelineCommand = ({ pipeline, onSelect, uniqueModifier = "unique" }: { pipeline: any; onSelect: (value: string) => void; uniqueModifier?: string }) => {
@@ -38,17 +39,25 @@ const PipelineCommand = ({ pipeline, onSelect, uniqueModifier = "unique" }: { pi
                 <div className="h-full w-full bg-gray-200 rounded" aria-hidden="true"></div>
             )}
           </div>
-          <span>{pipeline.name}</span>
+          <div className="flex justify-between items-center w-full">
+            <span>{pipeline.name}</span>
+            {pipeline.type == "comfyui" && (
+                <Badge className="bg-green-500/90 text-white font-medium text-xs ml-4">
+                  Comfy UI
+                </Badge>
+            )}
+          </div>
         </div>
       </CommandItem>
-);
+  );
 };
 
 export default function Search({
-  pipeline, onPipelineSelect
-}: {
-  pipeline ? : any;
-  onPipelineSelect?: (pipeline: any) => void }) {
+                                 pipeline, onPipelineSelect
+                               }: {
+  pipeline?: any;
+  onPipelineSelect?: (pipeline: any) => void
+}) {
   const [open, setOpen] = useState(false);
   const [selectedPipeline, setSelectedPipeline] = useState<any | null>(pipeline);
   const [query, setQuery] = useState("");

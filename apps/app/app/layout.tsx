@@ -22,7 +22,7 @@ export const metadata: Metadata = {
 
 const RootLayout = ({ children }: RootLayoutProperties) => (
   <html lang="en" suppressHydrationWarning>
-    <body className="bg-sidebar pt-10">
+    <body className="bg-sidebar">
       <DesignSystemProvider defaultTheme="dark">
         <AlphaBanner />
         <SidebarProvider>
