@@ -67,6 +67,7 @@ export default function Try({
           JSON.parse(inputValues["prompt"]);
         } catch (e) {
           return {
+            ...initialValues,
             prompt: inputValues["prompt"]
           };
         }
