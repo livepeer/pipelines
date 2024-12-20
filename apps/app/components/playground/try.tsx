@@ -23,6 +23,7 @@ import { toast } from "sonner";
 import { updateParams } from "@/app/api/streams/update-params";
 import { app } from "@/lib/env";
 import { getStream } from "@/app/api/streams/get";
+import { BroadcastWithControls } from "./broadcast";
 
 interface ComfyNodeParams {
   inputs?: Record<string, any>;
@@ -538,13 +539,13 @@ export default function Try({
         <div className="flex flex-col gap-1.5">
           <Label className="text-muted-foreground">Video Source</Label>
           <div className="flex flex-row h-[300px] w-full bg-sidebar rounded-2xl items-center justify-center overflow-hidden relative">
-            {/* {streamUrl ? (
+            {streamUrl ? (
               <BroadcastWithControls ingestUrl={streamUrl} />
             ) : (
               <p className="text-muted-foreground">
                 Waiting for webcam to start...
               </p>
-            )} */}
+            )}
           </div>
         </div>
       </div>
