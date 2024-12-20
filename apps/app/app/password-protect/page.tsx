@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Button } from "@repo/design-system/components/ui/button";
 import { Input } from "@repo/design-system/components/ui/input";
 import { useRouter } from 'next/navigation';
-import { LPPlayer } from '@livepeer/react';
+import { LPPLayer } from '@/components/playground/player';
 
 export default function PasswordProtect() {
   const [password, setPassword] = useState('');
@@ -77,12 +77,8 @@ export default function PasswordProtect() {
         </div>
 
         <div className="mb-6">
-          <LPPlayer
-            playbackId="c99filnga205mzqh"
-            objectFit="cover"
-            autoPlay
-            muted
-            loop
+          <LPPLayer
+            output_playback_id="c99filnga205mzqh"
           />
         </div>
         
