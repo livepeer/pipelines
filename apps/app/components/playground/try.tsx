@@ -62,6 +62,15 @@ export default function Try({
         prompt: JSON.parse(JSON.stringify(inputValues["prompt"])),
       };
     } else {
+      if (typeof inputValues["prompt"] === "string") {
+        try {
+          JSON.parse(inputValues["prompt"]);
+        } catch (e) {
+          return {
+            prompt: inputValues["prompt"]
+          };
+        }
+      }
       return initialValues;
     }
   };
