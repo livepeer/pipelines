@@ -25,7 +25,7 @@ const RootLayout = ({ children }: RootLayoutProperties) => (
     <body className="bg-sidebar pt-10">
       <DesignSystemProvider defaultTheme="dark">
         <MixpanelProvider>
-        <SessionTracker />
+          <SessionTracker />
           <AlphaBanner />
           <SidebarProvider>
             <GlobalSidebar>

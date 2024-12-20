@@ -5,7 +5,8 @@ import track from '@/lib/track';
 import { usePrivy } from '@privy-io/react-auth';
 import mixpanel from 'mixpanel-browser';
 import { mixpanel as mixpanelConfig } from '@/lib/env';
-async function identifyUser(userId: string, anonymousId: string) {
+
+function identifyUser(userId: string, anonymousId: string) {
   try {
    
     console.log("identifyUser userId:", userId);
@@ -35,7 +36,7 @@ async function handleDistinctId(user: any) {
   let distinctId = localStorage.getItem('mixpanel_distinct_id');
   
   if (user?.id && distinctId && user.id !== distinctId) {
-    await identifyUser(user.id, distinctId);
+	identifyUser(user.id, distinctId);
   }
 
   if (user) {
@@ -50,7 +51,7 @@ async function handleDistinctId(user: any) {
     mixpanel.identify(distinctId);
   }
 
-  await identifyUser(user?.id, distinctId);
+  identifyUser(user?.id, distinctId);
 
   return distinctId;
 }
