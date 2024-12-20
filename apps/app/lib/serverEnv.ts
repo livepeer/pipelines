@@ -6,8 +6,15 @@ const SupabaseConfig = z.object({
   serviceRoleKey: z.string().min(1).optional(),
 });
 
+const GatewayConfig = z.object({
+    url: z.string().url().optional(),
+    userId: z.string().min(1).optional(),
+    password: z.string().min(1).optional(),
+});
+
 const ServerEnvironmentConfig = z.object({
   supabase: SupabaseConfig,
+  gateway: GatewayConfig,
 });
 
 type ServerEnvironmentConfig = z.infer<typeof ServerEnvironmentConfig>;
@@ -20,6 +27,11 @@ const serverOnlyEnvConfig = {
     anonKey: process.env.SUPABASE_ANON_KEY,
     serviceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
   },
+  gateway: {
+    url: process.env.STREAM_STATUS_ENDPOINT_URL,
+    userId: process.env.STREAM_STATUS_ENDPOINT_USER,
+    password: process.env.STREAM_STATUS_ENDPOINT_PASSWORD,
+  }
 } as const;
 
 const serverOnlyConfig = ServerEnvironmentConfig.parse(serverOnlyEnvConfig);

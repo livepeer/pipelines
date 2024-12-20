@@ -17,11 +17,15 @@ export async function createUser(user: User) {
 
     if (data?.length === 0) {
       console.log("user not found, creating");
-      await supabase.from("users").insert({
+
+      const { error } = await supabase.from("users").insert({
         id: user?.id,
         email: user?.email,
         name: user?.github?.name || user?.discord?.username,
         provider: user?.github ? "github" : "discord",
       });
+      if (error) {
+        console.error(error);
+      }
     }
 }

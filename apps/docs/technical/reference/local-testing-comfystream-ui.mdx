@@ -3,21 +3,29 @@ title: "Run ComfyStream UI"
 description: "Run the UI for ComfyStream to demonstrate live AI video"
 icon: "box"
 ---
-You can run the frontend on your local machine to test the ComfyStream API on a remote host.
 
-System pre-requisites:
-- [ComfyStream](https://github.com/yondonfu/comfystream)
-- Node.js
 
-1. Clone ComfyStream UI and install dependencies
+1. Clone ComfyStream UI and Navigate to the comfystream UI directory:
 ```bash
 git clone https://github.com/yondonfu/comfystream
 cd comfystream/ui
 ```
-2. Install packages and run:
+2.  Run the following command to install the project's dependencies using npm:
 ```bash
-cd ui
 npm install --legacy-peer-deps
+```
+This will download and set up all required Node.js modules listed in the package.json file.
+<Note>
+If you run encounter packages install errors, check the installed versions of node:
+`node -v && npm -v`
+
+Switch to the correct node version if necessary: 
+`nvm use 18`
+</Note>
+
+5. To start the web app, use the following from within the comfystream/ui directory:
+
+```bash
 npm run dev
 ```
 Now you should be able to visit http://localhost:3000 to begin a livestream using the ComfyStream API

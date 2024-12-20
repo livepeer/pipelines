@@ -4,11 +4,11 @@ description: "Learn how to customize the LoRas in your Stream Diffusion workflow
 icon: "image"
 ---
 
-The [ComfyUI StreamDiffusion](http://localhost:3000/technical/reference/available-nodes#streamdiffusion) custom node supports SD 1.5 models and LoRa checkpoints. LoRas are used to generate a variety of special effects in your workflow, such as color correction, sharpening, and more.
+The [ComfyUI StreamDiffusion](../reference/available-nodes#streamdiffusion) custom node supports SD 1.5 models and LoRa checkpoints. LoRas are used to generate a variety of special effects in your workflow, such as color correction, sharpening, and more.
 
 
 ## Configure LoRa checkpoint using ComfyUI
-ComfyUI will automatically generate a workflow json file from changes in the lightgraph ui editor. Follow these steps to customize the LoRa checkpoints in your Stream Diffusion workflow:
+ComfyUI will automatically generate a workflow json file from changes in the LightGraph UI editor. Follow these steps to customize the LoRa checkpoints in your Stream Diffusion workflow:
 
 1. Launch ComfyUI with the StreamDiffusion node installed
 2. Choose an example [Stream Diffusion workflow](https://github.com/pschroedl/ComfyUI-StreamDiffusion/tree/main/examples/LoRAs) file that uses LoRas
@@ -20,22 +20,22 @@ ComfyUI will automatically generate a workflow json file from changes in the lig
 ### Checkpoint Files
 
 - **LoRa checkpoints** should be downloaded to `ComfyUI/models/loras`
-    - Deployed LoRas are available at [pschroedl/comfystream_loras](https://huggingface.co/pschroedl/comfystream_loras/tree/main)
+    - Deployed LoRas are available at [Livepeer-Studio/comfystream_loras](https://huggingface.co/Livepeer-Studio/comfystream_loras/tree/main)
 
 - **SD 1.5 model checkpoints** should be downloaded to `ComfyUI/models/checkpoints`
-    - Deployed SD 1.5 models are available at [pschroedl/comfystream_checkpoints](https://huggingface.co/pschroedl/comfystream_checkpoints/tree/main)
+    - Deployed SD 1.5 models are available at [Livepeer-Studio/comfystream_checkpoints](https://huggingface.co/Livepeer-Studio/comfystream_checkpoints/tree/main)
 
 
 ## Configure LoRa checkpoint in workflow manually
 
 ### Changing the LoRa checkpoint
-The `lora_name` input will reflect the name of a LoRa file from [pschroedl/comfystream_loras](https://huggingface.co/pschroedl/comfystream_loras/tree/main): 
+The `lora_name` input will reflect the name of a LoRa file from [Livepeer-Studio/comfystream_loras](https://huggingface.co/Livepeer-Studio/comfystream_loras/tree/main): 
 ```json
-  "178": {
+  "181": {
     "inputs": {
       "lora_name": "ral-alienzkin-sd15.safetensors"
     },
-    "class_type": "StreamDiffusionCheckpointLoader"
+    "class_type": "StreamDiffusionLoraLoader"
   },
 ```
 Update the `lora_name` input to the name of the LoRa checkpoint you want to use.
@@ -58,5 +58,5 @@ If you need to change the model, the `checkpoint` input defines the stable diffu
 ## Submit your LoRa Checkpoint to Livepeer
 
 To request your LoRa checkpoint to be officially deployed on the Livepeer Network:
-- Open a pull request to the hugging-face repository [https://huggingface.co/pschroedl/comfystream_loras](https://huggingface.co/pschroedl/comfystream_loras/tree/main)
+- Open a pull request to the hugging-face repository [https://huggingface.co/Livepeer-Studio/comfystream_loras](https://huggingface.co/Livepeer-Studio/comfystream_loras/tree/main)
 - Open a Pipeline Request ticket with the [Livepeer AI Support Team](#TODO).   

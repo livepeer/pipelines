@@ -1,0 +1,21 @@
+---
+title: "Custom Node Installation"
+description: "How to install custom nodes in both Conda environments for ComfyUI and ComfyStream"
+icon: "code"
+---
+
+More information to follow here, but for now just know that when you add custom nodes, you will need to install them in both Conda environments. Since you started ComfyUI in the comfyui Conda environment, you can just install nodes via the manager, and they will be installed in the environment. You will need to install them manually in the ComfyStream environment as well. You can do that by by following these steps:
+
+1. Run the following command to initialize Conda (if it is  not already)
+
+```bash
+eval "$(/workspace/miniconda3/bin/conda shell.bash hook)"
+```
+
+1. Activate the comfystream environment and install custom nodes accordingly:
+```bash
+conda activate comfystream
+cd comfyRealtime/ComfyUI/custom_nodes/ComfyUI_RyanOnTheInside
+pip install -r requirements.txt
+conda deactivate comfystream
+```

@@ -1,19 +1,53 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from "next/server";
+import {getStream} from "@/app/api/streams/get";
+import {serverConfig} from "@/lib/serverEnv";
 
 const ERROR_MESSAGES = {
     UNAUTHORIZED: "Authentication required",
     INVALID_RESPONSE: "Invalid stream status response from Gateway",
     INTERNAL_ERROR: "An unexpected error occurred",
+    NOT_FOUND: "Stream not found",
+
 } as const;
+
+// First attempt to fetch the URL, if it fails, try again with https
+async function fetchWithFallback(url: string, authHeader: string) {
+    const hasProtocol = url.startsWith('http://') || url.startsWith('https://');
+    const urlsToTry = hasProtocol ? [url] : [`http://${url}`, `https://${url}`];
+
+    for (const protocolUrl of urlsToTry) {
+        console.debug("Attempting to get stream status: ", protocolUrl);
+        try {
+            const response = await fetch(protocolUrl, {
+                headers: {
+                    Authorization: authHeader,
+                    'cache-control': 'no-store',
+                },
+            });
+            // If the response is ok or 404 (which assumes the stream was not found), return it
+            if (response.ok || response.status === 404) {
+                return response;
+            } else {
+                console.debug(`Request failed with status: ${response.status}`);
+            }
+        } catch (error) {
+            console.debug(`Request error when getting stream status: ${error}`);
+        }
+    }
+    throw new Error(`All attempts to fetch ${url} failed`);
+}
+
 
 export async function GET(
     request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
 ) {
     const streamId = (await params).id;
-    const username = process.env.STREAM_STATUS_ENDPOINT_USER;
-    const password = process.env.STREAM_STATUS_ENDPOINT_PASSWORD;
+    const { gateway } = await serverConfig();
+    const gatewayUrl = gateway.url;
+    const username = gateway.userId;
+    const password = gateway.password;
 
     if (!username || !password) {
         return createErrorResponse(200, ERROR_MESSAGES.INTERNAL_ERROR + " - Missing auth credentials.");
@@ -22,19 +56,21 @@ export async function GET(
     const authHeader = `Basic ${Buffer.from(`${username}:${password}`).toString("base64")}`;
 
     try {
-        console.log("Calling: ", `${process.env.STREAM_STATUS_ENDPOINT_URL}/${streamId}/status`)
-        const response = await fetch(
-            `${process.env.STREAM_STATUS_ENDPOINT_URL}/${streamId}/status`,
-            {
-                headers: {
-                    Authorization: authHeader,
-                    'cache-control': 'no-store',
-                },
-            }
-        );
+        const { data: stream, error } = await getStream(streamId);
+        if (error) {
+            return createErrorResponse(404, ERROR_MESSAGES.NOT_FOUND);
+        }
 
+        const statusBaseUrl = stream?.gateway_host
+            ? `${stream.gateway_host}/live/video-to-video`
+            : gatewayUrl;
+        if (!statusBaseUrl) {
+            return createErrorResponse(200, ERROR_MESSAGES.INTERNAL_ERROR + " - Missing status endpoint URL or gateway host for stream.");
+        }
+
+        const response = await fetchWithFallback(`${statusBaseUrl}/${streamId}/status`, authHeader);
         if (!response.ok) {
-            const responseMsg = await response.text().then((text) => text?.replace(/[\n\r]+/g, ' '));
+            const responseMsg = await response.text().then((text: string) => text?.replace(/[\n\r]+/g, ' ').trim());
 
             //handle 404 as state OFFLINE
             if(response.status === 404){

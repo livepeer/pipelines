@@ -12,6 +12,8 @@ import AlphaBanner from "@/components/header/alpha-banner";
 import { Metadata } from "next";
 import SessionTracker from "@/components/analytics/SessionTracker";
 import { MixpanelProvider } from "@/components/analytics/MixpanelProvider";
+import { VersionInfo } from '@/components/footer/version-info';
+
 type RootLayoutProperties = {
   readonly children: ReactNode;
 };
@@ -22,7 +24,7 @@ export const metadata: Metadata = {
 
 const RootLayout = ({ children }: RootLayoutProperties) => (
   <html lang="en" suppressHydrationWarning>
-    <body className="bg-sidebar pt-10">
+    <body className="bg-sidebar">
       <DesignSystemProvider defaultTheme="dark">
         <MixpanelProvider>
           <SessionTracker />
@@ -40,11 +42,15 @@ const RootLayout = ({ children }: RootLayoutProperties) => (
               <div className="flex h-[calc(100vh-5rem)] flex-col overflow-y-auto px-6 py-4">
                 {children}
               </div>
+              <footer className="fixed bottom-0 right-0 p-4">
+                <VersionInfo />
+              </footer>
             </div>
           </GlobalSidebar>
         </SidebarProvider>
         <Intercom />
         </MixpanelProvider>
+        {/* TODO: REENABLE WHEN SHIH-YU IS READY FOR IT <Intercom /> */}
       </DesignSystemProvider>
     </body>
   </html>

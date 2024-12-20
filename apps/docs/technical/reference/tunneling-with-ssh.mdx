@@ -1,0 +1,32 @@
+---
+title: "Tunneling with SSH"
+description: "When deploying to RunPod, you may need to set up an SSH tunnel to connect ComfyStream UI to ComfyStream at RunPod (port 5678). This is especially useful when you need to connect to a TURN server. 
+Here is how you can set up an SSH tunnel:"
+icon: "code"
+---
+
+
+Tunnel to open up UDP connection
+
+- On the remote server (remote_host), run: 
+```bash
+socat TCP4-LISTEN:4321,fork UDP4:127.0.0.1:5678
+```
+
+- On the local machine, Open an SSH tunnel
+```bash
+ ssh -L 4321:localhost:4321 {remote_user@remote_host and other params from Runpod ssh cmd}
+```
+
+- On the local machine, run 
+```bash
+socat UDP4-LISTEN:1234,fork TCP4:127.0.0.1:4321
+```
+
+Traffic sent to localhost:1234 on the local machine will be forwarded over the SSH tunnel and will reach 127.0.0.1:5678 on the remote server
+
+Open another terminal, ssh into the Runpod terminal:
+
+- You should find "SSH over exposed TCP" value in Runpod
+- Copy that command, and `add -L 8888:localhost:8888`
+    - For example: `ssh -L 8888:localhost:8888 root@{runpod_ip} -p 16974 -i ~/.ssh/id_ed25519`

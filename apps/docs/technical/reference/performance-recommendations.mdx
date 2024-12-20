@@ -3,17 +3,12 @@ title: "Performance Requirements"
 description: "This guide covers performance recommendations for creating real-time video pipelines."
 icon: "rocket"
 ---
-
-New pipelines must pass pre-deployment tests before they can be published to Livepeer
+New pipelines must pass pre-deployment tests before they can be published to Livepeer. 
 
 **FPS Test**
 - Before deployment, we conduct a 30s test using the Big Buck Bunny mp4. This test will fail if the pipeline does not sustain an average of **at least 5 frames per second (FPS)** during the test.
 
-
-# **Creating a Real-Time Workflow**
-
 When creating a workflow that ComfyStream can run, there are a few important considerations:
-
 1. It should be ***fast.***
 2. The workflow must have one input (a load image node) and one output (a save image node)
 3. When you export the workflow to feed to the ComfyStream interface, it must be exported in API format. Regular workflow files will not work.

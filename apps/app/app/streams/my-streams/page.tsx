@@ -128,11 +128,12 @@ export default function MyStreams({searchParams}: {
 
   return (
       <div className="p-4">
-        {!authenticated ?
-            <LoggedOutComponent text="Sign in to view your streams" /> :
-            loading ? (
-                <LoaderCircleIcon className="w-8 h-8 animate-spin" />
-            ) : streams.length === 0 ? (
+        {loading ? (
+            <LoaderCircleIcon className="w-8 h-8 animate-spin" />) :
+            !authenticated ?(
+                <LoggedOutComponent text="Sign in to view your streams" />
+                )
+             : streams.length === 0 ? (
                 <EmptyState />
             ) : (
                 <div className="col-span-1">
@@ -287,7 +288,7 @@ export default function MyStreams({searchParams}: {
                                       </div>
                                       {/** add style work around to pre tag as tailwind not showing the scrollbar otherwise */}
                                       <pre
-                                          className="text-xs p-2 mt-2 rounded-md bg-gray-100 overflow-y-scroll max-h-64 whitespace-pre-wrap"
+                                          className="text-xs p-2 mt-2 rounded-md overflow-y-scroll max-h-64 whitespace-pre-wrap"
                                           style={{
                                             scrollbarWidth: "auto",
                                             scrollbarColor: "gray lightgray",

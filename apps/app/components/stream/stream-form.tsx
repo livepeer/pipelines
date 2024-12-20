@@ -61,10 +61,15 @@ const StreamForm = forwardRef(
         }
       }
 
-      const handleInputChange = (id: string, value: any) => {
-        if(id === "json"){
+      const handleInputChange = (id: string, value: any, isJson: boolean = false) => {
+        if(isJson){
           const {isValid, message} = validateJson(value);
           setInvalidJsonMessage(!isValid?message:null);
+          // make sure to convert the field to JSON or the textarea will get polluted
+          // will lose formating and show carriage returns
+          if(isValid && typeof value === "string"){
+            value = JSON.parse(value);
+          }
         }
         if (['name', 'output_stream_url'].includes(id)) {
           setSelectedStream((prev: any) => ({
@@ -79,12 +84,12 @@ const StreamForm = forwardRef(
         }
       };
 
-      const convertToObject = (jsonValue: any) => {
+      const convertToJsonObjectIfNecessary = (jsonValue: any, failureMsg: String) => {
         if (typeof jsonValue === "string") {
           try {
             return JSON.parse(jsonValue);
           } catch (error) {
-            console.error("Failed to parse JSON from inputValues['json']: ", error);
+            console.error(failureMsg, error);
             return {};
           }
         }
@@ -96,7 +101,7 @@ const StreamForm = forwardRef(
           ...selectedStream,
           pipelines: selectedPipeline,
           pipeline_id: selectedPipeline.id,
-          pipeline_params: isComfyPipeline ? convertToObject(inputValues['json']): inputValues,
+          pipeline_params: isComfyPipeline ? convertToJsonObjectIfNecessary(inputValues[inputs?.primary?.id], "Failed to parse the comfy json provided when calling getFormData."): inputValues,
         }),
         isFormValid: (): boolean => {
           if (!selectedStream.name || !selectedPipeline.id) {
@@ -119,39 +124,58 @@ const StreamForm = forwardRef(
             return false;
           }
 
-          if (isComfyPipeline ){
-            const { isValid } = validateJson(inputValues['json']);
-            if (!isValid){
-              toast.error("Please correct the provided JSON.", toastOptions);
-              return false;
-            }
+          if (isComfyPipeline ) {
+            let failedValidation = false;
+            iterateInputs((acc: any, input: any) => {
+              //if field is not json or validation has already failed, return
+              //this prevents us from validating non-json fields and if an error is
+              //encountered, we don't show multiple error messages
+              if (typeof input.defaultValue === "string" || failedValidation) return acc;
+              const {isValid} = validateJson(inputValues[input.id]);
+              if (!isValid) {
+                toast.error(`Please correct the ${input.label} field.  It must contain valid JSON.`, toastOptions);
+                failedValidation = true;
+              }
+              return acc;
+            });
+            if (failedValidation) return false;
           }
           return true;
         }
       }));
 
-      const createDefaultValues = () => {
+      const iterateInputs = (lambda:any) => {
         const primaryInput = inputs?.primary;
         const advancedInputs = inputs?.advanced || [];
         const allInputs = [primaryInput, ...advancedInputs];
         if (allInputs.length === 0) return {};
-        return allInputs.reduce((acc, input) => {
+        if (typeof lambda !== 'function') {
+          throw new Error('Invalid function provided to iterateInputs');
+        }
+        return allInputs.reduce(lambda, {});
+      };
+
+      const createDefaultValues = () => {
+        return iterateInputs((acc:any, input:any) => {
           if (!input?.id) return acc;
-          //if there is an existing stream and the pipeline is same as the selectedPipeline, use the values from the
-          //stream.pipeline_params object instead of the default values
+          // If there is an existing stream and the pipeline is same as the selectedPipeline,
+          // use the values from the stream.pipeline_params object instead of the default values
           if (selectedStream && selectedStream?.pipelines === selectedPipeline && selectedStream?.pipeline_params) {
+            // if the field's defaultValue is not a string, we assume this is a json field,
+            // and we need to keep it an object for the form to behave
             acc[input.id] =
-                isComfyPipeline && input.id === "json"
-                    ? selectedStream?.pipeline_params
-                    : selectedStream.pipeline_params?.[input.id];
+                typeof input.defaultValue === "string"
+                    ? selectedStream?.pipeline_params?.[input.id]
+                    : selectedStream.pipeline_params;
             return acc;
           }
           acc[input.id] = input.defaultValue;
           return acc;
-        }, {});
+        });
       };
 
       const renderInput = (input: any) => {
+        const isJson = typeof input.defaultValue !== "string";
         switch (input.type) {
           case "text":
             return (
@@ -168,8 +192,12 @@ const StreamForm = forwardRef(
                   <Textarea
                       className="h-44"
                       placeholder={input.placeholder}
-                      value={typeof inputValues[input.id] === "object" ? JSON.stringify(inputValues[input.id], undefined, 4) : inputValues[input.id]}
-                      onChange={(e) => handleInputChange(input.id, e.target.value)}
+                      value={
+                        isJson && validateJson(inputValues[input.id]).isValid
+                            ? JSON.stringify(inputValues[input.id], null, 2) || "{}"
+                            : inputValues[input.id]
+                      }
+                      onChange={(e) => handleInputChange(input.id, e.target.value, isJson)}
                   />
                   {invalidJsonMessage && (
                       <div className="text-red-500 text-sm">{invalidJsonMessage}</div>

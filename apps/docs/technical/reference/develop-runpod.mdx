@@ -1,10 +1,20 @@
 ---
-title: "Develop in RunPod"
+title: "How to Deploy a RunPod Server"
 description: "This guide is intended for developers who are developing custom nodes for ComfyUI on RunPod"
 icon: "code"
 ---
 
+1. Create a RunPod account, and add some funds.
+2. Click **Pods**, then click **deploy**
+3. Next, we create a network volume that will persist even when we shut the server down.
 
+### RunPod Network Volume
+<Image src="https://lh7-rt.googleusercontent.com/docsz/AD_4nXf0d_82ypCCGKybIq1tsYcg6kJ9caF5n0gJcobTHcnb9br73oEginz3y5jui_Xh4IIfbxBvO4uCX0g97GqM_3I4pyETo-gJatB-kULNHGUi5X7WVOsiVPb3ytVBq0xP8JVFQ35t?key=LMLbXfH5Do4K1o222p6HlCaY" alt="RunPod Network Volume" />
+
+4. Pick a suitable name, region, and size for the volume. You can add more size later if you run out, so don't go too crazy here.
+5. Next, we select a GPU (I use a 4090), then we select a template. I used Runpod Pytorch 2.4 template. ![RunPod GPU Selection](https://lh7-rt.googleusercontent.com/docsz/AD_4nXf9hpPmlBEMHUsqaxnrLQgWS31oS2SSHydYnfYZvICnbBdu5o-pj6AMpbh6BE3E_Jgq2XoN4bCm9mIxH1k-8hpD1Z9tN4PaoSZxh875iQh8A8C6nVI05WtHIs26_-ltx8Jw2GuHeA?key=LMLbXfH5Do4K1o222p6HlCaY)
+
+6. Then, we edit the template, exposing a port for ComfyUI ![RunPod Template Edit](https://lh7-rt.googleusercontent.com/docsz/AD_4nXdRmSuZiixmCt3VGf7N7q3Q4fUyHugYn39VPvmVVdb8E3G1VqZHUXxS5whBp7xRIwJw0IdM5ch6PpWeB421cLrhGSSlZ2INoITRFFO2_8Tqn-wtS6M2690hl6HnyVMhOCcwZpeAbw?key=LMLbXfH5Do4K1o222p6HlCaY)
 
 # **Setting Up SSH Keys for RunPod**
 To create an SSH keypair and use it to connect to a server on RunPod, follow these simple steps.
@@ -29,21 +39,6 @@ This will generate a pair of files. For me, the files are `ryanrunpod`, and `rya
 
 SSH is now set up for your RunPod account, so you can use it with any servers you provision.
 
-# **How to Deploy a RunPod Server**
-
-1. Create a RunPod account, and add some funds.
-2. Click **Pods**, then click **deploy**
-3. Next, we create a network volume that will persist even when we shut the server down.
-
-### RunPod Network Volume
-<Image src="https://lh7-rt.googleusercontent.com/docsz/AD_4nXf0d_82ypCCGKybIq1tsYcg6kJ9caF5n0gJcobTHcnb9br73oEginz3y5jui_Xh4IIfbxBvO4uCX0g97GqM_3I4pyETo-gJatB-kULNHGUi5X7WVOsiVPb3ytVBq0xP8JVFQ35t?key=LMLbXfH5Do4K1o222p6HlCaY" alt="RunPod Network Volume" />
-
-4. Pick a suitable name, region, and size for the volume. You can add more size later if you run out, so don't go too crazy here.
-5. Next, we select a GPU (I use a 4090), then we select a template. I used Runpod Pytorch 2.4 template. ![RunPod GPU Selection](https://lh7-rt.googleusercontent.com/docsz/AD_4nXf9hpPmlBEMHUsqaxnrLQgWS31oS2SSHydYnfYZvICnbBdu5o-pj6AMpbh6BE3E_Jgq2XoN4bCm9mIxH1k-8hpD1Z9tN4PaoSZxh875iQh8A8C6nVI05WtHIs26_-ltx8Jw2GuHeA?key=LMLbXfH5Do4K1o222p6HlCaY)
-
-6. Then, we edit the template, exposing a port for ComfyUI ![RunPod Template Edit](https://lh7-rt.googleusercontent.com/docsz/AD_4nXdRmSuZiixmCt3VGf7N7q3Q4fUyHugYn39VPvmVVdb8E3G1VqZHUXxS5whBp7xRIwJw0IdM5ch6PpWeB421cLrhGSSlZ2INoITRFFO2_8Tqn-wtS6M2690hl6HnyVMhOCcwZpeAbw?key=LMLbXfH5Do4K1o222p6HlCaY)
-
-
 # **TURN Server Setup**
 
 ### **When and why is this needed?**
@@ -53,106 +48,8 @@ RunPod and many other cloud providers have restrictive network policies that can
 1. Create a Twilio account at [twilio.com](https://www.twilio.com/en-us)
 2. Get credentials from [console.twilio.com](https://console.twilio.com/)
 3. Take note of your `ACCOUNT SID` and `AUTH TOKEN` for use in the next section of this document
+<Note>
+Alternatively you can use [tunneling with SSH](http://localhost:3000/technical/reference/tunneling-with-ssh)
+</Note>
 
-# **Installing Conda, ComfyUI, ComfyStream**
-
-1. Open Jupyter Lab running on your server as pictured below:
-
-![Jupyter Lab](https://lh7-rt.googleusercontent.com/docsz/AD_4nXfkZ6LAYQuIRXD1W-YAa5EwNubpZmf_uynSw62xgQnZMYR2JZsN20095kwhG-1iFrBRPcs98nps0nyOf8EFlqGr68a28sI4mvKFDXoyzChg8EWDhOMQdlMXqmoRNCYoMlJCQo6UZw?key=LMLbXfH5Do4K1o222p6HlCaY)
-
-1. In a new terminal navigate to your network volume (`/workspace`) and run the following commands. 
-
-```bash
-cd /workspace
-git clone https://github.com/ryanontheinside/ComfyStream_Setup_Scripts
-cp ./ComfyStream_Setup_Scripts/runpod/new_server_setup.sh new_server_setup.sh
-bash ./ComfyStream_Setup_Scripts/runpod/initial_setup.sh
-```
-
-1. Add your Twilio ACCOUNT SID and AUTH TOKEN to `new_server_startup.sh` (right at the top of the script)
-
-This initial_setup.sh script will do the following (it takes a while to run):
-
-**Creates workspace directories for two ComfyUI installations**
-
-- This enables two instances of ComfyUI - one standard installation and one configured for real-time streaming with ComfyStream.
-- You can treat the regular ComfyUI installation as your development environment.
-- It is ***highly*** recommended to deploy ***only custom nodes required for your workflows*** to the ComfyStream enabled installation of ComfyUI.
-- The ComfyUI /models directory is symlinked, meaning you only need to download models once.
-
-**Clones repositories**:
-
-- ComfyUI (two copies)
-- ComfyStream
-- ComfyUI-Manager (installed to both ComfyUI instances)
-- RealTimeNodes
-
-**Sets up shared resources**:
-
-- Creates symlink for models directory between installations
-- Downloads Kohaku v2.1 & Stable Diffusion Turbo models
-- Installs Miniconda3
-
-**Creates two Conda environments**:
-
-- comfyui: For standard ComfyUI installation
-- comfystream: For ComfyStream-enabled installation
-
-These Conda environments allow all of the dependency installations to persist across sessions and servers.
-
-**Configures comfystream environment**:
-
-- Installs ComfyStream package and dependencies
-- Runs ComfyStream installation script
-- Copies tensor utilities to custom nodes
-
-**Configures comfyui environment**:
-
-- Installs ComfyUI requirements
-- Sets up ComfyUI-Manager
-
-The script includes error checking and skips existing installations to allow for safe re-runs.
-
-1. Now that the initial setup is complete, we do not need to do that again.
-2. Each time you start a server, run new_server_setup.sh and leave it running. First ***edit the top of the script to include your Twilio Credentials.***
-
-### **Why Two Copies of ComfyUI?**
-
-Two copies, one for ComfyStream and one for workflow development, is recommended to reduce issues with dependencies. It is a bit more cumbersome, but at the moment it is the best approach.
-
-# **Starting a New Runpod Server**
-
-When you start up a server for the day, you can use the following process to get up and running quickly.
-
-1. Provision your RunPod server
-2. In Jupyter terminal, or terminal of your choice, run the command below. This script will export your Twilio credentials, or install and run socat, and initialize Conda in all shells. <Note> before you run this script the first time, edit the script, inserting your Twilio credentials in the provided space at the top***</Note>
-
-2. In Jupyter terminal, or terminal of your choice, run the command below. This script will export your Twilio credentials, or install and run socat, and initialize  Conda in all shells.
-```bash
-bash server_setup.sh
-```
-<Note>Before you run this script the first time, edit the script, inserting your Twilio credentials in the provided space at the top</Note>
-
-3. Open another terminal, from the `/comfyRealtime/ComfyStream` directory, run the following commands:
-```bash
-conda activate comfystream
-./server/app.py --workspace
-```
-
-# **Custom Node Installation**
-
-More information to follow here, but for now just know that when you add custom nodes, you will need to install them in both Conda environments. Since you started ComfyUI in the comfyui Conda environment, you can just install nodes via the manager, and they will be installed in the environment. You will need to install them manually in the ComfyStream environment as well. You can do that by by following these steps:
-
-1. Run the following command to initialize Conda (if it is  not already)
-
-```bash
-eval "$(/workspace/miniconda3/bin/conda shell.bash hook)"
-```
-
-1. Activate the comfystream environment and install custom nodes accordingly:
-```bash
-conda activate comfystream
-cd comfyRealtime/ComfyUI/custom_nodes/ComfyUI_RyanOnTheInside
-pip install -r requirements.txt
-conda deactivate comfystream
-```
+Proceed to [Install Conda, ComfyUI, and ComfyStream](http://localhost:3000/technical/develop-pipeline/local-testing)
