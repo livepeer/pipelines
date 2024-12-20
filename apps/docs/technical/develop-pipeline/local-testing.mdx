@@ -17,20 +17,18 @@ icon: "code"
         ```
         </Info>
 
-        1. If you do not already have Conda, install it from an elevated powershell
-        ```powershell (admin)
-        .\install_conda.ps1
-        ```
-
-        2. It is optional, but recommended to initialize Conda in Powershell, then restart the terminal. This will show the active conda environment in the terminal prompt. 
-        ```powershell
-        conda init powershell
-        ```
-
-        3. Clone the ComfyStream Setup Scrips
+        1. Clone the ComfyStream Setup Scripts
         ```powershell
         git clone https://github.com/ryanontheinside/ComfyStream_Setup_Scripts
         cd ComfyStream_Setup_Scripts\local
+        ```
+
+        2. If you do not already have Conda, install it from an elevated powershell
+        ```powershell (admin)
+        .\install_conda.ps1
+
+        ## Optionally show the active conda environment in the Powershell terminal
+        conda init powershell
         ```
 
         4. Install ComfyStream, ComfyUI and related packages
@@ -42,13 +40,8 @@ icon: "code"
         - **ComfyUI**
         - **ComfyStream**
 
-        5. Create a Symbolic link to the models folder for both ComfyUI workspaces 
-        ```powershell (admin)
-        New-Item -ItemType SymbolicLink -Path "$realtimePath\ComfyUI\models" -Target "$comfyUIPath\models"
-        ```
-
         <Warning>
-        If you need to delete the conda environment and start over, you can run the following commands:
+        If the script fails and you need to start over due to unresolvable package conflicts, you can delete the conda environments:
         ```powershell
         conda deactivate
         conda remove --name comfystream --all
@@ -56,6 +49,10 @@ icon: "code"
         ```
         </Warning>
         
+        5. Create a Symbolic link to the models folder for both ComfyUI workspaces 
+        ```powershell (admin)
+        New-Item -ItemType SymbolicLink -Path "$realtimePath\ComfyUI\models" -Target "$comfyUIPath\models"
+        ```
     </Tab>
     <Tab title="RunPod">
         We will use the [ComfyStream_Setup_Scripts](https://github.com/ryanontheinside/ComfyStream_Setup_Scripts) to automate the install of conda environments for ComfyStream and ComfyUI.
@@ -226,10 +223,14 @@ icon: "code"
 </Tabs>
 
 ## Step 2: Run ComfyUI
-1. From the devcontainer, run the following:
+1. Start a new shell and activate the comfyui conda environment
 ```bash
 conda activate comfyui
-cd /ComfyUI
+cd ../ComfyUI
+```
+
+2. Run the following:
+```powershell
 python main.py --listen
 ```
 <Info>
@@ -245,7 +246,7 @@ Import times for custom nodes:
    0.5 seconds: /ComfyUI/custom_nodes/ComfyUI_RyanOnTheInside
 ```
 
-2. Access the ComfyUI web interface at [http://localhost:8188](http://localhost:8188). 
+3. Access the ComfyUI web interface at [http://localhost:8188](http://localhost:8188). 
 <Info>If you are running the devcontainer on a remote server, you can access the web interface by setting up an SSH tunnel to the remote server and forwarding the port to your local machine.
 You can also set the interface with `--host`</Info>
 
@@ -254,11 +255,11 @@ You can also set the interface with `--host`</Info>
 1. Activate the comfystream environment
 ```bash
 conda activate comfystream
-cd /comfystream
+cd ..\comfystream
 ```
 2. Run ComfyStream:
 ```bash
-python server/app.py --workspace /ComfyUI --media-ports=5678 --host=0.0.0.0
+python server/app.py --workspace ..\ComfyUI --media-ports=5678 --host=0.0.0.0
 ```
 We should now have the ComfyStream server running on port `8888`, with media port `5678` listening on UDP.  It's also using the same workspace and sharing the available nodes / models as the ComfyUI engine you were using. We will provide this endpoint to the ComfyStream UI when starting a live stream.
 

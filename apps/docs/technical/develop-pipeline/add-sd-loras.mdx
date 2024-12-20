@@ -4,7 +4,7 @@ description: "Learn how to customize the LoRas in your Stream Diffusion workflow
 icon: "image"
 ---
 
-The [ComfyUI StreamDiffusion](http://localhost:3000/technical/reference/available-nodes#streamdiffusion) custom node supports SD 1.5 models and LoRa checkpoints. LoRas are used to generate a variety of special effects in your workflow, such as color correction, sharpening, and more.
+The [ComfyUI StreamDiffusion](../reference/available-nodes#streamdiffusion) custom node supports SD 1.5 models and LoRa checkpoints. LoRas are used to generate a variety of special effects in your workflow, such as color correction, sharpening, and more.
 
 
 ## Configure LoRa checkpoint using ComfyUI
@@ -31,11 +31,11 @@ ComfyUI will automatically generate a workflow json file from changes in the Lig
 ### Changing the LoRa checkpoint
 The `lora_name` input will reflect the name of a LoRa file from [Livepeer-Studio/comfystream_loras](https://huggingface.co/Livepeer-Studio/comfystream_loras/tree/main): 
 ```json
-  "178": {
+  "181": {
     "inputs": {
       "lora_name": "ral-alienzkin-sd15.safetensors"
     },
-    "class_type": "StreamDiffusionCheckpointLoader"
+    "class_type": "StreamDiffusionLoraLoader"
   },
 ```
 Update the `lora_name` input to the name of the LoRa checkpoint you want to use.
