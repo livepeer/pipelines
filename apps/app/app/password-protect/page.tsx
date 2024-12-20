@@ -76,7 +76,7 @@ export default function PasswordProtect() {
           </p>
         </div>
 
-        <div className="mb-6">
+        <div className="mb-6 max-w-[400px] mx-auto">
           <LPPLayer
             output_playback_id="c99filnga205mzqh"
           />
