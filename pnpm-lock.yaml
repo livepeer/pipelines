@@ -142,6 +142,9 @@ importers:
       '@testing-library/react':
         specifier: ^16.0.1
         version: 16.0.1(@testing-library/dom@10.4.0)(@types/react-dom@18.3.1)(@types/react@18.3.12)(react-dom@18.3.1)(react@18.3.1)
+      '@types/mixpanel-browser':
+        specifier: ^2.50.2
+        version: 2.50.2
       '@types/node':
         specifier: 22.9.0
         version: 22.9.0
@@ -6013,6 +6016,10 @@ packages:
   /@types/lodash@4.17.13:
     resolution: {integrity: sha512-lfx+dftrEZcdBPczf9d0Qv0x+j/rfNCMuC6OcfXmO8gkfeNAY88PgKUbvG56whcN23gc27yenwF6oJZXGFpYxg==}
     dev: false
+
+  /@types/mixpanel-browser@2.50.2:
+    resolution: {integrity: sha512-Iw8cBzplUPfHoeYuasqeYwdbGTNXhN+5kFT9kU+C7zm0NtaiPpKoiuzITr2ZH9KgBsWi2MbG0FOzIg9sQepauQ==}
+    dev: true
 
   /@types/ms@0.7.34:
     resolution: {integrity: sha512-nG96G3Wp6acyAgJqGasjODb+acrI7KltPiRxzHPXnP3NgI28bpQDRv53olbqGXbfcgF5aiiHmO3xpwEpS5Ld9g==}

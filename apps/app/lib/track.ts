@@ -1,6 +1,6 @@
 import { User } from "@privy-io/react-auth";
 import { isProduction } from "./env";
-
+import mixpanel from 'mixpanel-browser';
 interface TrackProperties {
   [key: string]: any;
 }
@@ -48,7 +48,7 @@ const track = async (
     },
   };
 
-  console.log("Tracking event:", eventName, data.properties);
+  console.log("Tracking event:", eventName);
 
   try {
     const response = await fetch(`/api/mixpanel`, {
