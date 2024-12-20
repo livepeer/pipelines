@@ -3,7 +3,7 @@
 import React from "react";
 import { Button } from "@repo/design-system/components/ui/button";
 import { usePrivy } from "@privy-io/react-auth";
-
+import track from "@/lib/track";
 export default function LoggedOut({ text }: { text: string }) {
   const { ready, authenticated, user, login, logout } = usePrivy();
 
@@ -13,6 +13,7 @@ export default function LoggedOut({ text }: { text: string }) {
     <div className="flex justify-center h-[calc(100vh-15rem)] items-center">
       <Button
         onClick={() => {
+          track('login_clicked', undefined, user || undefined);
           login();
         }}
         disabled={disableLogin}
