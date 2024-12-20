@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Button } from "@repo/design-system/components/ui/button";
 import { Input } from "@repo/design-system/components/ui/input";
 import { useRouter } from 'next/navigation';
+import { LPPlayer } from '@livepeer/react';
 
 export default function PasswordProtect() {
   const [password, setPassword] = useState('');
@@ -63,7 +64,28 @@ export default function PasswordProtect() {
             </a>
             {' '}members
           </p>
+          <p className="text-muted-foreground break-words">
+            <a 
+              href="https://pipelines.livepeer.org/docs" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-primary underline break-words"
+            >
+                Learn about Video AI Pipelines
+            </a>
+          </p>
         </div>
+
+        <div className="mb-6">
+          <LPPlayer
+            playbackId="c99filnga205mzqh"
+            objectFit="cover"
+            autoPlay
+            muted
+            loop
+          />
+        </div>
+        
         <form onSubmit={handleSubmit} className="mt-6 space-y-4 max-w-[400px] mx-auto">
           <Input
             type="password"
