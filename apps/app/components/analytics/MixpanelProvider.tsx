@@ -5,10 +5,7 @@ import mixpanel from 'mixpanel-browser';
 import { mixpanel as mixpanelConfig } from '@/lib/env';
 
 export function MixpanelProvider({ children }: { children: ReactNode }) {
-  useEffect(() => {
-    console.log('MixpanelProvider mounted');
-    console.log('Mixpanel config:', mixpanelConfig);
-    
+  useEffect(() => {    
     if (mixpanelConfig.projectToken) {
       try {
         mixpanel.init(mixpanelConfig.projectToken, { debug: true, ignore_dnt: true });

@@ -47,12 +47,6 @@ const track = async (
       ...eventProperties,
     },
   };
-  try {
-    console.log("Tracking event via sdk:", eventName, data.properties);
-    mixpanel.track(eventName, data.properties);
-  } catch (error) {
-    console.error("Error tracking event:", error);
-  }
 
   console.log("Tracking event via fetch:", eventName, data.properties);
 
