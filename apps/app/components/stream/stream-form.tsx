@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useImperativeHandle, forwardRef, useMemo} from "react";
+import React, {useState, useEffect, useImperativeHandle, forwardRef} from "react";
 import { Label } from "@repo/design-system/components/ui/label";
 import {
   Select,
@@ -16,6 +16,7 @@ import { ChevronDown } from "lucide-react";
 import { ScrollArea } from "@repo/design-system/components/ui/scroll-area";
 import Search from "../header/search";
 import {ExternalToast, toast} from "sonner";
+import ComfyUIParamsEditor from "@/components/stream/comfyui-param-editor";
 
 const StreamForm = forwardRef(
     (
@@ -30,11 +31,6 @@ const StreamForm = forwardRef(
       const [selectedPipeline, setSelectedPipeline] = useState<any | null>(stream?.pipelines || {});
       const [selectedStream, setSelectedStream] = useState<any | null>(stream || "");
       const [inputs, setInputs] = useState<Record<string, any>>(selectedPipeline?.config?.inputs || {})
-      const isComfyPipeline = useMemo(
-          () => selectedPipeline?.type?.toString().toLowerCase() === "comfyui",
-          [selectedPipeline]
-      );
-      const [ invalidJsonMessage, setInvalidJsonMessage ] = useState(null);
 
       useEffect(() => {
         const defaultValues = createDefaultValues();
@@ -61,16 +57,7 @@ const StreamForm = forwardRef(
         }
       }
 
-      const handleInputChange = (id: string, value: any, isJson: boolean = false) => {
-        if(isJson){
-          const {isValid, message} = validateJson(value);
-          setInvalidJsonMessage(!isValid?message:null);
-          // make sure to convert the field to JSON or the textarea will get polluted
-          // will lose formating and show carriage returns
-          if(isValid && typeof value === "string"){
-            value = JSON.parse(value);
-          }
-        }
+      const handleInputChange = (id: string, value: any) => {
         if (['name', 'output_stream_url'].includes(id)) {
           setSelectedStream((prev: any) => ({
             ...prev,
@@ -84,24 +71,12 @@ const StreamForm = forwardRef(
         }
       };
 
-      const convertToJsonObjectIfNecessary = (jsonValue: any, failureMsg: String) => {
-        if (typeof jsonValue === "string") {
-          try {
-            return JSON.parse(jsonValue);
-          } catch (error) {
-            console.error(failureMsg, error);
-            return {};
-          }
-        }
-        return jsonValue;
-      };
-
       useImperativeHandle(ref, () => ({
         getFormData: () => ({
           ...selectedStream,
           pipelines: selectedPipeline,
           pipeline_id: selectedPipeline.id,
-          pipeline_params: isComfyPipeline ? convertToJsonObjectIfNecessary(inputValues[inputs?.primary?.id], "Failed to parse the comfy json provided when calling getFormData."): inputValues,
+          pipeline_params: inputValues,
         }),
         isFormValid: (): boolean => {
           if (!selectedStream.name || !selectedPipeline.id) {
@@ -124,21 +99,14 @@ const StreamForm = forwardRef(
             return false;
           }
 
-          if (isComfyPipeline ) {
-            let failedValidation = false;
-            iterateInputs((acc: any, input: any) => {
-              //if field is not json or validation has already failed, return
-              //this prevents us from validating non-json fields and if an error is
-              //encountered, we don't show multiple error messages
-              if (typeof input.defaultValue === "string" || failedValidation) return acc;
-              const {isValid} = validateJson(inputValues[input.id]);
-              if (!isValid) {
-                toast.error(`Please correct the ${input.label} field.  It must contain valid JSON.`, toastOptions);
-                failedValidation = true;
-              }
-              return acc;
-            });
-            if (failedValidation) return false;
+          // validate that inputValues is a valid JSON
+          const {isValid, message} = validateJson(inputValues);
+          if (!isValid) {
+              toast.error(
+                  `Invalid JSON provided in the form: ${message}`,
+                  toastOptions
+              );
+              return false;
           }
           return true;
         }
@@ -163,10 +131,7 @@ const StreamForm = forwardRef(
           if (selectedStream && selectedStream?.pipelines === selectedPipeline && selectedStream?.pipeline_params) {
             // if the field's defaultValue is not a string, we assume this is a json field,
             // and we need to keep it an object for the form to behave
-            acc[input.id] =
-                typeof input.defaultValue === "string"
-                    ? selectedStream?.pipeline_params?.[input.id]
-                    : selectedStream.pipeline_params;
+            acc[input.id] = selectedStream?.pipeline_params?.[input.id];
             return acc;
           }
           acc[input.id] = input.defaultValue;
@@ -175,7 +140,6 @@ const StreamForm = forwardRef(
       };
 
       const renderInput = (input: any) => {
-        const isJson = typeof input.defaultValue !== "string";
         switch (input.type) {
           case "text":
             return (
@@ -188,21 +152,21 @@ const StreamForm = forwardRef(
             );
           case "textarea":
             return (
-                <>
-                  <Textarea
-                      className="h-44"
-                      placeholder={input.placeholder}
-                      value={
-                        isJson && validateJson(inputValues[input.id]).isValid
-                            ? JSON.stringify(inputValues[input.id], null, 2) || "{}"
-                            : inputValues[input.id]
-                      }
-                      onChange={(e) => handleInputChange(input.id, e.target.value, isJson)}
-                  />
-                  {invalidJsonMessage && (
-                      <div className="text-red-500 text-sm">{invalidJsonMessage}</div>
-                  )}
-                </>
+                <Textarea
+                    className="h-44"
+                    defaultValue={
+                      typeof input.defaultValue === "string"
+                          ? input.defaultValue
+                          : JSON.stringify(input.defaultValue, null, 2)
+                    }
+                    placeholder={input.placeholder}
+                    value={
+                      typeof inputValues[input.id] === "string"
+                          ? inputValues[input.id]
+                          : JSON.stringify(inputValues[input.id], null, 2) || ""
+                    }
+                    onChange={(e) => handleInputChange(input.id, e.target.value)}
+                />
             );
           case "number":
             return (
@@ -288,7 +252,7 @@ const StreamForm = forwardRef(
                   )}
                   <div className="flex flex-col gap-2 max-w-md">
                     <Label className="text-muted-foreground">
-                      Stream Target
+                      Stream Destination URL
                     </Label>
                     <Input
                         type="text"
@@ -301,10 +265,20 @@ const StreamForm = forwardRef(
                 </>
             }
             {/* Primary Input (Prompt) */}
-            {inputs?.primary && (
+            {selectedPipeline.type == "comfyui" ? (
+                <div className="flex flex-col gap-2">
+                  <Label className="text-muted-foreground">
+                    ComfyUI Parameters
+                  </Label>
+                  <ComfyUIParamsEditor
+                      value={inputValues["prompt"]}
+                      onChange={(value) => handleInputChange("prompt", value)}
+                  />
+                </div>
+            ) : inputs?.primary && inputs?.primary.length > 0 && (
                 <div className="flex flex-col gap-2 max-w-md">
                   <Label className="text-muted-foreground">
-                    {inputs?.primary.label}
+                    {inputs?.primary?.label}
                   </Label>
                   {renderInput(inputs?.primary)}
                 </div>

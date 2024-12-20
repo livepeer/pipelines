@@ -9,7 +9,6 @@ import {
   CommandList,
 } from "@repo/design-system/components/ui/command";
 import { Input } from "@repo/design-system/components/ui/input";
-import { Button } from "@repo/design-system/components/ui/button";
 import React, { useState, useEffect } from "react";
 import track from "@/lib/track";
 import { fetchPipelines, fetchFeaturedPipelines } from "./fetchPipelines";
@@ -99,9 +98,7 @@ export default function Search({
       if (query.length >= 3) {
         setIsSearching(true);
         const data = await fetchPipelines(query);
-        console.log('isCancelled', isCancelled)
         if (!isCancelled) {
-          console.log(data)
           setIsSearching(false);
           setResults(data);
         }
