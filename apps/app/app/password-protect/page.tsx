@@ -76,11 +76,11 @@ export default function PasswordProtect() {
           </p>
         </div>
 
-        <div className="mb-6 max-w-[400px] mx-auto">
+        {/* COMMENTED OUT UNTIL ERIC CREATES A VIDEO FOR US <div className="mb-6 max-w-[400px] mx-auto">
           <LPPLayer
             output_playback_id="c99filnga205mzqh"
           />
-        </div>
+        </div> */}
         
         <form onSubmit={handleSubmit} className="mt-6 space-y-4 max-w-[400px] mx-auto">
           <Input
