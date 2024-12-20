@@ -23,8 +23,8 @@ export default async function Explore({
         Discover and experiment with community-built pipelines.
       </p>
       <div className="flex  mt-8">
-        <Filter />
-        <div className="w-full md:w-3/4 md:border-l border-border/50 md:ml-[3rem] md:pl-[3rem]">
+        {/* TODO: REMOVING FILTER UNTIL WE HAVE MORE PIPELINES <Filter />
+        <div className="w-full md:w-3/4 md:border-l border-border/50 md:ml-[3rem] md:pl-[3rem]"> */}
           <FeaturedPipelines pipelines={allPipelines} />
           <div className="border p-4  mt-6">
             <div>
@@ -41,7 +41,7 @@ export default async function Explore({
             </div>
           </div>
         </div>
-      </div>
+      {/* </div> */}
       <Modals searchParams={searchParams} />
     </div>
   );
