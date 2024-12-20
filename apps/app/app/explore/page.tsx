@@ -9,7 +9,7 @@ import {
 import Modals from "@/components/modals";
 import PipelineTile from "@/components/welcome/featured/tile";
 import { getAllPipelines } from "../api/pipelines/get";
-
+import ClientSideTracker from "@/components/analytics/ClientSideTracker";
 export default async function Explore({
   searchParams,
 }: {
@@ -23,8 +23,11 @@ export default async function Explore({
         Discover and experiment with community-built pipelines.
       </p>
       <div className="flex  mt-8">
+
         {/* TODO: REMOVING FILTER UNTIL WE HAVE MORE PIPELINES <Filter />
         <div className="w-full md:w-3/4 md:border-l border-border/50 md:ml-[3rem] md:pl-[3rem]"> */}
+
+          <ClientSideTracker eventName="explore_page_viewed" />
           <FeaturedPipelines pipelines={allPipelines} />
           <div className="border p-4  mt-6">
             <div>

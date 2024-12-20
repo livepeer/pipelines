@@ -12,7 +12,6 @@ import {
 import { Textarea } from "@repo/design-system/components/ui/textarea";
 import { upsertStream } from "@/app/api/streams/upsert";
 import { usePrivy } from "@privy-io/react-auth";
-import { BroadcastWithControls } from "./broadcast";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Switch } from "@repo/design-system/components/ui/switch";
 import { cn } from "@repo/design-system/lib/utils";
@@ -23,7 +22,222 @@ import { Button } from "@repo/design-system/components/ui/button";
 import { toast } from "sonner";
 import { updateParams } from "@/app/api/streams/update-params";
 import { app } from "@/lib/env";
-import {getStream} from "@/app/api/streams/get";
+import { getStream } from "@/app/api/streams/get";
+import track from "@/lib/track";
+interface ComfyNodeParams {
+  inputs?: Record<string, any>;
+  class_type?: string;
+  [key: string]: any;
+}
+
+interface ComfyUIConfig {
+  [key: string]: ComfyNodeParams;
+}
+
+const ComfyUIParamsEditor = ({
+  value,
+  onChange,
+}: {
+  value: string | object;
+  onChange: (value: string | object) => void;
+}) => {
+  const [expandedNodes, setExpandedNodes] = useState<Record<string, boolean>>(
+    {}
+  );
+  const [isJsonMode, setIsJsonMode] = useState(false);
+
+  const toggleNode = (nodeId: string) => {
+    setExpandedNodes((prev) => ({
+      ...prev,
+      [nodeId]: !prev[nodeId],
+    }));
+  };
+
+  const handleJsonChange = (newJsonString: string) => {
+    try {
+      const parsed = JSON.parse(newJsonString);
+      onChange(parsed);
+    } catch (error) {
+      console.error("Invalid JSON:", error);
+    }
+  };
+
+  const handleParamChange = (
+    nodeId: string,
+    category: string,
+    paramKey: string,
+    newValue: any
+  ) => {
+    try {
+      const currentConfig: ComfyUIConfig =
+        typeof value === "string" ? JSON.parse(value) : value;
+      const updatedConfig = {
+        ...currentConfig,
+        [nodeId]: {
+          ...currentConfig[nodeId],
+          [category]: {
+            ...currentConfig[nodeId][category],
+            [paramKey]: newValue,
+          },
+        },
+      };
+      onChange(updatedConfig);
+    } catch (error) {
+      console.error("Error updating parameter:", error);
+    }
+  };
+
+  const renderParamInput = (
+    nodeId: string,
+    category: string,
+    paramKey: string,
+    paramValue: any
+  ) => {
+    if (typeof paramValue === "number") {
+      return (
+        <Input
+          type="number"
+          value={paramValue}
+          onChange={(e) =>
+            handleParamChange(
+              nodeId,
+              category,
+              paramKey,
+              parseFloat(e.target.value)
+            )
+          }
+          className="w-full"
+        />
+      );
+    } else if (typeof paramValue === "string") {
+      return (
+        <Input
+          type="text"
+          value={paramValue}
+          onChange={(e) =>
+            handleParamChange(nodeId, category, paramKey, e.target.value)
+          }
+          className="w-full"
+        />
+      );
+    } else if (typeof paramValue === "boolean") {
+      return (
+        <Switch
+          checked={paramValue}
+          onCheckedChange={(checked) =>
+            handleParamChange(nodeId, category, paramKey, checked)
+          }
+        />
+      );
+    }
+    return null;
+  };
+
+  const renderNodeParams = () => {
+    try {
+      const config: ComfyUIConfig =
+        typeof value === "string" ? JSON.parse(value) : value;
+      return Object.entries(config).map(([nodeId, nodeData]) => (
+        <div key={nodeId} className="border  p-4 mb-4">
+          <button
+            onClick={() => toggleNode(nodeId)}
+            className="flex items-center gap-2 w-full text-left "
+          >
+            <motion.div
+              animate={{ rotate: expandedNodes[nodeId] ? 180 : 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              <ChevronDown className="h-4 w-4" />
+            </motion.div>
+            <span className="font-medium">
+              {nodeData.class_type || `Node ${nodeId}`}
+            </span>
+          </button>
+
+          <AnimatePresence>
+            {expandedNodes[nodeId] && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="overflow-hidden"
+              >
+                {Object.entries(nodeData).map(([category, categoryData]) => {
+                  if (
+                    typeof categoryData === "object" &&
+                    categoryData !== null
+                  ) {
+                    return (
+                      <div key={category} className="mt-2">
+                        <Label className="text-muted-foreground capitalize">
+                          {category}
+                        </Label>
+                        <div className="space-y-2 mt-1">
+                          {Object.entries(categoryData).map(
+                            ([paramKey, paramValue]) => (
+                              <div
+                                key={paramKey}
+                                className="flex flex-col gap-1"
+                              >
+                                <Label className="text-sm">{paramKey}</Label>
+                                {renderParamInput(
+                                  nodeId,
+                                  category,
+                                  paramKey,
+                                  paramValue
+                                )}
+                              </div>
+                            )
+                          )}
+                        </div>
+                      </div>
+                    );
+                  }
+                  return null;
+                })}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      ));
+    } catch (error) {
+      return <div className="text-red-500">Invalid JSON format</div>;
+    }
+  };
+
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="flex items-center justify-between">
+        <Label className="text-muted-foreground">Edit Mode</Label>
+        <div className="flex items-center gap-2">
+          <Label className={cn("text-sm", !isJsonMode && "text-primary")}>
+            UI
+          </Label>
+          <Switch checked={isJsonMode} onCheckedChange={setIsJsonMode} />
+          <Label className={cn("text-sm", isJsonMode && "text-primary")}>
+            JSON
+          </Label>
+        </div>
+      </div>
+
+      {isJsonMode ? (
+        <Textarea
+          className="font-mono h-[400px] text-sm "
+          value={
+            typeof value === "string" ? value : JSON.stringify(value, null, 2)
+          }
+          onChange={(e) => handleJsonChange(e.target.value)}
+          placeholder="Enter JSON configuration..."
+        />
+      ) : (
+        <ScrollArea className="h-[400px] border p-4">
+          {renderNodeParams()}
+        </ScrollArea>
+      )}
+    </div>
+  );
+};
 
 export default function Try({
   setStreamInfo,
@@ -54,16 +268,10 @@ export default function Try({
       (key) => newValues[key] !== initialValues[key]
     );
     setHasChanges(hasAnyChange);
-  };
-
-  const constructUpdateValues = (inputValues: any) => {
-    if (pipeline.type == "comfyui") {
-      return {
-        prompt: JSON.parse(JSON.stringify(inputValues["json"])),
-      };
-    } else {
-      return initialValues;
-    }
+    // Track parameter change
+    track("inputs_parameter_changed", {
+      parameter_id: id,
+    }, user || undefined);
   };
 
   const handleUpdate = async () => {
@@ -81,10 +289,8 @@ export default function Try({
       return;
     }
 
-    const updateValues = constructUpdateValues(inputValues);
-
     const response = await updateParams({
-      body: updateValues,
+      body: inputValues,
       host: data.gateway_host as string,
       streamKey: streamKey as string,
     });
@@ -260,12 +466,26 @@ export default function Try({
         </div>
 
         {inputs.primary && (
-          <div className="flex flex-col gap-2">
-            <Label className="text-muted-foreground">
-              {inputs.primary.label}
-            </Label>
-            {renderInput(inputs.primary)}
-          </div>
+          <>
+            {pipeline.type == "comfyui" ? (
+              <div className="flex flex-col gap-2">
+                <Label className="text-muted-foreground">
+                  ComfyUI Parameters
+                </Label>
+                <ComfyUIParamsEditor
+                  value={inputValues["prompt"]}
+                  onChange={(value) => handleInputChange("prompt", value)}
+                />
+              </div>
+            ) : (
+              <div className="flex flex-col gap-2">
+                <Label className="text-muted-foreground">
+                  {inputs.primary.label}
+                </Label>
+                {renderInput(inputs.primary)}
+              </div>
+            )}
+          </>
         )}
 
         {inputs.advanced.length > 0 && (
@@ -292,7 +512,7 @@ export default function Try({
                   transition={{ duration: 0.2 }}
                   className="overflow-hidden"
                 >
-                  <ScrollArea className="h-[500px] rounded-md border">
+                  <ScrollArea className="h-[400px]  border">
                     <div className="p-4 space-y-4">
                       {inputs.advanced
                         .filter((input: any) => input.id !== "prompt")
@@ -322,13 +542,13 @@ export default function Try({
         <div className="flex flex-col gap-1.5">
           <Label className="text-muted-foreground">Video Source</Label>
           <div className="flex flex-row h-[300px] w-full bg-sidebar rounded-2xl items-center justify-center overflow-hidden relative">
-            {streamUrl ? (
+            {/* {streamUrl ? (
               <BroadcastWithControls ingestUrl={streamUrl} />
             ) : (
               <p className="text-muted-foreground">
                 Waiting for webcam to start...
               </p>
-            )}
+            )} */}
           </div>
         </div>
       </div>
