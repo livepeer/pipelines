@@ -62,9 +62,9 @@ export default function Winners() {
     <div className="relative  border p-4 mt-4">
       <div className="flex flex-row items-center justify-between">
         <div>
-          <h3 className="font-medium text-lg">Yesterday's Highlights</h3>
+          <h3 className="font-medium text-lg">Highlights</h3>
           <p className="text-muted-foreground text-sm w-full">
-            Check out yesterday's prompt challenge winners.
+            Check out a few of our community's best live video AI creations.
           </p>
         </div>
         <div>
