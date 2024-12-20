@@ -49,6 +49,7 @@ export async function getStreams(userId: string, page: number = 1, limit: number
         gateway_host,
         pipelines!inner (
           id,
+          type,
           name
         )
       `)

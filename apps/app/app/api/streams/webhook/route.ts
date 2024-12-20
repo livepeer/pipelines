@@ -13,10 +13,6 @@ export async function POST(request: Request) {
   const supabase = await createServerClient();
 
   try {
-    const userId = request.headers.get("x-user-id");
-    if (!userId) {
-      return createErrorResponse(401, ERROR_MESSAGES.UNAUTHORIZED);
-    }
 
     const body = await request.json().catch(() => null);
 

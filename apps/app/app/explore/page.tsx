@@ -9,7 +9,7 @@ import {
 import Modals from "@/components/modals";
 import PipelineTile from "@/components/welcome/featured/tile";
 import { getAllPipelines } from "../api/pipelines/get";
-
+import ClientSideTracker from "@/components/analytics/ClientSideTracker";
 export default async function Explore({
   searchParams,
 }: {
@@ -22,23 +22,22 @@ export default async function Explore({
       <p className="text-muted-foreground text-sm">
         Discover and experiment with community-built pipelines.
       </p>
-      <div className="flex  mt-8">
-        <Filter />
-        <div className="w-full md:w-3/4 md:border-l border-border/50 md:ml-[3rem] md:pl-[3rem]">
-          <FeaturedPipelines pipelines={allPipelines} />
-          <div className="border p-4  mt-6">
-            <div>
-              <h3 className="font-medium text-lg">Browse All Pipelines</h3>
-              <p className="text-muted-foreground text-sm">
-                Explore the entire collection of community-built video AI
-                pipelines.
-              </p>
-            </div>
-            <div className="mt-6 grid grid-cols-1  md:grid-cols-2 gap-6 lg:grid-cols-3 w-full">
-              {allPipelines.map((pipeline, index) => (
-                <PipelineTile pipeline={pipeline} />
-              ))}
-            </div>
+      <div className="mt-8">
+        <ClientSideTracker eventName="explore_page_viewed" />
+        <FeaturedPipelines pipelines={allPipelines} />
+        {/* TODO: REMOVING FILTER UNTIL WE HAVE MORE PIPELINES <Filter /> */}
+        <div className="border p-4 mt-6">
+          <div>
+            <h3 className="font-medium text-lg">Browse All Pipelines</h3>
+            <p className="text-muted-foreground text-sm">
+              Explore the entire collection of community-built video AI
+              pipelines.
+            </p>
+          </div>
+          <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6 lg:grid-cols-3 w-full">
+            {allPipelines.map((pipeline, index) => (
+              <PipelineTile pipeline={pipeline} />
+            ))}
           </div>
         </div>
       </div>
