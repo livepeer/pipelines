@@ -42,7 +42,7 @@ const envConfig = {
     appId: process.env.NEXT_PUBLIC_INTERCOM_APP_ID,
   },
   mixpanel: {
-    projectToken: process.env.MIXPANEL_PROJECT_TOKEN,
+    projectToken: process.env.NEXT_PUBLIC_MIXPANEL_PROJECT_TOKEN,
   },
   app: {
     whipUrl: process.env.NEXT_PUBLIC_WHIP_URL,
