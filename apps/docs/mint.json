@@ -77,9 +77,17 @@
     {
       "group": "Pipeline Development",
       "pages": [
-        "technical/develop-pipeline/what-is-pipeline",
         "technical/develop-pipeline/create-your-first-pipeline",
-        "technical/develop-pipeline/add-sd-loras"
+        "technical/develop-pipeline/local-testing",
+        "technical/reference/local-testing-comfystream-ui"
+      ]
+    },
+    {
+      "group": "Custom Nodes",
+      "pages": [
+        "technical/reference/available-nodes",
+        "technical/develop-pipeline/add-sd-loras",
+        "technical/reference/custom-node-installation"
       ]
     },
     {
@@ -89,13 +97,9 @@
     {
       "group": "Reference",
       "pages": [
-        "technical/reference/available-nodes",
         "technical/reference/performance-recommendations",
-        "technical/reference/local-testing",
-        "technical/reference/local-testing-comfyuilauncher",
         "technical/reference/develop-runpod",
-        "technical/reference/local-testing-comfystream-ui"
-
+        "technical/reference/tunneling-with-ssh"
       ]
     }
   ],

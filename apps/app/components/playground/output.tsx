@@ -65,17 +65,21 @@ export default function Output({
   return (
     <div className="flex flex-col h-full relative">
       <div className="flex-shrink-0 flex justify-end mb-4 space-x-4">
+        <div className="text-muted-foreground">
+              Your stream may take up to 90 seconds to start.
+        </div>
         {streamInfo?.output_stream_url && (
           <Button variant="outline" onClick={() => copyLogs()}>
             <Copy className="mr-2" /> Copy logs
           </Button>
         )}
-        <Button
+        {/* TODO: COMMENTED OUT UNTIL WE HAVE TIME TO IMPLEMENT FETCHING PIPELINE DETAILS FROM THE DB
+         <Button
           variant="outline"
           onClick={() => setShowModelInfo(!showModelInfo)}
         >
           <Info className="mr-2" /> Pipeline Details
-        </Button>
+        </Button> */}
         <Button variant="outline" asChild>
           <Link href={"/stream/create?pipeline=" + pipeline.id}>
             <ArrowTopRightIcon className="mr-2" /> Create Stream
@@ -84,9 +88,9 @@ export default function Output({
       </div>
       <div className="bg-sidebar rounded-2xl relative h-[calc(100vh-16rem)] w-full">
         {streamInfo?.output_playback_id && (
-          <div className="w-full h-full  relative overflow-hidden z-10">
-            <LPPLayer output_playback_id={streamInfo?.output_playback_id} />
-          </div>
+            <div className="w-full h-full relative overflow-hidden z-10">
+              <LPPLayer output_playback_id={streamInfo?.output_playback_id} />
+            </div>
         )}
       </div>
 

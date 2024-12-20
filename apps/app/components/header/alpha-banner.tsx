@@ -6,7 +6,7 @@ export default function AlphaBanner() {
     "https://livepeer.notion.site/15f0a348568781aab037c863d91b05e2";
 
   return (
-    <div className="fixed top-0 left-0 right-0 bg-foreground  text-background py-2 flex items-center justify-center mb-2 z-50">
+    <div className="bg-foreground text-background py-2 flex items-center justify-center mb-2 z-50">
       <p className="text-sm text-center">
       ⚠️ Early Access Preview: This is an early version of our real-time video AI platform. 
       You may encounter performance variations or unexpected behavior as we optimize the system. 

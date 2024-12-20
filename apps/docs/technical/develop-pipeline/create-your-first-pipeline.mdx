@@ -6,10 +6,6 @@ icon: "plus"
 
 {/* <img alt="Hero Light" classname="block dark:hidden" src="/images/hero-light.svg" /> */}
 
-# **ComfyStream Dev Environment Setup**
-
-**IMPORTANT NOTE:** Do **NOT** try and integrate this with an existing ComfyUI environment! It will break it.
-
 ### **What are ComfyUI and ComfyStream?**
 
 - [ComfyUI](https://github.com/comfyanonymous/ComfyUI) is a modular, node-based user interface for Stable Diffusion. It allows users to create and manage workflows using interconnected nodes, similar to node-based visual programming environments. This provides a flexible and powerful way to create AI-generated images and videos.
@@ -23,7 +19,6 @@ To understand the purpose and flow of this tutorial, it's important to grasp the
 
 <Note>Note to those with powerful GPUs: Most of this document details processes that enable using a cloud GPU to do the heavy processing fast. If you have a good GPU (like a 4090, for instance), your setup process is far more straightforward. It will still be worth it to understand this document, but you can skip to the end for specific instructions to set this up locally.</Note>
 
-
 ### **Components Overview**
 
 1. **Local Machine (Windows)**
@@ -33,7 +28,7 @@ To understand the purpose and flow of this tutorial, it's important to grasp the
         - Set up SSH connections to the remote server.
         - Run a local development server to interact with ComfyStream's user interface (UI).
         - Access ComfyStream's front-end in a browser
-2. **Remote GPU Server (RunPod or Dev container)**
+2. **Remote GPU Server (RunPod or Remote server)**
     - **Purpose**: Execute GPU-accelerated processes and serve the ComfyStream backend for real-time streaming.
     - **Tools Used**: RunPod, SSH, Jupyter Lab, Miniconda, Conda environments
     - **Processes**:
@@ -42,7 +37,7 @@ To understand the purpose and flow of this tutorial, it's important to grasp the
         - Install ComfyUI, ComfyStream, and ComfyUI-Manager.
         - Expose necessary ports for SSH tunneling and allow local access to the ComfyStream UI.
 
-### **Why Do We Need Both a Local Machine Setup and a Remote GPU Setup?**
+### **Why use both a local system and a Remote GPU Setup?**
 
 | **Task** | **Local Machine** | **Remote GPU Server** |
 | --- | --- | --- |
@@ -60,9 +55,5 @@ To understand the purpose and flow of this tutorial, it's important to grasp the
 
 With this architectural understanding, you're now ready to proceed with the setup instructions below!
 
-Choose one of the options below to setup your ComfyUI and ComfyStream development environment:
 
-- [Develop in RunPod Guide](../reference/develop-runpod)
-- [Develop in Dev Container](../reference/local-testing)
-- [Develop in ComfyUI Launcher](../reference/local-testing-comfyuilauncher)
-
+Proceed to [Install Conda, ComfyUI, and ComfyStream](../develop-pipeline/local-testing)
