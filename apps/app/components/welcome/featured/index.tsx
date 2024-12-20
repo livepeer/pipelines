@@ -41,19 +41,19 @@ export const pipelines = [
 
 const dummyPlaybackIds = [
   {
-    playbackId: "c99filnga205mzqh",
-    socialHandle: "@johndoe",
-    socialUrl: "https://twitter.com"
+    playbackId: "d671awpd12894xbl",
+    socialHandle: "@cult_leader_en",
+    socialUrl: "https://x.com/cult_leader_en"
   },
   {
-    playbackId: "c99filnga205mzqh",
-    socialHandle: "@johndoe",
-    socialUrl: "https://twitter.com"
+    playbackId: "f7e3yqwbx82y3hrq",
+    socialHandle: "Anonymous",
+    socialUrl: "anonymous"
   },  
   {
-    playbackId: "c99filnga205mzqh",
-    socialHandle: "@johndoe",
-    socialUrl: "https://twitter.com"
+    playbackId: "4d38e0sni4esvlkd",
+    socialHandle: "@gioele_eth",
+    socialUrl: "https://x.com/gioele_eth"
   }
 ];
 
@@ -87,7 +87,7 @@ export default function Winners() {
             />
             <div className="absolute top-2  right-2 z-10 overflow-auto">
               <Link
-                href={item.socialUrl}
+                href={item.socialUrl ? item.socialUrl : "#"}
                 target="_blank"
                 className={
                   "flex items-center gap-1 overflow-hidden bg-white px-2 py-0.5 text-black text-xs"
