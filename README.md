@@ -1,5 +1,3 @@
-# Livepeer Pipelines App
-
 Livepeer Pipelines enables developers and users to build, deploy, and scale real-time AI video processing workflows.
 
 > Join the [Discord](https://discord.gg/livepeer) to stay up to date with the latest features and updates.
