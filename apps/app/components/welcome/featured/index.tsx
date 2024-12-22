@@ -41,19 +41,19 @@ export const pipelines = [
 
 const dummyPlaybackIds = [
   {
-    playbackId: "c99filnga205mzqh",
-    socialHandle: "@johndoe",
-    socialUrl: "https://twitter.com"
+    playbackId: "d671awpd12894xbl",
+    socialHandle: "@cult_leader_en",
+    socialUrl: "https://x.com/cult_leader_en"
   },
   {
-    playbackId: "c99filnga205mzqh",
-    socialHandle: "@johndoe",
-    socialUrl: "https://twitter.com"
+    playbackId: "f7e3yqwbx82y3hrq",
+    socialHandle: "@Anonymous",
+    socialUrl: null
   },  
   {
-    playbackId: "c99filnga205mzqh",
-    socialHandle: "@johndoe",
-    socialUrl: "https://twitter.com"
+    playbackId: "4d38e0sni4esvlkd",
+    socialHandle: "@gioele_eth",
+    socialUrl: "https://x.com/gioele_eth"
   }
 ];
 
@@ -62,9 +62,9 @@ export default function Winners() {
     <div className="relative  border p-4 mt-4">
       <div className="flex flex-row items-center justify-between">
         <div>
-          <h3 className="font-medium text-lg">Yesterday's Highlights</h3>
+          <h3 className="font-medium text-lg">Highlights</h3>
           <p className="text-muted-foreground text-sm w-full">
-            Check out yesterday's prompt challenge winners.
+            Check out a few of our community's best live video AI creations.
           </p>
         </div>
         <div>
@@ -87,7 +87,7 @@ export default function Winners() {
             />
             <div className="absolute top-2  right-2 z-10 overflow-auto">
               <Link
-                href={item.socialUrl}
+                href={item.socialUrl ? item.socialUrl : "#"}
                 target="_blank"
                 className={
                   "flex items-center gap-1 overflow-hidden bg-white px-2 py-0.5 text-black text-xs"
