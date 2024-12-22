@@ -58,16 +58,12 @@ export default function Stream({
   }, [fetchStream]);
 
   useEffect(() => {
-    const isVerified = localStorage.getItem('isVerified');
-    if (isVerified !== 'true') {
-      router.push('/password-protect');
-    }
     // Track when stream page is viewed
     track('create_stream_page_viewed', {
       stream_id: streamInputId,
       is_new: streamInputId === 'create'
     });
-  }, [streamInputId, router]);
+  }, [streamInputId]);
 
   const handleSaveStream = async () => {
     if (streamFormRef.current) {
