@@ -10,8 +10,6 @@ import Intercom from "@/components/intercom";
 import { AlarmCheck } from "lucide-react";
 import AlphaBanner from "@/components/header/alpha-banner";
 import { Metadata } from "next";
-import SessionTracker from "@/components/analytics/SessionTracker";
-import { MixpanelProvider } from "@/components/analytics/MixpanelProvider";
 import { VersionInfo } from '@/components/footer/version-info';
 
 type RootLayoutProperties = {
@@ -26,13 +24,11 @@ const RootLayout = ({ children }: RootLayoutProperties) => (
   <html lang="en" suppressHydrationWarning>
     <body className="bg-sidebar">
       <DesignSystemProvider defaultTheme="dark">
-        <MixpanelProvider>
-          <SessionTracker />
-          <AlphaBanner />
-          <SidebarProvider>
-            <GlobalSidebar>
-              <div>
-                <header className="flex h-16 shrink-0 items-center gap-2">
+        <AlphaBanner />
+        <SidebarProvider>
+          <GlobalSidebar>
+            <div>
+              <header className="flex h-16 shrink-0 items-center gap-2">
                 <div className="flex w-screen items-center gap-2 border-border border-b px-4">
                   <SidebarTrigger className="-ml-1" />
                   <Separator orientation="vertical" className="mr-2 h-4" />
@@ -48,8 +44,6 @@ const RootLayout = ({ children }: RootLayoutProperties) => (
             </div>
           </GlobalSidebar>
         </SidebarProvider>
-        <Intercom />
-        </MixpanelProvider>
         {/* TODO: REENABLE WHEN SHIH-YU IS READY FOR IT <Intercom /> */}
       </DesignSystemProvider>
     </body>

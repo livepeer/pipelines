@@ -49,12 +49,7 @@ export default function MyStreams({searchParams}: {
           <p className="text-sm text-muted-foreground mt-1">
             Create your first stream!
           </p>
-          <Button onClick={
-            () => {
-              track('my_streams_create_stream_clicked', undefined, user || undefined);
-              router.replace(`/stream/create`);
-            }
-          } className="mt-4">
+          <Button onClick={() => router.replace(`/stream/create`)} className="mt-4">
             Create Stream
           </Button>
         </div>

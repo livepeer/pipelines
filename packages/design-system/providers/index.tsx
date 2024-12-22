@@ -5,6 +5,7 @@ import { PrivyProvider } from "./privy";
 import { ThemeProvider } from "./theme";
 // @ts-ignore
 import { VercelToolbar } from "@vercel/toolbar/next";
+
 type DesignSystemProviderProperties = ThemeProviderProps;
 
 export const DesignSystemProvider = ({
