@@ -22,8 +22,8 @@ export default async function Explore({
       <p className="text-muted-foreground text-sm">
         Discover and experiment with community-built pipelines.
       </p>
-      <div className="flex  mt-8">
-        <Filter />
+      <div className="flex mt-8">
+        {/* TODO: REMOVING FILTER UNTIL WE HAVE MORE PIPELINES <Filter /> */}
         <div className="w-full md:w-3/4 md:border-l border-border/50 md:ml-[3rem] md:pl-[3rem]">
           <ClientSideTracker eventName="explore_page_viewed" />
           <FeaturedPipelines pipelines={allPipelines} />
