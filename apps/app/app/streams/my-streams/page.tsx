@@ -26,6 +26,7 @@ import {
 } from "@repo/design-system/components/ui/pagination";
 import {DoubleArrowLeftIcon, DoubleArrowRightIcon} from "@radix-ui/react-icons";
 import Modals from "@/components/modals";
+import {Badge} from "@repo/design-system/components/ui/badge";
 
 export default function MyStreams({searchParams}: {
   searchParams: any;
@@ -191,7 +192,14 @@ export default function MyStreams({searchParams}: {
                                 </div>
                               </TableCell>
                               <TableCell>
-                                {stream.pipelines.name}
+                                  <div>
+                                      <span>{stream.pipelines.name}</span>
+                                      {stream.pipelines.type == "comfyui" && (
+                                          <Badge className="bg-green-500/90 text-white font-medium text-xs ml-2">
+                                              Comfy UI
+                                          </Badge>
+                                      )}
+                                  </div>
                               </TableCell>
                               <TableCell>{new Date(stream.created_at).toLocaleDateString([], { hour: "2-digit", minute: "2-digit" })}</TableCell>
                               <TableCell className="flex items-center gap-x-4">
@@ -231,10 +239,18 @@ export default function MyStreams({searchParams}: {
                                         </div>
                                       </div>
                                       <div className="mb-2">
-                                        <strong>Pipeline:</strong> {stream.pipelines.name}
+                                        <strong>Pipeline: </strong>
+                                        <div className="inline-flex items-center gap-x-2">
+                                          <span>{stream.pipelines.name}</span>
+                                          {stream.pipelines.type == "comfyui" && (
+                                              <Badge className="bg-green-500/90 text-white font-medium text-xs ml-2">
+                                                Comfy UI
+                                              </Badge>
+                                          )}
+                                        </div>
                                       </div>
                                       <div className="mb-2">
-                                        <strong>Ingest URL (RTMP): </strong>
+                                      <strong>Ingest URL (RTMP): </strong>
                                         <div className="inline-flex items-center gap-x-2">
                                           {appEnv?.rtmpUrl}{appEnv?.rtmpUrl?.endsWith('/') ? '' : '/'}{stream.stream_key}
                                           <Copy size={copyIconSize} className="mr-2 cursor-pointer"
