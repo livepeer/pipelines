@@ -80,11 +80,13 @@ export default function Output({
         >
           <Info className="mr-2" /> Pipeline Details
         </Button> */}
-        <Button variant="outline" asChild>
-          <Link href={"/stream/create?pipeline=" + pipeline.id}>
-            <ArrowTopRightIcon className="mr-2" /> Create Stream
-          </Link>
-        </Button>
+        {streamInfo?.id && (
+          <Button variant="outline" asChild>
+            <Link href={`/stream/${streamInfo?.id}`}>
+              <ArrowTopRightIcon className="mr-2" /> Create Stream
+            </Link>
+          </Button>
+        )}
       </div>
       <div className="bg-sidebar rounded-2xl relative h-[calc(100vh-16rem)] w-full">
         {streamInfo?.output_playback_id && (
