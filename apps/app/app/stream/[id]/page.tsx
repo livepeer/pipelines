@@ -11,6 +11,7 @@ import { usePrivy } from "@privy-io/react-auth";
 import { ExternalToast, toast } from "sonner";
 import { useRouter } from "next/navigation";
 import Modals from "@/components/modals";
+import { update } from "@intercom/messenger-js-sdk";
 
 export default function Stream({
                           searchParams,
@@ -64,8 +65,8 @@ export default function Stream({
         updatedStream.author = user?.id;
         updatedStream.from_playground = false; // set flag indicating this is not ephemeral stream being shown in the Try/Playground components/views
 
-        // Wrap pipeline_params in a "prompt" object
-        if (updatedStream.pipeline_params) {
+        // Wrap pipeline_params in a "prompt" object if comfyui
+        if (updatedStream.pipeline_params && updatedStream.pipelines?.type === "comfyui") {
           updatedStream.pipeline_params = { prompt: updatedStream.pipeline_params };
         }
 
