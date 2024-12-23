@@ -62,7 +62,12 @@ export default function Stream({
         const updatedStream = streamFormRef.current.getFormData();
         const toastId = toast.loading("Saving stream...", toastOptions);
         updatedStream.author = user?.id;
-        updatedStream.from_playground = false;//set flag indicating this is not ephemeral stream being shown in the Try/Playground components/views
+        updatedStream.from_playground = false; // set flag indicating this is not ephemeral stream being shown in the Try/Playground components/views
+
+        if (updatedStream.pipeline_params && updatedStream.pipelines?.type === "comfyui") {
+          updatedStream.pipeline_params = { prompt: updatedStream.pipeline_params };
+        }
+
         try {
           const {data: savedStream, error} = await upsertStream(
               updatedStream,
