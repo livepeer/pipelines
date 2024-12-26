@@ -23,6 +23,7 @@ import { toast } from "sonner";
 import { updateParams } from "@/app/api/streams/update-params";
 import { app } from "@/lib/env";
 import { getStream } from "@/app/api/streams/get";
+import track from "@/lib/track";
 import { BroadcastWithControls } from "./broadcast";
 
 import ComfyUIParamsEditor from "@/components/stream/comfyui-param-editor";
@@ -56,6 +57,10 @@ export default function Try({
       (key) => newValues[key] !== initialValues[key]
     );
     setHasChanges(hasAnyChange);
+    // Track parameter change
+    track("inputs_parameter_changed", {
+      parameter_id: id,
+    }, user || undefined);
   };
 
   const handleUpdate = async () => {
