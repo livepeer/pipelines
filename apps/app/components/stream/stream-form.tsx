@@ -128,25 +128,30 @@ const StreamForm = forwardRef(
           if (!input?.id) return acc;
           // If there is an existing stream and the pipeline is same as the selectedPipeline,
           // use the values from the stream.pipeline_params object instead of the default values
-          if (selectedStream && selectedStream?.pipelines === selectedPipeline && selectedStream?.pipeline_params) {
-            // if the field's defaultValue is not a string, we assume this is a json field,
-            // and we need to keep it an object for the form to behave
-            acc[input.id] = selectedStream?.pipeline_params?.[input.id];
-            return acc;
-          }
-          acc[input.id] = input.defaultValue;
+          acc[input.id] =
+              selectedStream?.pipeline_params?.[input.id] ?? input.defaultValue ?? "";
           return acc;
         });
       };
-
       const renderInput = (input: any) => {
+        const inputValue =
+            inputValues[input.id] !== undefined && inputValues[input.id] !== null
+                ? inputValues[input.id]
+                : input.defaultValue !== undefined && input.defaultValue !== null
+                    ? input.defaultValue
+                    : input.type === "number"
+                        ? 0 // Default for number inputs
+                        : input.type === "switch"
+                            ? false // Default for switch inputs
+                            : ""; // Default for text and other inputs
+
         switch (input.type) {
           case "text":
             return (
                 <Input
                     type="text"
                     placeholder={input.placeholder}
-                    value={inputValues[input.id] || ""}
+                    value={inputValue}
                     onChange={(e) => handleInputChange(input.id, e.target.value)}
                 />
             );
@@ -154,16 +159,11 @@ const StreamForm = forwardRef(
             return (
                 <Textarea
                     className="h-44"
-                    defaultValue={
-                      typeof input.defaultValue === "string"
-                          ? input.defaultValue
-                          : JSON.stringify(input.defaultValue, null, 2)
-                    }
                     placeholder={input.placeholder}
                     value={
-                      typeof inputValues[input.id] === "string"
-                          ? inputValues[input.id]
-                          : JSON.stringify(inputValues[input.id], null, 2) || ""
+                      typeof inputValue === "string"
+                          ? inputValue
+                          : JSON.stringify(inputValue, null, 2)
                     }
                     onChange={(e) => handleInputChange(input.id, e.target.value)}
                 />
@@ -175,7 +175,7 @@ const StreamForm = forwardRef(
                     min={input.min}
                     max={input.max}
                     step={input.step}
-                    value={inputValues[input.id]}
+                    value={inputValue}
                     onChange={(e) =>
                         handleInputChange(input.id, parseFloat(e.target.value))
                     }
@@ -184,14 +184,14 @@ const StreamForm = forwardRef(
           case "switch":
             return (
                 <Switch
-                    checked={inputValues[input.id]}
+                    checked={!!inputValue}
                     onCheckedChange={(checked) => handleInputChange(input.id, checked)}
                 />
             );
           case "select":
             return (
                 <Select
-                    value={inputValues[input.id]}
+                    value={inputValue}
                     onValueChange={(value) => handleInputChange(input.id, value)}
                 >
                   <SelectTrigger>
@@ -211,7 +211,7 @@ const StreamForm = forwardRef(
                 <Input
                     type="text"
                     placeholder={input.placeholder}
-                    value={inputValues[input.id] || ""}
+                    value={inputValue}
                     onChange={(e) => handleInputChange(input.id, e.target.value)}
                 />
             );
@@ -238,7 +238,7 @@ const StreamForm = forwardRef(
                     <Input
                         type="text"
                         placeholder={"My First AI Stream"}
-                        value={selectedStream?.name}
+                        value={selectedStream?.name || ""}
                         onChange={(e) => handleInputChange('name', e.target.value)}
                     />
                   </div>
@@ -257,7 +257,7 @@ const StreamForm = forwardRef(
                     <Input
                         type="text"
                         placeholder={"E.g., rtmp://twitch.tv/app/<stream_key>"}
-                        value={selectedStream?.output_stream_url}
+                        value={selectedStream?.output_stream_url || ""}
                         onChange={(e) => handleInputChange('output_stream_url', e.target.value)}
                     />
                     {/* <RestreamDropdown onOutputStreamsChange={setStreamOutputs} initialStreams={selectedStream?.restream_config} /> */}
@@ -275,7 +275,7 @@ const StreamForm = forwardRef(
                       onChange={(value) => handleInputChange("prompt", value)}
                   />
                 </div>
-            ) : inputs?.primary && inputs?.primary.length > 0 && (
+            ) : inputs?.primary?.type && (
                 <div className="flex flex-col gap-2 max-w-md">
                   <Label className="text-muted-foreground">
                     {inputs?.primary?.label}
