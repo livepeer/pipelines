@@ -58,9 +58,13 @@ export default function Try({
     );
     setHasChanges(hasAnyChange);
     // Track parameter change
-    track("inputs_parameter_changed", {
-      parameter_id: id,
-    }, user || undefined);
+    track(
+      "inputs_parameter_changed",
+      {
+        parameter_id: id,
+      },
+      user || undefined
+    );
   };
 
   const handleUpdate = async () => {
@@ -107,7 +111,7 @@ export default function Try({
         pipeline_id: pipeline.id,
         pipeline_params: processedInputValues,
       },
-      user?.id ?? "did:privy:cm32cnatf00nrx5pee2mpl42n" // Dummy user id for non-authenticated users
+      user?.id ?? "did:privy:cm4x2cuiw007lh8fcj34919fu" // Dummy user id for non-authenticated users
     );
 
     if (error) {

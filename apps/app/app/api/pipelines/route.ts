@@ -11,7 +11,7 @@ const ERROR_MESSAGES = {
 
 export async function POST(request: Request) {
   try {
-    const userId = "did:privy:cm32cnatf00nrx5pee2mpl42n"; // Dummy user id
+    const userId = "did:privy:cm4x2cuiw007lh8fcj34919fu"; // Dummy user id (infra email)
 
     const body = await request.json().catch(() => null);
     if (!body) {

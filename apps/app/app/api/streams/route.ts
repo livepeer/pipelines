@@ -12,10 +12,7 @@ const ERROR_MESSAGES = {
 
 export async function POST(request: Request) {
   try {
-    const userId = request.headers.get("x-user-id");
-    if (!userId) {
-      return createErrorResponse(401, ERROR_MESSAGES.UNAUTHORIZED);
-    }
+    const userId = "did:privy:cm4x2cuiw007lh8fcj34919fu"; // Dummy user id (infra email)
 
     const body = await request.json().catch(() => null);
     if (!body) {
@@ -33,7 +30,6 @@ export async function POST(request: Request) {
     return createErrorResponse(500, message);
   }
 }
-
 
 export async function GET(request: Request) {
   try {
