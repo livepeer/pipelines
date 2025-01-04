@@ -250,6 +250,7 @@ Import times for custom nodes:
 <Info>If you are running the devcontainer on a remote server, you can access the web interface by setting up an SSH tunnel to the remote server and forwarding the port to your local machine.
 You can also set the interface with `--host`</Info>
 
+
 # Step 3: Run ComfyStream
 
 1. Activate the comfystream environment
@@ -259,9 +260,13 @@ cd ..\comfystream
 ```
 2. Run ComfyStream:
 ```bash
-python server/app.py --workspace ..\ComfyUI --media-ports=5678 --host=0.0.0.0
+python server/app.py --workspace ..\ComfyUI --media-ports=5678 --host=0.0.0.0 --port 8889
 ```
-We should now have the ComfyStream server running on port `8888`, with media port `5678` listening on UDP.  It's also using the same workspace and sharing the available nodes / models as the ComfyUI engine you were using. We will provide this endpoint to the ComfyStream UI when starting a live stream.
+<Info>
+If you are using RunPod, you cannot use the default port of 8888 due to a conflict with jupyter-lab
+</Info
+
+We should now have the ComfyStream server running on port `8889`, with media port `5678` listening on UDP.  It's also using the same workspace and sharing the available nodes / models as the ComfyUI engine you were using. We will provide this endpoint to the ComfyStream UI when starting a live stream.
 
 
 # Step 4: Run ComfyStream UI
