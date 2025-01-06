@@ -39,7 +39,7 @@
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "sonner": "^1.7.0",
-    "zod": "^3.23.8"
+    "zod": "^3.24.1"
   },
   "overrides": {
     "@headlessui/react": "^2.2.0"
