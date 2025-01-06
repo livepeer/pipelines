@@ -115,6 +115,10 @@ export default function Try({
     );
 
     if (error) {
+      if (error.toLowerCase().includes('no orchestrators available')) {
+        toast.info('We are reaching full capacity, please try it later');
+        return;
+      }
       toast.error(`Error creating stream for playback ${error}`);
       return;
     }
