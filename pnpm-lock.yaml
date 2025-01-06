@@ -368,8 +368,8 @@ importers:
         specifier: ^15.0.3
         version: 15.0.3(bufferutil@4.0.8)(utf-8-validate@5.0.10)
       '@prisma/nextjs-monorepo-workaround-plugin':
-        specifier: ^5.22.0
-        version: 5.22.0
+        specifier: ^6.1.0
+        version: 6.1.0
       '@sentry/nextjs':
         specifier: ^8.42.0
         version: 8.47.0(@opentelemetry/core@1.30.0(@opentelemetry/api@1.9.0))(@opentelemetry/instrumentation@0.56.0(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.30.0(@opentelemetry/api@1.9.0))(encoding@0.1.13)(next@15.0.3(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(webpack@5.96.1)
@@ -1946,8 +1946,8 @@ packages:
   '@prisma/instrumentation@5.22.0':
     resolution: {integrity: sha512-LxccF392NN37ISGxIurUljZSh1YWnphO34V5a0+T7FVQG2u9bhAXRTJpgmQ3483woVhkraQZFF7cbRrpbw/F4Q==}
 
-  '@prisma/nextjs-monorepo-workaround-plugin@5.22.0':
-    resolution: {integrity: sha512-wuKp7FqhETHP2MJJu5y//ac83/EpDpoupcjlmp/Ijv3fnG576EIxY4SU4j24xXPIBOTuApkCk4RkgonkeAOXuQ==}
+  '@prisma/nextjs-monorepo-workaround-plugin@6.1.0':
+    resolution: {integrity: sha512-hB+yI820xSAFFVljV7CzhJaT7FJNZagGIMUjFFTcyJAjA1Qb0VQ6Y598j6g8GBKwyPiasN1ehDYDIfTJI9kA/A==}
 
   '@privy-io/api-base@1.4.0':
     resolution: {integrity: sha512-8Pm/8bx6WvNt8uLtYOOj9acYL+JjUJxeChlBEvSywmre1l5o8naK6J4SeAb5v8b8p4178VNI4AYhd+rFh4HCsA==}
@@ -9727,7 +9727,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@prisma/nextjs-monorepo-workaround-plugin@5.22.0': {}
+  '@prisma/nextjs-monorepo-workaround-plugin@6.1.0': {}
 
   '@privy-io/api-base@1.4.0':
     dependencies:
