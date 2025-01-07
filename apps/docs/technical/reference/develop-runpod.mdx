@@ -53,3 +53,19 @@ Alternatively you can use [tunneling with SSH](http://localhost:3000/technical/r
 </Note>
 
 Proceed to [Install Conda, ComfyUI, and ComfyStream](http://localhost:3000/technical/develop-pipeline/local-testing)
+
+### **Stopping a RunPod Server**
+Install runpod-cli on your local machine by running the following command:
+```bash
+https://docs.runpod.io/runpodctl/install-runpodctl
+```
+
+Create an API key for your RunPod account, and add it to runpod-cli
+```bash
+runpodctl config --apiKey YOUR_API_KEY
+```
+
+To stop a server, run the following command:
+```bash
+ runpodctl stop pod YOUR_PODID
+```

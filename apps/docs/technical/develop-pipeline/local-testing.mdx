@@ -4,27 +4,65 @@ description: "Setting up a local development system for ComfyUI and ComfyStream"
 icon: "code"
 ---
 
+## Setup Environment
 
-## Step 1: Install Python Environments
+We will use the [ComfyStream_Setup_Scripts](https://github.com/ryanontheinside/ComfyStream_Setup_Scripts) to automate the install of conda environments for ComfyStream and ComfyUI.
+
 <Tabs>
-    <Tab title="Powershell (Windows)">
-        We will use the [ComfyStream_Setup_Scripts](https://github.com/ryanontheinside/ComfyStream_Setup_Scripts) to automate the install of conda environments for ComfyStream and ComfyUI.
+    <Tab title="RunPod (Linux)">
+        <h4>Create and Deploy a new RunPod server</h4>
+        1. Create a [RunPod.io](https://runpod.io) account, and add some funds.
+        2. Add a public key to your RunPod account **Settings** > **SSH Public Keys**.
+        2. Click Storage, then click **New Network Volume**. Pick a suitable name, region, and size for the volume. You can add more size later if you run out.
+        3. Click the **Deploy** button on the storage volume.
+        4. On the **Deploy GPU Pod page**, select an appropriate GPU (ex: RTX 4090) and make the following changes:
+            - Click **Change Template**, select `Torch 2.4.0`
+            - Click **Edit Template**:
+                - Set **Expose HTTP Ports** to `8888,8188`
+                - Set **Expose TCP Ports** to `22,8889`
+            - Click **Set Overrides** to save the changes
+            ![Pod Template](../../images/podtemplate.png)
+        5. Click **Deploy On-Demand**
 
+        <h4>Install ComfyUI and ComfyStream</h4>
+        1. From the RunPod dashboard, click **Connect** to obtain the username or port to connect to. There are two examples provided on the **Connection Options** tab. You can alternatively use the web console.
+            - Basic SSH Terminal: Uses a unique userid with port 22 (Recommended)
+            - SSH over exposed TCP: Uses `root` for the userid and a unique port
+
+        2. In a new terminal navigate to your network volume and clone the ComfyStream Setup Scripts:
+        ```bash
+        cd /workspace
+        git clone https://github.com/ryanontheinside/ComfyStream_Setup_Scripts
+        ```
+        3. Run the initial setup script:
+        ```bash
+        chmod +x ComfyStream_Setup_Scripts/runpod/initial_setup.sh
+        bash ./ComfyStream_Setup_Scripts/runpod/initial_setup.sh
+        ```
+        4. Initialize conda by running the following command:
+        ```bash
+        /workspace/miniconda3/bin/conda init bash
+        ```
+        <Note>
+            When deploying new pods from the network volume you will need to run this initialization command again.
+        </Note>
+        5. Start a new SSH terminal session in your pod for the change to take effect
+    </Tab>
+    <Tab title="Local (Windows)">
+        1. Clone the ComfyStream Setup Scripts to your preferred directory
+        ```bash
+        git clone https://github.com/ryanontheinside/ComfyStream_Setup_Scripts
+        cd ComfyStream_Setup_Scripts\local
+        ```
         <Info>
         You may need to enable [script execution](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.security/set-executionpolicy?view=powershell-7.4)
-        ```powershell (admin)
+        ```bash (admin)
         Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
         ```
         </Info>
 
-        1. Clone the ComfyStream Setup Scripts
-        ```powershell
-        git clone https://github.com/ryanontheinside/ComfyStream_Setup_Scripts
-        cd ComfyStream_Setup_Scripts\local
-        ```
-
         2. If you do not already have Conda, install it from an elevated powershell
-        ```powershell (admin)
+        ```bash (admin)
         .\install_conda.ps1
 
         ## Optionally show the active conda environment in the Powershell terminal
@@ -32,209 +70,44 @@ icon: "code"
         ```
 
         4. Install ComfyStream, ComfyUI and related packages
-        ```powershell (admin)
+        ```bash (admin)
         .\setup_comfystream.ps1
         ```
 
         After running the script, you should see the following folders in your current working directory:
         - **ComfyUI**
         - **ComfyStream**
-
-        <Warning>
-        If the script fails and you need to start over due to unresolvable package conflicts, you can delete the conda environments:
-        ```powershell
-        conda deactivate
-        conda remove --name comfystream --all
-        conda remove --name comfyui --all
-        ```
-        </Warning>
         
         5. Create a Symbolic link to the models folder for both ComfyUI workspaces 
-        ```powershell (admin)
+        ```bash (admin)
         New-Item -ItemType SymbolicLink -Path "$realtimePath\ComfyUI\models" -Target "$comfyUIPath\models"
         ```
     </Tab>
-    <Tab title="RunPod">
-        We will use the [ComfyStream_Setup_Scripts](https://github.com/ryanontheinside/ComfyStream_Setup_Scripts) to automate the install of conda environments for ComfyStream and ComfyUI.
 
-        If you need to deploy a RunPod server, follow the steps in [How to Deploy a RunPod Server](../reference/develop-runpod)
-        1. Open Jupyter Lab running on your server as pictured below:
+</Tabs>
 
-        ![Jupyter Lab](https://lh7-rt.googleusercontent.com/docsz/AD_4nXfkZ6LAYQuIRXD1W-YAa5EwNubpZmf_uynSw62xgQnZMYR2JZsN20095kwhG-1iFrBRPcs98nps0nyOf8EFlqGr68a28sI4mvKFDXoyzChg8EWDhOMQdlMXqmoRNCYoMlJCQo6UZw?key=LMLbXfH5Do4K1o222p6HlCaY)
-
-        2. In a new terminal navigate to your network volume (`/workspace`) and run the following commands. 
-
-        ```bash
-        cd /workspace
-        git clone https://github.com/ryanontheinside/ComfyStream_Setup_Scripts
-        cp ./ComfyStream_Setup_Scripts/runpod/new_server_setup.sh new_server_setup.sh
-        bash ./ComfyStream_Setup_Scripts/runpod/initial_setup.sh
-        ```
-
-        3. Add your Twilio ACCOUNT SID and AUTH TOKEN to `new_server_startup.sh` (right at the top of the script)
-
-        ## **Starting a New Runpod Server**
-
-        When you start up a server for the day, you can use the following process to get up and running quickly.
-        
-        4. In Jupyter terminal, or terminal of your choice, run the command below. This script will export your Twilio credentials, or install and run socat, and initialize  Conda in all shells.
-        ```bash
-        bash server_setup.sh
-        ```
-        <Note>Before you run this script the first time, edit the script, inserting your Twilio credentials in the provided space at the top</Note>
+## Start ComfyUI
+1. Start a new shell and activate the comfyui conda environment
+<Tabs>
+    <Tab title="RunPod (Linux)">
+    ```bash
+    conda activate comfyui
+    cd /workspace/comfyRealtime/ComfyUI
+    python main.py --listen
+    ```
     </Tab>
-    <Tab title="ComfyUI Launcher">
-        [ComfyUI-Launcher](https://github.com/ComfyWorkflows/ComfyUI-Launcher) allows you to easily launch multiple ComfyUI workspaces. Following [RunPod.md](https://github.com/ComfyWorkflows/ComfyUI-Launcher/blob/main/cloud/RUNPOD.md), we can deploy ComfyUI-Launcher to RunPod.
 
-        You can monitor the container logs through Runpod, which is very helpful for debugging issues as you install nodes. In my experience, hacking on ComfyUI workflows require a decent amount of debugging around installing nodes.
-
-        I also recommend setting up SSH public keys, so you can directly ssh into the GPU server. This will help us with installing custom nodes, and setting up ssh tunnels.
-
-        ComfyUI-Launcher will create two folders for storing models and ComfyUI workspaces
-        - `/workspace/comfyui_launcher_models`
-        - `/workspace/comfyui_launcher_projects`
-
-        
-        <Info>
-            Ignore the `/workspace/comfyui_launcher_projects/{workspace}/comfyui/models` directory - all of your models will be in `/workspace/comfyui_launcher_models`
-        </Info>
-        When you create an “empty” workflow, you will see the new workspace with the same name. Note, you have to install a model in the ComfyUI manager GUI so the “Load Checkpoint” node can find a model.
-
-        1. Run the `thecooltechguy/comfyui_launcher` image from [ComfyUI-Launcher Readme](https://github.com/ComfyWorkflows/ComfyUI-Launcher?tab=readme-ov-file#quick-start) 
-        ```bash
-        docker run \
-        --gpus all \ # remove this line if you don't have a GPU or if you're on MacOS
-        --rm \
-        --name comfyui_launcher \
-        -p 4000-4100:4000-4100 \
-        -v $(pwd)/comfyui_launcher_models:/app/server/models \
-        -v $(pwd)/comfyui_launcher_projects:/app/server/projects \
-        -it thecooltechguy/comfyui_launcher
-        ```
-
-        2. Install Conda
-        ```bash
-        cd /workspace
-        wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
-        ./Miniconda3-latest-Linux-x86_64.sh
-        export CONDA_PATH=$HOME/miniconda3
-        eval "$($CONDA_PATH/bin/conda shell.bash hook)"
-        ```
-        Verify Conda has been installed using `which conda` - you should see `/root/miniconda3/bin/conda`
-
-        ```bash
-        export CONDA_PATH=$HOME/miniconda3
-        eval "$($CONDA_PATH/bin/conda shell.bash hook)"
-        ```
-
-        3. Next, we create and activate a Conda environment
-        ```bash
-        conda create -n comfystream python=3.11
-        conda activate comfystream
-        conda install pytorch torchvision -c pytorch
-        pip install twilio aiortc torchaudio scikit-image && pip install . 
-        ```
-
-        4. Then we install ComfyStream
-        ```bash
-        cd /workspace
-        git clone https://github.com/yondonfu/comfystream.git
-        cd comfystream
-        pip install .
-        ```
-
-        5. After that, we copy the `tensor_utils` nodes into the `custom_nodes` folder in the ComfyUI workspace
-
-        ```bash
-        cp -r nodes/tensor_utils /workspace/comfyui_launcher_projects/{workspace}/comfyui/custom_nodes
-        ```
-
-        ## Install DepthAnything Tensorrt Node
-
-        The `https://github.com/yuvraj108c/ComfyUI-Depth-Anything-Tensorrt` custom node generates depth maps from images. Installing the node is pretty manual. 
-
-        **Installation**
-        ```bash
-        cd /workspace/comfyui_launcher_projects/{workspace}/comfyui/custom_nodes
-        git clone https://github.com/yuvraj108c/ComfyUI-Depth-Anything-Tensorrt.git
-        cd ./ComfyUI-Depth-Anything-Tensorrt
-        pip install -r requirements.txt
-        ```
-
-        **Download and Build Tensorrt Engine**
-        ```bash
-        wget -O depth_anything_vitl14.onnx https://huggingface.co/yuvraj108c/Depth-Anything-2-Onnx/resolve/main/depth_anything_v2_vitb.onnx?download=true
-        python export_trt.py
-        mkdir -p /workspace/comfyui_launcher_models/tensorrt/depth-anything/
-        mv depth_anything_vitl14-fp16.engine /workspace/comfyui_launcher_models/tensorrt/depth-anything/
-        ```
-
-        **Test Out in Depth Map Generation in ComfyUI**
-
-        - Open up the custom node manager, and you should see **`ComfyUI Depth Anything TensorRT`** as a custom node that's installed.
-        - You have to click on “Restart”, and reload the browser.
-        - If you double-click on an empty part of the canvas, you should be able to search and find `Depth Anything Tensorrt`.  Add it to the canvas.
-            - If this doesn't show up, try and see if it's because the custom node is installed correctly.  If not, you can try to “fix it”.  The fixing process will take a while, since it'll be installing some packages.
-        - Add a ”Load Image” node as the input, and the “Preview Image” node as the output.  You should be able to pick an image and see the depth map.
-
-        ## Step 3: Bring Up ComfyStream Server
-
-        <Info>
-        If you are running the devcontainer on a remote server, you can access the ComfyStream server by setting up an SSH tunnel to the remote server and forwarding the port to your local machine. You can follow the guide [SSH Tunneling](https://www.ssh.com/academy/ssh/tunneling) for more details.
-        </Info>
-
-        Run ComfyStream:
-        ```bash
-        python server/app.py --workspace /workspace/comfyui_launcher_projects/{workspace}/comfyui --media-ports=5678
-        ```
-
-        Traffic sent to `localhost:1234` on the local machine will be forwarded over the SSH tunnel and will reach `127.0.0.1:5678` on the remote server.
-
-        # Step 4: Run ComfyStream UI
-
-        Follow the guide [Run ComfyStream UI](./local-testing-comfystream-ui) to start a live stream with new development environment
-
-    </Tab>
-    <Tab title="Dockerfile (Linux)">
-        1. Clone ComfyUI-Builder and compile the base dev container
-        ```bash
-        git clone https://github.com/eliteprox/comfyui-builder
-        cd comfyui-builder/.devcontainer
-        docker build -f Dockerfile.base -t comfyui-builder:base-latest .
-        ```
-        2. Create local folders to store the custom nodes and models used by ComfyUI 
-        ```bash
-        mkdir -p $HOME/ComfyUI--models
-        mkdir -p $HOME/ComfyUI--nodes
-        ```
-        2. From VS Code, open the `comfyui-builder` folder in a devcontainer using the [Remote-Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers):
-            - Press `Ctrl+Shift+P` to open the Command Palette.
-            - Type and select `Remote-Containers: Reopen in Container`.
-            <Note>Verify the volume mount paths are correct in `.devcontainer/devcontainer.json` Defaults are `$HOME/ComfyUI--models` and `$HOME/ComfyUI--nodes`</Note>
-        3. From inside the running dev container, install ComfyUI Custom Nodes: 
-        ```bash
-        ./install-nodes.sh
-        ```
-        4. Build the TensorRT engines:
-        ```bash
-        ./build-tensorrt.sh
-        ```
+    <Tab title="Local (Windows)">
+    ```bash
+    conda activate comfyui
+    cd %HOMEPATH%\workspace\comfyRealtime\ComfyUI
+    python main.py --listen
+    ```
     </Tab>
 </Tabs>
 
-## Step 2: Run ComfyUI
-1. Start a new shell and activate the comfyui conda environment
-```bash
-conda activate comfyui
-cd ../ComfyUI
-```
-
-2. Run the following:
-```powershell
-python main.py --listen
-```
 <Info>
-It is normal to see logs for the tensorrt nodes to failing to import, as they are not compatible with ComfyUI alone and are used only by ComfyStream
+It is normal to see logs for the tensorrt nodes to failing to import, as they are not compatible with ComfyUI alone and are used only by ComfyStream. Your list of nodes might vary
 </Info>
 ```
 Import times for custom nodes:
@@ -246,27 +119,65 @@ Import times for custom nodes:
    0.5 seconds: /ComfyUI/custom_nodes/ComfyUI_RyanOnTheInside
 ```
 
-3. Access the ComfyUI web interface at [http://localhost:8188](http://localhost:8188). 
-<Info>If you are running the devcontainer on a remote server, you can access the web interface by setting up an SSH tunnel to the remote server and forwarding the port to your local machine.
-You can also set the interface with `--host`</Info>
+3. Access ComfyUI from the web interface on port 8188: 
+<Tabs>
+    <Tab title="RunPod (Linux)">
+        1. From RunPod, click **Connect**, then click **Open Jupyter Lab (Port 8188)** to access ComfyUI:
+        ![Open Jupyter Lab](../../images/jupyter.png)
 
-# Step 3: Run ComfyStream
+    </Tab>
+
+    <Tab title="Local (Windows)">
+        1. Open a web browser and navigate to `http://localhost:8188` 
+    </Tab>
+</Tabs>
+
+## Start ComfyStream
 
 1. Activate the comfystream environment
 ```bash
 conda activate comfystream
-cd ..\comfystream
 ```
-2. Run ComfyStream:
-```bash
-python server/app.py --workspace ..\ComfyUI --media-ports=5678 --host=0.0.0.0
-```
-We should now have the ComfyStream server running on port `8888`, with media port `5678` listening on UDP.  It's also using the same workspace and sharing the available nodes / models as the ComfyUI engine you were using. We will provide this endpoint to the ComfyStream UI when starting a live stream.
+2. Start ComfyStream
+<Tabs>
+    <Tab title="RunPod (Linux)">
+        1. Start ComfyStream with port=8889 and host=0.0.0.0:
+        ```bash
+        cd /workspace/comfyRealtime/comfystream
+        python server/app.py --workspace ..\ComfyUI --media-ports=5678 --host=0.0.0.0 --port 8889
+        ```
+    </Tab>
+
+    <Tab title="Local (Windows)">
+        1. Start ComfyStream (defaults to port 8888):
+        ```bash
+        cd %HOMEPATH%\workspace\comfyRealtime\ComfyUI
+        python server/app.py --workspace ..\ComfyUI --media-ports=5678
+        ```
+    </Tab>
+</Tabs>
+
+ComfyStream is now running. We will provide this endpoint to the ComfyStream UI when starting a live stream.
 
 
-# Step 4: Run ComfyStream UI
+## Start ComfyStream UI
+
+Obtain the stream URL for the ComfyStream server:
+- Local: `http://localhost:8888`
+- RunPod:
+    1. Log into RunPod and go the **Pods** page.
+    2. Click on the **Connect** button.
+    3. Click the **TCP Port Mappings** tab.
+    4. Copy the IP address and external port for 8889, formulate the url `http://IP:EXTPORT`
 
 Follow the guide [Run ComfyStream UI](./local-testing-comfystream-ui) to start a live stream with new development environment
 
 
+## Troubleshooting
 
+If you need to start over due to unresolvable package conflicts, you can delete the conda environments and start over:
+```bash
+conda deactivate
+conda remove --name comfystream --all
+conda remove --name comfyui --all
+```
