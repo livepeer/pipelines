@@ -4,7 +4,7 @@ description: "Setting up a local development system for ComfyUI and ComfyStream"
 icon: "code"
 ---
 
-## Step 1: Setup Environment
+## Setup Environment
 
 We will use the [ComfyStream_Setup_Scripts](https://github.com/ryanontheinside/ComfyStream_Setup_Scripts) to automate the install of conda environments for ComfyStream and ComfyUI.
 
@@ -86,7 +86,7 @@ We will use the [ComfyStream_Setup_Scripts](https://github.com/ryanontheinside/C
 
 </Tabs>
 
-## Step 2: Run ComfyUI
+## Start ComfyUI
 1. Start a new shell and activate the comfyui conda environment
 <Tabs>
     <Tab title="RunPod (Linux)">
@@ -132,13 +132,13 @@ Import times for custom nodes:
     </Tab>
 </Tabs>
 
-## Step 3: Run ComfyStream
+## Start ComfyStream
 
 1. Activate the comfystream environment
 ```bash
 conda activate comfystream
 ```
-2. Run ComfyStream
+2. Start ComfyStream
 <Tabs>
     <Tab title="RunPod (Linux)">
         1. Start ComfyStream with port=8889 and host=0.0.0.0:
@@ -160,26 +160,15 @@ conda activate comfystream
 ComfyStream is now running. We will provide this endpoint to the ComfyStream UI when starting a live stream.
 
 
-## Step 4: Run ComfyStream UI
+## Start ComfyStream UI
 
-Obtain the stream URL:
-<Tabs>
-    <Tab title="RunPod (Linux)">
-        1. Log into RunPod and go the **Pods** page.
-        2. Click on the **Connect** button.
-        3. Click the **TCP Port Mappings** tab.
-        4. Copy the IP address and external port for 8889, formulate the url `http://IP:EXTPORT`
-    </Tab>
-
-    <Tab title="Local (Windows)">
-        1. Start ComfyStream (defaults to port 8888):
-        ```bash
-        python server/app.py --workspace ..\ComfyUI --media-ports=5678
-        ```
-        2. Use `http://localhost:8888` as the stream URL. 
-    </Tab>
-</Tabs>
-
+Obtain the stream URL for the ComfyStream server:
+- Local: `http://localhost:8888`
+- RunPod:
+    1. Log into RunPod and go the **Pods** page.
+    2. Click on the **Connect** button.
+    3. Click the **TCP Port Mappings** tab.
+    4. Copy the IP address and external port for 8889, formulate the url `http://IP:EXTPORT`
 
 Follow the guide [Run ComfyStream UI](./local-testing-comfystream-ui) to start a live stream with new development environment
 

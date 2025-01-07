@@ -4,18 +4,91 @@ description: "How to install custom nodes in both Conda environments for ComfyUI
 icon: "code"
 ---
 
-More information to follow here, but for now just know that when you add custom nodes, you will need to install them in both Conda environments. Since you started ComfyUI in the comfyui Conda environment, you can just install nodes via the manager, and they will be installed in the environment. You will need to install them manually in the ComfyStream environment as well. You can do that by by following these steps:
+When you add custom nodes, you will need to install them in both Conda environments. Since we start ComfyUI in the `comfyui` Conda environment, you can just install nodes via the manager and they will be installed in the environment. You will need to install them manually in the ComfyStream environment by following these steps:
 
-1. Run the following command to initialize Conda (if it is  not already)
+1. Run the following command to activate the `comfyui` conda environment
 
 ```bash
-eval "$(/workspace/miniconda3/bin/conda shell.bash hook)"
+conda activate comfyui
+```
+2. Navigate to the custom node directory
+<Tabs>
+    <Tab title="RunPod (Linux)">
+        ```bash
+        cd comfyRealtime/ComfyUI/custom_nodes
+        ```
+    </Tab>
+
+    <Tab title="Local (Windows)">
+        ```bash
+        cd %HOMEPATH%\workspace\comfyRealtime\ComfyUI\custom_nodes
+        ```
+    </Tab>
+</Tabs>
+
+3. Clone the custom node repository and install the dependencies. For example, to will install the SAM2-Realtime node:
+
+```bash
+cd /workspace/comfyRealtime/ComfyUI/custom_nodes
+git clone https://github.com/pschroedl/ComfyUI-SAM2-Realtime.git
+cd ComfyUI-SAM2-Realtime
+pip install -r requirements.txt
 ```
 
-1. Activate the comfystream environment and install custom nodes accordingly:
+<Note> A complete list of already supported nodes can be found at [ComfyUI Custom Nodes](../../technical/reference/available-nodes)</Note>
+<Info>Alternatively, you can install custom nodes using ComfyUI Manager and skip the above step</Info>
+
+4. After installation, start a new terminal session and activate `comfystream`:
+
 ```bash
 conda activate comfystream
-cd comfyRealtime/ComfyUI/custom_nodes/ComfyUI_RyanOnTheInside
+```
+
+5. Navigate to the ComfyStream directory and run the following command to install all node dependencies:
+```bash
+cd /workspace/comfyRealtime/ComfyStream/
+python install.py --workspace /workspace/comfyRealtime/ComfyUI
+```
+
+6. Start ComfyStream and ComfyUI to see the new node in action:
+
+- From the **ComfyUI** SSH terminal:
+```bash
+python main.py --listen
+```
+- From the **ComfyStream** terminal:
+```bash
+python server/app.py --workspace /workspace/comfyRealtime/ComfyUI --media-ports=5678 --host=0.0.0.0 --port 8889
+```
+<Note>The --host=0.0.0.0 flag is essential for the service to be available through TCP Port Mapping when using a remote environment such as RunPod</Note>
+
+7. Download the sample workflow json file for SAM2 [examples/SAM2-Realtime-Example.json](https://github.com/pschroedl/ComfyUI-SAM2-Realtime/blob/main/examples/SAM2-Realtime-Example.json) and open the workflow in ComfyUI
+
+## Installing Livepeer Custom Nodes
+Install custom nodes that are already available on the Livepeer network
+
+### StreamDiffusion
+
+This node is useful for styling videos with a diffusion effect. It can be combined with other nodes to create masked effects.
+
+```bash
+conda activate comfyui
+cd /workspace/comfyRealtime/ComfyUI/custom_nodes
+git clone https://github.com/pschroedl/ComfyUI-StreamDiffusion.git
+cd ComfyUI-StreamDiffusion
+git checkout 628c9f81abdc4f9b0207bcb556f35a8cbc2d7319
 pip install -r requirements.txt
-conda deactivate comfystream
+conda deactivate
+```
+
+### SAM2-Realtime
+
+This node is useful for tracking an object given positive and negative prompt coordinates. It can be combined with Florence2 and other object detection nodes.
+
+Clone the node and install dependencies
+```bash
+cd /workspace/comfyRealtime/ComfyUI/custom_nodes
+git clone https://github.com/pschroedl/ComfyUI-SAM2-Realtime.git
+cd ComfyUI-SAM2-Realtime
+pip install -r requirements.txt
 ```
