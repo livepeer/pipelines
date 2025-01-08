@@ -4,8 +4,9 @@ description: "Run the UI for ComfyStream to demonstrate live AI video"
 icon: "box"
 ---
 
+ComfyStream UI must be ran on a system with physical or virtual camera. In this guide we will install ComfyStream UI on a local machine
 
-1. Clone ComfyStream UI and Navigate to the comfystream UI directory:
+1. Clone ComfyStream UI:
 ```bash
 git clone https://github.com/yondonfu/comfystream
 cd comfystream/ui
@@ -23,12 +24,27 @@ Switch to the correct node version if necessary:
 `nvm use 18`
 </Note>
 
-5. To start the web app, use the following from within the comfystream/ui directory:
-
+3. From the `comfystream/ui` directory, start ComfyStream UI:
 ```bash
 npm run dev
 ```
-Now you should be able to visit http://localhost:3000 to begin a livestream using the ComfyStream API
+4. Open a browser and navigate to [http://localhost:3000](http://localhost:3000)
+
+## Obtaining the Stream URL
+
+The **Stream URL** field index ComfyStream UI should be set to the url for your ComfyStream/ComfyUI environment.
+
+<Tabs>
+    <Tab title="Local">
+        - Local: `http://localhost:8888`
+    </Tab>
+    <Tab title="RunPod">
+        1. Log into RunPod and go the **Pods** page.
+        2. Click on the **Connect** button.
+        3. Click the **TCP Port Mappings** tab.
+        4. Copy the *IP address* and *external port* for 8889, to create the url `http://IP:PORT`
+    </Tab>
+</Tabs>
 
 ## Customizing the default stream URL
 If you are not running ComfyStream UI on the same host as the ComfyStream API, you can customize the default stream URL to ease testing.

@@ -10,49 +10,37 @@ We will use the [ComfyStream_Setup_Scripts](https://github.com/ryanontheinside/C
 
 <Tabs>
     <Tab title="RunPod (Linux)">
-        <h4>Create and Deploy a new RunPod server</h4>
-        1. Create a [RunPod.io](https://runpod.io) account, and add some funds.
-        2. Add a public key to your RunPod account **Settings** > **SSH Public Keys**.
-        2. Click Storage, then click **New Network Volume**. Pick a suitable name, region, and size for the volume. You can add more size later if you run out.
-        3. Click the **Deploy** button on the storage volume.
-        4. On the **Deploy GPU Pod page**, select an appropriate GPU (ex: RTX 4090) and make the following changes:
-            - Click **Change Template**, select `Torch 2.4.0`
-            - Click **Edit Template**:
-                - Set **Expose HTTP Ports** to `8888,8188`
-                - Set **Expose TCP Ports** to `22,8889`
-            - Click **Set Overrides** to save the changes
-            ![Pod Template](../../images/podtemplate.png)
-        5. Click **Deploy On-Demand**
+        1. Follow the steps in [Deploying a new RunPod Server](../reference/develop-runpod#deploying-a-new-runpod-server) to create a new RunPod server.
 
-        <h4>Install ComfyUI and ComfyStream</h4>
-        1. From the RunPod dashboard, click **Connect** to obtain the username or port to connect to. There are two examples provided on the **Connection Options** tab. You can alternatively use the web console.
+        2. From the RunPod dashboard, click **Connect** to obtain the username or port to connect to. There are two examples provided on the **Connection Options** tab. You can alternatively use the web console.
             - Basic SSH Terminal: Uses a unique userid with port 22 (Recommended)
             - SSH over exposed TCP: Uses `root` for the userid and a unique port
 
-        2. In a new terminal navigate to your network volume and clone the ComfyStream Setup Scripts:
+        3. In a new terminal navigate to your network volume and clone the ComfyStream Setup Scripts:
         ```bash
         cd /workspace
         git clone https://github.com/ryanontheinside/ComfyStream_Setup_Scripts
         ```
-        3. Run the initial setup script:
+        4. Run the initial setup script:
         ```bash
         chmod +x ComfyStream_Setup_Scripts/runpod/initial_setup.sh
         bash ./ComfyStream_Setup_Scripts/runpod/initial_setup.sh
         ```
-        4. Initialize conda by running the following command:
+        5. Initialize conda by running the following command:
         ```bash
         /workspace/miniconda3/bin/conda init bash
         ```
         <Note>
             When deploying new pods from the network volume you will need to run this initialization command again.
         </Note>
-        5. Start a new SSH terminal session in your pod for the change to take effect
+        6. Start a *new* SSH terminal session in your pod for the change to take effect. You should see `(base)` to the left of the terminal cursor.
     </Tab>
     <Tab title="Local (Windows)">
-        1. Clone the ComfyStream Setup Scripts to your preferred directory
+        1. Clone the ComfyStream Setup Scripts to your home directory
         ```bash
+        cd "$env:HOMEPATH"
         git clone https://github.com/ryanontheinside/ComfyStream_Setup_Scripts
-        cd ComfyStream_Setup_Scripts\local
+        & "$env:HOMEPATH/ComfyStream_Setup_Scripts/local/install_conda.ps1"
         ```
         <Info>
         You may need to enable [script execution](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.security/set-executionpolicy?view=powershell-7.4)
@@ -63,31 +51,33 @@ We will use the [ComfyStream_Setup_Scripts](https://github.com/ryanontheinside/C
 
         2. If you do not already have Conda, install it from an elevated powershell
         ```bash (admin)
-        .\install_conda.ps1
-
-        ## Optionally show the active conda environment in the Powershell terminal
-        conda init powershell
+        & "$env:HOMEPATH/miniconda3/Scripts/conda" init powershell
         ```
+
+        3. Open a new Powershell terminal for the changes to take effect
 
         4. Install ComfyStream, ComfyUI and related packages
         ```bash (admin)
-        .\setup_comfystream.ps1
+        cd "$env:HOMEPATH"
+        & "$env:HOMEPATH/ComfyStream_Setup_Scripts/local/setup_comfystream.ps1"
         ```
 
         After running the script, you should see the following folders in your current working directory:
         - **ComfyUI**
         - **ComfyStream**
-        
+
         5. Create a Symbolic link to the models folder for both ComfyUI workspaces 
-        ```bash (admin)
-        New-Item -ItemType SymbolicLink -Path "$realtimePath\ComfyUI\models" -Target "$comfyUIPath\models"
+        ```powershell
+        $realtimePath = "$env:HOMEPATH/comfyRealtime/ComfyUI/models"
+        $comfyUIPath = "$env:HOMEPATH/ComfyUI/models"
+        New-Item -ItemType SymbolicLink -Path $realtimePath -Target $comfyUIPath
         ```
     </Tab>
 
 </Tabs>
 
 ## Start ComfyUI
-1. Start a new shell and activate the comfyui conda environment
+Start a new terminal and activate the `comfyui` conda environment:
 <Tabs>
     <Tab title="RunPod (Linux)">
     ```bash
@@ -100,14 +90,14 @@ We will use the [ComfyStream_Setup_Scripts](https://github.com/ryanontheinside/C
     <Tab title="Local (Windows)">
     ```bash
     conda activate comfyui
-    cd %HOMEPATH%\workspace\comfyRealtime\ComfyUI
+    cd "$env:HOMEPATH/comfyRealtime/ComfyUI"
     python main.py --listen
     ```
     </Tab>
 </Tabs>
 
 <Info>
-It is normal to see logs for the tensorrt nodes to failing to import, as they are not compatible with ComfyUI alone and are used only by ComfyStream. Your list of nodes might vary
+It is normal to see logs for the tensorrt nodes failing to import, as they are only compatible with ComfyStream. Your list of nodes might vary.
 </Info>
 ```
 Import times for custom nodes:
@@ -122,13 +112,13 @@ Import times for custom nodes:
 3. Access ComfyUI from the web interface on port 8188: 
 <Tabs>
     <Tab title="RunPod (Linux)">
-        1. From RunPod, click **Connect**, then click **Open Jupyter Lab (Port 8188)** to access ComfyUI:
+        From RunPod, click **Connect**, then click **Connect to HTTP Service [Port 8188]** to access ComfyUI:
         ![Open Jupyter Lab](../../images/jupyter.png)
 
     </Tab>
 
     <Tab title="Local (Windows)">
-        1. Open a web browser and navigate to `http://localhost:8188` 
+        Open a web browser and navigate to `http://localhost:8188` 
     </Tab>
 </Tabs>
 
@@ -138,39 +128,32 @@ Import times for custom nodes:
 ```bash
 conda activate comfystream
 ```
-2. Start ComfyStream
+2. Change to the ComfyStream directory
 <Tabs>
     <Tab title="RunPod (Linux)">
-        1. Start ComfyStream with port=8889 and host=0.0.0.0:
         ```bash
         cd /workspace/comfyRealtime/comfystream
-        python server/app.py --workspace ..\ComfyUI --media-ports=5678 --host=0.0.0.0 --port 8889
         ```
     </Tab>
 
     <Tab title="Local (Windows)">
-        1. Start ComfyStream (defaults to port 8888):
         ```bash
-        cd %HOMEPATH%\workspace\comfyRealtime\ComfyUI
-        python server/app.py --workspace ..\ComfyUI --media-ports=5678
+        cd "$env:HOMEPATH/comfyRealtime/ComfyUI"
         ```
     </Tab>
 </Tabs>
+
+3. Start ComfyStream
+```bash
+python server/app.py --workspace ../ComfyUI --media-ports=5678 --host=0.0.0.0 --port 8889
+```
 
 ComfyStream is now running. We will provide this endpoint to the ComfyStream UI when starting a live stream.
 
 
 ## Start ComfyStream UI
 
-Obtain the stream URL for the ComfyStream server:
-- Local: `http://localhost:8888`
-- RunPod:
-    1. Log into RunPod and go the **Pods** page.
-    2. Click on the **Connect** button.
-    3. Click the **TCP Port Mappings** tab.
-    4. Copy the IP address and external port for 8889, formulate the url `http://IP:EXTPORT`
-
-Follow the guide [Run ComfyStream UI](./local-testing-comfystream-ui) to start a live stream with new development environment
+Follow [Run ComfyStream UI](../reference/local-testing-comfystream-ui) to start a live stream with your new development environment
 
 
 ## Troubleshooting
@@ -181,3 +164,17 @@ conda deactivate
 conda remove --name comfystream --all
 conda remove --name comfyui --all
 ```
+Finally, run the setup script again to recreate the conda environments:
+<Tabs>
+    <Tab title="RunPod (Linux)">
+        ```bash
+        bash ./ComfyStream_Setup_Scripts/runpod/initial_setup.sh
+        ```
+    </Tab>
+    <Tab title="Local (Windows)">
+        ```bash (admin)
+        cd "$env:HOMEPATH"
+        & "$env:HOMEPATH/ComfyStream_Setup_Scripts/local/setup_comfystream.ps1"
+        ```
+    </Tab>
+</Tabs>
