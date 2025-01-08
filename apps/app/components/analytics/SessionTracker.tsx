@@ -95,24 +95,29 @@ function setCookies(distinctId: string, sessionId: string, userId?: string) {
   }
 }
 
-async function handleSessionEnd() {
+function handleSessionEnd() {
   const sessionId = localStorage.getItem('mixpanel_session_id');
   if (sessionId) {
     const distinctId = localStorage.getItem('mixpanel_distinct_id');
     const userId = localStorage.getItem('mixpanel_user_id');
 
-    await track('$session_end', {
-      $session_id: sessionId,
-      distinct_id: distinctId,
-      $user_id: userId,
-      $current_url: window.location.href,
-    });
+    const data = {
+      event: '$session_end',
+      properties: {
+        $session_id: sessionId,
+        distinct_id: distinctId,
+        $user_id: userId,
+        $current_url: window.location.href,
+      },
+    };
+    navigator.sendBeacon('/api/mixpanel', JSON.stringify(data));
     localStorage.removeItem('mixpanel_session_id');
   }
 }
 
 export default function SessionTracker() {
   const { user, authenticated, ready } = usePrivy();
+  
   useEffect(() => {
     if (!ready) return;
 
@@ -128,8 +133,15 @@ export default function SessionTracker() {
 
     initSession();
 
-    return () => {
+    // Only handle session end when leaving the page
+    const handleBeforeUnload = () => {
       handleSessionEnd();
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
     };
   }, [user, authenticated, ready]);
 
