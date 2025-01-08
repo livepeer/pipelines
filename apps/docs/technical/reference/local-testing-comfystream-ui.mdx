@@ -32,11 +32,11 @@ npm run dev
 
 ## Obtaining the Stream URL
 
-The **Stream URL** field index ComfyStream UI should be set to the url for your ComfyStream/ComfyUI environment.
+The **Stream URL** in ComfyStream UI should be set to the url and external port for the ComfyStream API environment.
 
 <Tabs>
     <Tab title="Local">
-        - Local: `http://localhost:8888`
+        - Local: `http://localhost:8889`
     </Tab>
     <Tab title="RunPod">
         1. Log into RunPod and go the **Pods** page.
@@ -53,7 +53,7 @@ Create a new `.env` file with your running ComfyStream API URL:
 
 ```bash
 cd comfystream/ui
-echo "NEXT_PUBLIC_DEFAULT_STREAM_URL=http://10.10.10.1:8888" > .env
+echo "NEXT_PUBLIC_DEFAULT_STREAM_URL=http://10.10.10.1:8889" > .env
 ```
 
 ## Supported workflow JSON

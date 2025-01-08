@@ -32,22 +32,19 @@ SSH is now set up for your RunPod account, so you can use it with any servers yo
 1. From the **Pods** page, click **Deploy**
 2. Select an appropriate GPU (ex: RTX 4090) and make the following changes:
     1. Click **Storage**, then **Network Volume**. Pick a suitable name, region, and size for the volume. You can add more size later if you run out. ![New Network Volume](../../images/networkvolume.png) <Warning>It is important to create a network volume, otherwise, your data will be lost when the server is stopped.</Warning>
-    2. Click **Change Template**, select `Torch 2.4.0`
+    2. Click **Change Template**, select `Torch 2.4.0` <Note>Alternatively, you can choose this [RunPod template](https://runpod.io/console/deploy?template=6dj77fsqa8&ref=u8tlskew) which is pre-configured with the settings below</Note>
     3. Click **Edit Template**, set the ports:
         - **Expose HTTP Ports** to `8888,8188`
         - **Expose TCP Ports** to `22,8889`  ![Pod Template](../../images/podtemplate.png)
        
     4. Click **Set Overrides** to save the changes
 5. Click **Deploy On-Demand**
-
 6. Proceed to [Install Conda, ComfyUI, and ComfyStream](../develop-pipeline/local-testing)
 
 ## **Stopping a RunPod Server**
-Stopping pods helps lower costs on RunPod. Pods must be stopped before making any port mapping changes
-Install runpod-cli on your local machine by running the following command:
-```bash
-https://docs.runpod.io/runpodctl/install-runpodctl
-```
+Stopping pods helps lower costs on RunPod. Pods must also be stopped before making any port mapping changes.
+
+Refer to [Installing runpodctl](https://docs.runpod.io/runpodctl/install-runpodctl). If you're on windows, this can be installed on WSL also
 
 Create an API key for your RunPod account, and add it to runpod-cli
 ```bash
