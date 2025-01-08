@@ -12,6 +12,7 @@ async function identifyUser(userId: string, anonymousId: string, user: any) {
       properties: {
         $name: userId,
         distinct_id: userId,
+        $email: user?.email?.address,
         user_id: userId,
         user_type: 'authenticated',
         $last_login: new Date().toISOString(),
@@ -55,12 +56,9 @@ async function handleDistinctId(user: any) {
     localStorage.setItem('mixpanel_distinct_id', distinctId);
   }
 
-  await identifyUser(user.id, distinctId, user);
   // Only handle user identification if there is an authenticated user
   if (user?.id) {
-    if (distinctId !== user.id) {
-      await identifyUser(user.id, distinctId, user);
-    }
+    await identifyUser(user.id, distinctId, user);
     localStorage.setItem('mixpanel_user_id', user.id);
     localStorage.setItem('mixpanel_distinct_id', user.id);
     distinctId = user.id;
@@ -115,7 +113,6 @@ async function handleSessionEnd() {
 
 export default function SessionTracker() {
   const { user, authenticated, ready } = usePrivy();
-
   useEffect(() => {
     if (!ready) return;
 
