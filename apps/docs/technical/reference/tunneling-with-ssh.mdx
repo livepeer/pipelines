@@ -1,11 +1,22 @@
 ---
 title: "Tunneling with SSH"
-description: "When deploying to RunPod, you may need to set up an SSH tunnel to connect ComfyStream UI to ComfyStream at RunPod (port 5678). This is especially useful when you need to connect to a TURN server. 
-Here is how you can set up an SSH tunnel:"
+description: "Set up an SSH tunnel to connect ComfyStream UI to ComfyStream when using a TURN server" 
 icon: "code"
 ---
 
+## **TURN Server Setup**
+#### **When and why is this needed?**
 
+RunPod and many other cloud providers have restrictive network policies that can block direct streaming connections. The TURN server acts as a trusted intermediary that can relay the streaming data between your local machine and the server. Additionally, if direct UDP connections fail (common with corporate/cloud environments), the TURN server can fall back to TCP, making the connection more reliable. To use a TURN server in this set up, follow the steps below:
+
+1. Create a Twilio account at [twilio.com](https://www.twilio.com/en-us)
+2. Get credentials from [console.twilio.com](https://console.twilio.com/)
+3. Take note of your `ACCOUNT SID` and `AUTH TOKEN` for use in the next section of this document
+<Note>
+Alternatively you can use [tunneling with SSH](http://localhost:3000/technical/reference/tunneling-with-ssh)
+</Note>
+
+## **Setting up SSH Tunneling**
 Tunnel to open up UDP connection
 
 - On the remote server (remote_host), run: 
@@ -25,7 +36,7 @@ socat UDP4-LISTEN:1234,fork TCP4:127.0.0.1:4321
 
 Traffic sent to localhost:1234 on the local machine will be forwarded over the SSH tunnel and will reach 127.0.0.1:5678 on the remote server
 
-Open another terminal, ssh into the Runpod terminal:
+Open another terminal, ssh into the remote SSH terminal:
 
 - You should find "SSH over exposed TCP" value in Runpod
 - Copy that command, and `add -L 8888:localhost:8888`

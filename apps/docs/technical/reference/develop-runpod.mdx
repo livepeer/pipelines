@@ -4,22 +4,11 @@ description: "This guide is intended for developers who are developing custom no
 icon: "code"
 ---
 
-1. Create a RunPod account, and add some funds.
-2. Click **Pods**, then click **deploy**
-3. Next, we create a network volume that will persist even when we shut the server down.
-
-### RunPod Network Volume
-<Image src="https://lh7-rt.googleusercontent.com/docsz/AD_4nXf0d_82ypCCGKybIq1tsYcg6kJ9caF5n0gJcobTHcnb9br73oEginz3y5jui_Xh4IIfbxBvO4uCX0g97GqM_3I4pyETo-gJatB-kULNHGUi5X7WVOsiVPb3ytVBq0xP8JVFQ35t?key=LMLbXfH5Do4K1o222p6HlCaY" alt="RunPod Network Volume" />
-
-4. Pick a suitable name, region, and size for the volume. You can add more size later if you run out, so don't go too crazy here.
-5. Next, we select a GPU (I use a 4090), then we select a template. I used Runpod Pytorch 2.4 template. ![RunPod GPU Selection](https://lh7-rt.googleusercontent.com/docsz/AD_4nXf9hpPmlBEMHUsqaxnrLQgWS31oS2SSHydYnfYZvICnbBdu5o-pj6AMpbh6BE3E_Jgq2XoN4bCm9mIxH1k-8hpD1Z9tN4PaoSZxh875iQh8A8C6nVI05WtHIs26_-ltx8Jw2GuHeA?key=LMLbXfH5Do4K1o222p6HlCaY)
-
-6. Then, we edit the template, exposing a port for ComfyUI ![RunPod Template Edit](https://lh7-rt.googleusercontent.com/docsz/AD_4nXdRmSuZiixmCt3VGf7N7q3Q4fUyHugYn39VPvmVVdb8E3G1VqZHUXxS5whBp7xRIwJw0IdM5ch6PpWeB421cLrhGSSlZ2INoITRFFO2_8Tqn-wtS6M2690hl6HnyVMhOCcwZpeAbw?key=LMLbXfH5Do4K1o222p6HlCaY)
-
-# **Setting Up SSH Keys for RunPod**
+## Creating a new RunPod Account
+1. Create a [RunPod.io](https://runpod.io) account, and add some funds.
+2. Add a public key to your RunPod account **Settings** > **SSH Public Keys**.
+### **Setting Up SSH Keys for RunPod**
 To create an SSH keypair and use it to connect to a server on RunPod, follow these simple steps.
-
-### Generating The Files
 
 1. Start a session in Powershell or terminal of your choice, and run a command like the following:
 ```bash
@@ -29,9 +18,9 @@ ssh-keygen -t ed25519 -C "your_email@example.com"
 This will generate a pair of files. For me, the files are `ryanrunpod`, and `ryanrunpod.pub`
 </Note>
 
-## Adding SSH to RunPod
+### Adding SSH to RunPod
 
-1. Locate your public key file (the one that ends in .pub), open it in notepad, and copy the contents to the field pictured below in the settings of your RunPod account.
+Locate your public key file (the one that ends in .pub), open it in notepad, and copy the contents to the field pictured below in the settings of your RunPod account.
 
 ![RunPod SSH Setup](https://lh7-rt.googleusercontent.com/docsz/AD_4nXcXmfKUJfQOslc3yV_gjTl4z4cQBbXlpwpODgBdUfBETtqt8ZCbvaAPkAIHZj0TFHta-RaCdQkQ2cBt-M51CXVhwE8r2lHAF4GWnqOc5LCJIR8iVpRB7OcjVaGPDZ1N3s24oN3cvg?key=LMLbXfH5Do4K1o222p6HlCaY)
 
@@ -39,22 +28,22 @@ This will generate a pair of files. For me, the files are `ryanrunpod`, and `rya
 
 SSH is now set up for your RunPod account, so you can use it with any servers you provision.
 
-# **TURN Server Setup**
+## Deploying a new RunPod server
+1. From the **Pods** page, click **Deploy**
+2. Select an appropriate GPU (ex: RTX 4090) and make the following changes:
+    1. Click **Storage**, then **Network Volume**. Pick a suitable name, region, and size for the volume. You can add more size later if you run out. ![New Network Volume](../../images/networkvolume.png) <Warning>It is important to create a network volume, otherwise, your data will be lost when the server is stopped.</Warning>
+    2. Click **Change Template**, select `Torch 2.4.0`
+    3. Click **Edit Template**, set the ports:
+        - **Expose HTTP Ports** to `8888,8188`
+        - **Expose TCP Ports** to `22,8889`  ![Pod Template](../../images/podtemplate.png)
+       
+    4. Click **Set Overrides** to save the changes
+5. Click **Deploy On-Demand**
 
-### **When and why is this needed?**
+6. Proceed to [Install Conda, ComfyUI, and ComfyStream](../develop-pipeline/local-testing)
 
-RunPod and many other cloud providers have restrictive network policies that can block direct streaming connections. The TURN server acts as a trusted intermediary that can relay the streaming data between your local machine and the server. Additionally, if direct UDP connections fail (common with corporate/cloud environments), the TURN server can fall back to TCP, making the connection more reliable. To use a TURN server in this set up, follow the steps below:
-
-1. Create a Twilio account at [twilio.com](https://www.twilio.com/en-us)
-2. Get credentials from [console.twilio.com](https://console.twilio.com/)
-3. Take note of your `ACCOUNT SID` and `AUTH TOKEN` for use in the next section of this document
-<Note>
-Alternatively you can use [tunneling with SSH](http://localhost:3000/technical/reference/tunneling-with-ssh)
-</Note>
-
-Proceed to [Install Conda, ComfyUI, and ComfyStream](http://localhost:3000/technical/develop-pipeline/local-testing)
-
-### **Stopping a RunPod Server**
+## **Stopping a RunPod Server**
+Stopping pods helps lower costs on RunPod. Pods must be stopped before making any port mapping changes
 Install runpod-cli on your local machine by running the following command:
 ```bash
 https://docs.runpod.io/runpodctl/install-runpodctl
