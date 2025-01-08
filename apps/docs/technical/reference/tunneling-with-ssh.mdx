@@ -39,5 +39,9 @@ Traffic sent to localhost:1234 on the local machine will be forwarded over the S
 Open another terminal, ssh into the remote SSH terminal:
 
 - You should find "SSH over exposed TCP" value in Runpod
-- Copy that command, and `add -L 8888:localhost:8888`
-    - For example: `ssh -L 8888:localhost:8888 root@{runpod_ip} -p 16974 -i ~/.ssh/id_ed25519`
+- Copy that command, and `add -L 8889:localhost:8889`
+    - For example: `ssh -L 8889:localhost:8889 root@{runpod_ip} -p 16974 -i ~/.ssh/id_ed25519`
+
+<Note>
+8889 is the port that ComfyStream is listening on at the remote server
+</Note>
