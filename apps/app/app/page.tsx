@@ -5,6 +5,7 @@ import { type ReactElement, Suspense } from "react";
 import FeaturedPipelines from "@/components/welcome/featured";
 import { validateEnv } from "@/lib/env";
 import {validateServerEnv} from "@/lib/serverEnv";
+import ClientSideTracker from "@/components/analytics/ClientSideTracker";
 
 const App = async ({
   searchParams,
@@ -16,6 +17,7 @@ const App = async ({
 
   return (
     <div>
+      <ClientSideTracker eventName="home_page_viewed" />
       <div className="flex-shrink-0">
         <Suspense>
           <Welcome />
