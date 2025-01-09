@@ -29,7 +29,6 @@ async function getGeoData(ip: string | null) {
 
 
 export async function POST(request: Request) {
-	console.log("mixpanel identify request", request);	
   if (!mixpanelClient) {
     return NextResponse.json(
       { error: "Mixpanel not configured" },
@@ -39,9 +38,7 @@ export async function POST(request: Request) {
 
   try {
     const { userId, anonymousId, properties } = await request.json();
-    const { first_time_properties, ...regularProperties } = properties;
-    console.log("mixpanel identify request", userId, anonymousId, properties, regularProperties);
-    // Create alias if needed
+    const { first_time_properties, ...regularProperties } = properties;    // Create alias if needed
     if (anonymousId !== userId) {
       mixpanelClient.alias(userId, anonymousId);
     }
@@ -67,7 +64,6 @@ export async function POST(request: Request) {
 	}
 
     // Track identify event
-    console.log("mixpanelClient.track('$identify', { distinct_id: userId, ...regularProperties })");
     mixpanelClient.track('$identify', {
       distinct_id: userId,
       ...setProperties
