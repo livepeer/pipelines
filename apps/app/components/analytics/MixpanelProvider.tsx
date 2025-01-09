@@ -99,44 +99,41 @@ function handleSessionEnd() {
 export function MixpanelProvider({ children }: { children: ReactNode }) {
   const { user, authenticated, ready } = usePrivy();
   useEffect(() => {    
+
     if (mixpanelConfig.projectToken) {
       try {
         mixpanel.init(mixpanelConfig.projectToken, { debug: true });
+        
+        const initSession = async () => {
+          const distinctId = await handleDistinctId(authenticated ? user : null);
+          const sessionId = await handleSessionId(authenticated ? user : null, distinctId || '');
+          if (authenticated) {
+            setCookies(distinctId || '', sessionId || '', user?.id || '');
+          } else {
+            setCookies(distinctId || '', sessionId || '');
+          }
+        };
+    
+        initSession();
+    
+        // Clean up sessions when page is unloaded
+        //const handleBeforeUnload = () => {
+          //handleSessionEnd();
+        //};
+    
+        //window.addEventListener('beforeunload', handleBeforeUnload);
+        
         console.log('Mixpanel initialized successfully');
+        return () => {
+          handleSessionEnd();
+          //window.removeEventListener('beforeunload', handleBeforeUnload);
+        };
       } catch (error) {
         console.error('Error initializing Mixpanel:', error);
       }
     } else {
       console.warn('No Mixpanel project token found in environment variables');
     }
-  }, []);
-
-  
-  useEffect(() => {
-    if (!ready) return;
-
-    const initSession = async () => {
-      const distinctId = await handleDistinctId(authenticated ? user : null);
-      const sessionId = await handleSessionId(authenticated ? user : null, distinctId || '');
-      if (authenticated) {
-        setCookies(distinctId || '', sessionId || '', user?.id || '');
-      } else {
-        setCookies(distinctId || '', sessionId || '');
-      }
-    };
-
-    initSession();
-
-    // Clean up sessions when page is unloaded
-    const handleBeforeUnload = () => {
-      handleSessionEnd();
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-    };
   }, [user, authenticated, ready]);
 
   return <>{children}</>;
