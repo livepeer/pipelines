@@ -1,0 +1,49 @@
+---
+title: "Stream Diffusion"
+description: "This node is useful for styling videos with a diffusion effect. It can be combined with other nodes to create masked effects."
+icon: "code"
+---
+
+1. Navigate to the `custom_nodes` directory in your ComfyUI workspace
+<Tabs>
+    <Tab title="RunPod (Linux)">
+    ```bash
+    cd /workspace/comfyRealtime/ComfyUI/custom_nodes
+    ```
+    </Tab>
+
+    <Tab title="Local (Windows)">
+    ```bash
+    cd "$env:HOMEPATH/comfyRealtime/ComfyUI/custom_nodes"
+    ```
+    </Tab>
+</Tabs>
+
+2. Clone the repository
+```bash
+git clone https://github.com/pschroedl/ComfyUI-StreamDiffusion.git
+cd ComfyUI-StreamDiffusion
+git checkout 628c9f81abdc4f9b0207bcb556f35a8cbc2d7319
+```
+
+3. Install requirements
+<Tabs>
+    <Tab title="RunPod (Linux)">
+    ```bash
+    conda activate comfyui
+    pip install -r requirements.txt
+    ```
+    </Tab>
+
+    <Tab title="Local (Windows)">
+        <Info>Ensure the Windows prerequisites are installed first, refer to the Windows section in [Install Nodes in ComfyUI](../../reference/custom-node-installation##install-nodes-in-comfyui)</Info> 
+        ```bash
+        pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
+        pip install -r requirements.txt
+        pip install . --no-build-isolation
+        ```
+
+    </Tab>
+</Tabs>
+
+Proceed to [Install Nodes in ComfyStream](../../reference/custom-node-installation#install-nodes-for-comfystream) each time you add a new node to ComfyUI

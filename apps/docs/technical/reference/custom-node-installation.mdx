@@ -1,13 +1,13 @@
 ---
 title: "Custom Node Installation"
-description: "install custom nodes in ComfyUI and ComfyStream"
-icon: "code"
+description: "Install custom nodes in ComfyUI and ComfyStream"
+icon: "download"
 ---
 
-## Install Custom Nodes into ComfyUI
-When adding custom nodes, you will need to install them in both `comfyui` and `comfystream` conda environments. 
+## Install Nodes in ComfyUI
+When adding custom nodes, you will need to install them in both `comfyui` and `comfystream` conda environments.
 
-<Info>Since ComfyUI is started in the `comfyui` environment, you can just install nodes via the ComfyUI-Manager and they will be installed in ComfyUI. In this case you only need to [Install nodes for ComfyStream](#install-nodes-for-comfystream) </Info>
+<Info>Since ComfyUI is started in the `comfyui` environment, typically you can just install nodes via  **ComfyUI-Manager** and they will be installed in ComfyUI. In this case you only need to [Install nodes for ComfyStream](#install-nodes-for-comfystream)</Info>
 
 1. Navigate to the custom node directory and activate the `comfyui` environment:
 <Tabs>
@@ -19,6 +19,18 @@ When adding custom nodes, you will need to install them in both `comfyui` and `c
     </Tab>
 
     <Tab title="Local (Windows)">
+        <Note>Many custom nodes such as StreamDiffusion and SAM2-Realtime require **CUDA** and **torch** to be installed</Note>
+        Ensure the system prerequisites are installed before adding GPU-accelerated nodes on Windows:
+        <Expandable title="System Prerequisites">
+        __NVIDIA CUDA Toolkit__
+        1. Install [CUDA Toolkit](https://developer.nvidia.com/cuda-downloads?target_os=Windows&target_arch=x86_64&target_version=11&target_type=exe_network)
+        2. Set `CUDA_HOME` to your installation directory for CUDA. Example: `C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.4` <Note>Update CUDA version folder name as needed</Note>
+
+        __Visual C++ Build Tools__
+        1. Install [Visual C++ Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/). From Visual Studio Installer, click **Individual Components**, then select **C++ CMake Build Tools**.
+        2. Ensure **C++ Build Tools** are in the system PATH by adding `C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\14.42.34433\bin\HostX86\x64\` (or equivalent) to your system `PATH` variable
+        </Expandable>
+
         ```bash
         conda activate comfyui
         cd "$env:HOMEPATH/comfyRealtime/ComfyUI/custom_nodes"
@@ -26,46 +38,52 @@ When adding custom nodes, you will need to install them in both `comfyui` and `c
     </Tab>
 </Tabs>
 
-2. Clone and install requirements. For example, to install the **SAM2-Realtime** node:
+2. Clone the node repository:
+
 ```bash
-git clone https://github.com/pschroedl/ComfyUI-SAM2-Realtime.git
-cd ComfyUI-SAM2-Realtime
+conda activate comfyui
+git clone https://github.com/ryanontheinside/ComfyUI_RealTimeNodes.git
+cd ComfyUI_RealTimeNodes
+```
+
+3. Activate the `comfyui` environment and install requirements:
+
+```bash
+conda activate comfyui
 pip install -r requirements.txt
 conda deactivate
 ```
 
-<Info> A complete list of already supported nodes can be found at [ComfyUI Custom Nodes](../../technical/reference/available-nodes)</Info>
+4. Proceed to [Install nodes for ComfyStream](#install-nodes-for-comfystream) each time you add a new node to ComfyUI.
 
-## Install nodes for ComfyStream
+
+## Install Nodes in ComfyStream
 After adding a custom node to ComfyUI, you must also install the dependencies in the `comfystream` environment:
 
-4. Start a new terminal session and activate `comfystream`:
+1. Start a new terminal session and activate `comfystream`:
 
 ```bash
 conda activate comfystream
 ```
 
-5. Navigate to the **ComfyStream** directory:
+2. Install the custom node requirements by running the `install.py` script with the `--workspace` flag pointing to the ComfyUI workspace directory:
 <Tabs>
     <Tab title="RunPod (Linux)">
     ```bash
     cd /workspace/comfyRealtime/ComfyStream
+    python install.py --workspace ../ComfyUI
     ```
     </Tab>
 
     <Tab title="Local (Windows)">
     ```bash
     cd "$env:HOMEPATH/comfyRealtime/ComfyStream"
+    python install.py --workspace ..\ComfyUI
     ```
     </Tab>
 </Tabs>
 
-6. Install the custom node dependencies by running the `install.py` script with the `--workspace` flag pointing to the ComfyUI workspace directory:
-```bash
-python install.py --workspace ../ComfyUI
-```
-
-## Test the custom node
+## Testing the Custom Node
 1. Start ComfyUI and ComfyStream to see the new node in action:
 - From the **ComfyUI** terminal:
 ```bash
@@ -76,64 +94,20 @@ python main.py --listen
 python server/app.py --workspace ../ComfyUI --media-ports=5678 --host=0.0.0.0 --port 8889
 ```
 
-2. Download the sample workflow json file for SAM2 [examples/SAM2-Realtime-Example.json](https://github.com/pschroedl/ComfyUI-SAM2-Realtime/blob/main/examples/SAM2-Realtime-Example.json) and open the workflow in ComfyUI
-3. Follow [Run ComfyStream UI](./local-testing-comfystream-ui) to start a live stream 
+2. Download the sample workflow json file for motion control [examples/motioncontrol.json](https://raw.githubusercontent.com/ryanontheinside/ComfyUI_RealTimeNodes/main/examples/motioncontrol.json)
+3. From ComfyUI, go to **Workflow** > **Open** and select *motioncontrol.json* to load the workflow.
+4. Click **Upload** to add an image to the **LoadImage** node and click **Queue** to run the workflow.
+<Info>If the node is installed correctly, you will see the output in the **LoadImage** node.</Info> 
 
+5. Follow [Run ComfyStream UI](./local-testing-comfystream-ui) to start a live stream 
+
+<Note>
+ComfyUI_RealTimeNodes is a collection of over 100 custom nodes for ComfyUI. These nodes can be used with ComfyStream to create custom workflows for real-time video processing.
+</Note>
 
 # Installing Additional Livepeer Custom Nodes
 
-### StreamDiffusion
-This node is useful for styling videos with a diffusion effect. It can be combined with other nodes to create masked effects.
-<Tabs>
-    <Tab title="RunPod (Linux)">
-    ```bash
-    cd /workspace/comfyRealtime/ComfyUI/custom_nodes
-    ```
-    </Tab>
+A complete list of already supported nodes can be found at [Available ComfyUI Nodes](../../technical/reference/available-nodes)
 
-    <Tab title="Local (Windows)">
-    ```bash
-    cd "$env:HOMEPATH/comfyRealtime/ComfyUI/custom_nodes"
-    ```
-    </Tab>
-</Tabs>
+Installation steps for our most powerful nodes can be found at [Installing Nodes](../../technical/reference/nodes)
 
-```bash
-conda activate comfyui
-git clone https://github.com/pschroedl/ComfyUI-StreamDiffusion.git
-cd ComfyUI-StreamDiffusion
-git checkout 628c9f81abdc4f9b0207bcb556f35a8cbc2d7319
-pip install -r requirements.txt
-conda deactivate
-```
-
-### SAM2-Realtime
-
-This node is useful for tracking an object given positive and negative prompt coordinates. It can be combined with Florence2 and other object detection nodes.
-
-Clone the node and install dependencies
-<Tabs>
-    <Tab title="RunPod (Linux)">
-    ```bash
-    cd /workspace/comfyRealtime/ComfyUI/custom_nodes
-    ```
-    </Tab>
-
-    <Tab title="Local (Windows)">
-    ```bash
-    cd "$env:HOMEPATH/comfyRealtime/ComfyUI/custom_nodes"
-    ```
-    </Tab>
-</Tabs>
-
-```bash
-conda activate comfyui
-git clone https://github.com/pschroedl/ComfyUI-SAM2-Realtime.git
-cd ComfyUI-SAM2-Realtime
-pip install -r requirements.txt
-conda deactivate
-```
-
-<Note>
-Remember to [Install nodes for ComfyStream](#install-nodes-for-comfystream) each time you add a new node to ComfyUI
-</Note>

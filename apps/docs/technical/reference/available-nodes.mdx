@@ -23,7 +23,7 @@ These nodes are required for creating real-time video pipelines
     - **Best Practices:**
       - Set fixed frame rate
   <div style={{ float: 'right', textDecoration: 'none' }}>
-    [GitHub Link](https://github.com/yondonfu/comfystream/)
+    [GitHub](https://github.com/yondonfu/comfystream/)
   </div>
   </Accordion>
 </AccordionGroup>
@@ -33,6 +33,7 @@ Nodes for analyzing video frames in real-time. They can be used for tasks like o
 
 <AccordionGroup>
   <Accordion header="Depth Anything TensorRT" title="Depth Anything TensorRT">
+    Refer to [examples/SAM2-Realtime-Example.json](https://github.com/pschroedl/ComfyUI-SAM2-Realtime/blob/main/examples/SAM2-Realtime-Example.json) for a sample workflow
     - **Input:** RGB frame (3, H, W)
     - **Output:** Depth map (1, H, W)
     - **Performance Requirements:**
@@ -44,10 +45,13 @@ Nodes for analyzing video frames in real-time. They can be used for tasks like o
       - Cache results for static scenes
       - Use lowest viable resolution
     <div style={{ float: 'right', textDecoration: 'none' }}>
-      [GitHub Link](https://github.com/yuvraj108c/ComfyUI-Depth-Anything-Tensorrt)
+      [GitHub](https://github.com/yuvraj108c/ComfyUI-Depth-Anything-Tensorrt)
     </div>
   </Accordion>
   <Accordion header="Segment Anything 2" title="Segment Anything 2">
+      Useful for tracking an object given positive and negative prompt coordinates. It can be combined with Florence2 and other object detection nodes.
+      Refer to [examples/SAM2-Realtime-Example.json](https://github.com/pschroedl/ComfyUI-SAM2-Realtime/blob/main/examples/SAM2-Realtime-Example.json) for a sample workflow
+
     - **Input:** RGB frame (3, H, W)
     - **Output:** Segmentation mask (1, H, W)
     - **Performance Requirements:**
@@ -58,8 +62,9 @@ Nodes for analyzing video frames in real-time. They can be used for tasks like o
       - Cache static masks
       - Use mask erosion for stability
       - Implement confidence thresholding
+
     <div style={{ float: 'right', textDecoration: 'none' }}>
-      [GitHub Link](https://github.com/pschroedl/ComfyUI-SAM2-Realtime)
+      [GitHub](https://github.com/pschroedl/ComfyUI-SAM2-Realtime)
     </div>
   </Accordion>
   <Accordion header="Florence 2" title="Florence 2">
@@ -73,8 +78,11 @@ Nodes for analyzing video frames in real-time. They can be used for tasks like o
       - Cache embeddings for known references
       - Use cosine similarity for matching
       - Implement feature vector normalization
+    
+    Refer to the [README.MD](https://github.com/ad-astra-video/ComfyUI-Florence2-Vision/blob/main/README.md) and [example workflows](https://github.com/ryanontheinside/ComfyUI_RealTimeNodes/tree/main/examples) to learn more
+
     <div style={{ float: 'right', textDecoration: 'none' }}>
-      [GitHub Link](https://github.com/ad-astra-video/ComfyUI-Florence2-Vision)
+      [GitHub](https://github.com/ad-astra-video/ComfyUI-Florence2-Vision)
     </div>
   </Accordion>
 </AccordionGroup>
@@ -82,21 +90,44 @@ Nodes for analyzing video frames in real-time. They can be used for tasks like o
 ## Generative and Control Nodes
 Nodes for applying visual effects and controlling video content in real-time
 <AccordionGroup>
+<Accordion header="ComfyUI Real-Time Nodes " title="ComfyUI Real-Time Nodes ">
+  A suite of nodes for real-time video processing and control. Some examples of nodes included are:
+  
+  - **Value**: FloatControl, IntControl and StringControl
+  - **Sequence**: FloatSequence, IntSequence and StringSequence
+  - **Motion**: MotionController, IntegerMotionController, ROINode
+  - **Utility**: FPSMonitor, QuickShapeMask, DTypeConverter, FastWebcamCapture
+  - **VAE**: TAESDVaeEncodem, TAESDVaeDecode
+
+  Refer to the [README.MD](https://github.com/ryanontheinside/ComfyUI_RealTimeNodes/blob/main/README.MD) and [example workflows](https://github.com/ryanontheinside/ComfyUI_RealTimeNodes/tree/main/examples) to learn more
+
+  <div style={{ float: 'right', textDecoration: 'none' }}>
+    [GitHub](https://github.com/ryanontheinside/ComfyUI_RealTimeNodes)
+  </div>
+
+</Accordion>
   <Accordion header="StreamDiffusion" title="StreamDiffusion">
+    This node is useful for styling videos with a diffusion effects. It can be combined with other nodes to create masked effects.
+
     - **Input:** RGB frame (3, H, W)
     - **Output:** Feature vector (1, 512)
+
+    Refer to the [README.MD](https://github.com/pschroedl/ComfyUI-StreamDiffusion/blob/main/README.md) and [example workflows](https://github.com/pschroedl/ComfyUI-StreamDiffusion/tree/main/examples) to learn more
+
     <div style={{ float: 'right', textDecoration: 'none' }}>
-      [GitHub Link](https://github.com/pschroedl/ComfyUI-StreamDiffusion)
+      [GitHub](https://github.com/pschroedl/ComfyUI-StreamDiffusion)
     </div>
   </Accordion>
   <Accordion header="NVIDIA TensorRT" title="NVIDIA TensorRT">
     The NVIDIA TensorRT plugin optimizes stable diffusion performance by generating a static TensorRT engine based on static StableDiffusion parameters. 
     Refer to the [README](https://github.com/yondonfu/ComfyUI_TensorRT/blob/quantization_with_controlnet_fixes/README.md) for install and usage instructions.  
     <div style={{ float: 'right', textDecoration: 'none' }}>
-    [GitHub Link](https://github.com/yondonfu/ComfyUI_TensorRT/tree/quantization_with_controlnet_fixes)
+    [GitHub](https://github.com/yondonfu/ComfyUI_TensorRT/tree/quantization_with_controlnet_fixes)
     </div>
   </Accordion>
   <Accordion header="LivePortraitKJ" title="LivePortraitKJ">
+  <Tabs>
+    <Tab title="Description" header="Description">
     - **Input:**
       - Source image (3, H, W)
       - Driving frame (3, H, W)
@@ -109,8 +140,17 @@ Nodes for applying visual effects and controlling video content in real-time
       - Pre-process source images
       - Implement motion smoothing
       - Cache facial landmarks
+    </Tab>
+    <Tab title="Sample Workflow" header="Sample Workflow">
+    ```json
+
+    ```
+      
+    </Tab>
+  </Tabs>
+
     <div style={{ float: 'right', textDecoration: 'none' }}>
-      [GitHub Link](https://github.com/kijai/ComfyUI-LivePortraitKJ)
+      [GitHub](https://github.com/kijai/ComfyUI-LivePortraitKJ)
     </div>
   </Accordion>
   <Accordion header="ComfyUI Diffusers" title="ComfyUI Diffusers">
@@ -127,7 +167,7 @@ Nodes for applying visual effects and controlling video content in real-time
       - Implement denoising strength control
       - Cache conditioning tensors
     <div style={{ float: 'right', textDecoration: 'none' }}>
-      [GitHub Link](https://github.com/Limitex/ComfyUI-Diffusers)
+      [GitHub](https://github.com/Limitex/ComfyUI-Diffusers)
     </div>
   </Accordion>
   <Accordion header="ComfyUI-load-image-from-url Node" title="ComfyUI-load-image-from-url Node">
@@ -144,7 +184,7 @@ Nodes for applying visual effects and controlling video content in real-time
       - Implement strength scheduling
       - Cache control signals
       <div style={{ float: 'right', textDecoration: 'none' }}>
-        [GitHub Link](https://github.com/tsogzark/ComfyUI-load-image-from-url.git)
+        [GitHub](https://github.com/tsogzark/ComfyUI-load-image-from-url.git)
       </div>
   </Accordion>
 </AccordionGroup>
