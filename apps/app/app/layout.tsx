@@ -10,7 +10,6 @@ import Intercom from "@/components/intercom";
 import { AlarmCheck } from "lucide-react";
 import AlphaBanner from "@/components/header/alpha-banner";
 import { Metadata } from "next";
-import SessionTracker from "@/components/analytics/SessionTracker";
 import { MixpanelProvider } from "@/components/analytics/MixpanelProvider";
 import { VersionInfo } from '@/components/footer/version-info';
 
@@ -27,7 +26,6 @@ const RootLayout = ({ children }: RootLayoutProperties) => (
     <body className="bg-sidebar">
       <DesignSystemProvider defaultTheme="dark">
         <MixpanelProvider>
-          <SessionTracker />
           <AlphaBanner />
           <SidebarProvider>
             <GlobalSidebar>

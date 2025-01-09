@@ -3,46 +3,48 @@
 import { useEffect } from 'react';
 import track from '@/lib/track';
 import { usePrivy } from '@privy-io/react-auth';
-import mixpanel from 'mixpanel-browser';
-import { mixpanel as mixpanelConfig } from '@/lib/env';
 
-function identifyUser(userId: string, anonymousId: string, user: any) {
+async function identifyUser(userId: string, anonymousId: string, user: any) {
   try {
-    console.log("identifyUser userId:", userId);
-    
-    // First, create the alias if it doesn't exist
-    if (anonymousId !== userId) {
-      console.log("mixpanel.alias", userId, anonymousId);
-      mixpanel.alias(userId, anonymousId);
-    }
-
-    // Then identify the user
-    mixpanel.identify(userId);
-    
-    // Set user properties
-    const userProperties = {
-      $name: userId,  // This helps ensure the user shows up in Mixpanel
-      distinct_id: userId,
-      user_id: userId,
-      user_type: 'authenticated',
-      $last_login: new Date().toISOString(),
-      authenticated: true
+    const payload = {
+      userId,
+      anonymousId,
+      properties: {
+        $name: userId,
+        distinct_id: userId,
+        $email: user?.email?.address,
+        user_id: userId,
+        user_type: 'authenticated',
+        $last_login: new Date().toISOString(),
+        authenticated: true,
+        first_time_properties: {
+          $first_login: new Date().toISOString(),
+          first_wallet_address: user?.wallet?.address,
+          first_email: user?.email?.address
+        }
+      }
     };
     
-    // Set regular properties that can change
-    console.log("Setting user properties:", userProperties);
-    mixpanel.people.set(userProperties);
-    mixpanel.register(userProperties);
-
-    // Set first login timestamp - will only be set once
-    mixpanel.people.set_once({
-      $first_login: new Date().toISOString(),
-      first_wallet_address: user?.wallet?.address,
-      first_email: user?.email?.address
+    console.log("Sending identify request:", payload);
+    
+    const response = await fetch('/api/mixpanel/identify', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload)
     });
 
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(`Failed to identify user: ${errorData.error || response.statusText}`);
+    }
+
+    const data = await response.json();
+    console.log("Identify response:", data);
+
   } catch (error) {
-    console.error("Error identifying user:", error);
+    console.error("Error in identifyUser:", error);
   }
 }
 
@@ -56,9 +58,7 @@ async function handleDistinctId(user: any) {
 
   // Only handle user identification if there is an authenticated user
   if (user?.id) {
-    if (distinctId !== user.id) {
-      identifyUser(user.id, distinctId, user);
-    }
+    await identifyUser(user.id, distinctId, user);
     localStorage.setItem('mixpanel_user_id', user.id);
     localStorage.setItem('mixpanel_distinct_id', user.id);
     distinctId = user.id;
@@ -117,8 +117,7 @@ function handleSessionEnd() {
 
 export default function SessionTracker() {
   const { user, authenticated, ready } = usePrivy();
-
-  // Existing session tracking
+  
   useEffect(() => {
     if (!ready) return;
 
@@ -134,8 +133,15 @@ export default function SessionTracker() {
 
     initSession();
 
-    return () => {
+    // Only handle session end when leaving the page
+    const handleBeforeUnload = () => {
       handleSessionEnd();
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
     };
   }, [user, authenticated, ready]);
 
