@@ -88,15 +88,6 @@
       "pages": [
       "technical/reference/available-nodes",
       "technical/reference/custom-node-installation",
-      {
-        "group": "Installing Nodes",
-        "icon": "download",
-        "pages": [
-        "technical/reference/nodes/sam2-realtime",
-        "technical/reference/nodes/streamdiffusion",
-        "technical/reference/nodes/florence2"
-        ]
-      },
       "technical/reference/performance-recommendations"
       ]
     },
