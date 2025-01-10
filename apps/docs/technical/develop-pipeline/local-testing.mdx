@@ -78,23 +78,18 @@ We will use the [ComfyStream_Setup_Scripts](https://github.com/ryanontheinside/C
 
 ## Start ComfyUI
 Start a new terminal and activate the `comfyui` conda environment:
-<Tabs>
-    <Tab title="RunPod (Linux)">
-    ```bash
-    conda activate comfyui
-    cd /workspace/comfyRealtime/ComfyUI
-    python main.py --listen
-    ```
-    </Tab>
-
-    <Tab title="Local (Windows)">
-    ```bash
-    conda activate comfyui
-    cd "$env:HOMEPATH/comfyRealtime/ComfyUI"
-    python main.py --listen
-    ```
-    </Tab>
-</Tabs>
+<CodeGroup>
+```bash RunPod (Linux)
+conda activate comfyui
+cd /workspace/comfyRealtime/ComfyUI
+python main.py --listen
+```
+```bash Local (Windows)
+conda activate comfyui
+cd "$env:HOMEPATH/comfyRealtime/ComfyUI"
+python main.py --listen
+```
+</CodeGroup>
 
 <Info>
 It is normal to see logs for the tensorrt nodes failing to import, as they are only compatible with ComfyStream. Your list of nodes might vary.
@@ -109,11 +104,11 @@ Import times for custom nodes:
    0.5 seconds: /ComfyUI/custom_nodes/ComfyUI_RyanOnTheInside
 ```
 
-3. Access ComfyUI from the web interface on port 8188: 
+Access ComfyUI from the web interface on port 8188: 
 <Tabs>
     <Tab title="RunPod (Linux)">
         From RunPod, click **Connect**, then click **Connect to HTTP Service [Port 8188]** to access ComfyUI:
-        ![Open Jupyter Lab](../../images/jupyter.png)
+        ![Connect to HTTP Service](../../images/jupyter.png)
 
     </Tab>
 
@@ -129,19 +124,14 @@ Import times for custom nodes:
 conda activate comfystream
 ```
 2. Change to the ComfyStream directory
-<Tabs>
-    <Tab title="RunPod (Linux)">
-        ```bash
-        cd /workspace/comfyRealtime/ComfyStream
-        ```
-    </Tab>
-
-    <Tab title="Local (Windows)">
-        ```bash
-        cd "$env:HOMEPATH/comfyRealtime/ComfyUI"
-        ```
-    </Tab>
-</Tabs>
+<CodeGroup>
+```bash RunPod (Linux)
+cd /workspace/comfyRealtime/ComfyStream
+```
+```bash Local (Windows)
+cd "$env:HOMEPATH/comfyRealtime/ComfyUI"
+```
+</CodeGroup>
 
 3. Start ComfyStream
 ```bash
@@ -165,16 +155,12 @@ conda remove --name comfystream --all
 conda remove --name comfyui --all
 ```
 Finally, run the setup script again to recreate the conda environments:
-<Tabs>
-    <Tab title="RunPod (Linux)">
-        ```bash
-        bash ./ComfyStream_Setup_Scripts/runpod/initial_setup.sh
-        ```
-    </Tab>
-    <Tab title="Local (Windows)">
-        ```bash (admin)
-        cd "$env:HOMEPATH"
-        & "$env:HOMEPATH/ComfyStream_Setup_Scripts/local/setup_comfystream.ps1"
-        ```
-    </Tab>
-</Tabs>
+<CodeGroup>
+```bash RunPod (Linux)
+bash ./ComfyStream_Setup_Scripts/runpod/initial_setup.sh
+```
+```bash Local (Windows)
+cd "$env:HOMEPATH"
+& "$env:HOMEPATH/ComfyStream_Setup_Scripts/local/setup_comfystream.ps1"
+```
+</CodeGroup>

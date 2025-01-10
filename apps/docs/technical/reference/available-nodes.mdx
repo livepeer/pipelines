@@ -23,7 +23,7 @@ These nodes are required for creating real-time video pipelines
     - **Best Practices:**
       - Set fixed frame rate
   <div style={{ float: 'right', textDecoration: 'none' }}>
-    [GitHub Link](https://github.com/yondonfu/comfystream/)
+    [GitHub](https://github.com/yondonfu/comfystream/)
   </div>
   </Accordion>
 </AccordionGroup>
@@ -33,48 +33,219 @@ Nodes for analyzing video frames in real-time. They can be used for tasks like o
 
 <AccordionGroup>
   <Accordion header="Depth Anything TensorRT" title="Depth Anything TensorRT">
-    - **Input:** RGB frame (3, H, W)
-    - **Output:** Depth map (1, H, W)
-    - **Performance Requirements:**
-      - Inference time: < 20ms
-      - VRAM usage: 2GB
-      - Batch size: 1
-    - **Best Practices:**
-      - Place early in workflow
-      - Cache results for static scenes
-      - Use lowest viable resolution
-    <div style={{ float: 'right', textDecoration: 'none' }}>
-      [GitHub Link](https://github.com/yuvraj108c/ComfyUI-Depth-Anything-Tensorrt)
-    </div>
+    <Tabs>
+      <Tab title="Description" header="Description">
+        - **Input:** RGB frame (3, H, W)
+        - **Output:** Depth map (1, H, W)
+        - **Performance Requirements:**
+          - Inference time: < 20ms
+          - VRAM usage: 2GB
+          - Batch size: 1
+        - **Best Practices:**
+          - Place early in workflow
+          - Cache results for static scenes
+          - Use lowest viable resolution
+      </Tab>
+      <Tab title="Installation" header="Installation">
+      1. Navigate to the `custom_nodes` directory in your ComfyUI workspace
+      <CodeGroup>
+        ```bash RunPod (Linux)
+        cd /workspace/comfyRealtime/ComfyUI/custom_nodes
+        ```
+
+        ```bash Local (Windows)
+        cd "$env:HOMEPATH/comfyRealtime/ComfyUI/custom_nodes"
+        ```
+      </CodeGroup>
+      
+      2. Clone the repository
+      ```bash
+      git clone https://github.com/yuvraj108c/ComfyUI-Depth-Anything-Tensorrt.git
+      cd ./ComfyUI-Depth-Anything-Tensorrt
+      ```
+
+      3. Install the node
+      ```bash
+      conda activate comfyui
+      pip install -r requirements.txt
+      ```
+
+      4. Download the TensorRT onnx file and build the engine
+      ```bash
+      wget -O depth_anything_vitl14.onnx https://huggingface.co/yuvraj108c/Depth-Anything-2-Onnx/resolve/main/depth_anything_v2_vitb.onnx?download=true --content-disposition
+      python export_trt.py
+      ```
+
+      5. Copy the TensorRT engine file to the ComfyUI models directory
+      <CodeGroup>
+        ```bash RunPod (Linux)
+        mkdir -p /ComfyUI/models/tensorrt/depth-anything
+        mv depth_anything_vitl14-fp16.engine /workspace/comfyRealtime/ComfyUI/models/tensorrt/depth-anything/
+        ```
+
+        ```bash Local (Windows)
+        mkdir -p "$env:HOMEPATH/comfyRealtime/ComfyUI/models/tensorrt/depth-anything"
+        mv depth_anything_vitl14-fp16.engine "$env:HOMEPATH/comfyRealtime/ComfyUI/models/tensorrt/depth-anything/"
+        ```
+      </CodeGroup>
+
+      </Tab>
+      <Tab title="Sample Workflows" header="Sample Workflows">
+        ```json DepthAnythingTensorrt.json
+        {
+            "1": {
+                "inputs": {
+                "images": [
+                    "2",
+                    0
+                ]
+                },
+                "class_type": "SaveTensor",
+                "_meta": {
+                "title": "SaveTensor"
+                }
+            },
+            "2": {
+                "inputs": {
+                "engine": "depth_anything_vitl14-fp16.engine",
+                "images": [
+                    "3",
+                    0
+                ]
+                },
+                "class_type": "DepthAnythingTensorrt",
+                "_meta": {
+                "title": "Depth Anything Tensorrt"
+                }
+            },
+            "3": {
+                "inputs": {},
+                "class_type": "LoadTensor",
+                "_meta": {
+                "title": "LoadTensor"
+                }
+            }
+        }
+        ```
+      </Tab>
+    </Tabs>
+  <div style={{ float: 'right', textDecoration: 'none' }}>
+    [GitHub](https://github.com/yuvraj108c/ComfyUI-Depth-Anything-Tensorrt)
+  </div>
   </Accordion>
   <Accordion header="Segment Anything 2" title="Segment Anything 2">
-    - **Input:** RGB frame (3, H, W)
-    - **Output:** Segmentation mask (1, H, W)
-    - **Performance Requirements:**
-      - Inference time: < 30ms
-      - VRAM usage: 3GB
-      - Batch size: 1
-    - **Best Practices:**
-      - Cache static masks
-      - Use mask erosion for stability
-      - Implement confidence thresholding
+    <Tabs>
+      <Tab title="Description" header="Description">
+      Useful for tracking an object given positive and negative prompt coordinates. It can be combined with Florence2 and other object detection nodes.
+
+      - **Input:** RGB frame (3, H, W)
+      - **Output:** Segmentation mask (1, H, W)
+      - **Performance Requirements:**
+        - Inference time: < 30ms
+        - VRAM usage: 3GB
+        - Batch size: 1
+      - **Best Practices:**
+        - Cache static masks
+        - Use mask erosion for stability
+        - Implement confidence thresholding
+      </Tab>
+      <Tab title="Installation" header="Installation">
+      1. Navigate to the `custom_nodes` directory in your ComfyUI workspace
+      <CodeGroup>
+        ```bash RunPod (Linux)
+        cd /workspace/comfyRealtime/ComfyUI/custom_nodes
+        ```
+
+        ```bash Local (Windows)
+        cd "$env:HOMEPATH/comfyRealtime/ComfyUI/custom_nodes"
+        ```
+      </CodeGroup>
+
+      2. Clone the repository
+      ```bash
+      git clone https://github.com/pschroedl/ComfyUI-SAM2-Realtime.git
+      cd ComfyUI-SAM2-Realtime
+      ```
+
+      3. Install requirements
+      <CodeGroup>
+      ```bash RunPod (Linux)
+        conda activate comfyui
+        pip install -r requirements.txt
+      ```
+      ```bash Local (Windows)
+        conda activate comfyui
+        pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
+        pip install -r requirements.txt
+        pip install . --no-build-isolation
+      ```
+      </CodeGroup>
+
+      <Note>
+      For Windows, ensure the prerequisites are installed by following the Windows section in [Install Nodes in ComfyUI](../../reference/custom-node-installation##install-nodes-in-comfyui)
+      </Note>
+
+      </Tab>
+      <Tab title="Sample Workflows" header="Sample Workflows">
+        - [examples/SAM2-Realtime-Example.json](https://github.com/pschroedl/ComfyUI-SAM2-Realtime/blob/main/examples/SAM2-Realtime-Example.json)
+      </Tab>
+    </Tabs>
     <div style={{ float: 'right', textDecoration: 'none' }}>
-      [GitHub Link](https://github.com/pschroedl/ComfyUI-SAM2-Realtime)
+      [GitHub](https://github.com/pschroedl/ComfyUI-SAM2-Realtime)
     </div>
   </Accordion>
   <Accordion header="Florence 2" title="Florence 2">
-    - **Input:** RGB frame (3, H, W)
-    - **Output:** Feature vector (1, 512)
-    - **Performance Requirements:**
-      - Inference time: < 15ms
-      - VRAM usage: 1GB
-      - Batch size: 1
-    - **Best Practices:**
-      - Cache embeddings for known references
-      - Use cosine similarity for matching
-      - Implement feature vector normalization
+    <Tabs>
+      <Tab title="Description" header="Description">
+        - **Input:** RGB frame (3, H, W)
+        - **Output:** Feature vector (1, 512)
+        - **Performance Requirements:**
+          - Inference time: < 15ms
+          - VRAM usage: 1GB
+          - Batch size: 1
+        - **Best Practices:**
+          - Cache embeddings for known references
+          - Use cosine similarity for matching
+          - Implement feature vector normalization
+      </Tab>
+      <Tab title="Installation" header="Installation">
+      1. Navigate to the `custom_nodes` directory in your ComfyUI workspace
+      <CodeGroup>
+        ```bash RunPod (Linux)
+        cd /workspace/comfyRealtime/ComfyUI/custom_nodes
+        ```
+
+        ```bash Local (Windows)
+        cd "$env:HOMEPATH/comfyRealtime/ComfyUI/custom_nodes"
+        ```
+      </CodeGroup>
+
+      2. Clone the repository
+      ```bash
+      git clone https://github.com/ad-astra-video/ComfyUI-Florence2-Vision.git
+      cd ComfyUI-Florence2-Vision
+      git checkout 0c624e61b6606801751bd41d93a09abe9844bea7
+      ```
+
+      3. Install requirements
+      <CodeGroup>
+      ```bash RunPod (Linux)
+        conda activate comfyui
+        pip install -r requirements.txt
+      ```
+      ```bash Local (Windows)
+        conda activate comfyui
+        pip install -r requirements.txt
+      ```
+      </CodeGroup>
+
+      </Tab>
+      <Tab title="Sample Workflows" header="Sample Workflows">
+        Download [example workflows](https://github.com/ad-astra-video/ComfyUI-Florence2-Vision/blob/main/examples) here
+      </Tab>
+    </Tabs>
     <div style={{ float: 'right', textDecoration: 'none' }}>
-      [GitHub Link](https://github.com/ad-astra-video/ComfyUI-Florence2-Vision)
+      [GitHub](https://github.com/ad-astra-video/ComfyUI-Florence2-Vision)
     </div>
   </Accordion>
 </AccordionGroup>
@@ -82,21 +253,119 @@ Nodes for analyzing video frames in real-time. They can be used for tasks like o
 ## Generative and Control Nodes
 Nodes for applying visual effects and controlling video content in real-time
 <AccordionGroup>
+<Accordion header="ComfyUI Real-Time Nodes" title="ComfyUI Real-Time Nodes">
+  <Tabs>
+    <Tab title="Description" header="Description">
+      A suite of nodes for real-time video processing and control. Some examples of nodes included are:
+      - **Value**: FloatControl, IntControl and StringControl
+      - **Sequence**: FloatSequence, IntSequence and StringSequence
+      - **Motion**: MotionController, IntegerMotionController, ROINode
+      - **Utility**: FPSMonitor, QuickShapeMask, DTypeConverter, FastWebcamCapture
+      - **VAE**: TAESDVaeEncodem, TAESDVaeDecode
+
+      Refer to the [README.MD](https://github.com/ryanontheinside/ComfyUI_RealTimeNodes/blob/main/README.MD) for more details
+    </Tab>
+    <Tab title="Installation" header="Installation">
+      1. Navigate to the `custom_nodes` directory in your ComfyUI workspace
+      <CodeGroup>
+        ```bash RunPod (Linux)
+        cd /workspace/comfyRealtime/ComfyUI/custom_nodes
+        ```
+
+        ```bash Local (Windows)
+        cd "$env:HOMEPATH/comfyRealtime/ComfyUI/custom_nodes"
+        ```
+
+      </CodeGroup>
+
+      2. Clone the repository and install requirements
+      ```bash
+      git clone https://github.com/ryanontheinside/ComfyUI_RealTimeNodes
+      cd ComfyUI_RealTimeNodes
+      pip install -r requirements.txt
+      ```
+    </Tab>
+    <Tab title="Sample Workflows" header="Sample Workflows">
+      Download [example workflows](https://github.com/ryanontheinside/ComfyUI_RealTimeNodes/tree/main/examples) here
+    </Tab>
+  </Tabs>
+  <div style={{ float: 'right', textDecoration: 'none' }}>
+    [GitHub](https://github.com/ryanontheinside/ComfyUI_RealTimeNodes)
+  </div>
+</Accordion>
   <Accordion header="StreamDiffusion" title="StreamDiffusion">
-    - **Input:** RGB frame (3, H, W)
-    - **Output:** Feature vector (1, 512)
+    <Tabs>
+      <Tab title="Description" header="Description">
+        This node is useful for styling videos with a diffusion effect. It can be combined with other nodes to create masked effects.
+        - **Input:** RGB frame (3, H, W)
+        - **Output:** Feature vector (1, 512)
+      </Tab>
+      <Tab title="Installation" header="Installation">
+        1. Navigate to the `custom_nodes` directory in your ComfyUI workspace
+        <CodeGroup>
+          ```bash RunPod (Linux)
+          cd /workspace/comfyRealtime/ComfyUI/custom_nodes
+          ```
+
+          ```bash Local (Windows)
+          cd "$env:HOMEPATH/comfyRealtime/ComfyUI/custom_nodes"
+          ```
+        </CodeGroup>
+
+        2. Clone the repository
+        ```bash
+        git clone https://github.com/pschroedl/ComfyUI-StreamDiffusion.git
+        cd ComfyUI-StreamDiffusion
+        git checkout 628c9f81abdc4f9b0207bcb556f35a8cbc2d7319
+        ```
+
+        3. Install requirements
+        <CodeGroup>
+          ```bash RunPod (Linux)
+          conda activate comfyui
+          pip install -r requirements.txt
+          ```
+
+          ```bash Local (Windows)
+          pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
+          pip install -r requirements.txt
+          pip install . --no-build-isolation
+          ```
+        </CodeGroup>
+
+      <Note>
+      For Windows, ensure the prerequisites are installed by following the Windows section in [Install Nodes in ComfyUI](../../reference/custom-node-installation##install-nodes-in-comfyui)
+      </Note>
+
+      </Tab>
+      <Tab title="Sample Workflows" header="Sample Workflows">
+        Download [example workflows](https://github.com/pschroedl/StreamDiffusion/tree/main/examples) here
+      </Tab>
+    </Tabs>
     <div style={{ float: 'right', textDecoration: 'none' }}>
-      [GitHub Link](https://github.com/pschroedl/ComfyUI-StreamDiffusion)
+      [GitHub](https://github.com/pschroedl/ComfyUI-StreamDiffusion)
     </div>
   </Accordion>
   <Accordion header="NVIDIA TensorRT" title="NVIDIA TensorRT">
-    The NVIDIA TensorRT plugin optimizes stable diffusion performance by generating a static TensorRT engine based on static StableDiffusion parameters. 
-    Refer to the [README](https://github.com/yondonfu/ComfyUI_TensorRT/blob/quantization_with_controlnet_fixes/README.md) for install and usage instructions.  
+    <Tabs>
+      <Tab title="Description" header="Description">
+        The NVIDIA TensorRT plugin optimizes stable diffusion performance by generating a static TensorRT engine based on static StableDiffusion parameters.
+      </Tab>
+      <Tab title="Installation" header="Installation">
+        Refer to the [README](https://github.com/yondonfu/ComfyUI_TensorRT/blob/quantization_with_controlnet_fixes/README.md) for install and usage instructions.
+      </Tab>
+      <Tab title="Sample Workflows" header="Sample Workflows">
+        - [file-api-workflow-json](https://gist.github.com/yondonfu/592a04e075e790981cd401124e0d84e4#file-api-workflow-json)
+        - [file-workflow-json](https://gist.github.com/yondonfu/592a04e075e790981cd401124e0d84e4#file-workflow-json)
+      </Tab>
+    </Tabs>
     <div style={{ float: 'right', textDecoration: 'none' }}>
-    [GitHub Link](https://github.com/yondonfu/ComfyUI_TensorRT/tree/quantization_with_controlnet_fixes)
+      [GitHub](https://github.com/yondonfu/ComfyUI_TensorRT/tree/quantization_with_controlnet_fixes)
     </div>
   </Accordion>
   <Accordion header="LivePortraitKJ" title="LivePortraitKJ">
+  <Tabs>
+    <Tab title="Description" header="Description">
     - **Input:**
       - Source image (3, H, W)
       - Driving frame (3, H, W)
@@ -109,8 +378,14 @@ Nodes for applying visual effects and controlling video content in real-time
       - Pre-process source images
       - Implement motion smoothing
       - Cache facial landmarks
+    </Tab>
+    <Tab title="Sample Workflows" header="Sample Workflows">
+      
+    </Tab>
+  </Tabs>
+
     <div style={{ float: 'right', textDecoration: 'none' }}>
-      [GitHub Link](https://github.com/kijai/ComfyUI-LivePortraitKJ)
+      [GitHub](https://github.com/kijai/ComfyUI-LivePortraitKJ)
     </div>
   </Accordion>
   <Accordion header="ComfyUI Diffusers" title="ComfyUI Diffusers">
@@ -127,7 +402,7 @@ Nodes for applying visual effects and controlling video content in real-time
       - Implement denoising strength control
       - Cache conditioning tensors
     <div style={{ float: 'right', textDecoration: 'none' }}>
-      [GitHub Link](https://github.com/Limitex/ComfyUI-Diffusers)
+      [GitHub](https://github.com/Limitex/ComfyUI-Diffusers)
     </div>
   </Accordion>
   <Accordion header="ComfyUI-load-image-from-url Node" title="ComfyUI-load-image-from-url Node">
@@ -144,7 +419,7 @@ Nodes for applying visual effects and controlling video content in real-time
       - Implement strength scheduling
       - Cache control signals
       <div style={{ float: 'right', textDecoration: 'none' }}>
-        [GitHub Link](https://github.com/tsogzark/ComfyUI-load-image-from-url.git)
+        [GitHub](https://github.com/tsogzark/ComfyUI-load-image-from-url.git)
       </div>
   </Accordion>
 </AccordionGroup>

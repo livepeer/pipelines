@@ -35,14 +35,14 @@ npm run dev
 The **Stream URL** in ComfyStream UI should be set to the url and external port for the ComfyStream API environment.
 
 <Tabs>
-    <Tab title="Local">
-        - Local: `http://localhost:8889`
-    </Tab>
-    <Tab title="RunPod">
+    <Tab title="RunPod (Linux)">
         1. Log into RunPod and go the **Pods** page.
         2. Click on the **Connect** button.
         3. Click the **TCP Port Mappings** tab.
         4. Copy the *IP address* and *external port* for 8889, to create the url `http://IP:PORT`
+    </Tab>
+    <Tab title="Local (Windows)">
+        - Use `http://localhost:8889`
     </Tab>
 </Tabs>
 
@@ -56,96 +56,7 @@ cd comfystream/ui
 echo "NEXT_PUBLIC_DEFAULT_STREAM_URL=http://10.10.10.1:8889" > .env
 ```
 
-## Supported workflow JSON
+## Supported workflows
+Refer to [Available ComfyUI Nodes](../../technical/reference/available-nodes) for sample workflows to import into ComfyStream and ComfyUI
 
-Save this as a JSON file and import it into ComfyStream UI
-<Tabs>
-    <Tab title="Segment Anything 2">
-        ```json
-        {
-            "1": {
-                "inputs": {
-                "images": [
-                    "2",
-                    0
-                ],
-                },
-                "class_type": "LoadImage"
-            },
-            "2": {
-                "inputs": {
-                "filename_prefix": "ComfyUI",
-                "images": [
-                    "8",
-                    0
-                ]
-                },
-                "class_type": "SaveImage"
-            },
-            "7": {
-                "inputs": {
-                "model": "sam2_hiera_tiny.pt",
-                "segmentor": "realtime",
-                "device": "cuda",
-                "precision": "fp16"
-                },
-                "class_type": "DownloadAndLoadSAM2RealtimeModel"
-            },
-            "8": {
-                "inputs": {
-                "coordinates_positive": "[[384, 384]]",
-                "coordinates_negative": "",
-                "reset_tracking": true,
-                "images": [
-                    "1",
-                    0
-                ],
-                "sam2_model": [
-                    "7",
-                    0
-                ]
-                },
-                "class_type": "Sam2RealtimeSegmentation"
-            }
-        }
-        ```
-    </Tab>
-    <Tab title="Depth Anything 2">
-        ```json
-        {
-            "1": {
-                "inputs": {
-                "images": [
-                    "2",
-                    0
-                ]
-                },
-                "class_type": "SaveTensor",
-                "_meta": {
-                "title": "SaveTensor"
-                }
-            },
-            "2": {
-                "inputs": {
-                "engine": "depth_anything_vitl14-fp16.engine",
-                "images": [
-                    "3",
-                    0
-                ]
-                },
-                "class_type": "DepthAnythingTensorrt",
-                "_meta": {
-                "title": "Depth Anything Tensorrt"
-                }
-            },
-            "3": {
-                "inputs": {},
-                "class_type": "LoadTensor",
-                "_meta": {
-                "title": "LoadTensor"
-                }
-            }
-        }
-        ```
-    </Tab>
-</Tabs>
+<Note>Sample workflows are listed in the `examples` directory of most node repositories</Note>

@@ -79,25 +79,26 @@
       "pages": [
         "technical/develop-pipeline/create-your-first-pipeline",
         "technical/develop-pipeline/local-testing",
-        "technical/reference/local-testing-comfystream-ui"
+        "technical/reference/local-testing-comfystream-ui",
+        "technical/develop-pipeline/add-sd-loras"
       ]
     },
     {
       "group": "Custom Nodes",
       "pages": [
-        "technical/reference/available-nodes",
-        "technical/develop-pipeline/add-sd-loras",
-        "technical/reference/custom-node-installation"
+      "technical/reference/available-nodes",
+      "technical/reference/custom-node-installation",
+      "technical/reference/performance-recommendations"
       ]
     },
     {
-      "group": "Reference",
+    "group": "Reference",
       "pages": ["knowledge-base/reference/pricing"]
     },
     {
       "group": "Reference",
       "pages": [
-        "technical/reference/performance-recommendations",
+
         "technical/reference/develop-runpod",
         "technical/reference/tunneling-with-ssh"
       ]
