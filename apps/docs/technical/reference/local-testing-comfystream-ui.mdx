@@ -36,13 +36,13 @@ The **Stream URL** in ComfyStream UI should be set to the url and external port 
 
 <Tabs>
     <Tab title="RunPod (Linux)">
-        - Local: `http://localhost:8889`
-    </Tab>
-    <Tab title="Local (Windows)">
         1. Log into RunPod and go the **Pods** page.
         2. Click on the **Connect** button.
         3. Click the **TCP Port Mappings** tab.
         4. Copy the *IP address* and *external port* for 8889, to create the url `http://IP:PORT`
+    </Tab>
+    <Tab title="Local (Windows)">
+        - Use `http://localhost:8889`
     </Tab>
 </Tabs>
 
@@ -57,6 +57,6 @@ echo "NEXT_PUBLIC_DEFAULT_STREAM_URL=http://10.10.10.1:8889" > .env
 ```
 
 ## Supported workflows
-Refer to [Available ComfyUI Nodes](./reference/available-nodes) for sample workflows to import into ComfyStream.
+Refer to [Available ComfyUI Nodes](../../technical/reference/available-nodes) for sample workflows to import into ComfyStream and ComfyUI
 
-Save this as a JSON file and import it into ComfyStream UI
+<Note>Sample workflows are listed in the `examples` directory of most node repositories</Note>
