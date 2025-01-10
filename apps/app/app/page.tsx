@@ -5,6 +5,7 @@ import { type ReactElement, Suspense } from "react";
 import FeaturedPipelines from "@/components/welcome/featured";
 import { validateEnv } from "@/lib/env";
 import {validateServerEnv} from "@/lib/serverEnv";
+import ClientSideTracker from "@/components/analytics/ClientSideTracker";
 
 const App = async ({
   searchParams,
@@ -27,6 +28,7 @@ const App = async ({
         </Suspense>
       </div>
       <Modals searchParams={searchParams} />
+      <ClientSideTracker eventName="home_page_view" />
     </div>
   );
 };

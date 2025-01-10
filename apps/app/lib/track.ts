@@ -1,9 +1,10 @@
 import { User } from "@privy-io/react-auth";
-import { isProduction } from "./env";
-import mixpanel from 'mixpanel-browser';
 interface TrackProperties {
   [key: string]: any;
 }
+
+let lastTrackedEvents: { [key: string]: number } = {};
+const DEBOUNCE_TIME = 1000; // 1000ms debounce
 
 function getStoredIds() {
   if (typeof window === 'undefined') return {};
@@ -33,9 +34,22 @@ const track = async (
   eventProperties?: TrackProperties,
   user?: User
 ) => {
+  const now = Date.now();
+  const lastTracked = lastTrackedEvents[eventName] || 0;
+
+  // Skip if event was tracked less than DEBOUNCE_TIME ago
+  if (now - lastTracked < DEBOUNCE_TIME) {
+    console.log(`Debouncing ${eventName}, last tracked ${now - lastTracked}ms ago`);
+    return false;
+  }
 
   const { distinctId, sessionId, userId } = getStoredIds();
   const browserInfo = getBrowserInfo();
+
+  if (!sessionId) {
+    console.log("No sessionId found, skipping event tracking");
+    return;
+  }
 
   const data = {
     event: eventName,
@@ -48,7 +62,7 @@ const track = async (
     },
   };
 
-  console.log("Tracking event:", eventName);
+  console.log("Tracking event:", eventName, "for sessionId:", sessionId);
 
   try {
     const response = await fetch(`/api/mixpanel`, {
@@ -62,8 +76,13 @@ const track = async (
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
+    
+    // Update last tracked time after successful tracking
+    lastTrackedEvents[eventName] = now;
+    return true;
   } catch (error) {
     console.error("Error tracking event:", error);
+    return false;
   }
 };
 
