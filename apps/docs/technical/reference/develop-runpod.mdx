@@ -4,13 +4,10 @@ description: "This guide is intended for developers who are developing custom no
 icon: "code"
 ---
 
-## Creating a new RunPod Account
+## Creating a new RunPod Account and SSH key pair
 1. Create a [RunPod.io](https://runpod.io) account, and add some funds.
-2. Add a public key to your RunPod account **Settings** > **SSH Public Keys**.
-### **Setting Up SSH Keys for RunPod**
-To create an SSH keypair and use it to connect to a server on RunPod, follow these simple steps.
 
-1. Start a session in Powershell or terminal of your choice, and run a command like the following:
+2. Start a Powershell or terminal of your choice, then run a command like the following:
 ```bash
 ssh-keygen -t ed25519 -C "your_email@example.com"
 ```
@@ -18,11 +15,16 @@ ssh-keygen -t ed25519 -C "your_email@example.com"
 This will generate a pair of files. For me, the files are `ryanrunpod`, and `ryanrunpod.pub`
 </Note>
 
-### Adding SSH to RunPod
+## Add SSH public key to RunPod
 
-Locate your public key file (the one that ends in .pub), open it in notepad, and copy the contents to the field pictured below in the settings of your RunPod account.
+1. Locate your public key file (the one that ends in .pub), open it in notepad, and copy the contents 
 
-![RunPod SSH Setup](https://lh7-rt.googleusercontent.com/docsz/AD_4nXcXmfKUJfQOslc3yV_gjTl4z4cQBbXlpwpODgBdUfBETtqt8ZCbvaAPkAIHZj0TFHta-RaCdQkQ2cBt-M51CXVhwE8r2lHAF4GWnqOc5LCJIR8iVpRB7OcjVaGPDZ1N3s24oN3cvg?key=LMLbXfH5Do4K1o222p6HlCaY)
+2. Add the public key to your RunPod account **Settings** > **SSH Public Keys**.
+![RunPod SSH Setup](../../images/runpodssh.png)
+
+3. From the RunPod dashboard, click **Connect** to obtain the username or port to connect to. There are two examples provided on the **Connection Options** tab. You can alternatively use the web console.
+    - Basic SSH Terminal: Uses a unique userid with port 22 (Recommended)
+    - SSH over exposed TCP: Uses `root` for the userid and a unique port
 
 <Note>If you're adding this SSH key with a server running, you will need to start a new shell session for it to work!</Note>
 
@@ -38,20 +40,13 @@ SSH is now set up for your RunPod account, so you can use it with any servers yo
         - **Expose TCP Ports** to `22,8889`  ![Pod Template](../../images/podtemplate.png)
        
     4. Click **Set Overrides** to save the changes
-5. Click **Deploy On-Demand**
-6. Proceed to [Install Conda, ComfyUI, and ComfyStream](../develop-pipeline/local-testing)
+3. Click **Deploy On-Demand**
+4. Proceed to [Install Conda, ComfyUI, and ComfyStream](../develop-pipeline/local-testing)
 
 ## **Stopping a RunPod Server**
 Stopping pods helps lower costs on RunPod. Pods must also be stopped before making any port mapping changes.
 
-Refer to [Installing runpodctl](https://docs.runpod.io/runpodctl/install-runpodctl). If you're on windows, this can be installed on WSL also
-
-Create an API key for your RunPod account, and add it to runpod-cli
-```bash
-runpodctl config --apiKey YOUR_API_KEY
-```
-
-To stop a server, run the following command:
+To stop a RunPod server, you can run the following command from *inside* the pod:
 ```bash
  runpodctl stop pod YOUR_PODID
 ```

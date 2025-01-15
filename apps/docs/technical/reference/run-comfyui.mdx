@@ -1,0 +1,49 @@
+---
+title: "Run ComfyUI"
+description: "Develop AI video workflows in ComfyUI for use in ComfyStream"
+icon: "box"
+---
+
+
+1. Start a new terminal and activate the `comfyui` conda environment:
+```bash
+conda activate comfyui
+cd /workspace/comfyRealtime/ComfyUI
+```
+
+2. Run ComfyUI
+<Note>
+ `--disable-cuda-malloc` is needed when you encounter the error `RuntimeError: cudaMallocAsync does not yet support checkPoolLiveAllocations` 
+</Note>
+
+<CodeGroup>
+    ```bash Standard
+    python main.py --listen
+    ```
+
+    ```bash TensorRT Workflows
+    python main.py --listen --disable-cuda-malloc
+    ```
+</CodeGroup>
+
+<Info>
+It is normal to see logs for the tensorrt nodes failing to import, as they are only compatible with ComfyStream
+```
+Import times for custom nodes:
+   0.0 seconds (IMPORT FAILED): /ComfyUI/custom_nodes/tensor_utils
+   0.0 seconds: /ComfyUI/custom_nodes/ComfyUI-Misc-Effects
+   0.0 seconds: /ComfyUI/custom_nodes/ComfyUI-Manager
+```
+</Info>
+
+3. Access ComfyUI from the web interface on port 8188: 
+<Tabs>
+    <Tab title="Remote (RunPod)">
+        From RunPod, click **Connect**, then click **HTTP Service -> :8188** to access ComfyUI
+        ![Connect to HTTP Service](../../images/jupyter.png)
+    </Tab>
+
+    <Tab title="Local">
+        Open a web browser and navigate to [http://localhost:8188](http://localhost:8188)
+    </Tab>
+</Tabs>

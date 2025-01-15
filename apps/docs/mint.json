@@ -75,11 +75,19 @@
       ]
     },
     {
+      "group": "Installation",
+      "pages": [
+        "technical/develop-pipeline/local-testing",
+        "technical/reference/custom-node-installation",
+        "technical/reference/run-comfyui",
+        "technical/reference/run-comfystream"
+      ]
+    },
+    {
       "group": "Pipeline Development",
       "pages": [
         "technical/develop-pipeline/create-your-first-pipeline",
-        "technical/develop-pipeline/local-testing",
-        "technical/reference/local-testing-comfystream-ui",
+        "technical/reference/download-models",
         "technical/develop-pipeline/add-sd-loras"
       ]
     },
@@ -87,7 +95,6 @@
       "group": "Custom Nodes",
       "pages": [
       "technical/reference/available-nodes",
-      "technical/reference/custom-node-installation",
       "technical/reference/performance-recommendations"
       ]
     },
