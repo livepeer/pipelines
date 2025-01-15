@@ -48,16 +48,10 @@ Nodes for analyzing video frames in real-time. They can be used for tasks like o
       </Tab>
       <Tab title="Installation" header="Installation">
       1. Navigate to the `custom_nodes` directory in your ComfyUI workspace
-      <CodeGroup>
-        ```bash RunPod (Linux)
-        cd /workspace/comfyRealtime/ComfyUI/custom_nodes
-        ```
+      ```bash
+      cd /workspace/comfyRealtime/ComfyUI/custom_nodes
+      ```
 
-        ```bash Local (Windows)
-        cd "$env:HOMEPATH/comfyRealtime/ComfyUI/custom_nodes"
-        ```
-      </CodeGroup>
-      
       2. Clone the repository
       ```bash
       git clone https://github.com/yuvraj108c/ComfyUI-Depth-Anything-Tensorrt.git
@@ -77,17 +71,10 @@ Nodes for analyzing video frames in real-time. They can be used for tasks like o
       ```
 
       5. Copy the TensorRT engine file to the ComfyUI models directory
-      <CodeGroup>
-        ```bash RunPod (Linux)
-        mkdir -p /ComfyUI/models/tensorrt/depth-anything
-        mv depth_anything_vitl14-fp16.engine /workspace/comfyRealtime/ComfyUI/models/tensorrt/depth-anything/
-        ```
-
-        ```bash Local (Windows)
-        mkdir -p "$env:HOMEPATH/comfyRealtime/ComfyUI/models/tensorrt/depth-anything"
-        mv depth_anything_vitl14-fp16.engine "$env:HOMEPATH/comfyRealtime/ComfyUI/models/tensorrt/depth-anything/"
-        ```
-      </CodeGroup>
+      ```bash
+      mkdir -p /workspace/comfyRealtime/ComfyUI/models/tensorrt/depth-anything/
+      mv depth_anything_vitl14-fp16.engine /workspace/comfyRealtime/ComfyUI/models/tensorrt/depth-anything/
+      ```
 
       </Tab>
       <Tab title="Sample Workflows" header="Sample Workflows">
@@ -151,15 +138,9 @@ Nodes for analyzing video frames in real-time. They can be used for tasks like o
       </Tab>
       <Tab title="Installation" header="Installation">
       1. Navigate to the `custom_nodes` directory in your ComfyUI workspace
-      <CodeGroup>
-        ```bash RunPod (Linux)
-        cd /workspace/comfyRealtime/ComfyUI/custom_nodes
-        ```
-
-        ```bash Local (Windows)
-        cd "$env:HOMEPATH/comfyRealtime/ComfyUI/custom_nodes"
-        ```
-      </CodeGroup>
+      ```bash
+      cd /workspace/comfyRealtime/ComfyUI/custom_nodes
+      ```
 
       2. Clone the repository
       ```bash
@@ -168,18 +149,10 @@ Nodes for analyzing video frames in real-time. They can be used for tasks like o
       ```
 
       3. Install requirements
-      <CodeGroup>
-      ```bash RunPod (Linux)
-        conda activate comfyui
-        pip install -r requirements.txt
+      ```bash
+      conda activate comfyui
+      pip install -r requirements.txt
       ```
-      ```bash Local (Windows)
-        conda activate comfyui
-        pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
-        pip install -r requirements.txt
-        pip install . --no-build-isolation
-      ```
-      </CodeGroup>
 
       <Note>
       For Windows, ensure the prerequisites are installed by following the Windows section in [Install Nodes in ComfyUI](../../reference/custom-node-installation##install-nodes-in-comfyui)
@@ -210,15 +183,9 @@ Nodes for analyzing video frames in real-time. They can be used for tasks like o
       </Tab>
       <Tab title="Installation" header="Installation">
       1. Navigate to the `custom_nodes` directory in your ComfyUI workspace
-      <CodeGroup>
-        ```bash RunPod (Linux)
-        cd /workspace/comfyRealtime/ComfyUI/custom_nodes
-        ```
-
-        ```bash Local (Windows)
-        cd "$env:HOMEPATH/comfyRealtime/ComfyUI/custom_nodes"
-        ```
-      </CodeGroup>
+      ```bash
+      cd /workspace/comfyRealtime/ComfyUI/custom_nodes
+      ```
 
       2. Clone the repository
       ```bash
@@ -228,16 +195,10 @@ Nodes for analyzing video frames in real-time. They can be used for tasks like o
       ```
 
       3. Install requirements
-      <CodeGroup>
-      ```bash RunPod (Linux)
-        conda activate comfyui
-        pip install -r requirements.txt
+      ```bash
+      conda activate comfyui
+      pip install -r requirements.txt
       ```
-      ```bash Local (Windows)
-        conda activate comfyui
-        pip install -r requirements.txt
-      ```
-      </CodeGroup>
 
       </Tab>
       <Tab title="Sample Workflows" header="Sample Workflows">
@@ -267,16 +228,9 @@ Nodes for applying visual effects and controlling video content in real-time
     </Tab>
     <Tab title="Installation" header="Installation">
       1. Navigate to the `custom_nodes` directory in your ComfyUI workspace
-      <CodeGroup>
-        ```bash RunPod (Linux)
-        cd /workspace/comfyRealtime/ComfyUI/custom_nodes
-        ```
-
-        ```bash Local (Windows)
-        cd "$env:HOMEPATH/comfyRealtime/ComfyUI/custom_nodes"
-        ```
-
-      </CodeGroup>
+      ```bash
+      cd /workspace/comfyRealtime/ComfyUI/custom_nodes
+      ```
 
       2. Clone the repository and install requirements
       ```bash
@@ -302,15 +256,9 @@ Nodes for applying visual effects and controlling video content in real-time
       </Tab>
       <Tab title="Installation" header="Installation">
         1. Navigate to the `custom_nodes` directory in your ComfyUI workspace
-        <CodeGroup>
-          ```bash RunPod (Linux)
-          cd /workspace/comfyRealtime/ComfyUI/custom_nodes
-          ```
-
-          ```bash Local (Windows)
-          cd "$env:HOMEPATH/comfyRealtime/ComfyUI/custom_nodes"
-          ```
-        </CodeGroup>
+        ```bash
+        cd /workspace/comfyRealtime/ComfyUI/custom_nodes
+        ```
 
         2. Clone the repository
         ```bash
@@ -320,18 +268,10 @@ Nodes for applying visual effects and controlling video content in real-time
         ```
 
         3. Install requirements
-        <CodeGroup>
-          ```bash RunPod (Linux)
-          conda activate comfyui
-          pip install -r requirements.txt
-          ```
-
-          ```bash Local (Windows)
-          pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
-          pip install -r requirements.txt
-          pip install . --no-build-isolation
-          ```
-        </CodeGroup>
+        ```bash
+        conda activate comfyui
+        pip install -r requirements.txt
+        ```
 
       <Note>
       For Windows, ensure the prerequisites are installed by following the Windows section in [Install Nodes in ComfyUI](../../reference/custom-node-installation##install-nodes-in-comfyui)
@@ -379,11 +319,28 @@ Nodes for applying visual effects and controlling video content in real-time
       - Implement motion smoothing
       - Cache facial landmarks
     </Tab>
+    <Tab title="Installation" header="Installation">
+      1. Navigate to the `custom_nodes` directory in your ComfyUI workspace
+      ```bash
+      cd /workspace/comfyRealtime/ComfyUI/custom_nodes
+      ```
+
+      2. Clone the repository
+      ```bash
+      git clone https://github.com/kijai/ComfyUI-LivePortraitKJ.git
+      cd ComfyUI-LivePortraitKJ
+      ```
+
+      3. Install requirements
+      ```bash
+      conda activate comfyui
+      pip install -r requirements.txt
+      ```
+    </Tab>
     <Tab title="Sample Workflows" header="Sample Workflows">
       
     </Tab>
-  </Tabs>
-
+    </Tabs>
     <div style={{ float: 'right', textDecoration: 'none' }}>
       [GitHub](https://github.com/kijai/ComfyUI-LivePortraitKJ)
     </div>

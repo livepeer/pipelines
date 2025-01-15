@@ -1,0 +1,50 @@
+---
+title: "Download Models"
+description: "Learn how to download models for ComfyUI"
+icon: "download"
+---
+
+## Hugging-Face
+To download models from [https://huggingface.com](https://huggingface.com), follow the example below:
+
+```bash
+cd \workspace\comfyRealtime\ComfyUI\
+huggingface-cli download USER/REPOSITORYNAME --local-dir models/checkpoints --include "*.safetensors"
+```
+<Note>If `huggingface_cli` is not available, you can activate the `comfyui` environment which has `huggingface-cli` installed.</Note>
+
+
+## Civitai
+To download models from [https://civitai.com](https://civitai.com) using a terminal, you must generate an API key:
+1. Create a civit.ai account
+2. Go to **Account Settings** to create an API Key
+3. You can then download models using the following command:
+
+```bash
+cd /workspace/ComfyUI/models/checkpoints
+wget "https://civitai.com/api/download/models/128713?token=YOUR_TOKEN_HERE" --content-disposition
+```
+
+## Commonly used models
+
+
+### Checkpoints
+```bash
+cd \workspace\comfyRealtime\ComfyUI\
+huggingface-cli download pschroedl/comfystream_checkpoints --local-dir models/checkpoints --include "*.safetensors"
+```
+
+### LoRas
+```bash
+cd \workspace\comfyRealtime\ComfyUI\
+huggingface-cli download pschroedl/comfystream_loras --local-dir models/loras --include "*.safetensors"
+huggingface-cli download RalFinger/alien-style-lora-sdxl --local-dir models/loras --include "*.safetensors"
+```
+
+### ControlNets
+
+```bash
+cd /workspace/ComfyUI/models/controlnet
+wget https://huggingface.co/comfyanonymous/ControlNet-v1-1_fp16_safetensors/resolve/main/control_v11f1p_sd15_depth_fp16.safetensors?download=true --content-disposition
+wget https://huggingface.co/comfyanonymous/ControlNet-v1-1_fp16_safetensors/resolve/main/control_v11p_sd15_openpose_fp16.safetensors?download=true --content-disposition
+```

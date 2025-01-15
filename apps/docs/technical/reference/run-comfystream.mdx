@@ -1,21 +1,37 @@
 ---
-title: "Run ComfyStream UI"
-description: "Run the UI for ComfyStream to demonstrate live AI video"
+title: "Run ComfyStream"
+description: "Stream live AI video with ComfyStream using a ComfyUI workflow"
 icon: "box"
 ---
 
-ComfyStream UI must be ran on a system with physical or virtual camera. In this guide we will install ComfyStream UI on a local machine
+## ComfyStream (API Server)
+Before starting ComfyStream UI, we must start the ComfyStream API server: <Note>This should be on a system with a GPU</Note>
+
+1. Activate the `comfystream` environment and change to the `ComfyStream` directory
+```bash
+conda activate comfystream
+cd /workspace/comfyRealtime/ComfyStream
+```
+
+2. Start ComfyStream
+```bash
+python server/app.py --workspace ../ComfyUI --media-ports=5678 --host=0.0.0.0 --port 8889
+```
+
+## Run ComfyStream (UI)
+
+ComfyStream UI must be ran on a system with physical or virtual camera. In this guide we will install on a local machine
 
 1. Clone ComfyStream UI:
 ```bash
 git clone https://github.com/yondonfu/comfystream
-cd comfystream/ui
 ```
 2.  Run the following command to install the project's dependencies using npm:
 ```bash
+cd comfystream/ui
 npm install --legacy-peer-deps
 ```
-This will download and set up all required Node.js modules listed in the package.json file.
+This will download and set up all required Node.js modules.
 <Note>
 If you run encounter packages install errors, check the installed versions of node:
 `node -v && npm -v`
@@ -30,33 +46,37 @@ npm run dev
 ```
 4. Open a browser and navigate to [http://localhost:3000](http://localhost:3000)
 
-## Obtaining the Stream URL
+### Obtaining the Stream URL
 
 The **Stream URL** in ComfyStream UI should be set to the url and external port for the ComfyStream API environment.
 
 <Tabs>
-    <Tab title="RunPod (Linux)">
+    <Tab title="RunPod (Remote)">
         1. Log into RunPod and go the **Pods** page.
         2. Click on the **Connect** button.
         3. Click the **TCP Port Mappings** tab.
         4. Copy the *IP address* and *external port* for 8889, to create the url `http://IP:PORT`
     </Tab>
-    <Tab title="Local (Windows)">
-        - Use `http://localhost:8889`
+    <Tab title="Local">
+        Use `http://127.0.0.1:8889`
     </Tab>
 </Tabs>
 
-## Customizing the default stream URL
+### Customizing the default stream URL
 If you are not running ComfyStream UI on the same host as the ComfyStream API, you can customize the default stream URL to ease testing.
 
 Create a new `.env` file with your running ComfyStream API URL:
 
 ```bash
 cd comfystream/ui
-echo "NEXT_PUBLIC_DEFAULT_STREAM_URL=http://10.10.10.1:8889" > .env
+echo "NEXT_PUBLIC_DEFAULT_STREAM_URL=http://127.0.0.1:8889" > .env
 ```
 
 ## Supported workflows
 Refer to [Available ComfyUI Nodes](../../technical/reference/available-nodes) for sample workflows to import into ComfyStream and ComfyUI
 
 <Note>Sample workflows are listed in the `examples` directory of most node repositories</Note>
+
+
+
+cp -r nodes/tensor_utils /workspace/comfyui_launcher_projects/{workspace}/comfyui/custom_nodes

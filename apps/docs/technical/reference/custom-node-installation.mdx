@@ -1,5 +1,5 @@
 ---
-title: "Custom Node Installation"
+title: "Install Custom Nodes"
 description: "Install custom nodes in ComfyUI and ComfyStream"
 icon: "download"
 ---
@@ -7,33 +7,13 @@ icon: "download"
 ## Install Nodes in ComfyUI
 When adding custom nodes, you will need to install them in both `comfyui` and `comfystream` conda environments.
 
-<Info>Since ComfyUI is started in the `comfyui` environment, typically you can just install nodes via  **ComfyUI-Manager** and they will be installed in ComfyUI. In this case you only need to [Install nodes for ComfyStream](#install-nodes-in-comfystream)</Info>
+<Info>Since ComfyUI is started in the `comfyui` environment, you can usually install nodes directly via **ComfyUI-Manager**. If you do this, you only need to [install the nodes for ComfyStream](#install-nodes-in-comfystream).</Info>
 
-1. Navigate to the custom node directory and activate the `comfyui` environment:
+1. Change to the `custom_nodes` directory:
 
-<Note>If installing on Windows, ensure the system prerequisites are installed before installing nodes that require require **CUDA** and **torch** to be installed such as StreamDiffusion and SAM2-Realtime</Note>
-<Expandable title="Install Prerequisites for Windows">
-__NVIDIA CUDA Toolkit__
-1. Install [CUDA Toolkit](https://developer.nvidia.com/cuda-downloads?target_os=Windows&target_arch=x86_64&target_version=11&target_type=exe_network)
-2. Set `CUDA_HOME` to your installation directory for CUDA. Example: `C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.4` <Note>Update CUDA version folder name as needed</Note>
-
-__Visual C++ Build Tools__
-1. Install [Visual C++ Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/). From Visual Studio Installer, click **Individual Components**, then select **C++ CMake Build Tools**.
-2. Ensure **C++ Build Tools** are in the system PATH by adding `C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\14.42.34433\bin\HostX86\x64\` (or equivalent) to your system `PATH` variable
-</Expandable>
-
-
-<CodeGroup>
-    ```bash RunPod (Linux)
-    conda activate comfyui
-    cd /workspace/comfyRealtime/ComfyUI/custom_nodes
-    ```
-    ```bash Local (Windows)
-    conda activate comfyui
-    cd "$env:HOMEPATH/comfyRealtime/ComfyUI/custom_nodes"
-    ```
-</CodeGroup>
-
+```bash
+cd /workspace/comfyRealtime/ComfyUI/custom_nodes
+```
 
 2. Clone the node repository:
 ```bash
@@ -41,7 +21,7 @@ git clone https://github.com/ryanontheinside/ComfyUI_RealTimeNodes.git
 cd ComfyUI_RealTimeNodes
 ```
 <Info>
-*ComfyUI_RealTimeNodes* is a collection of over 100 custom nodes for ComfyUI! Many can be used with ComfyStream to create custom workflows for real-time video processing.
+[ComfyUI_RealTimeNodes](https://github.com/ryanontheinside/ComfyUI_RealTimeNodes) is a collection of over 100 custom nodes for ComfyUI! Many can be used with ComfyStream to create custom workflows for real-time video processing.
 </Info>
 
 3. Activate the `comfyui` environment and install requirements:
@@ -49,7 +29,6 @@ cd ComfyUI_RealTimeNodes
 ```bash
 conda activate comfyui
 pip install -r requirements.txt
-conda deactivate
 ```
 
 4. Proceed to [Install nodes for ComfyStream](#install-nodes-in-comfystream) each time you add a new node to ComfyUI.
@@ -60,42 +39,23 @@ After adding a custom node to ComfyUI, you must also install the dependencies in
 1. Start a new terminal session and activate `comfystream`:
 
 ```bash
-conda activate comfystream
+cd /workspace/comfyRealtime/ComfyStream
 ```
 
 2. Install the custom node requirements by running the `install.py` script with the `--workspace` flag pointing to the ComfyUI workspace directory:
-<CodeGroup>
-    ```bash RunPod (Linux)
-    cd /workspace/comfyRealtime/ComfyStream
-    python install.py --workspace ../ComfyUI
-    ```
-    ```bash Local (Windows)
-    cd "$env:HOMEPATH/comfyRealtime/ComfyStream"
-    python install.py --workspace ..\ComfyUI
-    ```
-</CodeGroup>
 
-## Testing the Custom Node
-1. Start ComfyUI and ComfyStream to see the new node in action:
-- From the **ComfyUI** terminal:
 ```bash
-python main.py --listen
+conda activate comfystream
+python install.py --workspace ../ComfyUI
 ```
-- From the **ComfyStream** terminal:
-<CodeGroup>
-    ```bash RunPod (Linux)
-    python server/app.py --workspace ../ComfyUI --media-ports=5678 --host=0.0.0.0 --port 8889
-    ```
-    ```bash Local (Windows)
-    python server/app.py --workspace ..\ComfyUI --media-ports=5678 --host=0.0.0.0 --port 8889
-    ```
-</CodeGroup>
 
-2. Download the sample workflow json file for Motion Control: [examples/motioncontrol.json](https://raw.githubusercontent.com/ryanontheinside/ComfyUI_RealTimeNodes/main/examples/motioncontrol.json)
-3. From ComfyUI, go to **Workflow** > **Open** and select `motioncontrol.json` to load the workflow.
-4. Click **Upload** to add an image to the `LoadImage` node.
-5. Click **Queue** to run the workflow! If the node is installed correctly, you will see the output in the `SaveImage` node.
-5. Follow [Run ComfyStream UI](./local-testing-comfystream-ui) to start a live stream
+## Testing the Custom Node Installation
+To validate the installation of a new node:
+1. Start or restart ComfyUI after node installation
+2. Monitor the logs on startup for any `IMPORT FAILED` message when loading the new node
+3. Load or build a workflow that uses the new custom node
+4. From ComfyUI, export the workflow for ComfyStream: **Workflow** > **Export (API)**
+5. [Run ComfyStream](./run-comfystream) to use the workflow as a live AI video stream
 
 ## Installing Additional Custom Nodes
 
