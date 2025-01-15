@@ -4,19 +4,19 @@ description: "Learn how to download models for ComfyUI"
 icon: "download"
 ---
 
-## Hugging-Face
+## Huggingface
 To download models from [https://huggingface.com](https://huggingface.com), follow the example below:
 
 ```bash
-cd \workspace\comfyRealtime\ComfyUI\
+cd /workspace/comfyRealtime/ComfyUI/
 huggingface-cli download USER/REPOSITORYNAME --local-dir models/checkpoints --include "*.safetensors"
 ```
 <Note>If `huggingface_cli` is not available, you can activate the `comfyui` environment which has `huggingface-cli` installed.</Note>
 
 
-## Civitai
-To download models from [https://civitai.com](https://civitai.com) using a terminal, you must generate an API key:
-1. Create a civit.ai account
+## CivitAI
+To download models from CivitAI using a terminal, you must generate an API key:
+1. Create a CivitAI account at [https://civitai.com](https://civitai.com)
 2. Go to **Account Settings** to create an API Key
 3. You can then download models using the following command:
 
@@ -27,16 +27,15 @@ wget "https://civitai.com/api/download/models/128713?token=YOUR_TOKEN_HERE" --co
 
 ## Commonly used models
 
-
 ### Checkpoints
 ```bash
-cd \workspace\comfyRealtime\ComfyUI\
+cd /workspace/comfyRealtime/ComfyUI/
 huggingface-cli download pschroedl/comfystream_checkpoints --local-dir models/checkpoints --include "*.safetensors"
 ```
 
 ### LoRas
 ```bash
-cd \workspace\comfyRealtime\ComfyUI\
+cd /workspace/comfyRealtime/ComfyUI/
 huggingface-cli download pschroedl/comfystream_loras --local-dir models/loras --include "*.safetensors"
 huggingface-cli download RalFinger/alien-style-lora-sdxl --local-dir models/loras --include "*.safetensors"
 ```

@@ -4,56 +4,159 @@ description: ""
 icon: "plus"
 ---
 
-{/* <img alt="Hero Light" classname="block dark:hidden" src="/images/hero-light.svg" /> */}
+Let's create a fast, useful workflow in ComfyUI and deploy it to ComfyStream.
 
-### **What are ComfyUI and ComfyStream?**
+## Install Custom Nodes for the Workflow
 
-- [ComfyUI](https://github.com/comfyanonymous/ComfyUI) is a modular, node-based user interface for Stable Diffusion. It allows users to create and manage workflows using interconnected nodes, similar to node-based visual programming environments. This provides a flexible and powerful way to create AI-generated images and videos.
-- [ComfyStream](https://github.com/yondonfu/comfystream) extends the capabilities of ComfyUI by enabling **real-time streaming** of video and image data. It introduces networking, GPU streaming, and live control features that go beyond the standard functionality of ComfyUI. ComfyStream does this by wrapping ComfyUI and running a special version of it.
+<Note>If you have the official version of the **ComfyUI_TensorRT** custom node installed in your `custom_nodes` directory, you will need to remove it or rename it to `ComfyUI_TensorRT.disabled` to prevent it from being loaded into ComfyUI and interfering with the forked version</Note>
 
-By combining ComfyUI's powerful workflow management with ComfyStream's real-time capabilities, users can create and control AI-driven visual content with enhanced interactivity. *That* is what we are doing here!
+1. Activate the `comfyui` environment before installing nodes
 
-### **Introduction to the Architecture**
+```bash
+conda activate comfyui
+```
 
-To understand the purpose and flow of this tutorial, it's important to grasp the high-level architecture of the ComfyStream system. This document includes a setup that involves both a local environment and a remote GPU server environment, each playing a specific role in the overall system.
+2. Install **ComfyUI_TensorRT**, **Torch Compile** and **Depth Anything Tensorrt** nodes
+```bash
+cd /workspace/comfyRealtime/ComfyStream/custom_nodes
+git clone -b quantization_with_controlnet_fixes https://github.com/yondonfu/ComfyUI_TensorRT.git
+cd ComfyUI_TensorRT
+pip install -r requirements.txt
 
-<Note>Note to those with powerful GPUs: Most of this document details processes that enable using a cloud GPU to do the heavy processing fast. If you have a good GPU (like a 4090, for instance), your setup process is far more straightforward. It will still be worth it to understand this document, but you can skip to the end for specific instructions to set this up locally.</Note>
+cd ..
+git clone https://github.com/yondonfu/ComfyUI-Torch-Compile
+cd ComfyUI-Torch-Compile
+pip install -r requirements.txt
 
-### **Components Overview**
+cd ..
+git clone https://github.com/yuvraj108c/ComfyUI-Depth-Anything-Tensorrt.git
+cd ./ComfyUI-Depth-Anything-Tensorrt
+pip install -r requirements.txt
+cd ..
+```
 
-1. **Local Machine (Windows)**
-    - **Purpose**: Running the ComfyStream front-end web application. The graphical interface that allows you to interact with the ComfyStream server from your browser.
-    - **Tools Used**: PowerShell/Terminal, Node.js, SSH, Ncat.
-    - **Processes**:
-        - Set up SSH connections to the remote server.
-        - Run a local development server to interact with ComfyStream's user interface (UI).
-        - Access ComfyStream's front-end in a browser
-2. **Remote GPU Server (RunPod or Remote server)**
-    - **Purpose**: Execute GPU-accelerated processes and serve the ComfyStream backend for real-time streaming.
-    - **Tools Used**: RunPod, SSH, Jupyter Lab, Miniconda, Conda environments
-    - **Processes**:
-        - Deploy and configure a GPU server on RunPod.
-        - Set up two Conda environments (comfyui and comfystream) to handle separate installations of ComfyUI and ComfyStream.
-        - Install ComfyUI, ComfyStream, and ComfyUI-Manager.
-        - Expose necessary ports for SSH tunneling and allow local access to the ComfyStream UI.
+## Download Models
 
-### **Why use both a local system and a Remote GPU Setup?**
+1. [Dreamshaper 8 DMD](https://huggingface.co/aaronb/dreamshaper-8-dmd-1kstep/tree/main)
+```bash
+cd /workspace/ComfyUI/models/unet
+wget -O "dreamshaper_8_dmd_1kstep.safetensors" "https://huggingface.co/aaronb/dreamshaper-8-dmd-1kstep/resolve/main/diffusion_pytorch_model.safetensors?download=true"
+```
 
-| **Task** | **Local Machine** | **Remote GPU Server** |
-| --- | --- | --- |
-| **Development** | Edit/run, ComfyStream UI | Edit/run ComfyUI workflows |
-| **GPU Processing** | Not applicable (no/weak GPU) | Execute GPU-accelerated processes |
-| **SSH Access** | Establish tunnel to RunPod server | Provides SSH access for tunneling |
-| **Web UI** | Run npm to serve ComfyStream UI | Expose ComfyStream API for UI connection |
-| **Port Forwarding** | Use SSH to forward remote ports | Open required ports to connect to local |
+2. [Dreamshaper 8 Weights](https://civitai.com/models/4384/dreamshaper)
+```bash
+cd /workspace/ComfyUI/models/checkpoints
+wget "https://civitai.com/api/download/models/4384?token=YOUR_API_KEY" --content-disposition
+```
 
-**Explanation:**
+<Note>To obtain an API key, simply go to your account settings and look for the 'API Keys'section and generate a key. See [Download Models](../reference/download-models) for more information on how to download models from CivitAI.</Note>
 
-1. The **local machine** is where you configure your setup, and access the server's GPU capabilities via SSH tunneling.
-2. The **remote GPU server** is where heavy GPU computations happen. Since your local machine may not have a GPU powerful enough for tasks like **real-time diffusion**, the remote server is used to offload these computations.
-3. The **SSH Tunneling** allows you to bridge the local machine with the remote server so you can work with ComfyStream as if it were running locally, while still taking advantage of the remote server's GPU.
+Alternatively you can download the model from the CivitAI website using the link above
+```bash
+cd /workspace/ComfyUI/models/checkpoints
+wget "https://civitai.com/api/download/models/MODELID?token=YOUR_TOKEN_HERE" --content-disposition
+```
 
-With this architectural understanding, you're now ready to proceed with the setup instructions below!
+3. [ControlNet Model for DepthAnything](https://huggingface.co/comfyanonymous/ControlNet-v1-1_fp16_safetensors)
+```bash
+cd /workspace/ComfyUI/models/controlnet
+wget https://huggingface.co/comfyanonymous/ControlNet-v1-1_fp16_safetensors/resolve/main/control_v11f1p_sd15_depth_fp16.safetensors?download=true --content-disposition
+```
+
+## Build TensorRT Engine for Depth Anything
+
+1. Navigate to the `custom_nodes` directory in your ComfyUI workspace
+
+```bash
+cd /workspace/comfyRealtime/ComfyUI/custom_nodes
+```
+
+2. Clone the repository
+
+```bash
+git clone https://github.com/yuvraj108c/ComfyUI-Depth-Anything-Tensorrt.git
+cd ./ComfyUI-Depth-Anything-Tensorrt
+```
+
+3. Install the node requirements
+```bash
+conda activate comfyui
+pip install -r requirements.txt
+```
+
+4. Download the TensorRT onnx file and build the engine
+```bash
+wget -O depth_anything_vitl14.onnx https://huggingface.co/yuvraj108c/Depth-Anything-2-Onnx/resolve/main/depth_anything_v2_vitb.onnx?download=true --content-disposition
+python export_trt.py
+```
+
+5. Copy the TensorRT engine file to the ComfyUI `models` directory
+
+```bash
+mkdir -p /workspace/comfyRealtime/ComfyUI/models/tensorrt/depth-anything/
+mv depth_anything_vitl14-fp16.engine /workspace/comfyRealtime/ComfyUI/models/tensorrt/depth-anything/
+```
+<Note>If you are copying files from Windows desktop to WSL, you will not be able to find the directory `/workspace/comfyRealtime/ComfyUI/models/tensorrt/depth-anything/`. Instead, use `/workspace/ComfyUI/models/tensorrt/depth-anything/`</Note>
 
 
-Proceed to [Install Conda, ComfyUI, and ComfyStream](../develop-pipeline/local-testing)
+## Build Static TensorRT Engine for DreamShaper
+
+To build TensorRT engines, you should have the following packages installed in the `comfystream` environment
+```bash
+pip install tensorrt-cu12-bindings==10.7.0
+pip install tensorrt-cu12-libs==10.7.0
+```
+
+1. Start ComfyUI, and in a new workflow add the following nodes ![ONNX Export](../../images/onnxexport.png)
+2. In **ONNX FP8 Export** update the `filename` to something unique.
+3. Run the workflow to export the ONNX file.
+4. When it is complete, refresh the page so the **FP8 Export** shows up. 
+5. Delete or disable the above nodes from the workflow. Add the following nodes ![ONNX Export](../../images/static-engine.png)
+6. In the **Load Diffusion Model** node: 
+    - Select *dreamshaper_8_dmd_1kstep.safetensors* file from the `unet` folder. 
+    - Set **weight_dtype** to *default*
+6. In the **Select ONNX Model** node, select *dreamshaper8_fp8.onnx*
+7. In the **STATIC_TRT_MODEL_CONVERSION** node, set the `filename_prefix` to a unique name for this engine. <Warning>If the engine file already exists, an error will occur.</Warning>
+8. Run the workflow to generate the TensorRT engine, the output will be stored in the `ComfyUI/output` directory.
+<Note>
+If you have existing workflows open in other tabs, you must reload the ComfyUI page for the new engine to show in node input field
+</Note>
+
+<Info>
+Refer to the Readme for [ComfyUI-TensorRT](https://github.com/yondonfu/ComfyUI_TensorRT/tree/quantization_with_controlnet_fixes?tab=readme-ov-file#instructions) for additional info on compiling TensorRT engines
+</Info>
+
+## Load Workflow
+Now that the engines are built, we can use the workflow!
+
+<Note>If you load the workflow without all of the models and engines built, you will see errors in the nodes that require them. You can still load the workflow and build the models and engines as you go.</Note>
+
+1. Stop ComfyUI by pressing **CTRL-C** in the terminal that is running ComfyUI
+2. Start ComfyUI with the `--disable-cuda-malloc` flag to prevent memory allocation errors
+
+```bash
+python main.py --listen --disable-cuda-malloc
+```
+
+3. Once ComfyUI has started, download the **TAESD Encoder** and **TAESD Encoder**
+    - From **ComfyUI Manager** > **Model Manager**, search `TAESD`
+    - Download **TAESD Encoder** and **TAESD Decoder** ![TAESD](../../images/TAESD.png)
+
+4. Download the [TensorRT Optimized Workflow](https://gist.githubusercontent.com/yondonfu/592a04e075e790981cd401124e0d84e4/raw/0fcf100e0f57cd1dc47621bb4018a9933d9ed2df/workflow.json), and drag and drop the file onto the ComfyUI interface.
+
+
+## Running The Workflow in ComfyStream
+
+To run TensorRT engines, you should have the following packages installed in the `comfystream` environment
+```bash
+pip install tensorrt-cu12-bindings==10.7.0
+pip install tensorrt-cu12-libs==10.7.0
+```
+
+Since we have added new nodes in ComfyUI, proceed to [Install nodes in ComfyStream](../install/custom-node-installation#install-nodes-in-comfystream), before running the workflow in ComfyStream.
+
+If you have two environments (one for ComfyUI and one for ComfyStream), you'll need to copy your generated TensorRT model with the command below:
+```bash
+cp -r /workspace/ComfyUI/output/tensorrt /workspace/comfyRealtime/ComfyUI/output/
+```
+

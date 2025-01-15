@@ -7,7 +7,7 @@ icon: "download"
 ## Install Nodes in ComfyUI
 When adding custom nodes, you will need to install them in both `comfyui` and `comfystream` conda environments.
 
-<Info>Since ComfyUI is started in the `comfyui` environment, you can usually install nodes directly via **ComfyUI-Manager**. If you do this, you only need to [install the nodes for ComfyStream](#install-nodes-in-comfystream).</Info>
+<Note>Since ComfyUI is started in the `comfyui` environment, you can usually install nodes directly via **ComfyUI-Manager**. If you do this, you only need to [install the nodes for ComfyStream](#install-nodes-in-comfystream).</Note>
 
 1. Change to the `custom_nodes` directory:
 
@@ -25,24 +25,32 @@ cd ComfyUI_RealTimeNodes
 </Info>
 
 3. Activate the `comfyui` environment and install requirements:
-
 ```bash
 conda activate comfyui
 pip install -r requirements.txt
 ```
+
+<Note>
+If not using RunPod, you may need to install the following packages in the `comfyui` environment before installing certain custom nodes:
+```bash Local Installation Only
+pip install setuptools wheel ninja
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
+pip install -U xformers --index-url https://download.pytorch.org/whl/cu124
+```
+</Note>
 
 4. Proceed to [Install nodes for ComfyStream](#install-nodes-in-comfystream) each time you add a new node to ComfyUI.
 
 ## Install Nodes in ComfyStream
 After adding a custom node to ComfyUI, you must also install the dependencies in the `comfystream` environment:
 
-1. Start a new terminal session and activate `comfystream`:
+1. Start a new terminal session and navigate to the comfystream directory
 
 ```bash
 cd /workspace/comfyRealtime/ComfyStream
 ```
 
-2. Install the custom node requirements by running the `install.py` script with the `--workspace` flag pointing to the ComfyUI workspace directory:
+2. Activate the comfystream environments and install the custom node requirements. The `--workspace` flag should point to the directory for ComfyUI:
 
 ```bash
 conda activate comfystream

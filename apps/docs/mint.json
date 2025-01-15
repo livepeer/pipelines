@@ -77,10 +77,11 @@
     {
       "group": "Installation",
       "pages": [
-        "technical/develop-pipeline/local-testing",
-        "technical/reference/custom-node-installation",
-        "technical/reference/run-comfyui",
-        "technical/reference/run-comfystream"
+        "technical/develop-pipeline/architecture",
+        "technical/install/local-testing",
+        "technical/install/custom-node-installation",
+        "technical/install/run-comfyui",
+        "technical/install/run-comfystream"
       ]
     },
     {
