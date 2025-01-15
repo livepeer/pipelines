@@ -5,7 +5,7 @@ icon: "box"
 ---
 
 ## ComfyStream (API Server)
-Before starting ComfyStream UI, we must start the ComfyStream API server: <Note>This should be on a system with a GPU</Note>
+Before starting ComfyStream UI, we must start the ComfyStream API server on a system with a GPU
 
 1. Activate the `comfystream` environment and change to the `ComfyStream` directory
 ```bash
@@ -20,7 +20,9 @@ python server/app.py --workspace ../ComfyUI --media-ports=5678 --host=0.0.0.0 --
 
 ## Run ComfyStream (UI)
 
-ComfyStream UI must be ran on a system with physical or virtual camera. In this guide we will install on a local machine
+<Note>
+ComfyStream UI must be ran on a system with physical or virtual camera. If you are running ComfyStream API locally, you can use the same folder for UI.
+</Note>
 
 1. Clone ComfyStream UI:
 ```bash
