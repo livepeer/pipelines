@@ -24,26 +24,22 @@ cd ComfyUI_RealTimeNodes
 [ComfyUI_RealTimeNodes](https://github.com/ryanontheinside/ComfyUI_RealTimeNodes) is a collection of over 100 custom nodes for ComfyUI! Many can be used with ComfyStream to create custom workflows for real-time video processing.
 </Info>
 
-3. Activate the `comfyui` environment
+3. Activate the `comfyui` environment and install requirements:
 ```bash
 conda activate comfyui
+pip install -r requirements.txt
 ```
 
 <Note>
-If you are installing into a local environment, you should install the following packages into the `comfyui` environment before installing node requirements:
+If not using RunPod, you may need to install the following packages in the `comfyui` environment before installing certain custom nodes:
 ```bash Local Installation Only
 pip install setuptools wheel ninja
 pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
 pip install -U xformers --index-url https://download.pytorch.org/whl/cu124
 ```
 </Note>
-4. Activate the `comfyui` environment and install requirements:
 
-```bash
-pip install -r requirements.txt
-```
-
-5. Proceed to [Install nodes for ComfyStream](#install-nodes-in-comfystream) each time you add a new node to ComfyUI.
+4. Proceed to [Install nodes for ComfyStream](#install-nodes-in-comfystream) each time you add a new node to ComfyUI.
 
 ## Install Nodes in ComfyStream
 After adding a custom node to ComfyUI, you must also install the dependencies in the `comfystream` environment:
