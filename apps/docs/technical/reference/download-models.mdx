@@ -8,7 +8,7 @@ icon: "download"
 To download models from [https://huggingface.com](https://huggingface.com), follow the example below:
 
 ```bash
-cd \workspace\comfyRealtime\ComfyUI\
+cd /workspace/comfyRealtime/ComfyUI/
 huggingface-cli download USER/REPOSITORYNAME --local-dir models/checkpoints --include "*.safetensors"
 ```
 <Note>If `huggingface_cli` is not available, you can activate the `comfyui` environment which has `huggingface-cli` installed.</Note>
@@ -29,13 +29,13 @@ wget "https://civitai.com/api/download/models/128713?token=YOUR_TOKEN_HERE" --co
 
 ### Checkpoints
 ```bash
-cd \workspace\comfyRealtime\ComfyUI\
+cd /workspace/comfyRealtime/ComfyUI/
 huggingface-cli download pschroedl/comfystream_checkpoints --local-dir models/checkpoints --include "*.safetensors"
 ```
 
 ### LoRas
 ```bash
-cd \workspace\comfyRealtime\ComfyUI\
+cd /workspace/comfyRealtime/ComfyUI/
 huggingface-cli download pschroedl/comfystream_loras --local-dir models/loras --include "*.safetensors"
 huggingface-cli download RalFinger/alien-style-lora-sdxl --local-dir models/loras --include "*.safetensors"
 ```
