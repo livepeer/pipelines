@@ -18,8 +18,7 @@ icon: "code"
         4. Install CUDA Toolkit inside of WSL from [NVIDIA CUDA Toolkit for WSL](https://developer.nvidia.com/cuda-downloads?target_os=Linux&target_arch=x86_64&Distribution=WSL-Ubuntu&target_version=2.0&target_type=runfile_local).
         5. Make a new directory for the ComfyStream setup scripts:
         ```bash
-        sudo mkdir /workspace
-        sudo chown $USER:$USER /workspace
+        sudo mkdir /workspace && sudo chown -R $USER /workspace
         cd /workspace
         ```
     </Tab>
@@ -27,8 +26,7 @@ icon: "code"
         1. Install CUDA Toolkit on Linux from [NVIDIA CUDA Toolkit](https://developer.nvidia.com/cuda-downloads?target_os=Linux&target_arch=x86_64&target_distro=Ubuntu&target_version=2004&target_type=deb_local).
         2. Make a new directory for the ComfyStream setup scripts:
         ```bash
-        sudo mkdir /workspace
-        sudo chown $USER:$USER /workspace
+        sudo mkdir /workspace && sudo chown -R $USER /workspace
         cd /workspace
         ```
     </Tab>
@@ -40,7 +38,7 @@ Continue with installing ComfyUI and ComfyStream below
 
 1. Clone the **ComfyStream Setup Scripts** to your home directory
 ```bash
-cd ~/workspace
+cd /workspace
 git clone https://github.com/ryanontheinside/ComfyStream_Setup_Scripts
 ```
 2. Run the initial setup script to install Conda, ComfyStream and ComfyUI:
