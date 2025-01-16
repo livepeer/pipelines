@@ -35,7 +35,7 @@ pip install -r requirements.txt
 cd ..
 ```
 
-## Download Models
+## Download Models 
 
 1. [Dreamshaper 8 DMD](https://huggingface.co/aaronb/dreamshaper-8-dmd-1kstep/tree/main)
 ```bash
@@ -49,7 +49,7 @@ cd /workspace/ComfyUI/models/checkpoints
 wget "https://civitai.com/api/download/models/4384?token=YOUR_API_KEY" --content-disposition
 ```
 
-<Note>To obtain an API key, simply go to your account settings and look for the 'API Keys'section and generate a key. See [Download Models](../reference/download-models) for more information on how to download models from CivitAI.</Note>
+<Note>To obtain an API key, simply go to your account settings and look for the 'API Keys' section and generate a key. See [Download Models](../reference/download-models) for more information on how to download models from CivitAI.</Note>
 
 Alternatively you can download the model from the CivitAI website using the link above
 ```bash
@@ -96,7 +96,7 @@ python export_trt.py
 mkdir -p /workspace/comfyRealtime/ComfyUI/models/tensorrt/depth-anything/
 mv depth_anything_vitl14-fp16.engine /workspace/comfyRealtime/ComfyUI/models/tensorrt/depth-anything/
 ```
-<Note>If you are copying files from Windows desktop to WSL, you will not be able to find the directory `/workspace/comfyRealtime/ComfyUI/models/tensorrt/depth-anything/`. Instead, use `/workspace/ComfyUI/models/tensorrt/depth-anything/`</Note>
+<Note>If you are copying files from Windows desktop to WSL, you will not be able to find the directory `/workspace/comfyRealtime/ComfyUI/models`. Use `/workspace/ComfyUI/models` instead.</Note>
 
 
 ## Build Static TensorRT Engine for DreamShaper
@@ -113,10 +113,10 @@ pip install tensorrt-cu12-libs==10.7.0
 4. When it is complete, refresh the page so the **FP8 Export** shows up. 
 5. Delete or disable the above nodes from the workflow. Add the following nodes ![ONNX Export](../../images/static-engine.png)
 6. In the **Load Diffusion Model** node: 
-    - Select *dreamshaper_8_dmd_1kstep.safetensors* file from the `unet` folder. 
+    - Set **unet_name** to *dreamshaper_8_dmd_1kstep.safetensors*
     - Set **weight_dtype** to *default*
 6. In the **Select ONNX Model** node, select *dreamshaper8_fp8.onnx*
-7. In the **STATIC_TRT_MODEL_CONVERSION** node, set the `filename_prefix` to a unique name for this engine. <Warning>If the engine file already exists, an error will occur.</Warning>
+7. In the **STATIC_TRT_MODEL_CONVERSION** node, set the **filename_prefix** to a unique name for this engine. <Warning>If the engine file already exists, an error will occur.</Warning>
 8. Run the workflow to generate the TensorRT engine, the output will be stored in the `ComfyUI/output` directory.
 <Note>
 If you have existing workflows open in other tabs, you must reload the ComfyUI page for the new engine to show in node input field
@@ -138,9 +138,8 @@ Now that the engines are built, we can use the workflow!
 python main.py --listen --disable-cuda-malloc
 ```
 
-3. Once ComfyUI has started, download the **TAESD Encoder** and **TAESD Encoder**
-    - From **ComfyUI Manager** > **Model Manager**, search `TAESD`
-    - Download **TAESD Encoder** and **TAESD Decoder** ![TAESD](../../images/TAESD.png)
+3. Once ComfyUI has started, download the **TAESD Encoder** and **TAESD Decoder**
+    - From **ComfyUI Manager** > **Model Manager**, search `TAESD` ![TAESD](../../images/TAESD.png)
 
 4. Download the [TensorRT Optimized Workflow](https://gist.githubusercontent.com/yondonfu/592a04e075e790981cd401124e0d84e4/raw/0fcf100e0f57cd1dc47621bb4018a9933d9ed2df/workflow.json), and drag and drop the file onto the ComfyUI interface.
 
