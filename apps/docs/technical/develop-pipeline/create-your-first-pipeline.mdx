@@ -18,7 +18,7 @@ conda activate comfyui
 
 2. Install **ComfyUI_TensorRT**, **Torch Compile** and **Depth Anything Tensorrt** nodes
 ```bash
-cd /workspace/comfyRealtime/ComfyStream/custom_nodes
+cd /workspace/comfyRealtime/ComfyUI/custom_nodes
 git clone -b quantization_with_controlnet_fixes https://github.com/yondonfu/ComfyUI_TensorRT.git
 cd ComfyUI_TensorRT
 pip install -r requirements.txt
@@ -46,7 +46,7 @@ wget -O "dreamshaper_8_dmd_1kstep.safetensors" "https://huggingface.co/aaronb/dr
 2. [Dreamshaper 8 Weights](https://civitai.com/models/4384/dreamshaper)
 ```bash
 cd /workspace/ComfyUI/models/checkpoints
-wget "https://civitai.com/api/download/models/4384?token=YOUR_API_KEY" --content-disposition
+wget "https://civitai.com/api/download/models/128713?token=YOUR_API_KEY" --content-disposition
 ```
 
 <Note>To obtain an API key, simply go to your account settings and look for the 'API Keys' section and generate a key. See [Download Models](../reference/download-models) for more information on how to download models from CivitAI.</Note>
@@ -54,7 +54,7 @@ wget "https://civitai.com/api/download/models/4384?token=YOUR_API_KEY" --content
 Alternatively you can download the model from the CivitAI website using the link above
 ```bash
 cd /workspace/ComfyUI/models/checkpoints
-wget "https://civitai.com/api/download/models/MODELID?token=YOUR_TOKEN_HERE" --content-disposition
+wget "https://civitai.com/api/download/models/VERSIONID?token=YOUR_TOKEN_HERE" --content-disposition
 ```
 
 3. [ControlNet Model for DepthAnything](https://huggingface.co/comfyanonymous/ControlNet-v1-1_fp16_safetensors)
