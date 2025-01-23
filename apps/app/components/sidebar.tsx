@@ -22,7 +22,8 @@ import {
   SendIcon,
   SquareTerminalIcon,
   VideoIcon,
-  BookIcon
+  BookIcon,
+  User,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -99,6 +100,12 @@ export const GlobalSidebar = ({ children }: GlobalSidebarProperties) => {
         title: "Explore Pipelines",
         url: `/explore`,
         icon: Map,
+      },
+      {
+        title: "My Pipelines",
+        url: `/pipelines`,
+        icon: User,
+        isActive: true,
       },
     ],
     streams: [

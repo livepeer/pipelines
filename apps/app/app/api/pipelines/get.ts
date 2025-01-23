@@ -10,7 +10,17 @@ export async function getAllPipelines() {
     .select("*, author:users(name)");
 
   if (error) throw new Error(error.message);
+  return data;
+}
 
+export async function getPipelinesByUser(userId: string) {
+  const supabase = await createServerClient();
+  const { data, error } = await supabase
+    .from("pipelines")
+    .select("*")
+    .eq("author", userId);
+
+  if (error) throw new Error(error.message);
   return data;
 }
 
