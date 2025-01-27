@@ -92,7 +92,7 @@ export const GlobalSidebar = ({ children }: GlobalSidebarProperties) => {
     pipelines: [
       {
         title: "Create Pipeline",
-        url: `?tab=create`,
+        url: `/pipelines/create`,
         icon: SquareTerminalIcon,
         isActive: true,
       },
