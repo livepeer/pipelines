@@ -1,17 +1,12 @@
 "use server";
-
 import { validateUser } from "@/app/api/pipelines/auth";
 import { uploadFile } from "@/app/api/pipelines/storage";
-import { newId } from "@/lib/generate-id";
-import { pipelineSchema } from "@/lib/types";
-import { createServerClient } from "@repo/supabase";
 import { z } from "zod";
+import { createServerClient } from "@repo/supabase/server";
+import { pipelineSchema } from "@/lib/types";
+import { revalidatePath } from "next/cache";
 
-export async function createPipeline(
-  body: any,
-  userId: string,
-  pipelineId?: string
-) {
+export async function updatePipeline(body: any, userId: string) {
   const supabase = await createServerClient();
 
   await validateUser(userId);
@@ -24,19 +19,21 @@ export async function createPipeline(
 
   const { data, error } = await supabase
     .from("pipelines")
-    .insert({ ...validationResult.data, id: pipelineId || newId("pipeline") })
+    .update(validationResult.data)
+    .eq("id", body.id)
+    .eq("author", userId)
     .select();
 
   if (error) throw new Error(error.message);
-  return data[0];
+  return data;
 }
 
-export async function createPipelineFromFormData(
+export async function editPipelineFromFormData(
   formData: FormData,
   userId: string
 ) {
   const formDataObject = Object.fromEntries(formData.entries());
-  const pipelineId = newId("pipeline");
+  const pipelineId = formDataObject.id as string;
 
   // Upload the cover_image file
   const coverImageFile = formDataObject.cover_image as File;
@@ -44,12 +41,11 @@ export async function createPipelineFromFormData(
     file: coverImageFile,
     bucket: "pipelines",
     fileName: `${userId}/${pipelineId}-cover_image`,
-    operation: "create",
+    operation: "edit",
   });
 
-  // Parse the comfy_ui_json file data as JSON
-  const comfyUiFile = formDataObject.comfy_json as File;
-  const comfyUiJson = JSON.parse(await comfyUiFile.text());
+  // Parse the comfy_ui_json text data as JSON
+  const comfyUiJson = JSON.parse(formDataObject.comfy_json as string);
 
   const pipelineData = {
     ...formDataObject,
@@ -59,6 +55,6 @@ export async function createPipelineFromFormData(
     config: comfyUiJson,
   };
 
-  const pipeline = await createPipeline(pipelineData, userId);
+  const pipeline = await updatePipeline(pipelineData, userId);
   return pipeline;
 }

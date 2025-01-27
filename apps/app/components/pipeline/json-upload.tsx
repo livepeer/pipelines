@@ -11,23 +11,44 @@ import { Dispatch, SetStateAction, useState } from "react";
 import { DropzoneOptions } from "react-dropzone";
 import { Upload } from "lucide-react";
 
+export enum FileType {
+  Image,
+  Json,
+}
+
+const ALLOWED_FILE_CONFIGS = {
+  [FileType.Image]: {
+    accept: "image/*",
+    type: [".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tiff", ".ico", ".webp"],
+  },
+  [FileType.Json]: {
+    accept: "application/json",
+    type: [".json"],
+  },
+};
+
 const FileUploadDropzone = ({
   placeholder,
   id,
   setFormData,
+  fileType,
+  initialFiles,
 }: {
   placeholder: string;
   id: string;
   setFormData: Dispatch<SetStateAction<Record<string, unknown>>>;
+  fileType: FileType;
+  initialFiles?: File[];
 }) => {
-  const [files, setFiles] = useState<File[] | null>([]);
+  const [files, setFiles] = useState<File[] | null>(initialFiles || []);
   const onValueChange = (files: File[] | null) => {
     setFiles(files);
     setFormData((prev) => ({ ...prev, [id]: files?.[0] }));
   };
+  const fileConfig = ALLOWED_FILE_CONFIGS[fileType];
   const dropzone = {
     accept: {
-      "application/json": [".json"],
+      [fileConfig.accept]: fileConfig.type,
     },
     multiple: false,
     maxFiles: 1,
@@ -47,10 +68,20 @@ const FileUploadDropzone = ({
             <FileUploaderItem
               key={i}
               index={i}
-              className="flex flex-col items-center justify-center w-full bg-background border border-dashed p-4 text-center cursor-pointer hover:bg-accent/50"
+              className="flex flex-col items-center justify-center w-full bg-background border border-dashed p-4 text-center cursor-pointer hover:bg-accent/50 h-full"
               aria-roledescription={`file ${i + 1} containing ${file.name}`}
             >
-              <p className="mr-8 truncate">{file.name}</p>
+              {fileType === FileType.Image ? (
+                <Image
+                  src={URL.createObjectURL(file)}
+                  alt="Cover image"
+                  height={150}
+                  width={150}
+                  className="rounded-md h-48 w-fit max-w-full"
+                />
+              ) : (
+                <p className="mr-8 truncate">{file.name}</p>
+              )}
             </FileUploaderItem>
           ))}
         </FileUploaderContent>
