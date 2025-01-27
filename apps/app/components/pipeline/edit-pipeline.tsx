@@ -9,7 +9,7 @@ import { Label } from "@repo/design-system/components/ui/label";
 import { ScrollArea } from "@repo/design-system/components/ui/scroll-area";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
 import { decamelize } from "humps";
-import { Loader2 } from "lucide-react";
+import { Loader2, LoaderCircleIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import FileUploadDropzone, { FileType } from "./json-upload";
@@ -21,7 +21,7 @@ export default function EditPipeline({
 }: {
   pipeline: PipelineSchema & { id: string };
 }) {
-  const { authenticated, user } = usePrivy();
+  const { authenticated, user, ready: isAuthLoaded } = usePrivy();
   const [formData, setFormData] = useState<Record<string, unknown>>(() => {
     return {
       id: pipeline.id,
@@ -86,6 +86,10 @@ export default function EditPipeline({
       setIsLoading(false);
     }
   }, []);
+
+  if (!isAuthLoaded) {
+    return <LoaderCircleIcon className="w-8 h-8 animate-spin" />;
+  }
 
   if (!authenticated) {
     return <LoggedOutComponent text="Sign in to create pipelines" />;

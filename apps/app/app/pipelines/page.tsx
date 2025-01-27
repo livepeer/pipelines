@@ -4,7 +4,12 @@ import { usePrivy, User } from "@privy-io/react-auth";
 import LoggedOutComponent from "@/components/modals/logged-out";
 import { useFetch } from "@/hooks/useFetch";
 import { getPipelinesByUser } from "../api/pipelines/get";
-import { LoaderCircleIcon, PencilIcon, TrashIcon } from "lucide-react";
+import {
+  LoaderCircleIcon,
+  PencilIcon,
+  PlayIcon,
+  TrashIcon,
+} from "lucide-react";
 import { useCallback } from "react";
 import { Button } from "@repo/design-system/components/ui/button";
 import track from "@/lib/track";
@@ -41,7 +46,7 @@ const EmptyState = ({ user }: { user: User | null }) => {
               undefined,
               user || undefined
             );
-            router.replace(`/pipeline/create`);
+            router.replace(`/pipelines/create`);
           }}
           className="mt-4"
         >
@@ -52,11 +57,10 @@ const EmptyState = ({ user }: { user: User | null }) => {
   );
 };
 
-// TODO: Remove this once all the changes are merged
-const DEFAULT_USER_ID = "did:privy:cm32cnatf00nrx5pee2mpl42n";
-
 export default function Page() {
+  const router = useRouter();
   const { authenticated, user } = usePrivy();
+
   const fetchPipelines = useCallback(() => {
     return user?.id ? getPipelinesByUser(user.id) : Promise.resolve([]);
   }, [user]);
@@ -107,7 +111,7 @@ export default function Page() {
                 <TableCell className="flex items-center gap-x-4">
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Link href={`/pipelines/${pipeline.id}?edit=true`}>
+                      <Link href={`/pipelines/${pipeline.id}`}>
                         <PencilIcon />
                       </Link>
                     </TooltipTrigger>
@@ -125,6 +129,21 @@ export default function Page() {
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>Delete Pipeline</TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="link"
+                        size="icon"
+                        className="relative group"
+                        onClick={() => {
+                          router.push(`/playground/${pipeline.id}`);
+                        }}
+                      >
+                        <PlayIcon />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>View in Playground</TooltipContent>
                   </Tooltip>
                 </TableCell>
               </TableRow>

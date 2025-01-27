@@ -13,9 +13,10 @@ import { decamelize } from "humps";
 import { createPipelineFromFormData } from "@/app/api/pipelines/create";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { LoaderCircleIcon } from "lucide-react";
 
 export default function CreatePipeline() {
-  const { authenticated, user } = usePrivy();
+  const { authenticated, user, ready: isAuthLoaded } = usePrivy();
   const [formData, setFormData] = useState<Record<string, unknown>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
@@ -57,6 +58,10 @@ export default function CreatePipeline() {
       setIsSubmitting(false);
     }
   };
+
+  if (!isAuthLoaded) {
+    return <LoaderCircleIcon className="w-8 h-8 animate-spin" />;
+  }
 
   if (!authenticated) {
     return <LoggedOutComponent text="Sign in to create pipelines" />;
