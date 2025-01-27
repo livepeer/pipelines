@@ -161,35 +161,31 @@ const App = ({ searchParams }: { searchParams: { [key: string]: string | string[
         </div>
         
         {/* Main content area with split view */}
-        <div className="flex-grow flex gap-4 min-h-0">
+        <div className="flex-1 flex gap-4 min-h-0">
           {/* Video container wrapper */}
           <div className="flex flex-1 gap-4">
             {/* Left side - Webcam feed */}
-            <div className="flex-1 bg-sidebar rounded-lg overflow-hidden">
-              <div className="w-full h-full">
+            <div className="flex-1 bg-sidebar overflow-hidden">
+              <div className="aspect-video">
                 {isInitializing ? (
                   <div className="w-full h-full flex items-center justify-center">
                     <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
                   </div>
                 ) : (
-                  <div className="w-full h-full">
-                    <BroadcastWithControls ingestUrl={ingestUrl} />
-                  </div>
+                  <BroadcastWithControls ingestUrl={ingestUrl} />
                 )}
               </div>
             </div>
             
             {/* Right side - Transformed output */}
-            <div className="flex-1 bg-sidebar rounded-lg overflow-hidden">
-              <div className="w-full h-full">
+            <div className="flex-1 bg-sidebar overflow-hidden">
+              <div className="aspect-video">
                 {isInitializing ? (
                   <div className="w-full h-full flex items-center justify-center">
                     <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
                   </div>
                 ) : playbackId ? (
-                  <div className="w-full h-full">
-                    <LPPLayer output_playback_id={playbackId} />
-                  </div>
+                  <LPPLayer output_playback_id={playbackId} />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-muted-foreground">
                     Waiting for stream to start...
