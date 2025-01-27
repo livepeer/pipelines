@@ -29,6 +29,8 @@ const App = ({ searchParams }: { searchParams: { [key: string]: string | string[
     const hasSeenInterstitial = localStorage.getItem("hasSeenInterstitial");
     if (hasSeenInterstitial) {
       setShowInterstitial(false);
+      // Initialize stream when interstitial is skipped due to previous visit
+      initializeStream();
     }
     setHasCheckedStorage(true);
   }, []);
@@ -82,6 +84,8 @@ const App = ({ searchParams }: { searchParams: { [key: string]: string | string[
   const handleSkip = () => {
     localStorage.setItem("hasSeenInterstitial", "true");
     setShowInterstitial(false);
+    // Initialize stream when user skips the interstitial
+    initializeStream();
   };
 
   const handleSubmit = async () => {
