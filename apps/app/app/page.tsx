@@ -21,11 +21,15 @@ const App = ({ searchParams }: { searchParams: { [key: string]: string | string[
   const [isInitializing, setIsInitializing] = useState(false);
   const [prompt, setPrompt] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [pipelineId, setPipelineId] = useState<string>('pip_nWWnMM3zHMudcMuz'); // Default to development pipeline
 
   useEffect(() => {
     const initialize = async () => {
       validateEnv();
       validateServerEnv();
+      
+      // Set the correct pipeline ID based on environment
+      setPipelineId(isProduction() ? 'pip_CXJea3LCcTatYQYK' : 'pip_nWWnMM3zHMudcMuz');
       
       const hasSeenInterstitial = localStorage.getItem("hasSeenInterstitial");
       if (hasSeenInterstitial) {
@@ -43,10 +47,9 @@ const App = ({ searchParams }: { searchParams: { [key: string]: string | string[
   const initializeStream = async () => {
     if (isInitializing) return;
     
-    console.log('Initializing stream...'); // Add logging
+    console.log('Initializing stream with pipeline:', pipelineId); // Add logging
     setIsInitializing(true);
     try {
-      // Create a new stream
       const response = await fetch('/api/streams/create', {
         method: 'POST',
         headers: {
@@ -54,18 +57,19 @@ const App = ({ searchParams }: { searchParams: { [key: string]: string | string[
         },
         body: JSON.stringify({
           name: 'Video Style Transfer Stream',
-          pipelineId: isProduction() ? 'pip_CXJea3LCcTatYQYK' : 'pip_nWWnMM3zHMudcMuz'
+          pipelineId: pipelineId
         }),
       });
 
-      console.log('Stream creation response:', response.status); // Add logging
+      console.log('Stream creation response:', response.status);
 
       if (!response.ok) {
-        throw new Error('Failed to create stream');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to create stream');
       }
 
       const data = await response.json();
-      console.log('Stream data:', data); // Add logging
+      console.log('Stream data:', data);
       
       if (data.error) {
         throw new Error(data.error);
@@ -109,7 +113,7 @@ const App = ({ searchParams }: { searchParams: { [key: string]: string | string[
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          pipelineId: isProduction() ? 'pip_CXJea3LCcTatYQYK' : 'pip_nWWnMM3zHMudcMuz',
+          pipelineId: pipelineId,
           params: {
             prompt: prompt.trim()
           }
