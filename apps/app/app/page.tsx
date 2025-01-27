@@ -19,6 +19,8 @@ const App = ({ searchParams }: { searchParams: { [key: string]: string | string[
   const [ingestUrl, setIngestUrl] = useState<string | null>(null);
   const [playbackId, setPlaybackId] = useState<string | null>(null);
   const [isInitializing, setIsInitializing] = useState(false);
+  const [prompt, setPrompt] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     validateEnv();
@@ -79,12 +81,43 @@ const App = ({ searchParams }: { searchParams: { [key: string]: string | string[
     setShowInterstitial(false);
   };
 
+  const handleSubmit = async () => {
+    if (!prompt.trim() || isSubmitting) return;
+    
+    setIsSubmitting(true);
+    try {
+      const response = await fetch('/api/streams/update-params', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          pipelineId: isProduction() ? 'pip_CXJea3LCcTatYQYK' : 'pip_nWWnMM3zHMudcMuz',
+          params: {
+            prompt: prompt.trim()
+          }
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update stream');
+      }
+
+      toast.success('Prompt updated successfully');
+    } catch (error) {
+      console.error('Failed to update stream:', error);
+      toast.error('Failed to update prompt. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   // Show a loading div while checking localStorage
   if (!hasCheckedStorage) {
     return <div className="h-screen" />;
   }
 
-  const samplePrompts:string[] = ['A big-budget Hollywood superhero movie', 'Studio Ghibli fantastical creatures', 'Grainy black-and-white western']
+  const samplePrompts:string[] = ['A big-budget Hollywood superhero movie...', 'Studio Ghibli fantastical creatures...', 'Grainy black-and-white western...']
 
   return (
     <>
@@ -103,8 +136,18 @@ const App = ({ searchParams }: { searchParams: { [key: string]: string | string[
           <Input 
             placeholder={samplePrompts[Math.floor(Math.random() * samplePrompts.length)]}
             className="flex-grow"
+            value={prompt}
+            onChange={(e) => setPrompt(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                handleSubmit();
+              }
+            }}
           />
-          <Button>
+          <Button onClick={handleSubmit} disabled={isSubmitting}>
+            {isSubmitting ? (
+              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+            ) : null}
             Submit
           </Button>
         </div>
