@@ -1,10 +1,9 @@
 "use server";
-import { validateUser } from "@/app/api/pipelines/auth";
+import { isPipelineOwner, validateUser } from "@/app/api/pipelines/auth";
 import { uploadFile } from "@/app/api/pipelines/storage";
-import { z } from "zod";
-import { createServerClient } from "@repo/supabase/server";
 import { pipelineSchema } from "@/lib/types";
-import { revalidatePath } from "next/cache";
+import { createServerClient } from "@repo/supabase/server";
+import { z } from "zod";
 
 export async function updatePipeline(body: any, userId: string) {
   const supabase = await createServerClient();
@@ -34,6 +33,8 @@ export async function editPipelineFromFormData(
 ) {
   const formDataObject = Object.fromEntries(formData.entries());
   const pipelineId = formDataObject.id as string;
+
+  await isPipelineOwner(userId, pipelineId);
 
   // Upload the cover_image file
   const coverImageFile = formDataObject.cover_image as File;

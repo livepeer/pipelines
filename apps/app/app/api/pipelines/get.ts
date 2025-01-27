@@ -15,6 +15,7 @@ export async function getAllPipelines() {
   return data;
 }
 
+// TODO: Add pagination
 export async function getPipelinesByUser(userId: string) {
   const supabase = await createServerClient();
   const { data, error } = await supabase

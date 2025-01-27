@@ -1,6 +1,3 @@
-import { validateUser } from "@/app/api/pipelines/auth";
-import { uploadFile } from "@/app/api/pipelines/storage";
-import { createServerClient } from "@repo/supabase";
 import { z } from "zod";
 
 const modelCardSchema = z

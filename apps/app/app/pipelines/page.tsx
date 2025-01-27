@@ -41,11 +41,6 @@ const EmptyState = ({ user }: { user: User | null }) => {
         </p>
         <Button
           onClick={() => {
-            track(
-              "my_pipelines_create_pipeline_clicked",
-              undefined,
-              user || undefined
-            );
             router.replace(`/pipelines/create`);
           }}
           className="mt-4"
@@ -111,9 +106,16 @@ export default function Page() {
                 <TableCell className="flex items-center gap-x-4">
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Link href={`/pipelines/${pipeline.id}`}>
+                      <Button
+                        variant="link"
+                        size="icon"
+                        className="relative group"
+                        onClick={() => {
+                          router.push(`/pipelines/${pipeline.id}`);
+                        }}
+                      >
                         <PencilIcon />
-                      </Link>
+                      </Button>
                     </TooltipTrigger>
                     <TooltipContent>Edit Pipeline</TooltipContent>
                   </Tooltip>
@@ -123,7 +125,9 @@ export default function Page() {
                         variant="link"
                         size="icon"
                         className="relative group"
-                        onClick={() => {}}
+                        onClick={() => {
+                          // TODO ENG-2387: Implement delete pipeline
+                        }}
                       >
                         <TrashIcon />
                       </Button>
