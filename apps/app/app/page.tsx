@@ -23,21 +23,27 @@ const App = ({ searchParams }: { searchParams: { [key: string]: string | string[
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    validateEnv();
-    validateServerEnv();
-    
-    const hasSeenInterstitial = localStorage.getItem("hasSeenInterstitial");
-    if (hasSeenInterstitial) {
-      setShowInterstitial(false);
-      // Initialize stream when interstitial is skipped due to previous visit
-      initializeStream();
-    }
-    setHasCheckedStorage(true);
+    const initialize = async () => {
+      validateEnv();
+      validateServerEnv();
+      
+      const hasSeenInterstitial = localStorage.getItem("hasSeenInterstitial");
+      if (hasSeenInterstitial) {
+        setShowInterstitial(false);
+        // Ensure state updates are processed before initializing stream
+        await Promise.resolve();
+        await initializeStream();
+      }
+      setHasCheckedStorage(true);
+    };
+
+    initialize();
   }, []);
 
   const initializeStream = async () => {
     if (isInitializing) return;
     
+    console.log('Initializing stream...'); // Add logging
     setIsInitializing(true);
     try {
       // Create a new stream
@@ -52,11 +58,15 @@ const App = ({ searchParams }: { searchParams: { [key: string]: string | string[
         }),
       });
 
+      console.log('Stream creation response:', response.status); // Add logging
+
       if (!response.ok) {
         throw new Error('Failed to create stream');
       }
 
       const data = await response.json();
+      console.log('Stream data:', data); // Add logging
+      
       if (data.error) {
         throw new Error(data.error);
       }
