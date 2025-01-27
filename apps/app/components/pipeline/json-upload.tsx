@@ -8,7 +8,6 @@ import {
 } from "@repo/design-system/components/ui/file-upload";
 import Image from "next/image";
 import { Dispatch, SetStateAction, useState } from "react";
-import { DropzoneOptions } from "react-dropzone";
 import { Upload } from "lucide-react";
 
 export enum FileType {
@@ -53,7 +52,7 @@ const FileUploadDropzone = ({
     multiple: false,
     maxFiles: 1,
     maxSize: 1 * 1024 * 1024,
-  } satisfies DropzoneOptions;
+  };
 
   return (
     <FileUploader
