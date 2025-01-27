@@ -69,11 +69,14 @@ const App = ({ searchParams }: { searchParams: { [key: string]: string | string[
     }
   };
 
+  const handleCameraPermissionGranted = () => {
+    // Start initializing the stream in the background
+    initializeStream();
+  };
+
   const handleReady = () => {
     localStorage.setItem("hasSeenInterstitial", "true");
     setShowInterstitial(false);
-    // Initialize stream when camera permission is granted and user is ready
-    initializeStream();
   };
 
   const handleSkip = () => {
@@ -122,7 +125,12 @@ const App = ({ searchParams }: { searchParams: { [key: string]: string | string[
   return (
     <>
       {showInterstitial && (
-        <Interstitial onReady={handleReady} onSkip={handleSkip} setShowInterstitial={setShowInterstitial} />
+        <Interstitial 
+          onReady={handleReady} 
+          onSkip={handleSkip} 
+          setShowInterstitial={setShowInterstitial}
+          onCameraPermissionGranted={handleCameraPermissionGranted}
+        />
       )}
       <div className="flex flex-col h-screen p-4 gap-4">
         {/* Header section */}

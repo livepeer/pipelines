@@ -41,29 +41,56 @@ const steps = [
 export default function Interstitial({
   onReady,
   onSkip,
-  setShowInterstitial
+  setShowInterstitial,
+  onCameraPermissionGranted
 }: {
   onReady: () => void;
   onSkip: () => void;
   setShowInterstitial: (show: boolean) => void;
+  onCameraPermissionGranted: () => void;
 }) {
   const [cameraPermission, setCameraPermission] = useState<"prompt" | "granted" | "denied">("prompt");
   const [currentScreen, setCurrentScreen] = useState<"camera" | "prompts">("camera");
 
+  useEffect(() => {
+    // Check initial camera permission state
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(stream => {
+        stream.getTracks().forEach(track => track.stop());
+        setCameraPermission("granted");
+        setCurrentScreen("prompts");
+        onCameraPermissionGranted();
+      })
+      .catch(() => {
+        setCameraPermission("prompt");
+      });
+  }, []);
+
   const requestCamera = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      stream.getTracks().forEach(track => track.stop()); // Clean up
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: {
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        } 
+      });
+      // Keep the stream active to maintain permission
+      stream.getTracks().forEach(track => track.stop());
       setCameraPermission("granted");
       setCurrentScreen("prompts");
-      onReady();
+      onCameraPermissionGranted();
     } catch (err) {
+      console.error('Camera permission denied:', err);
       setCameraPermission("denied");
     }
   };
 
   const handleBack = () => {
     setCurrentScreen("camera");
+  };
+
+  const handleGetStarted = () => {
+    onReady();
   };
 
   const slideVariants = {
@@ -166,7 +193,7 @@ export default function Interstitial({
                 <ChevronLeft className="h-4 w-4" />
                 Back
               </Button>
-              <Button onClick={() => setShowInterstitial(false)} className="gap-2">
+              <Button onClick={handleGetStarted} className="gap-2">
                 Get Started
                 <ArrowRight className="h-4 w-4" />
               </Button>
