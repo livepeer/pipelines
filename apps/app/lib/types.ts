@@ -14,24 +14,24 @@ const modelCardSchema = z
   })
   .optional();
 
-const configSchema = z.object({
-  inputs: z.object({
-    primary: z.object({
-      id: z.string().optional(),
-      type: z.string().optional(),
-      label: z.string().optional(),
-      required: z.boolean().optional(),
-      fullWidth: z.boolean().optional(),
-      placeholder: z.string().optional(),
-      defaultValue: z.unknown(),
-    }),
-  }),
-  version: z.string().optional(),
-  metadata: z.object({
-    description: z.string().optional(),
-    requiredFields: z.array(z.string()).optional(),
-  }),
-});
+// const configSchema = z.object({
+//   inputs: z.object({
+//     primary: z.object({
+//       id: z.string().optional(),
+//       type: z.string().optional(),
+//       label: z.string().optional(),
+//       required: z.boolean().optional(),
+//       fullWidth: z.boolean().optional(),
+//       placeholder: z.string().optional(),
+//       defaultValue: z.unknown(),
+//     }),
+//   }),
+//   version: z.string().optional(),
+//   metadata: z.object({
+//     description: z.string().optional(),
+//     requiredFields: z.array(z.string()).optional(),
+//   }),
+// });
 
 export const pipelineSchema = z.object({
   created_at: z.date().optional(),
@@ -46,14 +46,7 @@ export const pipelineSchema = z.object({
   sample_code_repo: z.string().url().nullable().optional(),
   is_featured: z.boolean().default(false),
   sample_input_video: z.string().url().nullable().optional(),
-  config: configSchema
-    .nullable()
-    .optional()
-    .catch(() => {
-      throw new Error(
-        `Invalid config schema, please upload a valid comfyUI config file`
-      );
-    }),
+  config: z.unknown().nullable().optional(),
   key: z.string().default("comfyui"),
   author: z.string(),
   model_card: modelCardSchema,
