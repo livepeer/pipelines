@@ -29,7 +29,7 @@ const RootLayout = ({ children }: RootLayoutProperties) => (
         <MixpanelProvider>
           <SessionTracker />
           <AlphaBanner />
-          <SidebarProvider>
+          <SidebarProvider defaultOpen={false}>
             <GlobalSidebar>
               <div>
                 <header className="flex h-16 shrink-0 items-center gap-2">
