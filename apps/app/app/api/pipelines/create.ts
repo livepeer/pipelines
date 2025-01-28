@@ -69,7 +69,7 @@ export async function createPipelineFromFormData(
   return pipeline;
 }
 
-export function generateComfyConfig(config: any, version?: string, description?: string) {
+export async function generateComfyConfig(config: any, version?: string, description?: string) {
   return {
     inputs: {
       primary: {
