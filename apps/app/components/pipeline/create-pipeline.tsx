@@ -67,6 +67,15 @@ export default function CreatePipeline() {
     return <LoggedOutComponent text="Sign in to create pipelines" />;
   }
 
+  // TODO: remove non-admin restriction when pre-validation is available
+  if (!user?.email?.address?.endsWith('@livepeer.org')) {
+    return (
+      <div className="p-4">
+        <h3 className="text-lg font-medium">Pipeline creation is currently in closed beta.</h3>
+      </div>
+    );
+  }
+
   return (
     <div className="p-4">
       <h3 className="font-medium text-lg">Create pipeline</h3>

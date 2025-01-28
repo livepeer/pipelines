@@ -100,6 +100,15 @@ export default function Page() {
     return <EmptyState user={user} />;
   }
 
+  // TODO: remove non-admin restriction when pre-validation is available
+  if (!user?.email?.address?.endsWith('@livepeer.org')) {
+    return (
+      <div className="p-4">
+        <h3 className="text-lg font-medium">Access Restricted</h3>
+      </div>
+    );
+  }
+
   return (
     <div className="p-4">
       <h3 className="font-medium text-lg">My Pipelines</h3>
