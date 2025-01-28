@@ -1,5 +1,4 @@
 import Billing from "./billing";
-import CreatePipeline from "./create-pipeline";
 import Gateway from "./gateway";
 import HistoryPipelines from "./history";
 import LikedPipelines from "./liked-pipeline";
@@ -24,7 +23,6 @@ export default function Modals({
           }}
           className="fixed  left-0 top-[4rem] md:left-[15rem] md:top-[4rem] w-full md:w-[27rem] h-full bg-background border-r border-border overflow-y-auto z-20"
         >
-          <CreatePipeline open={tab === "create"} />
           <LikedPipelines open={tab === "liked"} />
           <HistoryPipelines open={tab === "history"} />
           <MyPipelines open={tab === "my"} />

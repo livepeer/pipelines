@@ -22,11 +22,13 @@ import {
   SendIcon,
   SquareTerminalIcon,
   VideoIcon,
-  BookIcon
+  BookIcon,
+  User,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
+import { usePrivy } from "@privy-io/react-auth";
 
 type GlobalSidebarProperties = {
   readonly children: ReactNode;
@@ -82,6 +84,10 @@ export const GlobalSidebar = ({ children }: GlobalSidebarProperties) => {
   const router = useRouter();
   const isMobile = useIsMobile();
 
+  const { user } = usePrivy();
+  // TODO: remove non-admin restriction as soon as pre-validation is available
+  const isLivepeerEmail = user?.email?.address?.endsWith('@livepeer.org');
+
   const data: {
     streams: NavItem[];
     pipelines: NavItem[];
@@ -91,7 +97,7 @@ export const GlobalSidebar = ({ children }: GlobalSidebarProperties) => {
     pipelines: [
       {
         title: "Create Pipeline",
-        url: `?tab=create`,
+        url: `/pipelines/create`,
         icon: SquareTerminalIcon,
         isActive: true,
       },
@@ -100,6 +106,14 @@ export const GlobalSidebar = ({ children }: GlobalSidebarProperties) => {
         url: `/explore`,
         icon: Map,
       },
+      ...(isLivepeerEmail ? [
+        {
+          title: "My Pipelines",
+          url: `/pipelines`,
+          icon: User,
+          isActive: true,
+        }
+      ] : []),
     ],
     streams: [
       {
