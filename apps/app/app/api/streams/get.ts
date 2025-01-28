@@ -55,6 +55,7 @@ export async function getStreams(userId: string, page: number = 1, limit: number
       `)
       .eq('author', userId)
       .eq('from_playground', false)
+      .eq('is_smoke_test', false)
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1);
   

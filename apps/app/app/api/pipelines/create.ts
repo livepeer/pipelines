@@ -6,6 +6,7 @@ import { newId } from "@/lib/generate-id";
 import { pipelineSchema } from "@/lib/types";
 import { createServerClient } from "@repo/supabase";
 import { z } from "zod";
+import { createSmokeTestStream, triggerSmokeTest } from "./validation";
 
 export async function createPipeline(
   body: any,
@@ -22,12 +23,19 @@ export async function createPipeline(
     throw new z.ZodError(validationResult.error.errors);
   }
 
+  const id = pipelineId || newId("pipeline");
+
   const { data, error } = await supabase
     .from("pipelines")
-    .insert({ ...validationResult.data, id: pipelineId || newId("pipeline") })
+    .insert({ ...validationResult.data, id })
     .select();
 
   if (error) throw new Error(error.message);
+
+  // Create a smoke test stream using the pipeline for pre-publication validation
+  const smokeTestStream = await createSmokeTestStream(id)
+  await triggerSmokeTest(smokeTestStream.stream_key);
+
   return data[0];
 }
 

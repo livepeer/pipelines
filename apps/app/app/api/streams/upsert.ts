@@ -23,6 +23,7 @@ const streamSchema = z
     stream_key: z.string().optional(),
     created_at: z.any().optional(),
     from_playground: z.boolean().optional(),
+    is_smoke_test: z.boolean().default(false)
   })
   .refine((data) => data.pipeline_id || data.pipelines, {
     message:
