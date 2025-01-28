@@ -37,6 +37,7 @@ export const pipelineSchema = z.object({
   name: z.string().min(1),
   description: z.string().optional(),
   is_private: z.boolean().default(true),
+  is_valid: z.boolean().default(false),
   cover_image: z.string().url().nullable().optional(),
   type: z.string().default("comfyUI"),
   comfy_ui_json: z.unknown().nullable().optional(),
