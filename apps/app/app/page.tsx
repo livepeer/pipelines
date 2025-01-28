@@ -53,23 +53,39 @@ const App = ({ searchParams }: { searchParams: { [key: string]: string | string[
     console.log('Initializing stream with pipeline:', pipelineId);
     setIsInitializing(true);
     try {
-      const { data: stream, error } = await upsertStream(
-        {
-          pipeline_id: pipelineId,
-          pipeline_params: {
-            prompt: prompt || "A cinematic movie scene"
+      // Create properly structured pipeline parameters
+      const streamData = {
+        pipeline_id: pipelineId,
+        pipeline_params: {
+          prompt: {
+            "3": {
+              "inputs": {
+                "text": prompt || "A cinematic movie scene",
+                "clip": ["CLIPTextEncode", "CLIPTextEncode"]
+              },
+              "class_type": "CLIPTextEncode"
+            }
           }
-        },
-        user?.id ?? "did:privy:cm32cnatf00nrx5pee2mpl42n" // Dummy user id for non-authenticated users
+        }
+      };
+
+      console.log('Sending stream data:', streamData);
+      
+      const { data: stream, error } = await upsertStream(
+        streamData,
+        user?.id ?? "did:privy:cm32cnatf00nrx5pee2mpl42n"
       );
 
       if (error) {
+        console.error('Stream creation error:', error);
         toast.error(`Error creating stream for playback ${error}`);
         return;
       }
 
       console.log('Stream data:', stream);
-      setIngestUrl(`${stream.gateway_host}${stream.stream_key}/whip`);
+      const ingestUrlFull = `${stream.gateway_host}${stream.stream_key}/whip`;
+      console.log('Setting ingest URL:', ingestUrlFull);
+      setIngestUrl(ingestUrlFull);
       setPlaybackId(stream.playback_id);
     } catch (error) {
       console.error('Failed to initialize stream:', error);
