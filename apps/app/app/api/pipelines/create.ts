@@ -51,7 +51,7 @@ export async function createPipelineFromFormData(
   const comfyUiFile = formDataObject.comfy_json as File;
   const comfyUiJson = JSON.parse(await comfyUiFile.text());
 
-  const comfyUiConfig = generateComfyConfig(
+  const comfyUiConfig = await generateComfyConfig(
     comfyUiJson,
     formDataObject.version as string,
     formDataObject.description as string
