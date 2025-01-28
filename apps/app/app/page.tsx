@@ -12,8 +12,11 @@ import Interstitial from "@/components/welcome/interstitial";
 import Modals from "@/components/modals";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import { upsertStream } from "@/app/api/streams/upsert";
+import { usePrivy } from "@privy-io/react-auth";
 
 const App = ({ searchParams }: { searchParams: { [key: string]: string | string[] | undefined } }): ReactElement => {
+  const { user } = usePrivy();
   const [showInterstitial, setShowInterstitial] = useState(true);
   const [hasCheckedStorage, setHasCheckedStorage] = useState(false);
   const [ingestUrl, setIngestUrl] = useState<string | null>(null);
@@ -47,36 +50,27 @@ const App = ({ searchParams }: { searchParams: { [key: string]: string | string[
   const initializeStream = async () => {
     if (isInitializing) return;
     
-    console.log('Initializing stream with pipeline:', pipelineId); // Add logging
+    console.log('Initializing stream with pipeline:', pipelineId);
     setIsInitializing(true);
     try {
-      const response = await fetch('/api/streams/create', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const { data: stream, error } = await upsertStream(
+        {
+          pipeline_id: pipelineId,
+          pipeline_params: {
+            prompt: prompt || "A cinematic movie scene"
+          }
         },
-        body: JSON.stringify({
-          name: 'Video Style Transfer Stream',
-          pipelineId: pipelineId
-        }),
-      });
+        user?.id ?? "did:privy:cm32cnatf00nrx5pee2mpl42n" // Dummy user id for non-authenticated users
+      );
 
-      console.log('Stream creation response:', response.status);
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to create stream');
+      if (error) {
+        toast.error(`Error creating stream for playback ${error}`);
+        return;
       }
 
-      const data = await response.json();
-      console.log('Stream data:', data);
-      
-      if (data.error) {
-        throw new Error(data.error);
-      }
-
-      setIngestUrl(data.ingestUrl);
-      setPlaybackId(data.playbackId);
+      console.log('Stream data:', stream);
+      setIngestUrl(`${stream.gateway_host}${stream.stream_key}/whip`);
+      setPlaybackId(stream.playback_id);
     } catch (error) {
       console.error('Failed to initialize stream:', error);
       toast.error('Failed to initialize camera stream. Please try again.');
