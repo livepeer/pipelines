@@ -51,14 +51,41 @@ export async function createPipelineFromFormData(
   const comfyUiFile = formDataObject.comfy_json as File;
   const comfyUiJson = JSON.parse(await comfyUiFile.text());
 
+  const comfyUiConfig = generateComfyConfig(
+    comfyUiJson,
+    formDataObject.version as string,
+    formDataObject.description as string
+  );
+
   const pipelineData = {
     ...formDataObject,
     cover_image: imageUrl,
     author: userId,
     id: pipelineId,
-    config: comfyUiJson,
+    config: comfyUiConfig,
   };
 
   const pipeline = await createPipeline(pipelineData, userId);
   return pipeline;
+}
+
+export function generateComfyConfig(config: any, version?: string, description?: string) {
+  return {
+    inputs: {
+      primary: {
+        id: "prompt",
+        type: "textarea",
+        label: "Comfy UI JSON",
+        required: true,
+        fullWidth: true,
+        placeholder: "Enter json object",
+        defaultValue: config
+      },
+      advanced: []
+    },
+    version: version || "0.0.1",
+    metadata: {
+      description: description || ""
+    }
+  };
 }
