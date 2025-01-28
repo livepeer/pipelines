@@ -10,7 +10,7 @@ import {
   PlayIcon,
   TrashIcon,
 } from "lucide-react";
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { Button } from "@repo/design-system/components/ui/button";
 import track from "@/lib/track";
 import { useRouter } from "next/navigation";
@@ -29,6 +29,9 @@ import {
   TableRow,
 } from "@repo/design-system/components/ui/table";
 import Link from "next/link";
+import { deletePipeline } from "../api/pipelines/delete";
+import { toast } from "sonner";
+import ConfirmDialog from "@/components/modals/confirm";
 
 const EmptyState = ({ user }: { user: User | null }) => {
   const router = useRouter();
@@ -59,14 +62,38 @@ export default function Page() {
   const fetchPipelines = useCallback(() => {
     return user?.id ? getPipelinesByUser(user.id) : Promise.resolve([]);
   }, [user]);
-  const { data: pipelines, loading } = useFetch(fetchPipelines);
+  const { data: pipelines, loading, refetch } = useFetch(fetchPipelines);
+  const [isDialogOpen, setDialogOpen] = useState(false);
+  const [selectedPipelineIdForDelete, setSelectedPipelineIdForDelete] =
+    useState<string | null>(null);
 
-  if (!authenticated) {
-    return <LoggedOutComponent text="Sign in to view your pipelines" />;
-  }
+  const handleDelete = useCallback(
+    async (pipelineId: string | null) => {
+      if (!pipelineId) return;
+      const toastId = toast.loading("Deleting pipeline...");
+      try {
+        await deletePipeline(pipelineId, user?.id || "");
+        toast.success("Pipeline deleted successfully", {
+          id: toastId,
+        });
+        refetch();
+      } catch (error) {
+        toast.error("Failed to delete pipeline", {
+          id: toastId,
+        });
+      } finally {
+        setDialogOpen(false);
+      }
+    },
+    [user]
+  );
 
   if (loading) {
     return <LoaderCircleIcon className="w-8 h-8 animate-spin" />;
+  }
+
+  if (!authenticated) {
+    return <LoggedOutComponent text="Sign in to view your pipelines" />;
   }
 
   if (!pipelines || pipelines?.length === 0) {
@@ -126,7 +153,8 @@ export default function Page() {
                         size="icon"
                         className="relative group"
                         onClick={() => {
-                          // TODO ENG-2387: Implement delete pipeline
+                          setSelectedPipelineIdForDelete(pipeline.id);
+                          setDialogOpen(true);
                         }}
                       >
                         <TrashIcon />
@@ -155,6 +183,14 @@ export default function Page() {
           </TableBody>
         </Table>
       </TooltipProvider>
+      <ConfirmDialog
+        title="Delete Pipeline"
+        prompt="Are you sure you want to delete this pipeline? This action cannot be undone."
+        okMessage="Confirm"
+        callback={async () => await handleDelete(selectedPipelineIdForDelete)}
+        open={isDialogOpen}
+        onClose={() => setDialogOpen(false)}
+      />
     </div>
   );
 }
