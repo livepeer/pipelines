@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { upsertStream } from "@/app/api/streams/upsert";
 import { usePrivy } from "@privy-io/react-auth";
+import track from "@/lib/track";
 
 const App = ({ searchParams }: { searchParams: { [key: string]: string | string[] | undefined } }): ReactElement => {
   const { user } = usePrivy();
