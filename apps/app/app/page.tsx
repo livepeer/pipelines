@@ -26,6 +26,7 @@ const App = ({ searchParams }: { searchParams: { [key: string]: string | string[
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [pipelineId, setPipelineId] = useState<string>('pip_nWWnMM3zHMudcMuz'); // Default to development pipeline
 
+
   useEffect(() => {
     const initialize = async () => {
       validateEnv();
@@ -112,6 +113,16 @@ const App = ({ searchParams }: { searchParams: { [key: string]: string | string[
     initializeStream();
   };
 
+  const handleClickTrack = (label: string) => {
+    track(
+      label.toLowerCase() + "_button_clicked",
+      {
+        location: "demo",
+      },
+      user || undefined
+    );
+  };
+
   const handleSubmit = async () => {
     if (!prompt.trim() || isSubmitting) return;
     
@@ -165,61 +176,74 @@ const App = ({ searchParams }: { searchParams: { [key: string]: string | string[
         <div className="flex-shrink-0">
           <h1 className="text-2xl font-bold">Livepeer Pipelines</h1>
           <p className="text-muted-foreground">Transform your video in real-time with AI - and build your own workflow with ComfyUI</p>
+
         </div>
 
         {/* Top section with prompt input */}
-        <div className="flex-shrink-0 flex gap-2">
-          <Input 
-            placeholder={samplePrompts[Math.floor(Math.random() * samplePrompts.length)]}
-            className="flex-grow"
-            value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                handleSubmit();
-              }
-            }}
-          />
-          <Button onClick={handleSubmit} disabled={isSubmitting}>
-            {isSubmitting ? (
-              <Loader2 className="h-4 w-4 animate-spin mr-2" />
-            ) : null}
-            Submit
-          </Button>
+        <div className="flex-shrink-0 flex">
+          <div className="relative w-[calc(90%-0.5rem)]">
+            <Input 
+              placeholder={samplePrompts[Math.floor(Math.random() * samplePrompts.length)]}
+              className="w-full pr-[140px]"
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              onKeyDown={(e) => {
+                if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+                  handleSubmit();
+                }
+              }}
+            />
+            <Button 
+              onClick={handleSubmit} 
+              disabled={isSubmitting}
+              className="absolute right-2 top-1/2 -translate-y-1/2"
+            >
+              {isSubmitting ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              ) : null}
+              Apply (⌘ + Enter)
+            </Button>
+          </div>
+          <Button
+          variant="outline"
+          className="hidden md:flex right-0"
+          onClick={() => {
+            window.open("https://pipelines.livepeer.org/docs/technical/develop-pipeline/create-your-first-pipeline", "_blank");
+            handleClickTrack("build-your-own");
+          }}
+        >
+           <span>Build your own pipeline 🔗</span>
+        </Button>
         </div>
         
-        {/* Main content area with split view */}
-        <div className="flex-1 flex gap-4 min-h-0">
+        {/* Main content area */}
+        <div className="flex-1 min-h-0">
           {/* Video container wrapper */}
-          <div className="flex flex-1 gap-4">
-            {/* Left side - Webcam feed */}
-            <div className="flex-1 bg-sidebar overflow-hidden">
-              <div className="aspect-video">
-                {isInitializing ? (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                  </div>
-                ) : (
-                  <BroadcastWithControls ingestUrl={ingestUrl} />
-                )}
-              </div>
+          <div className="relative w-full h-full">
+            {/* Full width playback */}
+            <div className="w-full h-full">
+              {isInitializing ? (
+                <div className="w-full h-full flex items-center justify-center">
+                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                </div>
+              ) : playbackId ? (
+                <LPPLayer output_playback_id={playbackId} />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+                  Waiting for stream to start...
+                </div>
+              )}
             </div>
             
-            {/* Right side - Transformed output */}
-            <div className="flex-1 bg-sidebar overflow-hidden">
-              <div className="aspect-video">
-                {isInitializing ? (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                  </div>
-                ) : playbackId ? (
-                  <LPPLayer output_playback_id={playbackId} />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-                    Waiting for stream to start...
-                  </div>
-                )}
-              </div>
+            {/* Picture-in-Picture broadcast */}
+            <div className="absolute bottom-6 right-4 w-1/2 md:w-1/5 bg-sidebar overflow-hidden rounded-lg shadow-lg">
+              {isInitializing ? (
+                <div className="w-full h-full flex items-center justify-center">
+                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                </div>
+              ) : (
+                <BroadcastWithControls ingestUrl={ingestUrl} />
+              )}
             </div>
           </div>
         </div>
