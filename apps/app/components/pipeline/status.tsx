@@ -12,9 +12,7 @@ export default function PipelineStatus({
   useEffect(() => {
     let source: EventSource;
     const fetchSseMessages = async () => {
-      source = new EventSource(
-        `${process.env.NEXT_PUBLIC_APP_URL}/api/streams/${streamId}/sse`
-      );
+      source = new EventSource(`/api/streams/${streamId}/sse`);
       source.onmessage = (event) => {
         const data = JSON.parse(event.data);
         setStatus(data.state ?? "PROCESSING");
