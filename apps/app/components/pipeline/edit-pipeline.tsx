@@ -1,7 +1,8 @@
 "use client";
 
-import { createPipelineFromFormData } from "@/app/api/pipelines/create";
+import { editPipelineFromFormData } from "@/app/api/pipelines/edit";
 import LoggedOutComponent from "@/components/modals/logged-out";
+import { PipelineSchema } from "@/lib/types";
 import { usePrivy } from "@privy-io/react-auth";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Input } from "@repo/design-system/components/ui/input";
@@ -13,8 +14,7 @@ import { Loader2, LoaderCircleIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import FileUploadDropzone, { FileType } from "./json-upload";
-import { editPipelineFromFormData } from "@/app/api/pipelines/edit";
-import { pipelineSchema, PipelineSchema } from "@/lib/types";
+import PipelineStatus from "./status";
 
 export default function EditPipeline({
   pipeline,

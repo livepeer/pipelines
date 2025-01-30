@@ -64,6 +64,7 @@ export async function POST(request: Request) {
 
     const response = {
       rtmp_output_url: data?.output_stream_url,
+      output_playback_id: data?.output_playback_id,
       pipeline: data?.pipeline_id?.key,
       pipeline_id: data?.pipeline_id?.id,
       pipeline_parameters: filteredPipelineParams,

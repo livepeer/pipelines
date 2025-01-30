@@ -41,12 +41,14 @@ export default function CreatePipeline() {
       Object.entries(formData).forEach(([key, value]) => {
         formDataToSend.append(decamelize(key), value as any);
       });
-      const pipeline = await createPipelineFromFormData(
+      const { pipeline, smokeTestStream } = await createPipelineFromFormData(
         formDataToSend,
         user.id
       );
       console.log("Pipeline created::Client::", pipeline);
-      router.push(`/pipelines/${pipeline.id}`);
+      router.push(
+        `/pipelines/${pipeline.id}?streamId=${smokeTestStream.id}&validation=true`
+      );
       toast.dismiss(toastId);
       toast.success("Pipeline created successfully");
     } catch (error) {
@@ -68,10 +70,12 @@ export default function CreatePipeline() {
   }
 
   // TODO: remove non-admin restriction when pre-validation is available
-  if (!user?.email?.address?.endsWith('@livepeer.org')) {
+  if (!user?.email?.address?.endsWith("@livepeer.org")) {
     return (
       <div className="p-4">
-        <h3 className="text-lg font-medium">Pipeline creation is currently in closed beta.</h3>
+        <h3 className="text-lg font-medium">
+          Pipeline creation is currently in closed beta.
+        </h3>
       </div>
     );
   }
