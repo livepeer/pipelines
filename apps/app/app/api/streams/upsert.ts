@@ -23,7 +23,7 @@ const streamSchema = z
     stream_key: z.string().optional(),
     created_at: z.any().optional(),
     from_playground: z.boolean().optional(),
-    is_smoke_test: z.boolean().default(false)
+    is_smoke_test: z.boolean().default(false),
   })
   .refine((data) => data.pipeline_id || data.pipelines, {
     message:
@@ -88,6 +88,7 @@ export async function upsertStream(body: any, userId: string) {
     pipeline_id: streamData.pipeline_id || streamData.pipelines?.id,
     author: streamData.author,
     from_playground: streamData.from_playground,
+    is_smoke_test: streamData.is_smoke_test,
   };
   console.log("streamPayload", streamPayload);
   console.log("livepeerStream", livepeerStream);

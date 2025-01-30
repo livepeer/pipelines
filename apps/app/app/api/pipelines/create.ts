@@ -25,18 +25,19 @@ export async function createPipeline(
 
   const id = pipelineId || newId("pipeline");
 
-  const { data, error } = await supabase
+  const { data: pipeline, error } = await supabase
     .from("pipelines")
     .insert({ ...validationResult.data, id })
-    .select();
+    .select()
+    .single();
 
   if (error) throw new Error(error.message);
 
   // Create a smoke test stream using the pipeline for pre-publication validation
-  const smokeTestStream = await createSmokeTestStream(id)
+  const smokeTestStream = await createSmokeTestStream(id);
   await triggerSmokeTest(smokeTestStream.stream_key);
 
-  return data[0];
+  return { pipeline, smokeTestStream };
 }
 
 export async function createPipelineFromFormData(
@@ -73,11 +74,18 @@ export async function createPipelineFromFormData(
     config: comfyUiConfig,
   };
 
-  const pipeline = await createPipeline(pipelineData, userId);
-  return pipeline;
+  const { pipeline, smokeTestStream } = await createPipeline(
+    pipelineData,
+    userId
+  );
+  return { pipeline, smokeTestStream };
 }
 
-export async function generateComfyConfig(config: any, version?: string, description?: string) {
+export async function generateComfyConfig(
+  config: any,
+  version?: string,
+  description?: string
+) {
   return {
     inputs: {
       primary: {
@@ -87,13 +95,13 @@ export async function generateComfyConfig(config: any, version?: string, descrip
         required: true,
         fullWidth: true,
         placeholder: "Enter json object",
-        defaultValue: config
+        defaultValue: config,
       },
-      advanced: []
+      advanced: [],
     },
     version: version || "0.0.1",
     metadata: {
-      description: description || ""
-    }
+      description: description || "",
+    },
   };
 }
