@@ -46,7 +46,9 @@ export default function CreatePipeline() {
         user.id
       );
       console.log("Pipeline created::Client::", pipeline);
-      router.push(`/pipelines/${pipeline.id}?streamId=${smokeTestStream.id}`);
+      router.push(
+        `/pipelines/${pipeline.id}?streamId=${smokeTestStream.id}&validation=true`
+      );
       toast.dismiss(toastId);
       toast.success("Pipeline created successfully");
     } catch (error) {

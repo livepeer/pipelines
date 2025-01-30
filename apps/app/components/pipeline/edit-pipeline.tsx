@@ -18,10 +18,8 @@ import PipelineStatus from "./status";
 
 export default function EditPipeline({
   pipeline,
-  streamId,
 }: {
   pipeline: PipelineSchema & { id: string };
-  streamId: string;
 }) {
   const { authenticated, user, ready: isAuthLoaded } = usePrivy();
   const [formData, setFormData] = useState<Record<string, unknown>>(() => {
@@ -100,7 +98,6 @@ export default function EditPipeline({
   return (
     <div className="p-4">
       <h3 className="font-medium text-lg">Edit pipeline</h3>
-      <PipelineStatus pipelineId={pipeline.id} streamId={streamId} />
       <ScrollArea className="h-[90vh] max-w-xl w-full">
         <div className="space-y-4 mt-4 p-0.5">
           <div className="space-y-1.5">

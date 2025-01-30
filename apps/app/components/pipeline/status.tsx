@@ -1,13 +1,15 @@
+"use client";
+
 import { Label } from "@repo/design-system/components/ui/label";
 import { cn } from "@repo/design-system/lib/utils";
 import { useEffect, useState } from "react";
 
 export default function PipelineStatus({
-  pipelineId,
   streamId,
+  setIsLoading,
 }: {
-  pipelineId: string;
   streamId: string;
+  setIsLoading: (isLoading: boolean) => void;
 }) {
   const [data, setData] = useState<any | null>(null);
 
@@ -27,6 +29,7 @@ export default function PipelineStatus({
         if (source) {
           source.close();
         }
+        setIsLoading(false);
       }, 60000);
     };
     fetchSseMessages();
@@ -62,6 +65,17 @@ export default function PipelineStatus({
           </p>
         </div>
       </div>
+
+      {data?.inference_status?.last_error ? (
+        <div className="flex flex-col space-y-1.5 mt-4">
+          <Label className="text-muted-foreground">Error</Label>
+          <div className="flex items-center gap-2">
+            <p className="text-md text-red-500">
+              {data?.inference_status?.last_error}
+            </p>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
