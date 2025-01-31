@@ -25,7 +25,12 @@ function usePipelineStatus(streamId: string) {
   useEffect(() => {
     const intervalId = setInterval(async () => {
       const status = await getStoredStreamStatus(streamId);
+      const error = status?.inference_status?.last_error;
       setData(status);
+      if (error) {
+        setIsLoading(false);
+        clearInterval(intervalId);
+      }
     }, 5000);
     setTimeout(() => {
       clearInterval(intervalId);
@@ -216,11 +221,14 @@ export default function ValidatePipeline({
   streamId: string;
 }) {
   const router = useRouter();
-  const { authenticated, user, ready: isAuthLoaded } = usePrivy();
+  const { user } = usePrivy();
   const { data, isLoading } = usePipelineStatus(streamId);
   const { status, degradation, outputFps, error } = getPipelineStatus(data);
   const isPublishable =
-    degradation.variant !== "error" && outputFps.variant !== "error" && !error;
+    degradation.variant !== "error" &&
+    outputFps.variant !== "error" &&
+    status.variant !== "info" &&
+    !error;
 
   return (
     <main className="flex-1 p-4">

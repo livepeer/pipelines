@@ -226,7 +226,7 @@ export async function getAndStoreStreamStatus(
 
 export async function getStoredStreamStatus(
   streamId: string
-): Promise<StreamStatus | undefined> {
+): Promise<any | undefined> {
   if (!global.streamStatusMap) {
     console.log("getStoredStreamStatus::Stream status map is undefined");
     return undefined;
