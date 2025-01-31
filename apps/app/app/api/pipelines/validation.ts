@@ -1,5 +1,6 @@
+"use server";
 import { upsertStream } from "../streams/upsert";
-import { createServerClient } from "@repo/supabase";
+import { createServerClient } from "@repo/supabase/server";
 import { serverConfig } from "@/lib/serverEnv";
 import { app } from "@/lib/env";
 
@@ -71,6 +72,8 @@ export async function createSmokeTestStream(pipelineId: string) {
     },
     "did:privy:cm4x2cuiw007lh8fcj34919fu"
   ); // Using system user ID
+
+  console.log("Stream created successfully:", stream);
 
   if (streamError) {
     console.error("Error creating smoke test stream:", streamError);
@@ -177,6 +180,10 @@ export async function pollStreamStatus(stream: any) {
           continue;
         }
         console.error("Polling error:", error);
+        console.log(
+          "Polling error::Stream status map:",
+          global.streamStatusMap
+        );
         global.streamStatusMap.delete(streamId);
         break;
       }
@@ -209,6 +216,11 @@ export async function getAndStoreStreamStatus(
   }
 
   const data: StreamStatus = await response.json();
+  console.log("getAndStoreStreamStatus::Stream status data:", data);
+  console.log(
+    "getAndStoreStreamStatus::Stream status map:",
+    global.streamStatusMap
+  );
   global.streamStatusMap.set(streamId, data);
 
   return data;
@@ -216,6 +228,10 @@ export async function getAndStoreStreamStatus(
 
 export async function getStoredStreamStatus(
   streamId: string
-): Promise<StreamStatus | undefined> {
+): Promise<any | undefined> {
+  if (!global.streamStatusMap) {
+    console.log("getStoredStreamStatus::Stream status map is undefined");
+    return undefined;
+  }
   return global.streamStatusMap.get(streamId);
 }

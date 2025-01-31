@@ -1,5 +1,6 @@
 "use client";
 import { publishPipeline } from "@/app/api/pipelines/edit";
+import { getStoredStreamStatus } from "@/app/api/pipelines/validation";
 import { usePrivy } from "@privy-io/react-auth";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -22,31 +23,20 @@ function usePipelineStatus(streamId: string) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    let source: EventSource;
-    const fetchSseMessages = async () => {
-      source = new EventSource(`/api/streams/${streamId}/sse`);
-      source.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        setData(data);
-      };
-      source.onerror = (error) => {
-        console.error("Error fetching pipeline status:", error);
-        source.close();
-      };
-      setTimeout(() => {
-        if (source) {
-          source.close();
-        }
+    const intervalId = setInterval(async () => {
+      const status = await getStoredStreamStatus(streamId);
+      const error = status?.inference_status?.last_error;
+      setData(status);
+      if (error) {
         setIsLoading(false);
-      }, TIMEOUT_MS);
-    };
-    fetchSseMessages();
-
-    return () => {
-      if (source) {
-        source.close();
+        clearInterval(intervalId);
       }
-    };
+    }, 5000);
+    setTimeout(() => {
+      clearInterval(intervalId);
+      setIsLoading(false);
+    }, TIMEOUT_MS);
+    return () => clearInterval(intervalId);
   }, []);
 
   return { data, isLoading };
@@ -231,11 +221,14 @@ export default function ValidatePipeline({
   streamId: string;
 }) {
   const router = useRouter();
-  const { authenticated, user, ready: isAuthLoaded } = usePrivy();
+  const { user } = usePrivy();
   const { data, isLoading } = usePipelineStatus(streamId);
   const { status, degradation, outputFps, error } = getPipelineStatus(data);
   const isPublishable =
-    degradation.variant !== "error" && outputFps.variant !== "error" && !error;
+    degradation.variant !== "error" &&
+    outputFps.variant !== "error" &&
+    status.variant !== "info" &&
+    !error;
 
   return (
     <main className="flex-1 p-4">
@@ -305,6 +298,15 @@ export default function ValidatePipeline({
                   icon={error.icon}
                   variant={error.variant as StatusVariant}
                 />
+              </div>
+            )}
+            {!isLoading && !isPublishable && (
+              <div className="flex gap-2 items-center">
+                <Info className="w-4 h-4 text-red-500 dark:text-red-400" />
+                <span className="text-red-700 dark:text-red-200 text-sm">
+                  The pipeline is not publishable. Please fix any errors or try
+                  again later.
+                </span>
               </div>
             )}
           </CardContent>
