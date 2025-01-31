@@ -73,6 +73,8 @@ export async function createSmokeTestStream(pipelineId: string) {
     "did:privy:cm4x2cuiw007lh8fcj34919fu"
   ); // Using system user ID
 
+  console.log("Stream created successfully:", stream);
+
   if (streamError) {
     console.error("Error creating smoke test stream:", streamError);
     throw new Error(streamError);

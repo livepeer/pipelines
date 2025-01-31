@@ -300,6 +300,15 @@ export default function ValidatePipeline({
                 />
               </div>
             )}
+            {!isLoading && !isPublishable && (
+              <div className="flex gap-2 items-center">
+                <Info className="w-4 h-4 text-red-500 dark:text-red-400" />
+                <span className="text-red-700 dark:text-red-200 text-sm">
+                  The pipeline is not publishable. Please fix any errors or try
+                  again later.
+                </span>
+              </div>
+            )}
           </CardContent>
           <Separator className="bg-border" />
           <CardFooter className="pt-6">
