@@ -177,6 +177,10 @@ export async function pollStreamStatus(stream: any) {
           continue;
         }
         console.error("Polling error:", error);
+        console.log(
+          "Polling error::Stream status map:",
+          global.streamStatusMap
+        );
         global.streamStatusMap.delete(streamId);
         break;
       }
@@ -209,6 +213,11 @@ export async function getAndStoreStreamStatus(
   }
 
   const data: StreamStatus = await response.json();
+  console.log("getAndStoreStreamStatus::Stream status data:", data);
+  console.log(
+    "getAndStoreStreamStatus::Stream status map:",
+    global.streamStatusMap
+  );
   global.streamStatusMap.set(streamId, data);
 
   return data;
@@ -217,5 +226,9 @@ export async function getAndStoreStreamStatus(
 export async function getStoredStreamStatus(
   streamId: string
 ): Promise<StreamStatus | undefined> {
+  if (!global.streamStatusMap) {
+    console.log("getStoredStreamStatus::Stream status map is undefined");
+    return undefined;
+  }
   return global.streamStatusMap.get(streamId);
 }
