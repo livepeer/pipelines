@@ -1,5 +1,6 @@
 "use client";
 import { publishPipeline } from "@/app/api/pipelines/edit";
+import { getStoredStreamStatus } from "@/app/api/pipelines/validation";
 import { usePrivy } from "@privy-io/react-auth";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -22,31 +23,15 @@ function usePipelineStatus(streamId: string) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    let source: EventSource;
-    const fetchSseMessages = async () => {
-      source = new EventSource(`/api/streams/${streamId}/sse`);
-      source.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        setData(data);
-      };
-      source.onerror = (error) => {
-        console.error("Error fetching pipeline status:", error);
-        source.close();
-      };
-      setTimeout(() => {
-        if (source) {
-          source.close();
-        }
-        setIsLoading(false);
-      }, TIMEOUT_MS);
-    };
-    fetchSseMessages();
-
-    return () => {
-      if (source) {
-        source.close();
-      }
-    };
+    const intervalId = setInterval(async () => {
+      const status = await getStoredStreamStatus(streamId);
+      setData(status);
+    }, 5000);
+    setTimeout(() => {
+      clearInterval(intervalId);
+      setIsLoading(false);
+    }, TIMEOUT_MS);
+    return () => clearInterval(intervalId);
   }, []);
 
   return { data, isLoading };

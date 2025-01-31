@@ -1,5 +1,6 @@
+"use server";
 import { upsertStream } from "../streams/upsert";
-import { createServerClient } from "@repo/supabase";
+import { createServerClient } from "@repo/supabase/server";
 import { serverConfig } from "@/lib/serverEnv";
 import { app } from "@/lib/env";
 
