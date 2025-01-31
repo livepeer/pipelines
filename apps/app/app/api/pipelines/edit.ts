@@ -7,6 +7,25 @@ import { z } from "zod";
 import { triggerSmokeTest } from "./validation";
 import { createSmokeTestStream } from "./validation";
 
+export async function publishPipeline(pipelineId: string, userId: string) {
+  const supabase = await createServerClient();
+
+  await validateUser(userId);
+
+  const { data: updatedPipeline, error: updateError } = await supabase
+    .from("pipelines")
+    .upsert({
+      id: pipelineId,
+      is_private: false,
+    })
+    .select()
+    .single();
+
+  if (updateError) throw new Error(updateError.message);
+
+  return { pipeline: updatedPipeline };
+}
+
 export async function updatePipeline(body: any, userId: string) {
   const supabase = await createServerClient();
 
@@ -64,6 +83,9 @@ export async function editPipelineFromFormData(
     config: comfyUiJson,
   };
 
-  const { pipeline, smokeTestStream } = await updatePipeline(pipelineData, userId);
+  const { pipeline, smokeTestStream } = await updatePipeline(
+    pipelineData,
+    userId
+  );
   return { pipeline, smokeTestStream };
 }
