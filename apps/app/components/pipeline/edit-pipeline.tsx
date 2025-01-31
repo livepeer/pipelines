@@ -14,7 +14,6 @@ import { Loader2, LoaderCircleIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import FileUploadDropzone, { FileType } from "./json-upload";
-import PipelineStatus from "./status";
 import { useRouter } from "next/navigation";
 
 export default function EditPipeline({
