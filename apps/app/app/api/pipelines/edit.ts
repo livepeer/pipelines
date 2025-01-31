@@ -4,6 +4,8 @@ import { uploadFile } from "@/app/api/pipelines/storage";
 import { pipelineSchema } from "@/lib/types";
 import { createServerClient } from "@repo/supabase/server";
 import { z } from "zod";
+import { triggerSmokeTest } from "./validation";
+import { createSmokeTestStream } from "./validation";
 
 export async function updatePipeline(body: any, userId: string) {
   const supabase = await createServerClient();
@@ -15,16 +17,22 @@ export async function updatePipeline(body: any, userId: string) {
   if (!validationResult.success) {
     throw new z.ZodError(validationResult.error.errors);
   }
-
-  const { data, error } = await supabase
+  const pipelineId = body.id;
+  const { data: pipeline, error } = await supabase
     .from("pipelines")
     .update(validationResult.data)
-    .eq("id", body.id)
+    .eq("id", pipelineId)
     .eq("author", userId)
-    .select();
+    .select()
+    .single();
 
   if (error) throw new Error(error.message);
-  return data;
+
+  // Create a smoke test stream using the pipeline for pre-publication validation with new config saved
+  const smokeTestStream = await createSmokeTestStream(pipelineId);
+  await triggerSmokeTest(smokeTestStream.stream_key);
+
+  return { pipeline, smokeTestStream };
 }
 
 export async function editPipelineFromFormData(
@@ -56,6 +64,6 @@ export async function editPipelineFromFormData(
     config: comfyUiJson,
   };
 
-  const pipeline = await updatePipeline(pipelineData, userId);
-  return pipeline;
+  const { pipeline, smokeTestStream } = await updatePipeline(pipelineData, userId);
+  return { pipeline, smokeTestStream };
 }

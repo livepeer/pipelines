@@ -2,6 +2,7 @@ import { getStoredStreamStatus } from "@/app/api/pipelines/validation";
 
 // Prevents this route's response from being cached on Vercel
 export const dynamic = "force-dynamic";
+export const maxDuration = 30000;
 
 export async function GET(
   request: Request,
