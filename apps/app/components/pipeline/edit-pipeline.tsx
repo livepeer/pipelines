@@ -14,13 +14,14 @@ import { Loader2, LoaderCircleIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import FileUploadDropzone, { FileType } from "./json-upload";
-import PipelineStatus from "./status";
+import { useRouter } from "next/navigation";
 
 export default function EditPipeline({
   pipeline,
 }: {
   pipeline: PipelineSchema & { id: string };
 }) {
+  const router = useRouter();
   const { authenticated, user, ready: isAuthLoaded } = usePrivy();
   const [formData, setFormData] = useState<Record<string, unknown>>(() => {
     return {
@@ -56,9 +57,10 @@ export default function EditPipeline({
         formDataToSend.append(decamelize(key), value as any);
       });
       console.log("Form data to send::", formDataToSend, formData);
-      const pipeline = await editPipelineFromFormData(formDataToSend, user.id);
+      const { pipeline, smokeTestStream } = await editPipelineFromFormData(formDataToSend, user.id);
       toast.dismiss(toastId);
       toast.success("Pipeline saved successfully");
+      router.push(`/pipelines/${pipeline.id}?streamId=${smokeTestStream.id}&validation=true`);
     } catch (error) {
       toast.dismiss(toastId);
       const errorMessage =

@@ -19,7 +19,12 @@ export default async function Page({
   }
 
   if (isValidationMode) {
-    return <ValidatePipeline streamId={searchParams.streamId} />;
+    return (
+      <ValidatePipeline
+        pipelineId={pipelineId}
+        streamId={searchParams.streamId}
+      />
+    );
   }
 
   const pipeline = await getPipeline(pipelineId);
