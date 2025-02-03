@@ -250,7 +250,7 @@ export default function ValidatePipeline({
             </CardTitle>
             <p className="text-muted-foreground mt-2">
               {isLoading
-                ? ` We are running your pipeline to benchmark its performance. This may take upto 90 seconds`
+                ? ` We are running your pipeline to benchmark its performance. This may take up to 90 seconds`
                 : `We ran your pipeline for 90 seconds to benchmark its performance.`}
             </p>
           </CardHeader>
