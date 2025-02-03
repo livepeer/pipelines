@@ -317,7 +317,7 @@ export default function Try({
 
                       return (
                         <div key={param.path} className="space-y-2">
-                          <div className="flex justify-between items-center">
+                          <div className="flex flex-col gap-1">
                             <div className="flex items-center gap-1.5">
                               <Label>{param.name}</Label>
                               <Tooltip>
@@ -330,7 +330,7 @@ export default function Try({
                               </Tooltip>
                             </div>
                             {param.description && (
-                              <span className="text-sm text-muted-foreground">
+                              <span className="text-xs text-muted-foreground">
                                 {param.description}
                               </span>
                             )}
