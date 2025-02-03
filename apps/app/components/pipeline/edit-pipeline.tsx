@@ -31,8 +31,8 @@ export default function EditPipeline({
 
   const [formData, setFormData] = useState<Record<string, unknown>>(() => {
     const defaultValue = (pipeline.config as any)?.inputs?.primary?.defaultValue || pipeline.config;
-
-    return {
+    
+    const initialFormData = {
       id: pipeline.id,
       name: pipeline.name,
       version: pipeline.version,
@@ -41,6 +41,7 @@ export default function EditPipeline({
       comfyJson: JSON.stringify(defaultValue, null, 2),
       prioritized_params: pipeline.prioritized_params || null,
     };
+    return initialFormData;
   });
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
