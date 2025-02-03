@@ -16,7 +16,7 @@ import { Input } from "@repo/design-system/components/ui/input";
 import { Switch } from "@repo/design-system/components/ui/switch";
 import { cn } from "@repo/design-system/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, HelpCircle } from "lucide-react";
 import { ScrollArea } from "@repo/design-system/components/ui/scroll-area";
 import { Button } from "@repo/design-system/components/ui/button";
 import { toast } from "sonner";
@@ -25,6 +25,11 @@ import { app } from "@/lib/env";
 import { getStream } from "@/app/api/streams/get";
 import track from "@/lib/track";
 import { BroadcastWithControls } from "./broadcast";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@repo/design-system/components/ui/tooltip";
 
 import ComfyUIParamsEditor from "@/components/stream/comfyui-param-editor";
 
@@ -313,7 +318,17 @@ export default function Try({
                       return (
                         <div key={param.path} className="space-y-2">
                           <div className="flex justify-between items-center">
-                            <Label>{param.name}</Label>
+                            <div className="flex items-center gap-1.5">
+                              <Label>{param.name}</Label>
+                              <Tooltip>
+                                <TooltipTrigger>
+                                  <HelpCircle className="h-4 w-4 text-muted-foreground hover:text-foreground transition-colors" />
+                                </TooltipTrigger>
+                                <TooltipContent className="bg-popover text-popover-foreground border border-border">
+                                  <p>{param.nodeId}.inputs.{param.field}</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </div>
                             {param.description && (
                               <span className="text-sm text-muted-foreground">
                                 {param.description}
