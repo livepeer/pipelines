@@ -48,6 +48,7 @@ export const pipelineSchema = z.object({
   key: z.string().default("comfyui"),
   author: z.string(),
   model_card: modelCardSchema,
+  prioritized_params: z.unknown().nullable().optional(),
   version: z
     .string()
     .default("1.0.0")

@@ -34,10 +34,30 @@ export default function PipelineParamsSelector({
   onSubmit,
   isSubmitting,
 }: PipelineParamsSelectorProps) {
-  const [parameters, setParameters] = useState<Parameter[]>([]);
-  const comfyJson = formData.comfyJson as Record<string, any>;
+  const [parameters, setParameters] = useState<Parameter[]>(() => {
+    if (formData.prioritized_params) {
+      try {
+        const parsedParams = typeof formData.prioritized_params === 'string' 
+          ? JSON.parse(formData.prioritized_params)
+          : formData.prioritized_params;
+        return parsedParams.map((param: any) => ({
+          nodeId: param.nodeId,
+          field: param.field,
+          name: param.name,
+          description: param.description || ''
+        }));
+      } catch (e) {
+        console.error('Error parsing prioritized params:', e);
+        return [];
+      }
+    }
+    return [];
+  });
 
-  // Extract available nodes and their class types
+  const comfyJson = typeof formData.comfyJson === 'string' 
+    ? JSON.parse(formData.comfyJson) 
+    : formData.comfyJson;
+
   const nodes = Object.entries(comfyJson).map(([nodeId, node]: [string, any]) => ({
     id: nodeId,
     classType: node.class_type,
@@ -70,10 +90,25 @@ export default function PipelineParamsSelector({
   };
 
   const handleSubmit = () => {
+    // Save path to each parameter
+    const parameterPaths = parameters.map(param => {
+      const path = [
+        param.nodeId,           
+        param.field,           
+        param.name             
+      ].filter(Boolean);     
+      
+      return {
+        ...param,
+        path: path.join('/'),
+      };
+    });
+
     const updatedFormData = {
       ...formData,
-      prioritizedParameters: parameters
+      prioritized_params: JSON.stringify(parameterPaths),
     };
+
     onSubmit(updatedFormData);
   };
 
