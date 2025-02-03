@@ -28,6 +28,21 @@ import { BroadcastWithControls } from "./broadcast";
 
 import ComfyUIParamsEditor from "@/components/stream/comfyui-param-editor";
 
+interface PrioritizedParam {
+  nodeId: string;
+  field: string;
+  name: string;
+  description: string;
+  widget: string;
+  widgetConfig: {
+    min?: number;
+    max?: number;
+    step?: number;
+    options?: { label: string; value: string }[];
+  };
+  path: string;
+}
+
 export default function Try({
   setStreamInfo,
   pipeline,
@@ -261,10 +276,89 @@ export default function Try({
         {inputs.primary && (
           <>
             {pipeline.type == "comfyui" ? (
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-4">
                 <Label className="text-muted-foreground">
                   ComfyUI Parameters
                 </Label>
+                
+                {pipeline.prioritized_params && (
+                  <div className="space-y-4 border rounded-lg p-4 mb-4">
+                    <Label className="text-muted-foreground">Quick Settings</Label>
+                    {(typeof pipeline.prioritized_params === 'string' 
+                      ? JSON.parse(pipeline.prioritized_params)
+                      : pipeline.prioritized_params
+                    ).map((param: PrioritizedParam) => {
+                      const currentJson = typeof inputValues["prompt"] === "string" 
+                        ? JSON.parse(inputValues["prompt"])
+                        : inputValues["prompt"];
+                      
+                      const currentValue = currentJson?.[param.nodeId]?.inputs?.[param.field];
+                      
+                      const handlePrioritizedParamChange = (newValue: any) => {
+                        const updatedJson = typeof inputValues["prompt"] === "string"
+                          ? JSON.parse(inputValues["prompt"])
+                          : inputValues["prompt"];
+                        
+                        if (!updatedJson[param.nodeId]) {
+                          updatedJson[param.nodeId] = { inputs: {} };
+                        }
+                        if (!updatedJson[param.nodeId].inputs) {
+                          updatedJson[param.nodeId].inputs = {};
+                        }
+                        
+                        updatedJson[param.nodeId].inputs[param.field] = newValue;
+                        handleInputChange("prompt", updatedJson);
+                      };
+
+                      return (
+                        <div key={param.path} className="space-y-2">
+                          <div className="flex justify-between items-center">
+                            <Label>{param.name}</Label>
+                            {param.description && (
+                              <span className="text-sm text-muted-foreground">
+                                {param.description}
+                              </span>
+                            )}
+                          </div>
+                          
+                          {param.widget === "number" || param.widget === "slider" ? (
+                            <Input
+                              type="number"
+                              value={currentValue}
+                              onChange={(e) => handlePrioritizedParamChange(Number(e.target.value))}
+                              min={param.widgetConfig.min}
+                              max={param.widgetConfig.max}
+                              step={param.widgetConfig.step}
+                            />
+                          ) : param.widget === "select" ? (
+                            <Select
+                              value={String(currentValue)}
+                              onValueChange={handlePrioritizedParamChange}
+                            >
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {param.widgetConfig.options?.map((option) => (
+                                  <SelectItem key={option.value} value={option.value}>
+                                    {option.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          ) : (
+                            <Input
+                              type="text"
+                              value={currentValue}
+                              onChange={(e) => handlePrioritizedParamChange(e.target.value)}
+                            />
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
                 <ComfyUIParamsEditor
                   value={inputValues["prompt"]}
                   onChange={(value) => handleInputChange("prompt", value)}
