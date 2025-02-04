@@ -30,6 +30,7 @@ interface Parameter {
   widget: string;
   widgetConfig: WidgetConfig;
   optionsText?: string;
+  classType: string;
 }
 
 interface PipelineParamsSelectorProps {
@@ -75,7 +76,8 @@ export default function PipelineParamsSelector({
             description: param.description || '',
             widget: widgetType,
             widgetConfig: {},
-            optionsText: ''
+            optionsText: '',
+            classType: param.class_type || ''
           };
 
           if (widgetType === 'slider' || widgetType === 'number') {
@@ -131,6 +133,7 @@ export default function PipelineParamsSelector({
         widget: "text",
         widgetConfig: {},
         optionsText: "",
+        classType: ""
       },
     ]);
   };
@@ -218,7 +221,8 @@ export default function PipelineParamsSelector({
         description: param.description,
         widget: param.widget,
         widgetConfig: param.widgetConfig,
-        path
+        classType: param.classType,
+        path,
       };
     });
 

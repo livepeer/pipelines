@@ -49,10 +49,10 @@ const ComfyUIParamsEditor = ({
 
     const handleJsonChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         const newJsonString = e.target.value;
+        setCurrentJsonString(newJsonString);
         try {
             const parsed = JSON.parse(newJsonString);
             onChange(parsed);
-            setCurrentJsonString(newJsonString);
             setInvalidJsonMessage(null);
         } catch (error: any) {
             setInvalidJsonMessage(error.message);
@@ -229,7 +229,9 @@ const ComfyUIParamsEditor = ({
                         placeholder="Enter JSON configuration..."
                     />
                     {invalidJsonMessage && (
-                        <div className="text-red-500 text-sm">You attempted to add invalid character to the JSON.  These have been reverted.  The error was: {invalidJsonMessage}</div>
+                        <div className="text-red-500 text-sm">
+                            You attempted to add invalid character to the JSON. These have been reverted. The error was: {invalidJsonMessage}
+                        </div>
                     )}
                 </>
             ) : (
