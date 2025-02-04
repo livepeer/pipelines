@@ -59,6 +59,16 @@ export default function PipelineParamsSelector({
   onSubmit,
   isSubmitting,
 }: PipelineParamsSelectorProps) {
+  const comfyJson = typeof formData.comfyJson === 'string'
+    ? JSON.parse(formData.comfyJson)
+    : formData.comfyJson;
+
+  const nodes = Object.entries(comfyJson).map(([nodeId, node]: [string, any]) => ({
+    id: nodeId,
+    classType: node.class_type,
+    fields: Object.keys(node.inputs || {})
+  }));
+
   const [parameters, setParameters] = useState<Parameter[]>(() => {
     if (formData.prioritized_params) {
       try {
@@ -68,7 +78,6 @@ export default function PipelineParamsSelector({
         
         const mappedParameters = parsedParams.map((param: any) => {
           const widgetType = (param.widget || "text").toLowerCase().trim();
-
           const parameter: Parameter = {
             nodeId: param.nodeId,
             field: param.field,
@@ -77,7 +86,7 @@ export default function PipelineParamsSelector({
             widget: widgetType,
             widgetConfig: {},
             optionsText: '',
-            classType: param.class_type || ''
+            classType: nodes.find(n => n.id === param.nodeId)?.classType || ''
           };
 
           if (widgetType === 'slider' || widgetType === 'number') {
@@ -109,16 +118,6 @@ export default function PipelineParamsSelector({
 
   const [validationErrors, setValidationErrors] = useState<ParameterValidationError[]>([]);
 
-  const comfyJson = typeof formData.comfyJson === 'string'
-    ? JSON.parse(formData.comfyJson)
-    : formData.comfyJson;
-
-  const nodes = Object.entries(comfyJson).map(([nodeId, node]: [string, any]) => ({
-    id: nodeId,
-    classType: node.class_type,
-    fields: Object.keys(node.inputs || {})
-  }));
-
   const addParameter = () => {
     if (parameters.length >= 5) {
       return;
@@ -144,10 +143,19 @@ export default function PipelineParamsSelector({
 
   const updateParameter = (index: number, field: keyof Parameter, value: string) => {
     const newParameters = [...parameters];
-    newParameters[index] = {
-      ...newParameters[index],
-      [field]: value
-    };
+    if (field === "nodeId") {
+      const selectedNode = nodes.find(n => n.id === value);
+      newParameters[index] = {
+        ...newParameters[index],
+        nodeId: value,
+        classType: selectedNode ? selectedNode.classType : "",
+      };
+    } else {
+      newParameters[index] = {
+        ...newParameters[index],
+        [field]: value,
+      };
+    }
     setParameters(newParameters);
   };
 

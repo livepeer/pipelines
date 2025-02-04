@@ -34,21 +34,57 @@ import {
 
 import ComfyUIParamsEditor from "@/components/stream/comfyui-param-editor";
 
-interface PrioritizedParam {
+type BaseParam = {
   nodeId: string;
   field: string;
   name: string;
   description: string;
-  widget: string;
-  widgetConfig: {
+  path: string;
+  classType: string;
+};
+
+type TextWidget = {
+  widget: "text";
+  widgetConfig?: {}; 
+};
+
+type TextAreaWidget = {
+  widget: "textarea";
+  widgetConfig?: {}; 
+};
+
+type NumberWidget = {
+  widget: "number";
+  widgetConfig?: {
     min?: number;
     max?: number;
     step?: number;
-    options?: { label: string; value: string }[];
   };
-  path: string;
-  classType: string;
-}
+};
+
+type SliderWidget = {
+  widget: "slider";
+  widgetConfig: {
+    min: number;
+    max: number;
+    step: number;
+  };
+};
+
+type SelectWidget = {
+  widget: "select";
+  widgetConfig: {
+    options: { label: string; value: string }[];
+  };
+};
+
+type SwitchWidget = {
+  widget: "checkbox";
+  widgetConfig?: {};
+};
+
+export type PrioritizedParam = BaseParam &
+  (TextWidget | TextAreaWidget | NumberWidget | SliderWidget | SelectWidget | SwitchWidget);
 
 export default function Try({
   setStreamInfo,
@@ -365,9 +401,9 @@ export default function Try({
                           {param.widget === "slider" ? (
                             <Slider
                               value={[Number(currentValue) || 0]}
-                              min={param.widgetConfig.min}
-                              max={param.widgetConfig.max}
-                              step={param.widgetConfig.step}
+                              min={param.widgetConfig!.min}
+                              max={param.widgetConfig!.max}
+                              step={param.widgetConfig!.step}
                               onValueChange={([val]) =>
                                 handlePrioritizedParamChange(val)
                               }
@@ -381,9 +417,9 @@ export default function Try({
                                   Number(e.target.value)
                                 )
                               }
-                              min={param.widgetConfig.min}
-                              max={param.widgetConfig.max}
-                              step={param.widgetConfig.step}
+                              min={param.widgetConfig!.min}
+                              max={param.widgetConfig!.max}
+                              step={param.widgetConfig!.step}
                             />
                           ) : param.widget === "select" ? (
                             <Select
@@ -414,9 +450,7 @@ export default function Try({
                               onCheckedChange={(checked: boolean) => {
                                 const newVal =
                                   typeof currentValue === "number"
-                                    ? checked
-                                      ? 1
-                                      : 0
+                                    ? (checked ? 1 : 0)
                                     : checked;
                                 handlePrioritizedParamChange(newVal);
                               }}
