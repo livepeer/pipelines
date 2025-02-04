@@ -39,7 +39,7 @@ export const pipelineSchema = z.object({
   is_private: z.boolean().default(true),
   validation_status: z.enum(['valid', 'invalid', 'processing', 'pending']).default('pending'),
   cover_image: z.string().url().nullable().optional(),
-  type: z.string().default("comfyUI"),
+  type: z.string().default("comfyui"),
   comfy_ui_json: z.unknown().nullable().optional(),
   sample_code_repo: z.string().url().nullable().optional(),
   is_featured: z.boolean().default(false),
@@ -48,6 +48,7 @@ export const pipelineSchema = z.object({
   key: z.string().default("comfyui"),
   author: z.string(),
   model_card: modelCardSchema,
+  prioritized_params: z.unknown().nullable().optional(),
   version: z
     .string()
     .default("1.0.0")

@@ -6,7 +6,7 @@ import { createServerClient } from "@repo/supabase/server";
 import { z } from "zod";
 import { triggerSmokeTest } from "./validation";
 import { createSmokeTestStream } from "./validation";
-
+import { generateComfyConfig } from "./create";
 export async function publishPipeline(pipelineId: string, userId: string) {
   const supabase = await createServerClient();
 
@@ -75,12 +75,25 @@ export async function editPipelineFromFormData(
   // Parse the comfy_ui_json text data as JSON
   const comfyUiJson = JSON.parse(formDataObject.comfy_json as string);
 
+  const prioritizedParams = formDataObject.prioritized_params 
+    ? Array.isArray(formDataObject.prioritized_params)
+      ? formDataObject.prioritized_params
+      : JSON.parse(formDataObject.prioritized_params as string)
+    : null;
+
+  const comfyUiConfig = await generateComfyConfig(
+    comfyUiJson,
+    formDataObject.version as string,
+    formDataObject.description as string
+  );
+
   const pipelineData = {
     ...formDataObject,
     cover_image: imageUrl,
     author: userId,
     id: pipelineId,
-    config: comfyUiJson,
+    config: comfyUiConfig,
+    prioritized_params: prioritizedParams,
   };
 
   const { pipeline, smokeTestStream } = await updatePipeline(

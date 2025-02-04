@@ -60,6 +60,12 @@ export async function createPipelineFromFormData(
   const comfyUiFile = formDataObject.comfy_json as File;
   const comfyUiJson = JSON.parse(await comfyUiFile.text());
 
+  const prioritizedParams = formDataObject.prioritized_params 
+    ? Array.isArray(formDataObject.prioritized_params)
+      ? formDataObject.prioritized_params
+      : JSON.parse(formDataObject.prioritized_params as string)
+    : null;
+
   const comfyUiConfig = await generateComfyConfig(
     comfyUiJson,
     formDataObject.version as string,
@@ -72,6 +78,7 @@ export async function createPipelineFromFormData(
     author: userId,
     id: pipelineId,
     config: comfyUiConfig,
+    prioritized_params: prioritizedParams,
   };
 
   const { pipeline, smokeTestStream } = await createPipeline(

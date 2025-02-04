@@ -14,9 +14,10 @@ import { upsertStream } from "@/app/api/streams/upsert";
 import { usePrivy } from "@privy-io/react-auth";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Switch } from "@repo/design-system/components/ui/switch";
+import { Slider } from "@repo/design-system/components/ui/slider";
 import { cn } from "@repo/design-system/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, HelpCircle } from "lucide-react";
 import { ScrollArea } from "@repo/design-system/components/ui/scroll-area";
 import { Button } from "@repo/design-system/components/ui/button";
 import { toast } from "sonner";
@@ -25,8 +26,65 @@ import { app } from "@/lib/env";
 import { getStream } from "@/app/api/streams/get";
 import track from "@/lib/track";
 import { BroadcastWithControls } from "./broadcast";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@repo/design-system/components/ui/tooltip";
 
 import ComfyUIParamsEditor from "@/components/stream/comfyui-param-editor";
+
+type BaseParam = {
+  nodeId: string;
+  field: string;
+  name: string;
+  description: string;
+  path: string;
+  classType: string;
+};
+
+type TextWidget = {
+  widget: "text";
+  widgetConfig?: {}; 
+};
+
+type TextAreaWidget = {
+  widget: "textarea";
+  widgetConfig?: {}; 
+};
+
+type NumberWidget = {
+  widget: "number";
+  widgetConfig?: {
+    min?: number;
+    max?: number;
+    step?: number;
+  };
+};
+
+type SliderWidget = {
+  widget: "slider";
+  widgetConfig: {
+    min: number;
+    max: number;
+    step: number;
+  };
+};
+
+type SelectWidget = {
+  widget: "select";
+  widgetConfig: {
+    options: { label: string; value: string }[];
+  };
+};
+
+type SwitchWidget = {
+  widget: "checkbox";
+  widgetConfig?: {};
+};
+
+export type PrioritizedParam = BaseParam &
+  (TextWidget | TextAreaWidget | NumberWidget | SliderWidget | SelectWidget | SwitchWidget);
 
 export default function Try({
   setStreamInfo,
@@ -192,13 +250,25 @@ export default function Try({
             }
           />
         );
-      case "switch":
+      case "switch": {
+        const defaultVal = initialValues[input.id];
+        const isNumeric = typeof defaultVal === "number";
+        const current = inputValues[input.id];
+        const checkedValue =
+          typeof current === "boolean" ? current : Boolean(current);
         return (
           <Switch
-            checked={inputValues[input.id]}
-            onCheckedChange={(checked) => handleInputChange(input.id, checked)}
+            checked={checkedValue}
+            onCheckedChange={(checked: boolean) => {
+              if (isNumeric) {
+                handleInputChange(input.id, checked ? 1 : 0);
+              } else {
+                handleInputChange(input.id, checked);
+              }
+            }}
           />
         );
+      }
       case "select":
         return (
           <Select
@@ -216,6 +286,16 @@ export default function Try({
               ))}
             </SelectContent>
           </Select>
+        );
+      case "slider":
+        return (
+          <Slider
+            value={[Number(inputValues[input.id]) || 0]}
+            min={input.min}
+            max={input.max}
+            step={input.step}
+            onValueChange={([val]) => handleInputChange(input.id, val)}
+          />
         );
       default:
         return (
@@ -261,10 +341,135 @@ export default function Try({
         {inputs.primary && (
           <>
             {pipeline.type == "comfyui" ? (
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-4">
                 <Label className="text-muted-foreground">
                   ComfyUI Parameters
                 </Label>
+                
+                {pipeline.prioritized_params && (
+                  <div className="space-y-4 border rounded-lg p-4 mb-4">
+                    <Label className="text-muted-foreground">Quick Settings</Label>
+                    {(
+                      typeof pipeline.prioritized_params === "string"
+                        ? JSON.parse(pipeline.prioritized_params)
+                        : pipeline.prioritized_params
+                    ).map((param: PrioritizedParam) => {
+                      const currentJson =
+                        typeof inputValues["prompt"] === "string"
+                          ? JSON.parse(inputValues["prompt"])
+                          : inputValues["prompt"];
+                      const currentValue =
+                        currentJson?.[param.nodeId]?.inputs?.[param.field];
+
+                      const handlePrioritizedParamChange = (newValue: any) => {
+                        const updatedJson = JSON.parse(JSON.stringify(inputValues["prompt"]));
+                        
+                        if (!updatedJson[param.nodeId]) {
+                          updatedJson[param.nodeId] = { inputs: {} };
+                        }
+                        if (!updatedJson[param.nodeId].inputs) {
+                          updatedJson[param.nodeId].inputs = {};
+                        }
+                        
+                        updatedJson[param.nodeId].inputs[param.field] = newValue;
+                        handleInputChange("prompt", updatedJson);
+                      };
+
+                      return (
+                        <div key={param.path} className="space-y-2">
+                          <div className="flex flex-col gap-1">
+                            <div className="flex items-center gap-1.5">
+                              <Label>{param.name}</Label>
+                              <Tooltip>
+                                <TooltipTrigger>
+                                  <HelpCircle className="h-4 w-4 text-muted-foreground hover:text-foreground transition-colors" />
+                                </TooltipTrigger>
+                                <TooltipContent className="bg-popover text-popover-foreground border border-border">
+                                  <p>
+                                    {param.classType}.inputs.{param.field}
+                                  </p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </div>
+                            {param.description && (
+                              <span className="text-xs text-muted-foreground">
+                                {param.description}
+                              </span>
+                            )}
+                          </div>
+
+                          {param.widget === "slider" ? (
+                            <Slider
+                              value={[Number(currentValue) || 0]}
+                              min={param.widgetConfig!.min}
+                              max={param.widgetConfig!.max}
+                              step={param.widgetConfig!.step}
+                              onValueChange={([val]) =>
+                                handlePrioritizedParamChange(val)
+                              }
+                            />
+                          ) : param.widget === "number" ? (
+                            <Input
+                              type="number"
+                              value={currentValue}
+                              onChange={(e) =>
+                                handlePrioritizedParamChange(
+                                  Number(e.target.value)
+                                )
+                              }
+                              min={param.widgetConfig!.min}
+                              max={param.widgetConfig!.max}
+                              step={param.widgetConfig!.step}
+                            />
+                          ) : param.widget === "select" ? (
+                            <Select
+                              value={String(currentValue)}
+                              onValueChange={handlePrioritizedParamChange}
+                            >
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {param.widgetConfig.options?.map((option) => (
+                                  <SelectItem
+                                    key={option.value}
+                                    value={option.value}
+                                  >
+                                    {option.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          ) : param.widget === "checkbox" ? (
+                            <Switch
+                              checked={
+                                typeof currentValue === "boolean"
+                                  ? currentValue
+                                  : Boolean(currentValue)
+                              }
+                              onCheckedChange={(checked: boolean) => {
+                                const newVal =
+                                  typeof currentValue === "number"
+                                    ? (checked ? 1 : 0)
+                                    : checked;
+                                handlePrioritizedParamChange(newVal);
+                              }}
+                            />
+                          ) : (
+                            <Input
+                              type="text"
+                              value={currentValue}
+                              onChange={(e) =>
+                                handlePrioritizedParamChange(e.target.value)
+                              }
+                            />
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
                 <ComfyUIParamsEditor
                   value={inputValues["prompt"]}
                   onChange={(value) => handleInputChange("prompt", value)}
