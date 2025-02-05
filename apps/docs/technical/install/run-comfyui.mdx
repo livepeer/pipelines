@@ -8,23 +8,13 @@ icon: "box"
 1. Start a new terminal and activate the `comfyui` conda environment:
 ```bash
 conda activate comfyui
-cd /workspace/comfyRealtime/ComfyUI
+cd /ComfyUI
 ```
 
 2. Run ComfyUI
-<Note>
- `--disable-cuda-malloc` is needed when you encounter the error `RuntimeError: cudaMallocAsync does not yet support checkPoolLiveAllocations` 
-</Note>
-
-<CodeGroup>
-    ```bash Standard
-    python main.py --listen
-    ```
-
-    ```bash TensorRT Workflows
-    python main.py --listen --disable-cuda-malloc
-    ```
-</CodeGroup>
+```bash
+python main.py --listen --disable-cuda-malloc
+```
 
 <Info>
 It is normal to see logs for the tensorrt nodes failing to import, as they are only compatible with ComfyStream

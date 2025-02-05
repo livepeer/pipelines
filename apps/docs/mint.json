@@ -75,22 +75,9 @@
       ]
     },
     {
-      "group": "Installation",
+      "group": "Getting Started",
       "pages": [
-        "technical/develop-pipeline/architecture",
-        "technical/install/local-testing",
-        "technical/install/custom-node-installation",
-        "technical/install/run-comfyui",
-        "technical/install/run-comfystream"
-      ]
-    },
-    {
-      "group": "Pipeline Development",
-      "pages": [
-        "technical/develop-pipeline/create-your-first-pipeline",
-        "technical/reference/download-models",
-        "technical/develop-pipeline/add-sd-loras"
-      ]
+        "technical/getting-started/install-comfystream"      ]
     },
     {
       "group": "Custom Nodes",
@@ -106,9 +93,8 @@
     {
       "group": "Reference",
       "pages": [
-
-        "technical/reference/develop-runpod",
-        "technical/reference/tunneling-with-ssh"
+        "technical/reference/download-models",
+        "technical/reference/add-sd-loras"
       ]
     }
   ],
