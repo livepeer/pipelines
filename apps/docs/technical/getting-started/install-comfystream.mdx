@@ -35,7 +35,7 @@ mkdir %USERPROFILE%\models\ComfyUI--models %USERPROFILE%\models\ComfyUI--output
 ```bash
 docker pull livepeer/comfyui-base:server
 ```
-
+### Run the container
 3. Run the container using the paths you created above:
 <Info>
 If you are using Windows, make sure Docker Desktop is running first
@@ -63,15 +63,15 @@ livepeer/comfyui-base:server --download-models --build-engines --server
 ```
 </CodeGroup>
 
-The `--download-models` and `--build-engines` flags will download the required models and build TensorRT engines for optimized inference. This process may take some time. You will only need these flags on the first run of the container, or when adding additional models.
+The `--download-models` and `--build-engines` flags will download the required models and build TensorRT engines. This process may take some time. You will only need these flags on the first run of the container, or when adding additional models.
 
 <Note>
 Engine files must be compiled on the same GPU hardware/architecture they will be used on.
 </Note>
 
-### Running Services
+### Access ComfyUI and ComfyStream
 
-The `--server` flag will start ComfyUI, ComfyStream and UI automatically. They can be accessed at:
+The `--server` flag will start ComfyUI, ComfyStream and UI automatically. You can access ComfyUI and ComfyStream at:
 - ComfyUI: http://localhost:8188
 - ComfyStream: http://localhost:8888
 - UI: https://localhost:3000
