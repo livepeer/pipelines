@@ -33,7 +33,7 @@ mkdir %USERPROFILE%\models\ComfyUI--models %USERPROFILE%\models\ComfyUI--output
 
 2. Download the docker image:
 ```bash
-docker pull livepeer/comfystream:latest
+docker pull livepeer/comfyui-base:server
 ```
 
 3. Run the container using the paths you created above:
@@ -49,7 +49,7 @@ docker run -it --gpus all \
   -p 3000:3000 \
   -v ~/models/ComfyUI--models:/ComfyUI/models \
   -v ~/models/ComfyUI--output:/ComfyUI/output \
-  livepeer/comfystream:latest --download-models --build-engines --server
+  livepeer/comfyui-base:server --download-models --build-engines --server
 ```
 ```batch Windows
 docker run -it --gpus all ^
@@ -59,7 +59,7 @@ docker run -it --gpus all ^
 -p 3000:3000 ^
 -v %USERPROFILE%\models\ComfyUI--models:/ComfyUI/models ^
 -v %USERPROFILE%\models\ComfyUI--output:/ComfyUI/output ^
-livepeer/comfystream:latest --download-models --build-engines --server
+livepeer/comfyui-base:server --download-models --build-engines --server
 ```
 </CodeGroup>
 
