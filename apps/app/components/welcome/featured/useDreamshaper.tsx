@@ -93,42 +93,49 @@ export function useDreamshaper() {
 
       const streamId = stream.id;
       const streamKey = stream.stream_key;
+      let toastId;
       if (!options?.silent) {
-        toast.loading("Updating the stream with prompt...");
+        toastId = toast.loading("Updating the stream with prompt...");
       }
 
-      const { data, error } = await getStream(streamId);
-      if (error) {
-        if (!options?.silent) {
-          toast.error("Error updating parameters");
+      try {
+        const { data, error } = await getStream(streamId);
+        if (error) {
+          if (!options?.silent) {
+            toast.error("Error updating parameters", { id: toastId });
+          }
+          return;
         }
-        return;
-      }
 
-      if (!data?.gateway_host) {
-        if (!options?.silent) {
-          toast("No gateway host found");
+        if (!data?.gateway_host) {
+          if (!options?.silent) {
+            toast.error("No gateway host found", { id: toastId });
+          }
+          return;
         }
-        return;
-      }
 
-      // Update the prompt in the input values
-      const updatedInputValues = { ...inputValues };
-      if (updatedInputValues?.prompt?.["5"]?.inputs?.text) {
-        updatedInputValues.prompt["5"].inputs.text = prompt;
-      }
+        // Update the prompt in the input values
+        const updatedInputValues = { ...inputValues };
+        if (updatedInputValues?.prompt?.["5"]?.inputs?.text) {
+          updatedInputValues.prompt["5"].inputs.text = prompt;
+        }
 
-      const response = await updateParams({
-        body: updatedInputValues,
-        host: data.gateway_host as string,
-        streamKey: streamKey as string,
-      });
+        const response = await updateParams({
+          body: updatedInputValues,
+          host: data.gateway_host as string,
+          streamKey: streamKey as string,
+        });
 
-      if (!options?.silent) {
-        if (response.status == 200 || response.status == 201) {
-          toast.success("Stream updated successfully");
-        } else {
-          toast.error("Error updating stream with prompt");
+        if (!options?.silent) {
+          if (response.status == 200 || response.status == 201) {
+            toast.success("Stream updated successfully", { id: toastId });
+          } else {
+            toast.error("Error updating stream with prompt", { id: toastId });
+          }
+        }
+      } catch (error) {
+        if (!options?.silent) {
+          toast.error("An unexpected error occurred", { id: toastId });
         }
       }
     },

@@ -13,7 +13,7 @@ import { LPPLayer } from "@/components/playground/player";
 import Link from "next/link";
 import { useIsMobile } from "@repo/design-system/hooks/use-mobile";
 
-const PROMPT_INTERVAL = 2000;
+const PROMPT_INTERVAL = 4000;
 const samplePrompts = examplePrompts.map((prompt) => prompt.prompt);
 
 // Rotate through prompts every 2 seconds
