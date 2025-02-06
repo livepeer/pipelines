@@ -31,12 +31,18 @@ function usePrompts() {
 }
 
 interface DreamshaperProps {
-  stream: any;
-  outputPlaybackId: string;
+  outputPlaybackId: string | null;
+  streamUrl: string | null;
   handleUpdate: (prompt: string) => void;
+  loading: boolean;
 }
 
-export default function Dreamshaper({ stream, outputPlaybackId, handleUpdate }: DreamshaperProps) {
+export default function Dreamshaper({
+  outputPlaybackId,
+  streamUrl,
+  handleUpdate,
+  loading
+}: DreamshaperProps) {
   const isMac =
     typeof navigator !== "undefined"
       ? (navigator.userAgent?.includes("Mac") ?? false)
@@ -127,7 +133,11 @@ export default function Dreamshaper({ stream, outputPlaybackId, handleUpdate }: 
       <div className="flex-1 min-h-0">
         <div className="w-full h-full">
           <div className="w-full h-full">
-            {outputPlaybackId ? (
+            {loading ? (
+              <div className="w-full h-full flex items-center justify-center">
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              </div>
+            ) : outputPlaybackId ? (
               <LPPLayer output_playback_id={outputPlaybackId} />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-muted-foreground">
@@ -137,12 +147,12 @@ export default function Dreamshaper({ stream, outputPlaybackId, handleUpdate }: 
           </div>
 
           <div className="md:absolute md:bottom-6 md:right-12 md:w-1/5 md:bg-sidebar overflow-hidden rounded-lg shadow-lg w-full">
-            {outputPlaybackId ? (
-              <BroadcastWithControls ingestUrl={stream.streamUrl} />
-            ) : (
+            {loading || !streamUrl ? (
               <div className="w-full h-full flex items-center justify-center">
                 <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
               </div>
+            ) : (
+              <BroadcastWithControls ingestUrl={streamUrl} />
             )}
           </div>
         </div>

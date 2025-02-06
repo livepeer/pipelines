@@ -8,7 +8,8 @@ import { useDreamshaper } from "@/components/welcome/featured/useDreamshaper";
 const App = (): ReactElement => {
   // Temporarily always show the interstitial for development
   const [showInterstitial, setShowInterstitial] = useState(true);
-  const { stream, outputPlaybackId, handleUpdate, loading } = useDreamshaper();
+  const dreamshaperState = useDreamshaper();
+  const { stream, outputPlaybackId, handleUpdate, loading } = dreamshaperState;
 
   const handleReady = () => {
     console.log("Interstitial dismissed via GET STARTED");
@@ -17,8 +18,12 @@ const App = (): ReactElement => {
 
   const handlePromptApply = (prompt: string) => {
     console.log("Auto-applying selected prompt:", prompt);
+    if (handleUpdate) {
+      handleUpdate(prompt);
+    }
   };
 
+  // Only render the Interstitial once we have a valid stream
   if (loading || !stream) {
     return (
       <div className="flex items-center justify-center h-full">
@@ -38,11 +43,7 @@ const App = (): ReactElement => {
         />
       )}
 
-      <Dreamshaper 
-        stream={stream} 
-        outputPlaybackId={outputPlaybackId}
-        handleUpdate={handleUpdate}
-      />
+      <Dreamshaper {...dreamshaperState} />
       <ClientSideTracker eventName="home_page_view" />
     </div>
   );
