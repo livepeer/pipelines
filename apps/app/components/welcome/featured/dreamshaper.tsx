@@ -6,6 +6,11 @@ import { TooltipContent } from "@repo/design-system/components/ui/tooltip";
 import { Tooltip } from "@repo/design-system/components/ui/tooltip";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
+import { useDreamshaper } from "./useDreamshaper";
+import { BroadcastWithControls } from "@/components/playground/broadcast";
+import { Hammer, Loader2 } from "lucide-react";
+import { LPPLayer } from "@/components/playground/player";
+import Link from "next/link";
 
 const PROMPT_INTERVAL = 2000;
 const samplePrompts = examplePrompts.map((prompt) => prompt.prompt);
@@ -32,9 +37,17 @@ export default function Dreamshaper() {
       : false;
   const { currentPromptIndex } = usePrompts();
   const [inputValue, setInputValue] = useState("");
+  const { outputPlaybackId, streamUrl, handleUpdate, loading } =
+    useDreamshaper();
+
+  const submitPrompt = () => {
+    if (inputValue) {
+      handleUpdate(inputValue);
+    }
+  };
 
   return (
-    <div className="flex flex-col h-screen p-4 gap-4">
+    <div className="flex flex-col h-full p-4 gap-4">
       {/* Header section */}
       <div className="flex-shrink-0">
         <h1 className="text-2xl font-bold">Livepeer Pipelines</h1>
@@ -56,7 +69,7 @@ export default function Dreamshaper() {
                   animate={{ opacity: 0.5, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.3 }}
-                  className="h-9 absolute left-3 top-[0.3rem] -translate-y-1/2 text-muted-foreground pointer-events-none"
+                  className="h-9 absolute left-3 top-[0.35rem] -translate-y-1/2 text-muted-foreground pointer-events-none"
                 >
                   {samplePrompts[currentPromptIndex]}
                 </motion.span>
@@ -69,10 +82,15 @@ export default function Dreamshaper() {
             />
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button className="absolute right-2 top-1/2 -translate-y-1/2">
+                <Button
+                  className="absolute right-0 top-1/2 -translate-y-1/2"
+                  disabled={!inputValue}
+                  onClick={submitPrompt}
+                >
                   Apply
                 </Button>
               </TooltipTrigger>
+
               <TooltipContent>
                 {isMac ? "⌘ + Enter" : "Ctrl + Enter"}
               </TooltipContent>
@@ -80,26 +98,27 @@ export default function Dreamshaper() {
           </div>
         </div>
 
-        <Button
-          variant="outline"
-          className="hidden md:flex right-0"
-          onClick={() => {}}
+        <Link
+          href="https://pipelines.livepeer.org/docs/knowledge-base/get-started/what-is-pipeline"
+          target="_blank"
         >
-          <span>Build your own pipeline</span>
-        </Button>
+          <Button variant="outline" className="hidden md:flex right-0">
+            <Hammer className="w-4 h-4" />
+            <span>Build your own pipeline</span>
+          </Button>
+        </Link>
       </div>
 
       {/* Main content area */}
       <div className="flex-1 min-h-0">
-        {/* <div className="relative w-full h-full">
-
+        <div className="w-full h-full">
           <div className="w-full h-full">
-            {isInitializing ? (
+            {loading ? (
               <div className="w-full h-full flex items-center justify-center">
                 <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
               </div>
-            ) : playbackId ? (
-              <LPPLayer output_playback_id={playbackId} />
+            ) : outputPlaybackId ? (
+              <LPPLayer output_playback_id={outputPlaybackId} />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-muted-foreground">
                 Waiting for stream to start...
@@ -107,16 +126,16 @@ export default function Dreamshaper() {
             )}
           </div>
 
-          <div className="absolute bottom-6 right-4 w-1/2 md:w-1/5 bg-sidebar overflow-hidden rounded-lg shadow-lg">
-            {isInitializing ? (
+          <div className="absolute bottom-6 right-12 w-1/2 md:w-1/5 bg-sidebar overflow-hidden rounded-lg shadow-lg">
+            {loading || !streamUrl ? (
               <div className="w-full h-full flex items-center justify-center">
                 <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
               </div>
             ) : (
-              <BroadcastWithControls ingestUrl={ingestUrl} />
+              <BroadcastWithControls ingestUrl={streamUrl} />
             )}
           </div>
-        </div> */}
+        </div>
       </div>
     </div>
   );
