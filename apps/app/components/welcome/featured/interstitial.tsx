@@ -116,14 +116,6 @@ const Interstitial: React.FC<InterstitialProps> = ({
   streamId,
   onPromptApply,
 }) => {
-  if (!streamId) {
-    return (
-      <div className="fixed inset-0 bg-background/95 backdrop-blur-sm z-50 flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
-  }
-
   const [cameraPermission, setCameraPermission] = useState<"prompt" | "granted" | "denied">("prompt");
   const [currentScreen, setCurrentScreen] = useState<"camera" | "prompts">("camera");
   const [redirected, setRedirected] = useState(false);
@@ -133,6 +125,9 @@ const Interstitial: React.FC<InterstitialProps> = ({
   const redirectTimerRef = useRef<NodeJS.Timeout | null>(null);
   const hasScheduledRedirect = useRef(false);
 
+  const effectiveStreamId = streamId || "";
+  const { status: streamStatus, loading: statusLoading, error: statusError } = useStreamStatus(effectiveStreamId, false);
+
   useEffect(() => {
     if (streamId) {
       console.log("[Interstitial] streamId provided:", streamId);
@@ -140,8 +135,6 @@ const Interstitial: React.FC<InterstitialProps> = ({
       console.log("[Interstitial] No streamId provided");
     }
   }, [streamId]);
-
-  const { status: streamStatus, loading: statusLoading, error: statusError } = useStreamStatus(streamId, false);
 
   useEffect(() => {
     console.log("[Interstitial] useStreamStatus update:", { streamStatus, statusLoading, statusError });
@@ -154,7 +147,6 @@ const Interstitial: React.FC<InterstitialProps> = ({
           const permissionStatus = await navigator.permissions.query({
             name: "camera" as PermissionName,
           });
-
           if (permissionStatus.state === "granted") {
             setCameraPermission("granted");
             setCurrentScreen("prompts");
@@ -165,10 +157,7 @@ const Interstitial: React.FC<InterstitialProps> = ({
             return;
           }
         }
-
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: true,
-        });
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
         stream.getTracks().forEach((track) => track.stop());
         setCameraPermission("granted");
         setCurrentScreen("prompts");
@@ -250,7 +239,7 @@ const Interstitial: React.FC<InterstitialProps> = ({
 
   const getStatusMessage = () => {
     if (statusLoading) {
-      return streamStatus && streamStatus !== "OFFLINE" 
+      return streamStatus && streamStatus !== "OFFLINE"
         ? "Stream is now active and being processed. You will be automatically redirected in a moment."
         : "Stream is getting started, please wait...";
     }
@@ -261,6 +250,14 @@ const Interstitial: React.FC<InterstitialProps> = ({
       ? "Our services are busy, please hold on. Your stream is still being prepared."
       : "We are preparing your experience. This may take up to 45 seconds. You will be automatically redirected when the stream is ready.";
   };
+
+  if (!streamId) {
+    return (
+      <div className="fixed inset-0 bg-background/95 backdrop-blur-sm z-50 flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 bg-background/95 backdrop-blur-sm z-50 flex items-center justify-center">
