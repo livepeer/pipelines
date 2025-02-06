@@ -12,7 +12,7 @@ const App = (): ReactElement => {
   const { stream, outputPlaybackId, handleUpdate, loading } = dreamshaperState;
 
   const handleReady = () => {
-      setShowInterstitial(false);
+    setShowInterstitial(false);
   };
 
   const handlePromptApply = (prompt: string) => {
@@ -33,19 +33,19 @@ const App = (): ReactElement => {
 
   return (
     <div>
-      {showInterstitial && (
+      {showInterstitial ? (
         <Interstitial
           streamId={stream.id}
           outputPlaybackId={outputPlaybackId}
           onReady={handleReady}
           onPromptApply={handlePromptApply}
         />
+      ) : (
+        <>
+          <Dreamshaper {...dreamshaperState} />
+          <ClientSideTracker eventName="home_page_view" />
+        </>
       )}
-
-      <Dreamshaper 
-        {...dreamshaperState} 
-      />
-      <ClientSideTracker eventName="home_page_view" />
     </div>
   );
 };

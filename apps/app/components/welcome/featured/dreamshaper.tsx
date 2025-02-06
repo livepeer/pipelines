@@ -57,7 +57,7 @@ export default function Dreamshaper({
   };
 
   return (
-    <div className="flex flex-col h-full p-4 gap-4">
+    <div className="flex flex-col min-h-screen p-4 gap-4">
       {/* Header section */}
       <div className="flex-shrink-0">
         <h1 className="text-2xl font-bold">Livepeer Pipelines</h1>
@@ -68,7 +68,7 @@ export default function Dreamshaper({
       </div>
 
       {/* Top section with prompt input */}
-      <div className="flex-shrink-0 flex">
+      <div className="flex-shrink-0 flex items-center gap-4">
         <div className="relative w-full">
           <div className="relative">
             <AnimatePresence mode="wait">
@@ -104,14 +104,12 @@ export default function Dreamshaper({
                   Apply
                 </Button>
               </TooltipTrigger>
-
               <TooltipContent>
                 {isMac ? "⌘ + Enter" : "Ctrl + Enter"}
               </TooltipContent>
             </Tooltip>
           </div>
         </div>
-
         <Tooltip>
           <TooltipTrigger asChild>
             <Link
@@ -119,7 +117,7 @@ export default function Dreamshaper({
               target="_blank"
               className="hidden md:flex"
             >
-              <Button variant="outline" className="hidden md:flex right-0">
+              <Button variant="outline" className="hidden md:flex">
                 <Hammer className="w-4 h-4" />
                 <span className="hidden">Build your own pipeline</span>
               </Button>
@@ -129,34 +127,31 @@ export default function Dreamshaper({
         </Tooltip>
       </div>
 
-      {/* Main content area */}
-      <div className="flex-1 min-h-0">
-        <div className="w-full h-full">
-          <div className="w-full h-full">
-            {loading ? (
-              <div className="w-full h-full flex items-center justify-center">
-                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-              </div>
-            ) : outputPlaybackId ? (
-              <LPPLayer 
-                output_playback_id={outputPlaybackId} 
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-                Waiting for stream to start...
-              </div>
-            )}
-          </div>
+      {/* Main content area for videos */}
+      <div className="flex flex-col flex-grow gap-4">
+        <div className="flex-grow w-full">
+          {loading ? (
+            <div className="w-full h-full flex items-center justify-center">
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            </div>
+          ) : outputPlaybackId ? (
+            <LPPLayer output_playback_id={outputPlaybackId} />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+              Waiting for stream to start...
+            </div>
+          )}
+        </div>
 
-          <div className="md:absolute md:bottom-6 md:right-12 md:w-1/5 md:bg-sidebar overflow-hidden rounded-lg shadow-lg w-full">
-            {loading || !streamUrl ? (
-              <div className="w-full h-full flex items-center justify-center">
-                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-              </div>
-            ) : (
-              <BroadcastWithControls ingestUrl={streamUrl} />
-            )}
-          </div>
+        {/* Webcam / Broadcast container */}
+        <div className="w-full h-64">
+          {loading || !streamUrl ? (
+            <div className="w-full h-full flex items-center justify-center">
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            </div>
+          ) : (
+            <BroadcastWithControls ingestUrl={streamUrl} />
+          )}
         </div>
       </div>
     </div>
