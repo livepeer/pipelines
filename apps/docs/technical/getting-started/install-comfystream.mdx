@@ -1,0 +1,77 @@
+---
+title: "Install ComfyStream"
+description: "A quick start guide to running your first AI video workflow with ComfyStream"
+icon: "plus"
+---
+
+### System Prerequisites
+Install the necessary software depending on your platform
+<Expandable title="Linux">
+- [Docker Engine](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository)
+- [NVIDIA CUDA Toolkit](https://developer.nvidia.com/cuda-12-6-3-download-archive?target_os=Linux&target_arch=x86_64&Distribution=Ubuntu)
+- [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html)
+</Expandable>
+<Expandable title="Windows">
+- [Docker Desktop for Windows](https://docs.docker.com/get-started/introduction/get-docker-desktop/)
+- [NVIDIA CUDA Toolkit](https://developer.nvidia.com/cuda-12-6-3-download-archive?target_os=Windows&target_arch=x86_64&target_version=11&target_type=exe_local)
+</Expandable>
+
+### Create Directories to Store Models
+
+1. Choose a location to store AI models and output files from ComfyUI. For example will use:
+  - Models: `~/models/ComfyUI--models`
+  - Output: `~/models/ComfyUI--output`
+
+<CodeGroup>
+```bash Linux
+mkdir -p ~/models/ComfyUI--models ~/models/ComfyUI--output
+```
+```batch Windows
+mkdir %USERPROFILE%\models\ComfyUI--models %USERPROFILE%\models\ComfyUI--output
+```
+</CodeGroup>
+
+2. Download the docker image:
+```bash
+docker pull livepeer/comfyui-base:server
+```
+### Run the container
+3. Run the container using the paths you created above:
+<Info>
+If you are using Windows, make sure Docker Desktop is running first
+</Info>
+<CodeGroup>
+```bash Linux
+docker run -it --gpus all \
+  -p 8188:8188 \
+  -p 8888:8888 \
+  -p 5678:5678 \
+  -p 3000:3000 \
+  -v ~/models/ComfyUI--models:/ComfyUI/models \
+  -v ~/models/ComfyUI--output:/ComfyUI/output \
+  livepeer/comfyui-base:server --download-models --build-engines --server
+```
+```batch Windows
+docker run -it --gpus all ^
+-p 8188:8188 ^
+-p 8888:8888 ^
+-p 5678:5678 ^
+-p 3000:3000 ^
+-v %USERPROFILE%\models\ComfyUI--models:/ComfyUI/models ^
+-v %USERPROFILE%\models\ComfyUI--output:/ComfyUI/output ^
+livepeer/comfyui-base:server --download-models --build-engines --server
+```
+</CodeGroup>
+
+The `--download-models` and `--build-engines` flags will download the required models and build TensorRT engines. This process may take some time. You will only need these flags on the first run of the container, or when adding additional models.
+
+<Note>
+Engine files must be compiled on the same GPU hardware/architecture they will be used on.
+</Note>
+
+### Access ComfyUI and ComfyStream
+
+The `--server` flag will start ComfyUI, ComfyStream and UI automatically. You can access ComfyUI and ComfyStream at:
+- ComfyUI: http://localhost:8188
+- ComfyStream: http://localhost:8888
+- UI: https://localhost:3000

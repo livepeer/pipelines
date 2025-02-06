@@ -12,7 +12,7 @@ When adding custom nodes, you will need to install them in both `comfyui` and `c
 1. Change to the `custom_nodes` directory:
 
 ```bash
-cd /workspace/comfyRealtime/ComfyUI/custom_nodes
+cd /ComfyUIcustom_nodes
 ```
 
 2. Clone the node repository:
@@ -30,15 +30,6 @@ conda activate comfyui
 pip install -r requirements.txt
 ```
 
-<Note>
-If not using RunPod, you may need to install the following packages in the `comfyui` environment before installing certain custom nodes:
-```bash Local Installation Only
-pip install setuptools wheel ninja
-pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
-pip install -U xformers --index-url https://download.pytorch.org/whl/cu124
-```
-</Note>
-
 4. Proceed to [Install nodes for ComfyStream](#install-nodes-in-comfystream) each time you add a new node to ComfyUI.
 
 ## Install Nodes in ComfyStream
@@ -47,7 +38,7 @@ After adding a custom node to ComfyUI, you must also install the dependencies in
 1. Start a new terminal session and navigate to the comfystream directory
 
 ```bash
-cd /workspace/comfyRealtime/ComfyStream
+cd /ComfyStream
 ```
 
 2. Activate the comfystream environments and install the custom node requirements. The `--workspace` flag should point to the directory for ComfyUI:
