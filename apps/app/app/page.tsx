@@ -7,7 +7,7 @@ import { useDreamshaper } from "@/components/welcome/featured/useDreamshaper";
 
 const App = (): ReactElement => {
   // Temporarily always show the interstitial for development
-  const [showInterstitial, setShowInterstitial] = useState(false);
+  const [showInterstitial, setShowInterstitial] = useState(true);
   const dreamshaperState = useDreamshaper();
   const { stream, outputPlaybackId, handleUpdate, loading } = dreamshaperState;
 
