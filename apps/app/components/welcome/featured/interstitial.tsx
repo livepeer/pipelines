@@ -129,18 +129,6 @@ const Interstitial: React.FC<InterstitialProps> = ({
   const { status: streamStatus, loading: statusLoading, error: statusError } = useStreamStatus(effectiveStreamId, false);
 
   useEffect(() => {
-    if (streamId) {
-      console.log("[Interstitial] streamId provided:", streamId);
-    } else {
-      console.log("[Interstitial] No streamId provided");
-    }
-  }, [streamId]);
-
-  useEffect(() => {
-    console.log("[Interstitial] useStreamStatus update:", { streamStatus, statusLoading, statusError });
-  }, [streamStatus, statusLoading, statusError]);
-
-  useEffect(() => {
     const triggerCamera = async () => {
       try {
         if ("permissions" in navigator) {
@@ -190,11 +178,9 @@ const Interstitial: React.FC<InterstitialProps> = ({
     if ((streamStatus === "ONLINE" || streamStatus === "DEGRADED_INFERENCE") &&
         !redirected &&
         !hasScheduledRedirect.current) {
-      console.log("[Interstitial] Stream status is ONLINE, waiting 45 seconds before redirect");
       hasScheduledRedirect.current = true;
       redirectTimerRef.current = setTimeout(() => {
         if (selectedPrompt && onPromptApply) {
-          console.log("[Interstitial] Applying selected prompt:", selectedPrompt);
           onPromptApply(selectedPrompt);
         }
         setRedirected(true);
@@ -206,11 +192,9 @@ const Interstitial: React.FC<InterstitialProps> = ({
   useEffect(() => {
     if (currentScreen === "prompts") {
       const busyTimeout = setTimeout(() => {
-        console.log("[Interstitial] Busy timeout reached (45 sec).");
         setBusy(true);
       }, 45000);
       const finalTimeout = setTimeout(() => {
-        console.log("[Interstitial] Final timeout reached (180 sec).");
         setTimedOut(true);
       }, 180000);
       return () => {
@@ -314,7 +298,6 @@ const Interstitial: React.FC<InterstitialProps> = ({
                   example={example}
                   selected={selectedPrompt === example.prompt}
                   onSelect={() => {
-                    console.log("[Interstitial] Selected prompt:", example.prompt);
                     setSelectedPrompt(example.prompt);
                   }}
                 />
@@ -340,7 +323,7 @@ const Interstitial: React.FC<InterstitialProps> = ({
                 <div className="mt-4 text-center">
                   <p className="text-sm text-muted-foreground">
                     {busy
-                      ? "Our services are busy, please hold on. Your stream is still being prepared."
+                      ? "Almost there! Please hold on. Your stream is still being prepared."
                       : "We are preparing your experience. This may take up to 45 seconds. You will be automatically redirected when the stream is ready."}
                   </p>
                   {streamId && (
