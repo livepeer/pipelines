@@ -59,7 +59,7 @@ export default function Dreamshaper() {
 
       {/* Top section with prompt input */}
       <div className="flex-shrink-0 flex">
-        <div className="relative w-[calc(90%-0.5rem)]">
+        <div className="relative w-full">
           <div className="relative">
             <AnimatePresence mode="wait">
               {!inputValue && (
@@ -79,12 +79,16 @@ export default function Dreamshaper() {
               className="w-full pr-[140px]"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+                  submitPrompt();
+                }
+              }}
             />
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
                   className="absolute right-0 top-1/2 -translate-y-1/2"
-                  disabled={!inputValue}
                   onClick={submitPrompt}
                 >
                   Apply
@@ -98,15 +102,21 @@ export default function Dreamshaper() {
           </div>
         </div>
 
-        <Link
-          href="https://pipelines.livepeer.org/docs/knowledge-base/get-started/what-is-pipeline"
-          target="_blank"
-        >
-          <Button variant="outline" className="hidden md:flex right-0">
-            <Hammer className="w-4 h-4" />
-            <span>Build your own pipeline</span>
-          </Button>
-        </Link>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Link
+              href="https://pipelines.livepeer.org/docs/knowledge-base/get-started/what-is-pipeline"
+              target="_blank"
+              className="hidden md:flex"
+            >
+              <Button variant="outline" className="hidden md:flex right-0">
+                <Hammer className="w-4 h-4" />
+                <span className="hidden">Build your own pipeline</span>
+              </Button>
+            </Link>
+          </TooltipTrigger>
+          <TooltipContent>Build your own pipeline</TooltipContent>
+        </Tooltip>
       </div>
 
       {/* Main content area */}
@@ -126,7 +136,7 @@ export default function Dreamshaper() {
             )}
           </div>
 
-          <div className="absolute bottom-6 right-12 w-1/2 md:w-1/5 bg-sidebar overflow-hidden rounded-lg shadow-lg">
+          <div className="md:absolute md:bottom-6 md:right-12 md:w-1/5 md:bg-sidebar overflow-hidden rounded-lg shadow-lg w-full">
             {loading || !streamUrl ? (
               <div className="w-full h-full flex items-center justify-center">
                 <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />

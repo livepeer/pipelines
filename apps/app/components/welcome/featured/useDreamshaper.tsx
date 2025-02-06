@@ -79,15 +79,15 @@ export function useDreamshaper() {
 
   const handleUpdate = useCallback(
     async (prompt: string) => {
-      if (!stream) return;
+      if (!stream) {
+        toast.error("No stream found");
+        return;
+      }
 
       const streamId = stream.id;
       const streamKey = stream.stream_key;
+      toast.loading("Updating the stream with prompt...");
       const { data, error } = await getStream(streamId);
-      console.log("-".repeat(100));
-      console.log("stream", stream);
-      console.log("inputValues", inputValues);
-      console.log("-".repeat(100));
 
       if (error) {
         toast.error("Error updating parameters");
@@ -105,11 +105,6 @@ export function useDreamshaper() {
         updatedInputValues.prompt["5"].inputs.text = prompt;
       }
 
-      console.log("-".repeat(100));
-      console.log("updatedInputValues", updatedInputValues);
-      console.log("prompt", prompt);
-      console.log("-".repeat(100));
-
       const response = await updateParams({
         body: updatedInputValues,
         host: data.gateway_host as string,
@@ -117,9 +112,9 @@ export function useDreamshaper() {
       });
 
       if (response.status == 200 || response.status == 201) {
-        toast.success("Parameter updated successfully");
+        toast.success("Stream updated successfully");
       } else {
-        toast.error("Error updating parameters");
+        toast.error("Error updating stream with prompt");
       }
     },
     [stream]
