@@ -192,8 +192,8 @@ const Interstitial: React.FC<InterstitialProps> = ({
 
   // When the stream is ready, log information and hide the interstitial via onReady.
   useEffect(() => {
-    if (outputPlaybackId && !redirected) {
-      console.log("[Interstitial] Stream is ready with playback ID:", outputPlaybackId);
+    if (streamStatus === "ONLINE" && !redirected) {
+      console.log("[Interstitial] Stream status is ONLINE");
       if (selectedPrompt && onPromptApply) {
         console.log("[Interstitial] Applying selected prompt:", selectedPrompt);
         onPromptApply(selectedPrompt);
@@ -201,7 +201,7 @@ const Interstitial: React.FC<InterstitialProps> = ({
       setRedirected(true);
       onReady();
     }
-  }, [outputPlaybackId, redirected, selectedPrompt, onPromptApply, onReady]);
+  }, [streamStatus, redirected, selectedPrompt, onPromptApply, onReady]);
 
   useEffect(() => {
     if (currentScreen === "prompts") {
@@ -336,9 +336,11 @@ const Interstitial: React.FC<InterstitialProps> = ({
                   )}
                   <div className="mt-4 flex flex-col items-center justify-center space-y-4">
                     <Loader2 className="w-8 h-8 animate-spin" />
-                    <Button variant="default" onClick={onReady}>
-                      GET STARTED
-                    </Button>
+                    {streamStatus === "ONLINE" && (
+                      <Button variant="default" onClick={onReady}>
+                        GET STARTED
+                      </Button>
+                    )}
                   </div>
                 </div>
               )}

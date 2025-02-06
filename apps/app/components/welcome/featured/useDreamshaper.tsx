@@ -121,6 +121,7 @@ export function useDreamshaper() {
   );
 
   return {
+    stream,
     outputPlaybackId: stream?.output_playback_id,
     streamUrl: stream ? `${app.whipUrl}${stream.stream_key}/whip` : null,
     pipeline,
