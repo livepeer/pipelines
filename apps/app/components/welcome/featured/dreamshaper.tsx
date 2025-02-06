@@ -79,32 +79,35 @@ export default function Dreamshaper({
                 animate={{ opacity: 0.5, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.3 }}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
+                className="absolute left-3 inset-y-0 flex items-center text-muted-foreground pointer-events-none"
               >
                 {samplePrompts[currentPromptIndex]}
               </motion.span>
             )}
           </AnimatePresence>
-          <div className="flex w-full items-center gap-2">
-            <Input
-              className="w-full"
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
-                  submitPrompt();
-                }
-              }}
-            />
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button onClick={submitPrompt}>Apply</Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                {isMac ? "⌘ + Enter" : "Ctrl + Enter"}
-              </TooltipContent>
-            </Tooltip>
-          </div>
+          <Input
+            className="w-full h-[42px]"
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+                submitPrompt();
+              }
+            }}
+          />
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button 
+                onClick={submitPrompt}
+                className="absolute right-0 inset-y-0 my-auto"
+              >
+                Apply {isMac ? "(⌘ + Enter)" : "(Ctrl + Enter)"}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              {isMac ? "⌘ + Enter" : "Ctrl + Enter"}
+            </TooltipContent>
+          </Tooltip>
         </div>
         <Tooltip>
           <TooltipTrigger asChild>
