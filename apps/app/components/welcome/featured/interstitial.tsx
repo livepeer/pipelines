@@ -116,6 +116,14 @@ const Interstitial: React.FC<InterstitialProps> = ({
   streamId,
   onPromptApply,
 }) => {
+  if (!streamId) {
+    return (
+      <div className="fixed inset-0 bg-background/95 backdrop-blur-sm z-50 flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
   const [cameraPermission, setCameraPermission] = useState<"prompt" | "granted" | "denied">("prompt");
   const [currentScreen, setCurrentScreen] = useState<"camera" | "prompts">("camera");
   const [redirected, setRedirected] = useState(false);
@@ -133,7 +141,7 @@ const Interstitial: React.FC<InterstitialProps> = ({
     }
   }, [streamId]);
 
-  const { status: streamStatus, loading: statusLoading, error: statusError } = useStreamStatus(streamId || "", false);
+  const { status: streamStatus, loading: statusLoading, error: statusError } = useStreamStatus(streamId, false);
 
   useEffect(() => {
     console.log("[Interstitial] useStreamStatus update:", { streamStatus, statusLoading, statusError });

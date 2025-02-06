@@ -2,7 +2,7 @@
 import ClientSideTracker from "@/components/analytics/ClientSideTracker";
 import Dreamshaper from "@/components/welcome/featured/dreamshaper";
 import Interstitial from "@/components/welcome/featured/interstitial";
-import { type ReactElement, useState } from "react";
+import { ReactElement, useState } from "react";
 import { useDreamshaper } from "@/components/welcome/featured/useDreamshaper";
 
 const App = (): ReactElement => {
@@ -22,29 +22,17 @@ const App = (): ReactElement => {
     }
   };
 
-  // Only render the Interstitial once we have a valid stream
-  if (loading || !stream) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <p>Creating your stream...</p>
-      </div>
-    );
-  }
-
   return (
-    <div>
-      {showInterstitial ? (
+    <div className="relative">
+      <Dreamshaper {...dreamshaperState} />
+      <ClientSideTracker eventName="home_page_view" />
+      {showInterstitial && (
         <Interstitial
-          streamId={stream.id}
+          streamId={stream?.id}
           outputPlaybackId={outputPlaybackId}
           onReady={handleReady}
           onPromptApply={handlePromptApply}
         />
-      ) : (
-        <>
-          <Dreamshaper {...dreamshaperState} />
-          <ClientSideTracker eventName="home_page_view" />
-        </>
       )}
     </div>
   );
