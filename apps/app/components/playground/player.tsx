@@ -24,11 +24,10 @@ export function LPPLayer({
   output_playback_id: string;
 }) {
   return (
-    <div className="w-full h-full flex justify-center items-center">
+    <div className="aspect-video">
       <iframe
         src={`https://${isProduction() ? "lvpr.tv" : "monster.lvpr.tv"}/?v=${output_playback_id}&lowLatency=force&backoffMax=1000`}
-        className="max-w-full max-h-full"
-        style={{ objectFit: "contain" }}
+        className="w-full h-full"
       />
     </div>
   );

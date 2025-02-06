@@ -59,9 +59,9 @@ export default function Dreamshaper({
   };
 
   return (
-    <div className="relative h-screen overflow-hidden flex flex-col p-4 gap-4">
+    <div className="flex flex-col h-[calc(100vh-10rem)] overflow-hidden">
       {/* Header section */}
-      <div className="flex-shrink-0">
+      <div className="flex-shrink-0 p-4">
         <h1 className="text-2xl font-bold">Livepeer Pipelines</h1>
         <p className="text-muted-foreground">
           Transform your video in real-time with AI - and build your own
@@ -70,7 +70,7 @@ export default function Dreamshaper({
       </div>
 
       {/* Top section with prompt input */}
-      <div className="flex-shrink-0 flex items-center gap-4">
+      <div className="flex-shrink-0 flex items-center gap-4 px-4">
         <div className="relative w-full">
           <div className="relative">
             <AnimatePresence mode="wait">
@@ -128,9 +128,9 @@ export default function Dreamshaper({
         </Tooltip>
       </div>
 
-      {/* Main content area for videos */}
-      <div className="flex flex-col flex-grow gap-4 relative">
-        <div className="flex-grow w-full">
+      {/* Main content area */}
+      <div className="flex-1 min-h-0 p-4">
+        <div className="relative h-full">
           {loading ? (
             <div className="w-full h-full flex items-center justify-center">
               <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -145,9 +145,9 @@ export default function Dreamshaper({
         </div>
       </div>
 
-      {/* Broadcast / Webcam component */}
+      {/* Broadcast component */}
       {isMobile ? (
-        <div className="w-full h-64">
+        <div className="flex-shrink-0 h-64 p-4">
           {loading || !streamUrl ? (
             <div className="w-full h-full flex items-center justify-center">
               <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
