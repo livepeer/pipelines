@@ -190,7 +190,7 @@ const Interstitial: React.FC<InterstitialProps> = ({
     if ((streamStatus === "ONLINE" || streamStatus === "DEGRADED_INFERENCE") &&
         !redirected &&
         !hasScheduledRedirect.current) {
-      console.log("[Interstitial] Stream status is ONLINE, waiting 30 seconds before redirect");
+      console.log("[Interstitial] Stream status is ONLINE, waiting 45 seconds before redirect");
       hasScheduledRedirect.current = true;
       redirectTimerRef.current = setTimeout(() => {
         if (selectedPrompt && onPromptApply) {
@@ -199,7 +199,7 @@ const Interstitial: React.FC<InterstitialProps> = ({
         }
         setRedirected(true);
         onReady();
-      }, 30000);
+      }, 45000);
     }
   }, [streamStatus, redirected, selectedPrompt, onPromptApply, onReady]);
 

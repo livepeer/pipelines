@@ -8,9 +8,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 import { useDreamshaper } from "./useDreamshaper";
 import { BroadcastWithControls } from "@/components/playground/broadcast";
-import { Hammer, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { LPPLayer } from "@/components/playground/player";
 import Link from "next/link";
+import { useIsMobile } from "@repo/design-system/hooks/use-mobile";
 
 const PROMPT_INTERVAL = 2000;
 const samplePrompts = examplePrompts.map((prompt) => prompt.prompt);
@@ -45,10 +46,11 @@ export default function Dreamshaper({
 }: DreamshaperProps) {
   const isMac =
     typeof navigator !== "undefined"
-      ? (navigator.userAgent?.includes("Mac") ?? false)
+      ? navigator.userAgent?.includes("Mac") ?? false
       : false;
   const { currentPromptIndex } = usePrompts();
   const [inputValue, setInputValue] = useState("");
+  const isMobile = useIsMobile();
 
   const submitPrompt = () => {
     if (inputValue) {
@@ -57,7 +59,7 @@ export default function Dreamshaper({
   };
 
   return (
-    <div className="flex flex-col min-h-screen p-4 gap-4">
+    <div className="relative h-screen overflow-hidden flex flex-col p-4 gap-4">
       {/* Header section */}
       <div className="flex-shrink-0">
         <h1 className="text-2xl font-bold">Livepeer Pipelines</h1>
@@ -118,8 +120,7 @@ export default function Dreamshaper({
               className="hidden md:flex"
             >
               <Button variant="outline" className="hidden md:flex">
-                <Hammer className="w-4 h-4" />
-                <span className="hidden">Build your own pipeline</span>
+                <span>Build your own pipeline</span>
               </Button>
             </Link>
           </TooltipTrigger>
@@ -128,7 +129,7 @@ export default function Dreamshaper({
       </div>
 
       {/* Main content area for videos */}
-      <div className="flex flex-col flex-grow gap-4">
+      <div className="flex flex-col flex-grow gap-4 relative">
         <div className="flex-grow w-full">
           {loading ? (
             <div className="w-full h-full flex items-center justify-center">
@@ -142,8 +143,10 @@ export default function Dreamshaper({
             </div>
           )}
         </div>
+      </div>
 
-        {/* Webcam / Broadcast container */}
+      {/* Broadcast / Webcam component */}
+      {isMobile ? (
         <div className="w-full h-64">
           {loading || !streamUrl ? (
             <div className="w-full h-full flex items-center justify-center">
@@ -153,7 +156,17 @@ export default function Dreamshaper({
             <BroadcastWithControls ingestUrl={streamUrl} />
           )}
         </div>
-      </div>
+      ) : (
+        <div className="fixed bottom-4 right-4 w-64 h-64 shadow-lg">
+          {loading || !streamUrl ? (
+            <div className="w-full h-full flex items-center justify-center bg-background rounded-md">
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            </div>
+          ) : (
+            <BroadcastWithControls ingestUrl={streamUrl} />
+          )}
+        </div>
+      )}
     </div>
   );
 }
