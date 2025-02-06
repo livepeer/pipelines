@@ -247,7 +247,7 @@ const Interstitial: React.FC<InterstitialProps> = ({
       return "Error retrieving status";
     }
     return busy
-      ? "Our services are busy, please hold on. Your stream is still being prepared."
+      ? "Almost there! Please hold on. Your stream is still being prepared."
       : "We are preparing your experience. This may take up to 45 seconds. You will be automatically redirected when the stream is ready.";
   };
 
