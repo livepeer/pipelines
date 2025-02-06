@@ -13,8 +13,6 @@ export const useStreamStatus = (streamId: string, requireUser: boolean = true) =
     const intervalIdRef = useRef<NodeJS.Timeout | null>(null);
 
     useEffect(() => {
-        console.log("[useStreamStatus] Hook initiated with streamId:", streamId);
-        console.log("[useStreamStatus] ready:", ready, "user:", user, "requireUser:", requireUser);
         
         if (!ready || (requireUser && !user)) {
             console.log("[useStreamStatus] Not ready or user required but not detected, aborting status fetch.");
@@ -22,7 +20,6 @@ export const useStreamStatus = (streamId: string, requireUser: boolean = true) =
         }
 
         const fetchStatus = async () => {
-            console.log("[useStreamStatus] Attempting to fetch status for streamId:", streamId);
             try {
                 const res = await fetch(`/api/streams/${streamId}/status`, {
                     headers: {
@@ -30,14 +27,12 @@ export const useStreamStatus = (streamId: string, requireUser: boolean = true) =
                         'pragma': 'no-cache',
                     },
                 });
-                console.log("[useStreamStatus] Response received:", res);
                 if (!res.ok) {
                     triggerError(`Failed to fetch stream status: ${res.status} ${res.statusText}`);
                     return;
                 }
 
                 const { success, error, data } = await res.json();
-                console.log("[useStreamStatus] JSON data received:", { success, error, data });
                 if (!success || !data) {
                     triggerError(error ?? "No stream data returned from API");
                     return;
@@ -45,7 +40,6 @@ export const useStreamStatus = (streamId: string, requireUser: boolean = true) =
                 setStatus(data?.state);
                 setError(null);
                 failureCountRef.current = 0;
-                console.log("[useStreamStatus] Stream status updated to:", data?.state);
                 resetPollingInterval();
             } catch (err: any) {
                 triggerError(err.message);
@@ -65,7 +59,6 @@ export const useStreamStatus = (streamId: string, requireUser: boolean = true) =
                 BASE_POLLING_INTERVAL * 2 ** failureCountRef.current,
                 MAX_BACKOFF_INTERVAL
             );
-            console.log("[useStreamStatus] Adjusting polling interval to:", nextInterval, "ms");
             if (intervalIdRef.current) {
                 clearInterval(intervalIdRef.current);
             }
@@ -73,7 +66,6 @@ export const useStreamStatus = (streamId: string, requireUser: boolean = true) =
         };
 
         const resetPollingInterval = () => {
-            console.log("[useStreamStatus] Reset polling interval to base:", BASE_POLLING_INTERVAL, "ms");
             if (intervalIdRef.current) {
                 clearInterval(intervalIdRef.current);
             }
@@ -85,7 +77,6 @@ export const useStreamStatus = (streamId: string, requireUser: boolean = true) =
 
         return () => {
             if (intervalIdRef.current) {
-                console.log("[useStreamStatus] Clearing polling interval.");
                 clearInterval(intervalIdRef.current);
             }
         };
