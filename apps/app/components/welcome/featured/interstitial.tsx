@@ -123,6 +123,7 @@ const Interstitial: React.FC<InterstitialProps> = ({
   const [busy, setBusy] = useState(false);
   const [selectedPrompt, setSelectedPrompt] = useState<string | null>(null);
   const redirectTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const hasScheduledRedirect = useRef(false);
 
   useEffect(() => {
     if (streamId) {
@@ -189,21 +190,19 @@ const Interstitial: React.FC<InterstitialProps> = ({
   const handleBack = () => setCurrentScreen("camera");
 
   useEffect(() => {
-    if ((streamStatus === "ONLINE" || streamStatus === "DEGRADED_INFERENCE") && !redirected) {
-      if (!redirectTimerRef.current) {
-        console.log("[Interstitial] Stream status is ONLINE, waiting 30 seconds before redirect");
-        redirectTimerRef.current = setTimeout(() => {
-          if (selectedPrompt && onPromptApply) {
-            console.log("[Interstitial] Applying selected prompt:", selectedPrompt);
-            onPromptApply(selectedPrompt);
-          }
-          setRedirected(true);
-          onReady();
-        }, 30000);
-      }
-    } else if (redirectTimerRef.current) {
-      clearTimeout(redirectTimerRef.current);
-      redirectTimerRef.current = null;
+    if ((streamStatus === "ONLINE" || streamStatus === "DEGRADED_INFERENCE") &&
+        !redirected &&
+        !hasScheduledRedirect.current) {
+      console.log("[Interstitial] Stream status is ONLINE, waiting 30 seconds before redirect");
+      hasScheduledRedirect.current = true;
+      redirectTimerRef.current = setTimeout(() => {
+        if (selectedPrompt && onPromptApply) {
+          console.log("[Interstitial] Applying selected prompt:", selectedPrompt);
+          onPromptApply(selectedPrompt);
+        }
+        setRedirected(true);
+        onReady();
+      }, 30000);
     }
   }, [streamStatus, redirected, selectedPrompt, onPromptApply, onReady]);
 
