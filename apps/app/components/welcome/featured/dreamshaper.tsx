@@ -35,7 +35,6 @@ interface DreamshaperProps {
   streamUrl: string | null;
   handleUpdate: (prompt: string) => void;
   loading: boolean;
-  onOutputPlaybackUpdate?: (isPlaying: boolean) => void;
 }
 
 export default function Dreamshaper({
@@ -43,7 +42,6 @@ export default function Dreamshaper({
   streamUrl,
   handleUpdate,
   loading,
-  onOutputPlaybackUpdate
 }: DreamshaperProps) {
   const isMac =
     typeof navigator !== "undefined"
