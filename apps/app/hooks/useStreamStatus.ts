@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from 'react';
 const BASE_POLLING_INTERVAL = 5000;
 const MAX_BACKOFF_INTERVAL = 120000;
 
-export const useStreamStatus = (streamId: string) => {
+export const useStreamStatus = (streamId: string, requireUser: boolean = true) => {
     const { ready, user } = usePrivy();
     const [status, setStatus] = useState<string | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
@@ -14,10 +14,10 @@ export const useStreamStatus = (streamId: string) => {
 
     useEffect(() => {
         console.log("[useStreamStatus] Hook initiated with streamId:", streamId);
-        console.log("[useStreamStatus] ready:", ready, "user:", user);
+        console.log("[useStreamStatus] ready:", ready, "user:", user, "requireUser:", requireUser);
         
-        if (!ready || !user) {
-            console.log("[useStreamStatus] Not ready or no user detected, aborting status fetch.");
+        if (!ready || (requireUser && !user)) {
+            console.log("[useStreamStatus] Not ready or user required but not detected, aborting status fetch.");
             return;
         }
 
@@ -49,7 +49,6 @@ export const useStreamStatus = (streamId: string) => {
                 resetPollingInterval();
             } catch (err: any) {
                 triggerError(err.message);
-            } finally {
                 setLoading(false);
             }
         };
@@ -90,7 +89,7 @@ export const useStreamStatus = (streamId: string) => {
                 clearInterval(intervalIdRef.current);
             }
         };
-    }, [streamId, ready, user]);
+    }, [streamId, ready, user, requireUser]);
 
     return { status, loading, error };
 };

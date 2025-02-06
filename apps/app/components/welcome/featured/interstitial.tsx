@@ -132,7 +132,7 @@ const Interstitial: React.FC<InterstitialProps> = ({
     }
   }, [streamId]);
 
-  const { status: streamStatus, loading: statusLoading, error: statusError } = useStreamStatus(streamId || "");
+  const { status: streamStatus, loading: statusLoading, error: statusError } = useStreamStatus(streamId || "", false);
 
   useEffect(() => {
     console.log("[Interstitial] useStreamStatus update:", { streamStatus, statusLoading, statusError });
