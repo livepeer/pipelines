@@ -12,6 +12,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useStreamStatus } from "@/hooks/useStreamStatus";
 
 interface ExamplePrompt {
   prompt: string;
@@ -112,17 +113,22 @@ interface InterstitialProps {
   onReady?: () => void;
   onCameraPermissionGranted?: () => void;
   outputPlaybackId?: string;
+  streamId?: string;
 }
 
 const Interstitial: React.FC<InterstitialProps> = ({
   onReady = () => {},
   onCameraPermissionGranted = useCallback(() => {}, []),
   outputPlaybackId,
+  streamId,
 }) => {
   const [cameraPermission, setCameraPermission] = useState<"prompt" | "granted" | "denied">("prompt");
   const [currentScreen, setCurrentScreen] = useState<"camera" | "prompts">("camera");
   const [redirected, setRedirected] = useState(false);
   const [timedOut, setTimedOut] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  const { status: streamStatus, loading: statusLoading, error: statusError } = useStreamStatus(streamId || "");
 
   useEffect(() => {
     const triggerCamera = async () => {
@@ -183,10 +189,14 @@ const Interstitial: React.FC<InterstitialProps> = ({
 
   useEffect(() => {
     if (currentScreen === "prompts") {
-      const timeoutId = setTimeout(() => {
+      const busyTimeout = setTimeout(() => setBusy(true), 45000);
+      const finalTimeout = setTimeout(() => {
         setTimedOut(true);
-      }, 90000);
-      return () => clearTimeout(timeoutId);
+      }, 180000);
+      return () => {
+        clearTimeout(busyTimeout);
+        clearTimeout(finalTimeout);
+      };
     }
   }, [currentScreen]);
 
@@ -273,9 +283,27 @@ const Interstitial: React.FC<InterstitialProps> = ({
               ) : (
                 <div className="mt-4 text-center">
                   <p className="text-sm text-muted-foreground">
-                    We are preparing your experience. This may take up to 45 seconds.
-                    You will be automatically redirected when the stream is ready.
+                    {busy
+                      ? "Our services are busy, please hold on. Your stream is still being prepared."
+                      : "We are preparing your experience. This may take up to 45 seconds. You will be automatically redirected when the stream is ready."}
                   </p>
+                  {streamId && (
+                    <div className="mt-2">
+                      {statusLoading ? (
+                        <p className="text-xs text-muted-foreground">
+                          Checking stream status...
+                        </p>
+                      ) : statusError ? (
+                        <p className="text-xs text-destructive">
+                          Error retrieving status
+                        </p>
+                      ) : (
+                        <p className="text-xs text-muted-foreground">
+                          Current stream status: {streamStatus || "Unknown"}
+                        </p>
+                      )}
+                    </div>
+                  )}
                   <div className="mt-4 flex justify-center">
                     <Loader2 className="w-8 h-8 animate-spin" />
                   </div>
