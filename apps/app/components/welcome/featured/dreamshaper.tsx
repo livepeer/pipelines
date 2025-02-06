@@ -35,13 +35,15 @@ interface DreamshaperProps {
   streamUrl: string | null;
   handleUpdate: (prompt: string) => void;
   loading: boolean;
+  onOutputPlaybackUpdate?: (isPlaying: boolean) => void;
 }
 
 export default function Dreamshaper({
   outputPlaybackId,
   streamUrl,
   handleUpdate,
-  loading
+  loading,
+  onOutputPlaybackUpdate
 }: DreamshaperProps) {
   const isMac =
     typeof navigator !== "undefined"
@@ -138,7 +140,10 @@ export default function Dreamshaper({
                 <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
               </div>
             ) : outputPlaybackId ? (
-              <LPPLayer output_playback_id={outputPlaybackId} />
+              <LPPLayer 
+                output_playback_id={outputPlaybackId} 
+                onPlaybackStatusUpdate={onOutputPlaybackUpdate}
+              />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-muted-foreground">
                 Waiting for stream to start...

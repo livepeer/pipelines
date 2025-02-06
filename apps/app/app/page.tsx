@@ -8,12 +8,17 @@ import { useDreamshaper } from "@/components/welcome/featured/useDreamshaper";
 const App = (): ReactElement => {
   // Temporarily always show the interstitial for development
   const [showInterstitial, setShowInterstitial] = useState(true);
+  const [isOutputPlaying, setIsOutputPlaying] = useState(false);
   const dreamshaperState = useDreamshaper();
   const { stream, outputPlaybackId, handleUpdate, loading } = dreamshaperState;
 
   const handleReady = () => {
-    console.log("Interstitial dismissed via GET STARTED");
-    setShowInterstitial(false);
+    if (isOutputPlaying) {
+      console.log("Interstitial dismissed via GET STARTED");
+      setShowInterstitial(false);
+    } else {
+      console.log("Waiting for output video to start playing before dismissing");
+    }
   };
 
   const handlePromptApply = (prompt: string) => {
@@ -43,7 +48,10 @@ const App = (): ReactElement => {
         />
       )}
 
-      <Dreamshaper {...dreamshaperState} />
+      <Dreamshaper 
+        {...dreamshaperState} 
+        onOutputPlaybackUpdate={setIsOutputPlaying}
+      />
       <ClientSideTracker eventName="home_page_view" />
     </div>
   );
