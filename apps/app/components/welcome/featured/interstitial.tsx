@@ -190,13 +190,19 @@ const Interstitial: React.FC<InterstitialProps> = ({
 
   useEffect(() => {
     if (streamStatus === "ONLINE" && !redirected) {
-      console.log("[Interstitial] Stream status is ONLINE");
+      console.log("[Interstitial] Stream status is ONLINE, waiting 30 seconds before redirect");
       if (selectedPrompt && onPromptApply) {
         console.log("[Interstitial] Applying selected prompt:", selectedPrompt);
         onPromptApply(selectedPrompt);
       }
-      setRedirected(true);
-      onReady();
+      
+      // Add 30 second delay before redirect
+      const redirectTimeout = setTimeout(() => {
+        setRedirected(true);
+        onReady();
+      }, 30000);
+
+      return () => clearTimeout(redirectTimeout);
     }
   }, [streamStatus, redirected, selectedPrompt, onPromptApply, onReady]);
 
@@ -232,6 +238,15 @@ const Interstitial: React.FC<InterstitialProps> = ({
       x: direction < 0 ? 1000 : -1000,
       opacity: 0,
     }),
+  };
+
+  const getStatusMessage = () => {
+    if (streamStatus && streamStatus !== "OFFLINE") {
+      return "Stream is now active and being processed. You will be automatically redirected in a moment.";
+    }
+    return busy
+      ? "Our services are busy, please hold on. Your stream is still being prepared."
+      : "We are preparing your experience. This may take up to 45 seconds. You will be automatically redirected when the stream is ready.";
   };
 
   return (
@@ -314,9 +329,7 @@ const Interstitial: React.FC<InterstitialProps> = ({
               ) : (
                 <div className="mt-4 text-center">
                   <p className="text-sm text-muted-foreground">
-                    {busy
-                      ? "Our services are busy, please hold on. Your stream is still being prepared."
-                      : "We are preparing your experience. This may take up to 45 seconds. You will be automatically redirected when the stream is ready."}
+                    {getStatusMessage()}
                   </p>
                   {streamId && (
                     <div className="mt-2">
@@ -329,13 +342,8 @@ const Interstitial: React.FC<InterstitialProps> = ({
                       )}
                     </div>
                   )}
-                  <div className="mt-4 flex flex-col items-center justify-center space-y-4">
+                  <div className="mt-4 flex flex-col items-center justify-center">
                     <Loader2 className="w-8 h-8 animate-spin" />
-                    {streamStatus === "ONLINE" && (
-                      <Button variant="default" onClick={onReady}>
-                        GET STARTED
-                      </Button>
-                    )}
                   </div>
                 </div>
               )}

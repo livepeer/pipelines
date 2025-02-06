@@ -142,7 +142,6 @@ export default function Dreamshaper({
             ) : outputPlaybackId ? (
               <LPPLayer 
                 output_playback_id={outputPlaybackId} 
-                onPlaybackStatusUpdate={onOutputPlaybackUpdate}
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-muted-foreground">
