@@ -60,8 +60,8 @@ export default function Dreamshaper({
 
   return (
     <div className="flex flex-col h-[calc(100vh-10rem)] overflow-hidden">
-      {/* Header section */}
-      <div className="flex-shrink-0 p-4">
+      {/* Header section - reduced padding */}
+      <div className="flex-shrink-0 p-3">
         <h1 className="text-2xl font-bold">Livepeer Pipelines</h1>
         <p className="text-muted-foreground">
           Transform your video in real-time with AI - and build your own
@@ -69,8 +69,8 @@ export default function Dreamshaper({
         </p>
       </div>
 
-      {/* Top section with prompt input */}
-      <div className="flex-shrink-0 flex items-center gap-4 px-4">
+      {/* Top section with prompt input - reduced padding */}
+      <div className="flex-shrink-0 flex items-center gap-4 px-4 mb-3">
         <div className="relative w-full">
           <div className="relative">
             <AnimatePresence mode="wait">
@@ -128,9 +128,9 @@ export default function Dreamshaper({
         </Tooltip>
       </div>
 
-      {/* Main content area */}
-      <div className="flex-1 min-h-0 p-4">
-        <div className="relative h-full">
+      {/* Main content area - adjusted for 16:9 aspect ratio */}
+      <div className="flex-1 min-h-0 p-4 flex items-center justify-center">
+        <div className="w-full max-w-[calc(min(100%,calc((100vh-20rem)*16/9)))] aspect-video bg-sidebar rounded-2xl relative">
           {loading ? (
             <div className="w-full h-full flex items-center justify-center">
               <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
