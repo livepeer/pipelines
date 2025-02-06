@@ -1,33 +1,29 @@
-import Modals from "@/components/modals";
-import Welcome from "@/components/welcome";
-import type { Metadata } from "next";
-import { type ReactElement, Suspense } from "react";
-import FeaturedPipelines from "@/components/welcome/featured";
-import { validateEnv } from "@/lib/env";
-import {validateServerEnv} from "@/lib/serverEnv";
+"use client";
 import ClientSideTracker from "@/components/analytics/ClientSideTracker";
+import Dreamshaper from "@/components/welcome/featured/dreamshaper";
+import Interstitial from "@/components/welcome/featured/interstitial";
+import { type ReactElement, useState } from "react";
 
-const App = async ({
-  searchParams,
-}: {
-  searchParams: { [key: string]: string | string[] | undefined };
-}): Promise<ReactElement> => {
-  validateEnv();
-  await validateServerEnv();
+const App = (): ReactElement => {
+  const [showInterstitial, setShowInterstitial] = useState(() => {
+    if (typeof window === "undefined") return false;
+    const hasSeenInterstitial = localStorage.getItem("hasSeenInterstitial");
+    console.log("localStorage", hasSeenInterstitial);
+    return !hasSeenInterstitial;
+  });
 
   return (
     <div>
-      <div className="flex-shrink-0">
-        <Suspense>
-          <Welcome />
-        </Suspense>
-      </div>
-      <div className="min-h-0 flex-grow">
-        <Suspense>
-          <FeaturedPipelines />
-        </Suspense>
-      </div>
-      <Modals searchParams={searchParams} />
+      {showInterstitial && (
+        <Interstitial
+          onReady={() => {
+            localStorage.setItem("hasSeenInterstitial", "true");
+            setShowInterstitial(false);
+          }}
+        />
+      )}
+
+      <Dreamshaper />
       <ClientSideTracker eventName="home_page_view" />
     </div>
   );
