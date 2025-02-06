@@ -157,7 +157,7 @@ export default function Dreamshaper({
           )}
         </div>
       ) : (
-        <div className="fixed bottom-4 right-4 w-64 h-64 shadow-lg">
+        <div className="absolute bottom-4 right-4 w-64 h-64 shadow-lg">
           {loading || !streamUrl ? (
             <div className="w-full h-full flex items-center justify-center bg-background rounded-md">
               <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
