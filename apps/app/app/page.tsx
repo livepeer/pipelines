@@ -22,9 +22,9 @@ const App = (): ReactElement => {
   };
 
   const handlePromptApply = (prompt: string) => {
-    console.log("Auto-applying selected prompt:", prompt);
+    console.log("Auto-applying selected prompt silently:", prompt);
     if (handleUpdate) {
-      handleUpdate(prompt);
+      handleUpdate(prompt, { silent: true });
     }
   };
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
   Camera,
@@ -13,7 +13,6 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useStreamStatus } from "@/hooks/useStreamStatus";
-import StreamStatusIndicator from "@/components/stream/stream-status-indicator";
 
 interface ExamplePrompt {
   prompt: string;
@@ -123,6 +122,7 @@ const Interstitial: React.FC<InterstitialProps> = ({
   const [timedOut, setTimedOut] = useState(false);
   const [busy, setBusy] = useState(false);
   const [selectedPrompt, setSelectedPrompt] = useState<string | null>(null);
+  const redirectTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (streamId) {
@@ -190,19 +190,20 @@ const Interstitial: React.FC<InterstitialProps> = ({
 
   useEffect(() => {
     if ((streamStatus === "ONLINE" || streamStatus === "DEGRADED_INFERENCE") && !redirected) {
-      console.log("[Interstitial] Stream status is ONLINE, waiting 30 seconds before redirect");
-      if (selectedPrompt && onPromptApply) {
-        console.log("[Interstitial] Applying selected prompt:", selectedPrompt);
-        onPromptApply(selectedPrompt);
+      if (!redirectTimerRef.current) {
+        console.log("[Interstitial] Stream status is ONLINE, waiting 30 seconds before redirect");
+        redirectTimerRef.current = setTimeout(() => {
+          if (selectedPrompt && onPromptApply) {
+            console.log("[Interstitial] Applying selected prompt:", selectedPrompt);
+            onPromptApply(selectedPrompt);
+          }
+          setRedirected(true);
+          onReady();
+        }, 30000);
       }
-      
-      // Add 30 second delay before redirect
-      const redirectTimeout = setTimeout(() => {
-        setRedirected(true);
-        onReady();
-      }, 30000);
-
-      return () => clearTimeout(redirectTimeout);
+    } else if (redirectTimerRef.current) {
+      clearTimeout(redirectTimerRef.current);
+      redirectTimerRef.current = null;
     }
   }, [streamStatus, redirected, selectedPrompt, onPromptApply, onReady]);
 
@@ -339,11 +340,8 @@ const Interstitial: React.FC<InterstitialProps> = ({
                       : "We are preparing your experience. This may take up to 45 seconds. You will be automatically redirected when the stream is ready."}
                   </p>
                   {streamId && (
-                    <div className="mt-2">
-                      <p className="text-xs text-muted-foreground">
-                        {getStatusMessage()}
-                      </p>
-                      <StreamStatusIndicator streamId={streamId} />
+                    <div className="mt-2 text-xs text-muted-foreground">
+                      {getStatusMessage()}
                     </div>
                   )}
                   <div className="mt-4 flex flex-col items-center justify-center">

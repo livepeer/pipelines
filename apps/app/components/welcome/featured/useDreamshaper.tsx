@@ -36,6 +36,10 @@ const processInputValues = (inputValues: any) => {
   );
 };
 
+interface UpdateOptions {
+  silent?: boolean;
+}
+
 export function useDreamshaper() {
   const { user } = usePrivy();
 
@@ -79,24 +83,32 @@ export function useDreamshaper() {
   }, []);
 
   const handleUpdate = useCallback(
-    async (prompt: string) => {
+    async (prompt: string, options?: UpdateOptions) => {
       if (!stream) {
-        toast.error("No stream found");
+        if (!options?.silent) {
+          toast.error("No stream found");
+        }
         return;
       }
 
       const streamId = stream.id;
       const streamKey = stream.stream_key;
-      toast.loading("Updating the stream with prompt...");
-      const { data, error } = await getStream(streamId);
+      if (!options?.silent) {
+        toast.loading("Updating the stream with prompt...");
+      }
 
+      const { data, error } = await getStream(streamId);
       if (error) {
-        toast.error("Error updating parameters");
+        if (!options?.silent) {
+          toast.error("Error updating parameters");
+        }
         return;
       }
 
       if (!data?.gateway_host) {
-        toast("No gateway host found");
+        if (!options?.silent) {
+          toast("No gateway host found");
+        }
         return;
       }
 
@@ -112,13 +124,15 @@ export function useDreamshaper() {
         streamKey: streamKey as string,
       });
 
-      if (response.status == 200 || response.status == 201) {
-        toast.success("Stream updated successfully");
-      } else {
-        toast.error("Error updating stream with prompt");
+      if (!options?.silent) {
+        if (response.status == 200 || response.status == 201) {
+          toast.success("Stream updated successfully");
+        } else {
+          toast.error("Error updating stream with prompt");
+        }
       }
     },
-    [stream]
+    [stream, inputValues]
   );
 
   return {
