@@ -60,7 +60,7 @@ export default function Dreamshaper({
 
   return (
     <div className="flex flex-col h-[calc(100vh-10rem)] overflow-hidden">
-      {/* Header section - reduced padding */}
+      {/* Header section */}
       <div className="flex-shrink-0 p-3">
         <h1 className="text-2xl font-bold">Livepeer Pipelines</h1>
         <p className="text-muted-foreground">
@@ -69,26 +69,25 @@ export default function Dreamshaper({
         </p>
       </div>
 
-      {/* Top section with prompt input - reduced padding */}
-      <div className="flex-shrink-0 flex items-center gap-4 px-4 mb-3">
-        <div className="relative w-full">
-          <div className="relative">
-            <AnimatePresence mode="wait">
-              {!inputValue && (
-                <motion.span
-                  key={currentPromptIndex}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 0.5, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.3 }}
-                  className="h-9 absolute left-3 top-[0.35rem] -translate-y-1/2 text-muted-foreground pointer-events-none"
-                >
-                  {samplePrompts[currentPromptIndex]}
-                </motion.span>
-              )}
-            </AnimatePresence>
+      <div className="flex-shrink-0 flex items-center gap-4 px-4 h-[42px]">
+        <div className="relative flex-1">
+          <AnimatePresence mode="wait">
+            {!inputValue && (
+              <motion.span
+                key={currentPromptIndex}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 0.5, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3 }}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
+              >
+                {samplePrompts[currentPromptIndex]}
+              </motion.span>
+            )}
+          </AnimatePresence>
+          <div className="flex w-full items-center gap-2">
             <Input
-              className="w-full pr-[140px]"
+              className="w-full"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={(e) => {
@@ -99,12 +98,7 @@ export default function Dreamshaper({
             />
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button
-                  className="absolute right-0 top-1/2 -translate-y-1/2"
-                  onClick={submitPrompt}
-                >
-                  Apply
-                </Button>
+                <Button onClick={submitPrompt}>Apply</Button>
               </TooltipTrigger>
               <TooltipContent>
                 {isMac ? "⌘ + Enter" : "Ctrl + Enter"}
@@ -117,10 +111,10 @@ export default function Dreamshaper({
             <Link
               href="https://pipelines.livepeer.org/docs/knowledge-base/get-started/what-is-pipeline"
               target="_blank"
-              className="hidden md:flex"
+              className="hidden md:block"
             >
-              <Button variant="outline" className="hidden md:flex">
-                <span>Build your own pipeline</span>
+              <Button variant="outline">
+                Build your own pipeline
               </Button>
             </Link>
           </TooltipTrigger>
@@ -128,7 +122,7 @@ export default function Dreamshaper({
         </Tooltip>
       </div>
 
-      {/* Main content area - adjusted for 16:9 aspect ratio */}
+      {/* Main content area */}
       <div className="flex-1 min-h-0 p-4 flex items-center justify-center">
         <div className="w-full max-w-[calc(min(100%,calc((100vh-20rem)*16/9)))] aspect-video bg-sidebar rounded-2xl relative">
           {loading ? (
@@ -157,7 +151,7 @@ export default function Dreamshaper({
           )}
         </div>
       ) : (
-        <div className="absolute bottom-4 right-4 w-64 h-64 shadow-lg">
+        <div className="absolute bottom-4 right-4 w-64 h-32 shadow-lg">
           {loading || !streamUrl ? (
             <div className="w-full h-full flex items-center justify-center bg-background rounded-md">
               <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
