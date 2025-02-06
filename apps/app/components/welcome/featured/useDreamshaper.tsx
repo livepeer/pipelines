@@ -68,6 +68,7 @@ export function useDreamshaper() {
           return;
         }
         setStream(stream);
+        console.log("useDreamshaper: Stream created with id:", stream.id);
       } catch (error) {
         console.error(error);
       } finally {
