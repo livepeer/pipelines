@@ -11,18 +11,14 @@ const App = (): ReactElement => {
   const { stream, outputPlaybackId, handleUpdate, loading } = useDreamshaper();
 
   const handleReady = () => {
-    // Your logic to dismiss the interstitial (e.g., hide it from view)
     console.log("Interstitial dismissed via GET STARTED");
     setShowInterstitial(false);
   };
 
   const handlePromptApply = (prompt: string) => {
-    // When a prompt is selected, apply it to your prompt textbox and trigger your update
     console.log("Auto-applying selected prompt:", prompt);
-    // You might set state in your parent component or call the handleUpdate function here.
   };
 
-  // Only render the Interstitial once we have a valid stream
   if (loading || !stream) {
     return (
       <div className="flex items-center justify-center h-full">
@@ -42,7 +38,11 @@ const App = (): ReactElement => {
         />
       )}
 
-      <Dreamshaper />
+      <Dreamshaper 
+        stream={stream} 
+        outputPlaybackId={outputPlaybackId}
+        handleUpdate={handleUpdate}
+      />
       <ClientSideTracker eventName="home_page_view" />
     </div>
   );

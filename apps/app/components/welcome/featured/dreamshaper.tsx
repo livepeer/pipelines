@@ -30,15 +30,19 @@ function usePrompts() {
   return { currentPromptIndex };
 }
 
-export default function Dreamshaper() {
+interface DreamshaperProps {
+  stream: any;
+  outputPlaybackId: string;
+  handleUpdate: (prompt: string) => void;
+}
+
+export default function Dreamshaper({ stream, outputPlaybackId, handleUpdate }: DreamshaperProps) {
   const isMac =
     typeof navigator !== "undefined"
       ? (navigator.userAgent?.includes("Mac") ?? false)
       : false;
   const { currentPromptIndex } = usePrompts();
   const [inputValue, setInputValue] = useState("");
-  const { outputPlaybackId, streamUrl, handleUpdate, loading } =
-    useDreamshaper();
 
   const submitPrompt = () => {
     if (inputValue) {
@@ -123,11 +127,7 @@ export default function Dreamshaper() {
       <div className="flex-1 min-h-0">
         <div className="w-full h-full">
           <div className="w-full h-full">
-            {loading ? (
-              <div className="w-full h-full flex items-center justify-center">
-                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-              </div>
-            ) : outputPlaybackId ? (
+            {outputPlaybackId ? (
               <LPPLayer output_playback_id={outputPlaybackId} />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-muted-foreground">
@@ -137,12 +137,12 @@ export default function Dreamshaper() {
           </div>
 
           <div className="md:absolute md:bottom-6 md:right-12 md:w-1/5 md:bg-sidebar overflow-hidden rounded-lg shadow-lg w-full">
-            {loading || !streamUrl ? (
+            {outputPlaybackId ? (
+              <BroadcastWithControls ingestUrl={stream.streamUrl} />
+            ) : (
               <div className="w-full h-full flex items-center justify-center">
                 <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
               </div>
-            ) : (
-              <BroadcastWithControls ingestUrl={streamUrl} />
             )}
           </div>
         </div>
