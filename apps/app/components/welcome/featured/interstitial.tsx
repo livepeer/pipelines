@@ -189,7 +189,7 @@ const Interstitial: React.FC<InterstitialProps> = ({
   const handleBack = () => setCurrentScreen("camera");
 
   useEffect(() => {
-    if (streamStatus === "ONLINE" && !redirected) {
+    if ((streamStatus === "ONLINE" || streamStatus === "DEGRADED_INFERENCE") && !redirected) {
       console.log("[Interstitial] Stream status is ONLINE, waiting 30 seconds before redirect");
       if (selectedPrompt && onPromptApply) {
         console.log("[Interstitial] Applying selected prompt:", selectedPrompt);
@@ -241,8 +241,13 @@ const Interstitial: React.FC<InterstitialProps> = ({
   };
 
   const getStatusMessage = () => {
-    if (streamStatus && streamStatus !== "OFFLINE") {
-      return "Stream is now active and being processed. You will be automatically redirected in a moment.";
+    if (statusLoading) {
+      return streamStatus && streamStatus !== "OFFLINE" 
+        ? "Stream is now active and being processed. You will be automatically redirected in a moment."
+        : "Stream is getting started, please wait...";
+    }
+    if (statusError) {
+      return "Error retrieving status";
     }
     return busy
       ? "Our services are busy, please hold on. Your stream is still being prepared."
@@ -329,17 +334,16 @@ const Interstitial: React.FC<InterstitialProps> = ({
               ) : (
                 <div className="mt-4 text-center">
                   <p className="text-sm text-muted-foreground">
-                    {getStatusMessage()}
+                    {busy
+                      ? "Our services are busy, please hold on. Your stream is still being prepared."
+                      : "We are preparing your experience. This may take up to 45 seconds. You will be automatically redirected when the stream is ready."}
                   </p>
                   {streamId && (
                     <div className="mt-2">
-                      {statusLoading ? (
-                        <p className="text-xs text-muted-foreground">Checking stream status...</p>
-                      ) : statusError ? (
-                        <p className="text-xs text-destructive">Error retrieving status</p>
-                      ) : (
-                        <StreamStatusIndicator streamId={streamId} />
-                      )}
+                      <p className="text-xs text-muted-foreground">
+                        {getStatusMessage()}
+                      </p>
+                      <StreamStatusIndicator streamId={streamId} />
                     </div>
                   )}
                   <div className="mt-4 flex flex-col items-center justify-center">
