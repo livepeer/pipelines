@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from 'react';
 const BASE_POLLING_INTERVAL = 5000;
 const MAX_BACKOFF_INTERVAL = 120000;
 
-export const useStreamStatus = (streamId: string) => {
+export const useStreamStatus = (streamId: string, requireUser: boolean = true) => {
     const { ready, user } = usePrivy();
     const [status, setStatus] = useState<string | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
@@ -13,7 +13,11 @@ export const useStreamStatus = (streamId: string) => {
     const intervalIdRef = useRef<NodeJS.Timeout | null>(null);
 
     useEffect(() => {
-        if (!ready || !user) return;
+        
+        if (!ready || (requireUser && !user)) {
+            console.log("[useStreamStatus] Not ready or user required but not detected, aborting status fetch.");
+            return;
+        }
 
         const fetchStatus = async () => {
             try {
@@ -33,19 +37,18 @@ export const useStreamStatus = (streamId: string) => {
                     triggerError(error ?? "No stream data returned from API");
                     return;
                 }
-
                 setStatus(data?.state);
                 setError(null);
                 failureCountRef.current = 0;
                 resetPollingInterval();
             } catch (err: any) {
                 triggerError(err.message);
-            } finally {
                 setLoading(false);
             }
         };
 
         const triggerError = (errorMsg: string) => {
+            console.log("[useStreamStatus] Error:", errorMsg);
             setError(errorMsg);
             failureCountRef.current += 1;
             adjustPollingInterval();
@@ -77,7 +80,7 @@ export const useStreamStatus = (streamId: string) => {
                 clearInterval(intervalIdRef.current);
             }
         };
-    }, [streamId, ready, user]);
+    }, [streamId, ready, user, requireUser]);
 
     return { status, loading, error };
 };

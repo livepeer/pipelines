@@ -1,34 +1,46 @@
-import Modals from "@/components/modals";
-import Welcome from "@/components/welcome";
-import type { Metadata } from "next";
-import { type ReactElement, Suspense } from "react";
-import FeaturedPipelines from "@/components/welcome/featured";
-import { validateEnv } from "@/lib/env";
-import {validateServerEnv} from "@/lib/serverEnv";
+"use client";
 import ClientSideTracker from "@/components/analytics/ClientSideTracker";
+import Dreamshaper from "@/components/welcome/featured/dreamshaper";
+import Interstitial from "@/components/welcome/featured/interstitial";
+import { ReactElement, useState, useEffect } from "react";
+import { useDreamshaper } from "@/components/welcome/featured/useDreamshaper";
 
-const App = async ({
-  searchParams,
-}: {
-  searchParams: { [key: string]: string | string[] | undefined };
-}): Promise<ReactElement> => {
-  validateEnv();
-  await validateServerEnv();
+const App = (): ReactElement => {
+  const [showInterstitial, setShowInterstitial] = useState(false);
+  const dreamshaperState = useDreamshaper();
+  const { stream, outputPlaybackId, handleUpdate, loading } = dreamshaperState;
+
+  useEffect(() => {
+    const hasVisited = localStorage.getItem('hasSeenLandingPage');
+    if (!hasVisited) {
+      setShowInterstitial(true);
+      localStorage.setItem('hasSeenLandingPage', 'true');
+    }
+  }, []);
+
+  const handleReady = () => {
+    setShowInterstitial(false);
+  };
+
+  const handlePromptApply = (prompt: string) => {
+    console.log("Auto-applying selected prompt silently:", prompt);
+    if (handleUpdate) {
+      handleUpdate(prompt, { silent: true });
+    }
+  };
 
   return (
-    <div>
-      <div className="flex-shrink-0">
-        <Suspense>
-          <Welcome />
-        </Suspense>
-      </div>
-      <div className="min-h-0 flex-grow">
-        <Suspense>
-          <FeaturedPipelines />
-        </Suspense>
-      </div>
-      <Modals searchParams={searchParams} />
+    <div className="relative">
+      <Dreamshaper {...dreamshaperState} />
       <ClientSideTracker eventName="home_page_view" />
+      {showInterstitial && (
+        <Interstitial
+          streamId={stream?.id}
+          outputPlaybackId={outputPlaybackId}
+          onReady={handleReady}
+          onPromptApply={handlePromptApply}
+        />
+      )}
     </div>
   );
 };
