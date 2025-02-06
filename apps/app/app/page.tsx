@@ -5,19 +5,14 @@ import Interstitial from "@/components/welcome/featured/interstitial";
 import { type ReactElement, useState } from "react";
 
 const App = (): ReactElement => {
-  const [showInterstitial, setShowInterstitial] = useState(() => {
-    if (typeof window === "undefined") return false;
-    const hasSeenInterstitial = localStorage.getItem("hasSeenInterstitial");
-    console.log("localStorage", hasSeenInterstitial);
-    return !hasSeenInterstitial;
-  });
+  // Temporarily always show the interstitial for development
+  const [showInterstitial, setShowInterstitial] = useState(true);
 
   return (
     <div>
       {showInterstitial && (
         <Interstitial
           onReady={() => {
-            localStorage.setItem("hasSeenInterstitial", "true");
             setShowInterstitial(false);
           }}
         />

@@ -9,6 +9,7 @@ import {
   ArrowRight,
   XCircle,
   ChevronLeft,
+  Loader2,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -58,7 +59,7 @@ const steps: Step[] = [
 
 interface SlideProps {
   keyName: string;
-  slideVariants: any; // You can define a more specific type if needed
+  slideVariants: any; 
   children: React.ReactNode;
   flipDirection?: boolean;
 }
@@ -101,7 +102,7 @@ interface ExamplePromptProps {
 }
 
 const ExamplePromptComponent: React.FC<ExamplePromptProps> = ({ example }) => (
-  <div className="p-4 rounded-lg border bg-card hover:border-primary/50 transition-colors cursor-pointer">
+  <div className="p-4 rounded-lg border bg-card transition-colors cursor-default">
     <p className="font-medium">{example.prompt}</p>
     <p className="text-sm text-muted-foreground">{example.description}</p>
   </div>
@@ -110,23 +111,22 @@ const ExamplePromptComponent: React.FC<ExamplePromptProps> = ({ example }) => (
 interface InterstitialProps {
   onReady?: () => void;
   onCameraPermissionGranted?: () => void;
+  outputPlaybackId?: string;
 }
 
 const Interstitial: React.FC<InterstitialProps> = ({
   onReady = () => {},
   onCameraPermissionGranted = useCallback(() => {}, []),
+  outputPlaybackId,
 }) => {
-  const [cameraPermission, setCameraPermission] = useState<
-    "prompt" | "granted" | "denied"
-  >("prompt");
-  const [currentScreen, setCurrentScreen] = useState<"camera" | "prompts">(
-    "camera"
-  );
+  const [cameraPermission, setCameraPermission] = useState<"prompt" | "granted" | "denied">("prompt");
+  const [currentScreen, setCurrentScreen] = useState<"camera" | "prompts">("camera");
+  const [redirected, setRedirected] = useState(false);
+  const [timedOut, setTimedOut] = useState(false);
 
   useEffect(() => {
     const triggerCamera = async () => {
       try {
-        // First check if we can query permissions
         if ("permissions" in navigator) {
           const permissionStatus = await navigator.permissions.query({
             name: "camera" as PermissionName,
@@ -143,8 +143,6 @@ const Interstitial: React.FC<InterstitialProps> = ({
           }
         }
 
-        // Fallback to getUserMedia if permissions API is not available
-        // or if permission state is 'prompt'
         const stream = await navigator.mediaDevices.getUserMedia({
           video: true,
         });
@@ -175,8 +173,22 @@ const Interstitial: React.FC<InterstitialProps> = ({
   };
 
   const handleBack = () => setCurrentScreen("camera");
-  const handleGetStarted = () => onReady();
-  const onSkip = () => setCurrentScreen("prompts");
+
+  useEffect(() => {
+    if (outputPlaybackId && !redirected) {
+      setRedirected(true);
+      onReady();
+    }
+  }, [outputPlaybackId, redirected, onReady]);
+
+  useEffect(() => {
+    if (currentScreen === "prompts") {
+      const timeoutId = setTimeout(() => {
+        setTimedOut(true);
+      }, 90000);
+      return () => clearTimeout(timeoutId);
+    }
+  }, [currentScreen]);
 
   const slideVariants = {
     enter: (direction: number) => ({
@@ -224,7 +236,7 @@ const Interstitial: React.FC<InterstitialProps> = ({
                   Camera access denied. Please enable in browser settings.
                 </div>
               )}
-              <Button variant="ghost" onClick={onSkip}>
+              <Button variant="ghost" onClick={() => setCurrentScreen("prompts")}>
                 Skip for now
               </Button>
             </div>
@@ -242,15 +254,33 @@ const Interstitial: React.FC<InterstitialProps> = ({
                 <ExamplePromptComponent key={i} example={example} />
               ))}
             </div>
-            <div className="flex justify-between">
-              <Button variant="ghost" onClick={handleBack} className="gap-2">
-                <ChevronLeft className="h-4 w-4" />
-                Back
-              </Button>
-              <Button onClick={handleGetStarted} className="gap-2">
-                Get Started
-                <ArrowRight className="h-4 w-4" />
-              </Button>
+            <div className="mt-4">
+              <div className="flex justify-start">
+                <Button variant="ghost" onClick={handleBack} className="gap-2">
+                  <ChevronLeft className="h-4 w-4" />
+                  Back
+                </Button>
+              </div>
+              {timedOut ? (
+                <div className="mt-4 flex flex-col items-center">
+                  <div className="text-sm text-destructive mb-2">
+                    Something went wrong or we are currently at full capacity.
+                  </div>
+                  <Button variant="default" onClick={() => { window.location.href = "/explore"; }}>
+                    Watch a Demo video
+                  </Button>
+                </div>
+              ) : (
+                <div className="mt-4 text-center">
+                  <p className="text-sm text-muted-foreground">
+                    We are preparing your experience. This may take up to 45 seconds.
+                    You will be automatically redirected when the stream is ready.
+                  </p>
+                  <div className="mt-4 flex justify-center">
+                    <Loader2 className="w-8 h-8 animate-spin" />
+                  </div>
+                </div>
+              )}
             </div>
           </Slide>
         )}
