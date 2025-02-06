@@ -60,17 +60,12 @@ const steps: Step[] = [
 
 interface SlideProps {
   keyName: string;
-  slideVariants: any; 
+  slideVariants: any;
   children: React.ReactNode;
   flipDirection?: boolean;
 }
 
-const Slide: React.FC<SlideProps> = ({
-  keyName,
-  children,
-  slideVariants,
-  flipDirection,
-}) => (
+const Slide: React.FC<SlideProps> = ({ keyName, children, slideVariants }) => (
   <motion.div
     key={keyName}
     initial="enter"
@@ -84,26 +79,23 @@ const Slide: React.FC<SlideProps> = ({
   </motion.div>
 );
 
-interface StepProps {
-  step: Step;
-}
-
-const StepComponent: React.FC<StepProps> = ({ step }) => (
-  <div className="flex flex-col items-center text-center space-y-2 p-4">
-    <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-      <step.icon className="h-6 w-6 text-primary" />
-    </div>
-    <h3 className="font-medium">{step.title}</h3>
-    <p className="text-sm text-muted-foreground">{step.description}</p>
-  </div>
-);
-
-interface ExamplePromptProps {
+interface ExamplePromptComponentProps {
   example: ExamplePrompt;
+  selected: boolean;
+  onSelect: () => void;
 }
 
-const ExamplePromptComponent: React.FC<ExamplePromptProps> = ({ example }) => (
-  <div className="p-4 rounded-lg border bg-card transition-colors cursor-default">
+const ExamplePromptComponent: React.FC<ExamplePromptComponentProps> = ({ example, selected, onSelect }) => (
+  <div
+    onClick={onSelect}
+    onKeyDown={(e) => {
+      if (e.key === "Enter") onSelect();
+    }}
+    tabIndex={0}
+    className={`p-4 rounded-lg border bg-card cursor-pointer outline-none focus:ring-2 ${
+      selected ? "border-blue-500" : "border-gray-300"
+    }`}
+  >
     <p className="font-medium">{example.prompt}</p>
     <p className="text-sm text-muted-foreground">{example.description}</p>
   </div>
@@ -114,6 +106,7 @@ interface InterstitialProps {
   onCameraPermissionGranted?: () => void;
   outputPlaybackId?: string;
   streamId?: string;
+  onPromptApply?: (prompt: string) => void;
 }
 
 const Interstitial: React.FC<InterstitialProps> = ({
@@ -121,14 +114,31 @@ const Interstitial: React.FC<InterstitialProps> = ({
   onCameraPermissionGranted = useCallback(() => {}, []),
   outputPlaybackId,
   streamId,
+  onPromptApply,
 }) => {
   const [cameraPermission, setCameraPermission] = useState<"prompt" | "granted" | "denied">("prompt");
   const [currentScreen, setCurrentScreen] = useState<"camera" | "prompts">("camera");
   const [redirected, setRedirected] = useState(false);
   const [timedOut, setTimedOut] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [selectedPrompt, setSelectedPrompt] = useState<string | null>(null);
 
+  // Log when the streamId is available.
+  useEffect(() => {
+    if (streamId) {
+      console.log("[Interstitial] streamId provided:", streamId);
+    } else {
+      console.log("[Interstitial] No streamId provided");
+    }
+  }, [streamId]);
+
+  // Poll the stream status using the provided streamId (if available)
   const { status: streamStatus, loading: statusLoading, error: statusError } = useStreamStatus(streamId || "");
+
+  // Log any update from the status hook
+  useEffect(() => {
+    console.log("[Interstitial] useStreamStatus update:", { streamStatus, statusLoading, statusError });
+  }, [streamStatus, statusLoading, statusError]);
 
   useEffect(() => {
     const triggerCamera = async () => {
@@ -180,17 +190,27 @@ const Interstitial: React.FC<InterstitialProps> = ({
 
   const handleBack = () => setCurrentScreen("camera");
 
+  // When the stream is ready, log information and hide the interstitial via onReady.
   useEffect(() => {
     if (outputPlaybackId && !redirected) {
+      console.log("[Interstitial] Stream is ready with playback ID:", outputPlaybackId);
+      if (selectedPrompt && onPromptApply) {
+        console.log("[Interstitial] Applying selected prompt:", selectedPrompt);
+        onPromptApply(selectedPrompt);
+      }
       setRedirected(true);
       onReady();
     }
-  }, [outputPlaybackId, redirected, onReady]);
+  }, [outputPlaybackId, redirected, selectedPrompt, onPromptApply, onReady]);
 
   useEffect(() => {
     if (currentScreen === "prompts") {
-      const busyTimeout = setTimeout(() => setBusy(true), 45000);
+      const busyTimeout = setTimeout(() => {
+        console.log("[Interstitial] Busy timeout reached (45 sec).");
+        setBusy(true);
+      }, 45000);
       const finalTimeout = setTimeout(() => {
+        console.log("[Interstitial] Final timeout reached (180 sec).");
         setTimedOut(true);
       }, 180000);
       return () => {
@@ -230,7 +250,13 @@ const Interstitial: React.FC<InterstitialProps> = ({
             </div>
             <div className="grid md:grid-cols-3 gap-6">
               {steps.map((step, i) => (
-                <StepComponent key={i} step={step} />
+                <div key={i} className="flex flex-col items-center text-center space-y-2 p-4 rounded-lg border bg-card cursor-default">
+                  <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+                    <step.icon className="h-6 w-6 text-primary" />
+                  </div>
+                  <h3 className="font-medium">{step.title}</h3>
+                  <p className="text-sm text-muted-foreground">{step.description}</p>
+                </div>
               ))}
             </div>
             <div className="flex flex-col items-center gap-4">
@@ -261,7 +287,15 @@ const Interstitial: React.FC<InterstitialProps> = ({
             </div>
             <div className="grid md:grid-cols-3 gap-4">
               {examplePrompts.map((example, i) => (
-                <ExamplePromptComponent key={i} example={example} />
+                <ExamplePromptComponent
+                  key={i}
+                  example={example}
+                  selected={selectedPrompt === example.prompt}
+                  onSelect={() => {
+                    console.log("[Interstitial] Selected prompt:", example.prompt);
+                    setSelectedPrompt(example.prompt);
+                  }}
+                />
               ))}
             </div>
             <div className="mt-4">
@@ -290,13 +324,9 @@ const Interstitial: React.FC<InterstitialProps> = ({
                   {streamId && (
                     <div className="mt-2">
                       {statusLoading ? (
-                        <p className="text-xs text-muted-foreground">
-                          Checking stream status...
-                        </p>
+                        <p className="text-xs text-muted-foreground">Checking stream status...</p>
                       ) : statusError ? (
-                        <p className="text-xs text-destructive">
-                          Error retrieving status
-                        </p>
+                        <p className="text-xs text-destructive">Error retrieving status</p>
                       ) : (
                         <p className="text-xs text-muted-foreground">
                           Current stream status: {streamStatus || "Unknown"}
@@ -304,8 +334,11 @@ const Interstitial: React.FC<InterstitialProps> = ({
                       )}
                     </div>
                   )}
-                  <div className="mt-4 flex justify-center">
+                  <div className="mt-4 flex flex-col items-center justify-center space-y-4">
                     <Loader2 className="w-8 h-8 animate-spin" />
+                    <Button variant="default" onClick={onReady}>
+                      GET STARTED
+                    </Button>
                   </div>
                 </div>
               )}
