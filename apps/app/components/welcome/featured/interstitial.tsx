@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useStreamStatus } from "@/hooks/useStreamStatus";
+import StreamStatusIndicator from "@/components/stream/stream-status-indicator";
 
 interface ExamplePrompt {
   prompt: string;
@@ -123,7 +124,6 @@ const Interstitial: React.FC<InterstitialProps> = ({
   const [busy, setBusy] = useState(false);
   const [selectedPrompt, setSelectedPrompt] = useState<string | null>(null);
 
-  // Log when the streamId is available.
   useEffect(() => {
     if (streamId) {
       console.log("[Interstitial] streamId provided:", streamId);
@@ -132,10 +132,8 @@ const Interstitial: React.FC<InterstitialProps> = ({
     }
   }, [streamId]);
 
-  // Poll the stream status using the provided streamId (if available)
   const { status: streamStatus, loading: statusLoading, error: statusError } = useStreamStatus(streamId || "");
 
-  // Log any update from the status hook
   useEffect(() => {
     console.log("[Interstitial] useStreamStatus update:", { streamStatus, statusLoading, statusError });
   }, [streamStatus, statusLoading, statusError]);
@@ -190,7 +188,6 @@ const Interstitial: React.FC<InterstitialProps> = ({
 
   const handleBack = () => setCurrentScreen("camera");
 
-  // When the stream is ready, log information and hide the interstitial via onReady.
   useEffect(() => {
     if (streamStatus === "ONLINE" && !redirected) {
       console.log("[Interstitial] Stream status is ONLINE");
@@ -328,9 +325,7 @@ const Interstitial: React.FC<InterstitialProps> = ({
                       ) : statusError ? (
                         <p className="text-xs text-destructive">Error retrieving status</p>
                       ) : (
-                        <p className="text-xs text-muted-foreground">
-                          Current stream status: {streamStatus || "Unknown"}
-                        </p>
+                        <StreamStatusIndicator streamId={streamId} />
                       )}
                     </div>
                   )}
