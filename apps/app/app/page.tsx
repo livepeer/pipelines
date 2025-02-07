@@ -34,6 +34,17 @@ const App = (): ReactElement => {
     }
   }, [authenticated]);
 
+  // Debug event listener to trigger the timeout manually.
+  useEffect(() => {
+    const debugHandler = () => {
+      console.log("Debug: Triggering manual stream timeout");
+      setStreamKilled(true);
+      setShowInterstitial(true);
+    };
+    window.addEventListener("triggerTimeoutDebug", debugHandler);
+    return () => window.removeEventListener("triggerTimeoutDebug", debugHandler);
+  }, []);
+
   const handleReady = () => {
     setShowInterstitial(false);
     setStreamKilled(false);

@@ -61,7 +61,7 @@ export default function Dreamshaper({
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-10rem)] overflow-hidden">
+    <div className="relative flex flex-col h-[calc(100vh-10rem)] overflow-hidden">
       {/* Header section */}
       <div className="flex-shrink-0 p-3">
         <h1 className="text-2xl font-bold">Livepeer Pipelines</h1>
@@ -166,6 +166,18 @@ export default function Dreamshaper({
           ) : (
             <BroadcastWithControls ingestUrl={streamUrl} />
           )}
+        </div>
+      )}
+
+      {/* Debug button (only shown in development) */}
+      {process.env.NODE_ENV === "development" && (
+        <div className="absolute top-2 right-2 z-50">
+          <Button
+            variant="destructive"
+            onClick={() => window.dispatchEvent(new CustomEvent("triggerTimeoutDebug"))}
+          >
+            Debug: Trigger Timeout
+          </Button>
         </div>
       )}
     </div>
