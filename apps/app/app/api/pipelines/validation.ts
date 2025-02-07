@@ -91,7 +91,7 @@ export async function triggerSmokeTest(streamKey: string) {
     console.log("Skipping smoke test trigger in development environment (NEXT_PUBLIC_ENV=dev)");
     return;
   }
-
+  
   const { gateway } = await serverConfig();
   const gatewayUrl = gateway.url;
   const username = gateway.userId;

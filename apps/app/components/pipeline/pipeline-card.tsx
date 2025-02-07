@@ -223,10 +223,11 @@ export default function PipelineCard({
           <div>
             <Label>Options (one per line, format: label=value)</Label>
             <Textarea
+              key={`textarea-${index}`}
               rows={3}
-              value={parameter.optionsText || ""}
-              onChange={(e) => {
-                const text = e.target.value;
+              defaultValue={parameter.optionsText}
+              onInput={(e: React.FormEvent<HTMLTextAreaElement>) => {
+                const text = e.currentTarget.value;
                 const newOptions = text
                   .split("\n")
                   .filter((line) => line.trim() !== "")
