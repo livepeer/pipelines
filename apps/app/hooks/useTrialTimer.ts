@@ -32,7 +32,6 @@ export function useTrialTimer() {
           if (prev === null) return prev;
           const newTime = prev > 0 ? prev - 1 : 0;
           localStorage.setItem("unregistered_time_remaining", newTime.toString());
-          console.log(`Trial time remaining: ${Math.floor(newTime / 60)}:${(newTime % 60).toString().padStart(2, '0')}`);
           return newTime;
         });
       }, 1000);
