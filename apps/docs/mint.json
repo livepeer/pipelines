@@ -77,7 +77,9 @@
     {
       "group": "Getting Started",
       "pages": [
-        "technical/getting-started/install-comfystream"      ]
+        "technical/getting-started/install-comfystream",
+        "technical/getting-started/publish-pipeline"  
+       ]
     },
     {
       "group": "Custom Nodes",
@@ -94,7 +96,8 @@
       "group": "Reference",
       "pages": [
         "technical/reference/download-models",
-        "technical/reference/add-sd-loras"
+        "technical/reference/add-sd-loras",
+        "technical/reference/pipelines-vs-workflows"
       ]
     }
   ],
