@@ -86,13 +86,18 @@ export async function createSmokeTestStream(pipelineId: string) {
 }
 
 export async function triggerSmokeTest(streamKey: string) {
+  // Check if we're in the dev environment and skip triggering the smoke test if so - to not waste resources 
+  if (process.env.NEXT_PUBLIC_ENV === "dev") {
+    console.log("Skipping smoke test trigger in development environment (NEXT_PUBLIC_ENV=dev)");
+    return;
+  }
+
   const { gateway } = await serverConfig();
   const gatewayUrl = gateway.url;
   const username = gateway.userId;
   const password = gateway.password;
 
   const credentials = Buffer.from(`${username}:${password}`).toString("base64");
-
   const streamUrl = `${app.rtmpUrl}${app.rtmpUrl?.endsWith("/") ? "" : "/"}${streamKey}`;
 
   try {

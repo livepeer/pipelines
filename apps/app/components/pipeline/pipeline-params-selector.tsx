@@ -2,18 +2,9 @@
 
 import { useState } from "react";
 import { Button } from "@repo/design-system/components/ui/button";
-import { Input } from "@repo/design-system/components/ui/input";
-import { Label } from "@repo/design-system/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@repo/design-system/components/ui/select";
-import { Textarea } from "@repo/design-system/components/ui/textarea";
 
 import { PlusIcon, XIcon } from "lucide-react";
+import PipelineCard from './pipeline-card';
 
 interface WidgetConfig {
   min?: number;
@@ -253,221 +244,34 @@ export default function PipelineParamsSelector({
       </div>
 
       <div className="space-y-4">
-        {parameters.map((param, index) => {
-          const errorsForParam = validationErrors[index] || {};
-          return (
-            <div key={index} className="space-y-4">
-              <div className="flex gap-4 items-start">
-                <div className="flex-1 space-y-4">
-                  <div className="grid grid-cols-5 gap-4">
-                    <div>
-                      <Label>Node</Label>
-                      <Select
-                        value={param.nodeId}
-                        onValueChange={(value) => updateParameter(index, "nodeId", value)}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select node" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {nodes.map((node) => (
-                            <SelectItem key={node.id} value={node.id}>
-                              {node.classType}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      {errorsForParam.nodeId && (
-                        <p className="text-xs text-red-600 mt-1">{errorsForParam.nodeId}</p>
-                      )}
-                    </div>
-
-                    <div>
-                      <Label>Field</Label>
-                      <Select
-                        value={param.field}
-                        onValueChange={(value) => updateParameter(index, "field", value)}
-                        disabled={!param.nodeId}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select field" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {param.nodeId && 
-                            nodes.find(n => n.id === param.nodeId)
-                              ?.fields
-                              .map((field) => (
-                                  <SelectItem key={field} value={field}>
-                                    {field}
-                                  </SelectItem>
-                              ))
-                          }
-                        </SelectContent>
-                      </Select>
-                      {errorsForParam.field && (
-                        <p className="text-xs text-red-600 mt-1">{errorsForParam.field}</p>
-                      )}
-                    </div>
-
-                    <div>
-                      <Label>Display Name</Label>
-                      <Input
-                        value={param.name}
-                        onChange={(e) => updateParameter(index, "name", e.target.value)}
-                        placeholder="Parameter name"
-                      />
-                      {errorsForParam.name && (
-                        <p className="text-xs text-red-600 mt-1">{errorsForParam.name}</p>
-                      )}
-                    </div>
-
-                    <div>
-                      <Label>Description</Label>
-                      <Input
-                        value={param.description}
-                        onChange={(e) => updateParameter(index, "description", e.target.value)}
-                        placeholder="Parameter description"
-                      />
-                    </div>
-
-                    <div>
-                      <Label>Widget Type</Label>
-                      <Select
-                        value={param.widget}
-                        onValueChange={(value) => {
-                          setParameters((prevParameters) => {
-                            const newParameters = [...prevParameters];
-                            newParameters[index] = {
-                              ...newParameters[index],
-                              widget: value,
-                              widgetConfig:
-                                value === 'slider' || value === 'number'
-                                  ? { min: 0, max: 100, step: 1 }
-                                  : value === 'select'
-                                  ? { options: [] }
-                                  : {},
-                            };
-                            return newParameters;
-                          });
-                        }}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select widget" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="text">Text</SelectItem>
-                          <SelectItem value="textarea">Text Area</SelectItem>
-                          <SelectItem value="number">Number</SelectItem>
-                          <SelectItem value="slider">Slider</SelectItem>
-                          <SelectItem value="checkbox">Checkbox</SelectItem>
-                          <SelectItem value="select">Dropdown</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      {errorsForParam.widget && (
-                        <p className="text-xs text-red-600 mt-1">{errorsForParam.widget}</p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => removeParameter(index)}
-                  className="mt-6"
-                >
-                  <XIcon className="h-4 w-4" />
-                </Button>
-              </div>
-
-              {(param.widget === 'slider' || param.widget === 'number') && (
-                <div className="ml-4 grid grid-cols-3 gap-4">
-                  <div>
-                    <Label>Minimum</Label>
-                    <Input
-                      type="number"
-                      value={param.widgetConfig.min ?? ''}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        updateWidgetConfig(index, { min: val === '' ? undefined : parseFloat(val) });
-                      }}
-                      placeholder="Min value"
-                    />
-                    {errorsForParam.widgetConfig?.min && (
-                      <p className="text-xs text-red-600 mt-1">{errorsForParam.widgetConfig.min}</p>
-                    )}
-                  </div>
-                  <div>
-                    <Label>Maximum</Label>
-                    <Input
-                      type="number"
-                      value={param.widgetConfig.max ?? ''}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        updateWidgetConfig(index, { max: val === '' ? undefined : parseFloat(val) });
-                      }}
-                      placeholder="Max value"
-                    />
-                    {errorsForParam.widgetConfig?.max && (
-                      <p className="text-xs text-red-600 mt-1">{errorsForParam.widgetConfig.max}</p>
-                    )}
-                  </div>
-                  <div>
-                    <Label>Step</Label>
-                    <Input
-                      type="number"
-                      value={param.widgetConfig.step ?? ''}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        updateWidgetConfig(index, { step: val === '' ? undefined : parseFloat(val) });
-                      }}
-                      placeholder="Step size"
-                    />
-                    {errorsForParam.widgetConfig?.step && (
-                      <p className="text-xs text-red-600 mt-1">{errorsForParam.widgetConfig.step}</p>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {param.widget === 'select' && (
-                <div className="ml-4">
-                  <Label>Options (one per line, format: label=value)</Label>
-                  <Textarea
-                    rows={3}
-                    value={param.optionsText || ''}
-                    onChange={(e) => {
-                      const text = e.target.value;
-                      const newOptions = text
-                        .split('\n')
-                        .filter(line => line.trim() !== '')
-                        .map(line => {
-                          const [label, value] = line.split('=', 2);
-                          return {
-                            label: label.trim(),
-                            value: (value || label).trim()
-                          };
-                        });
-                      const newParams = [...parameters];
-                      newParams[index] = {
-                        ...newParams[index],
-                        optionsText: text,
-                        widgetConfig: { ...newParams[index].widgetConfig, options: newOptions },
-                      };
-                      setParameters(newParams);
-                    }}
-                    placeholder="Option 1=value1
-Option 2=value2"
-                    className="font-mono"
-                  />
-                  {errorsForParam.widgetConfig?.options && (
-                    <p className="text-xs text-red-600 mt-1">{errorsForParam.widgetConfig.options}</p>
-                  )}
-                </div>
-              )}
-            </div>
-          );
-        })}
+        {parameters.map((param, index) => (
+          <PipelineCard
+            key={index}
+            index={index}
+            parameter={param}
+            errors={validationErrors[index]}
+            nodes={nodes}
+            onUpdateParameter={updateParameter}
+            onUpdateWidgetConfig={updateWidgetConfig}
+            onRemove={removeParameter}
+            onWidgetTypeChange={(index, value) => {
+              setParameters((prevParameters) => {
+                const newParameters = [...prevParameters];
+                newParameters[index] = {
+                  ...newParameters[index],
+                  widget: value,
+                  widgetConfig:
+                    value === "slider" || value === "number"
+                      ? { min: 0, max: 100, step: 1 }
+                      : value === "select"
+                      ? { options: [] }
+                      : {},
+                };
+                return newParameters;
+              });
+            }}
+          />
+        ))}
 
         {parameters.length < 5 && (
           <Button variant="outline" onClick={addParameter} className="w-full">
@@ -490,7 +294,7 @@ Option 2=value2"
           disabled={isSubmitting || parameters.length === 0}
           className="uppercase text-xs"
         >
-          {formData.id ? 'Save' : 'Create'}
+          {formData.id ? "Save" : "Create"}
         </Button>
       </div>
     </div>
