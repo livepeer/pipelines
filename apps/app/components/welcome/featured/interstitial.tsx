@@ -15,6 +15,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useStreamStatus } from "@/hooks/useStreamStatus";
 import { usePrivy } from "@privy-io/react-auth";
 import LoggedOutComponent from "@/components/modals/logged-out";
+import { TrialExpiredModal } from "@/components/modals/trial-expired-modal";
 
 interface ExamplePrompt {
   prompt: string;
@@ -242,21 +243,14 @@ const Interstitial: React.FC<InterstitialProps> = ({
 
   if (showLoginPrompt) {
     return (
-      <div className="fixed inset-0 bg-background/95 backdrop-blur-sm z-50 flex flex-col items-center justify-center">
-        <h1 className="text-3xl font-bold mb-4">Session Timed Out</h1>
-        <p className="text-muted-foreground mb-8 text-center">
-        Thank you for trying out Livepeer pipelines. Please create an account to continue exploring the possibilities of AI video.
-        </p>
-        <div className="flex flex-col items-center gap-4">
-          <Button onClick={login}>Sign Up</Button>
-          <Button
-            variant="outline"
-            onClick={() => window.open("https://discord.gg/livepeer", "_blank")}
-          >
-            Join the Community
-          </Button>
-        </div>
-      </div>
+      <TrialExpiredModal 
+        open={true} 
+        onOpenChange={(open) => {
+          if (!open) {
+            window.location.href = '/explore';
+          }
+        }} 
+      />
     );
   }
 

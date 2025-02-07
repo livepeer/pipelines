@@ -13,6 +13,7 @@ import { LPPLayer } from "@/components/playground/player";
 import Link from "next/link";
 import { useIsMobile } from "@repo/design-system/hooks/use-mobile";
 import { usePrivy } from "@privy-io/react-auth";
+import { useTrialTimer } from "@/hooks/useTrialTimer";
 
 const PROMPT_INTERVAL = 4000;
 const samplePrompts = examplePrompts.map((prompt) => prompt.prompt);
@@ -56,46 +57,7 @@ export default function Dreamshaper({
   const isMobile = useIsMobile();
 
   const { authenticated, login } = usePrivy();
-  const UNREGISTERED_TIMEOUT_SECONDS = 10 * 60; // 10 minutes
-
-  // Get initial time from localStorage if available (for non‑authenticated users)
-  const getInitialTime = () => {
-    if (typeof window !== "undefined") {
-      const stored = localStorage.getItem("unregistered_time_remaining");
-      if (stored !== null) {
-        const parsed = parseInt(stored, 10);
-        return isNaN(parsed) ? UNREGISTERED_TIMEOUT_SECONDS : parsed;
-      }
-    }
-    return UNREGISTERED_TIMEOUT_SECONDS;
-  };
-
-  const [timeRemaining, setTimeRemaining] = useState(getInitialTime);
-
-  useEffect(() => {
-    if (!authenticated) {
-      const intervalId = setInterval(() => {
-        setTimeRemaining((prev) => {
-          const newTime = prev > 0 ? prev - 1 : 0;
-          localStorage.setItem("unregistered_time_remaining", newTime.toString());
-          return newTime;
-        });
-      }, 1000);
-      return () => clearInterval(intervalId);
-    }
-  }, [authenticated]);
-
-  useEffect(() => {
-    if (!authenticated && timeRemaining === 0) {
-      window.dispatchEvent(new CustomEvent("trialExpired"));
-    }
-  }, [timeRemaining, authenticated]);
-
-  const formattedTime = useMemo(() => {
-    const minutes = Math.floor(timeRemaining / 60);
-    const seconds = timeRemaining % 60;
-    return `${minutes}:${seconds < 10 ? "0" + seconds : seconds}`;
-  }, [timeRemaining]);
+  const { timeRemaining, formattedTime } = useTrialTimer();
 
   const submitPrompt = () => {
     if (inputValue) {
@@ -113,7 +75,7 @@ export default function Dreamshaper({
             Transform your video in real-time with AI - and build your own workflow with ComfyUI
           </p>
         </div>
-        {!authenticated && (
+        {!authenticated && timeRemaining !== null && (
           <div className="text-right">
             <div className="text-sm font-medium">
               Time remaining: {formattedTime}
