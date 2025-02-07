@@ -95,7 +95,10 @@ export default function Dreamshaper({
             <div className="text-sm font-medium">
               Time remaining: {formattedTime}
             </div>
-            <button onClick={login} className="text-xs text-blue-500 underline">
+            <button
+              onClick={login}
+              className="text-xs text-muted-foreground cursor-pointer bg-transparent border-0"
+            >
               Sign in to continue streaming
             </button>
           </div>
