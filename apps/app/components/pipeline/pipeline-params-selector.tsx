@@ -291,7 +291,7 @@ export default function PipelineParamsSelector({
         </Button>
         <Button
           onClick={handleSubmit}
-          disabled={isSubmitting || parameters.length === 0}
+          disabled={isSubmitting}
           className="uppercase text-xs"
         >
           {formData.id ? "Save" : "Create"}
