@@ -5,13 +5,14 @@ import { TooltipTrigger } from "@repo/design-system/components/ui/tooltip";
 import { TooltipContent } from "@repo/design-system/components/ui/tooltip";
 import { Tooltip } from "@repo/design-system/components/ui/tooltip";
 import { motion, AnimatePresence } from "framer-motion";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useDreamshaper } from "./useDreamshaper";
 import { BroadcastWithControls } from "@/components/playground/broadcast";
 import { Loader2 } from "lucide-react";
 import { LPPLayer } from "@/components/playground/player";
 import Link from "next/link";
 import { useIsMobile } from "@repo/design-system/hooks/use-mobile";
+import { usePrivy } from "@privy-io/react-auth";
 
 const PROMPT_INTERVAL = 4000;
 const samplePrompts = examplePrompts.map((prompt) => prompt.prompt);
@@ -54,6 +55,25 @@ export default function Dreamshaper({
   const [inputValue, setInputValue] = useState("");
   const isMobile = useIsMobile();
 
+  const { authenticated, login } = usePrivy();
+  const UNREGISTERED_TIMEOUT_SECONDS = 10 * 60; // 10 minutes
+  const [timeRemaining, setTimeRemaining] = useState(UNREGISTERED_TIMEOUT_SECONDS);
+
+  useEffect(() => {
+    if (!authenticated) {
+      const intervalId = setInterval(() => {
+        setTimeRemaining((prev) => (prev > 0 ? prev - 1 : 0));
+      }, 1000);
+      return () => clearInterval(intervalId);
+    }
+  }, [authenticated]);
+
+  const formattedTime = useMemo(() => {
+    const minutes = Math.floor(timeRemaining / 60);
+    const seconds = timeRemaining % 60;
+    return `${minutes}:${seconds < 10 ? "0" + seconds : seconds}`;
+  }, [timeRemaining]);
+
   const submitPrompt = () => {
     if (inputValue) {
       handleUpdate(inputValue);
@@ -63,12 +83,23 @@ export default function Dreamshaper({
   return (
     <div className="relative flex flex-col h-[calc(100vh-10rem)] overflow-hidden">
       {/* Header section */}
-      <div className="flex-shrink-0 p-3">
-        <h1 className="text-2xl font-bold">Livepeer Pipelines</h1>
-        <p className="text-muted-foreground">
-          Transform your video in real-time with AI - and build your own
-          workflow with ComfyUI
-        </p>
+      <div className="flex justify-between items-start p-3">
+        <div>
+          <h1 className="text-2xl font-bold">Livepeer Pipelines</h1>
+          <p className="text-muted-foreground">
+            Transform your video in real-time with AI - and build your own workflow with ComfyUI
+          </p>
+        </div>
+        {!authenticated && (
+          <div className="text-right">
+            <div className="text-sm font-medium">
+              Time remaining: {formattedTime}
+            </div>
+            <button onClick={login} className="text-xs text-blue-500 underline">
+              Sign in to continue streaming
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="flex-shrink-0 flex items-center gap-4 px-4 h-[42px]">
@@ -99,16 +130,11 @@ export default function Dreamshaper({
           />
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button
-                onClick={submitPrompt}
-                className="absolute right-0 inset-y-0 my-auto"
-              >
+              <Button onClick={submitPrompt} className="absolute right-0 inset-y-0 my-auto">
                 Apply {isMobile ? "" : isMac ? "(⌘ + Enter)" : "(Ctrl + Enter)"}
               </Button>
             </TooltipTrigger>
-            <TooltipContent>
-              {isMac ? "⌘ + Enter" : "Ctrl + Enter"}
-            </TooltipContent>
+            <TooltipContent>{isMac ? "⌘ + Enter" : "Ctrl + Enter"}</TooltipContent>
           </Tooltip>
         </div>
         <Tooltip>
