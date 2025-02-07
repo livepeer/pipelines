@@ -84,8 +84,9 @@
     {
       "group": "Custom Nodes",
       "pages": [
-      "technical/reference/available-nodes",
-      "technical/reference/performance-recommendations"
+        "technical/reference/available-nodes",
+        "technical/reference/advanced-node-usage",
+        "technical/reference/performance-recommendations"
       ]
     },
     {

@@ -1,0 +1,95 @@
+---
+title: "Advanced Node Usage"
+description: "Advanced techniques for using custom nodes in ComfyStream"
+icon: "code"
+---
+
+While executing a workflow many times per second presents unique challenges, it also opens up new opportunities. Modulating parameters over time is more straightforward than in ComfyUI's normal batch paradigm.
+
+<Note>
+The techniques described here are specific to real-time streaming workflows and may not work in standard ComfyUI batch processing.
+</Note>
+
+## Reactive Controls
+
+### RealtimeNodes
+RealtimeNodes were created specifically for ComfyStream and enable unique reactive behaviors. Used with [ComfyUI-Logic nodes](https://github.com/theUpsider/ComfyUI-Logic), they enable sophisticated control flows.
+
+<Tip>
+These nodes are under active development, with new features being added often. Feedback is welcome!
+</Tip>
+
+### Parameter Scheduling
+Control any parameter of any ComfyUI node dynamically through scheduling:
+
+<AccordionGroup>
+  <Accordion title="ValueControl - Gradual changes over N frames">
+    - `IntControl` - Integer value transitions
+    - `FloatControl` - Floating point value transitions  
+    - `StringControl` - String value transitions
+  </Accordion>
+
+  <Accordion title="SequenceControl - Cycle through preset values">
+    - `IntSequence` - Cycle through integer values
+    - `FloatSequence` - Cycle through float values
+    - `StringSequence` - Cycle through string values
+  </Accordion>
+</AccordionGroup>
+
+Common use cases:
+- Dynamic Controlnet parameter adjustment
+- Automated LoRA effect cycling
+- Cycling through prompts over time
+- Triggering a certain prompt according to a condition
+
+### Motion Detection 
+
+<Warning>
+MotionControl features are currently in experimental beta
+</Warning>
+
+- `ROI` - Define regions of interest in which motion detection is active
+- `IntegerMotionController` - Trigger actions based on movement
+
+Use cases:
+- Motion-triggered mask intensity
+- Dynamic parameter adjustment based on movement
+
+### Tracking and Masking
+
+<AccordionGroup>
+  <Accordion title="HandTracking">
+    - `HandTrackingNode` - Track multiple hands
+    - `HandMaskNode` - Generate masks for regions of those hands
+  </Accordion>
+
+  <Accordion title="Interactive Masks">
+    - `ResizeMaskNode` - Dynamic mask resizing based on proximity to an input mask
+  </Accordion>
+</AccordionGroup>
+
+### Logic Control
+- `LazyCondition` - Skip portions of a workflow conditionally
+   
+   Use cases:
+   - Skip computationally expensive ControlNet processing when not needed
+   - Output different images based on motion detection results
+   - Switch between different processing paths based on input frame similarity
+
+### Utility Nodes
+- `FPSMonitor` - Performance overlay with image and mask output
+- `QuickShapeMask` - Fast shape mask generation
+- `DTypeConverter` - Convert between mask data types
+- `FastWebcamCapture` - Optimized webcam input
+- `SimilarityFilter` - Skip processing of similar frames
+
+<Note>
+Audio reactivity features are coming soon!
+</Note>
+
+### Advanced Examples
+These are real-world examples of advanced usage of the above nodes and concepts.
+
+<Info>
+Example workflows demonstrating each feature can be found in the [ComfyUI_RealTimeNodes repository](https://github.com/ryanontheinside/ComfyUI_RealTimeNodes/tree/main/examples).
+</Info> 
