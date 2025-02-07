@@ -7,17 +7,27 @@ const MAX_BACKOFF_INTERVAL = 120000;
 export const useStreamStatus = (streamId: string, requireUser: boolean = true) => {
     const { ready, user } = usePrivy();
     const [status, setStatus] = useState<string | null>(null);
+    const [fullResponse, setFullResponse] = useState<any>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const failureCountRef = useRef(0);
     const intervalIdRef = useRef<NodeJS.Timeout | null>(null);
 
+    const triggerError = (errMsg: string) => {
+        setError(errMsg);
+        setLoading(false);
+    };
+
+    const resetPollingInterval = () => {
+        // Optionally, add functionality to adjust the polling interval.
+    };
+
     useEffect(() => {
-        
         if (!ready || (requireUser && !user)) {
             console.log("[useStreamStatus] Not ready or user required but not detected, aborting status fetch.");
             return;
         }
+        if (!streamId) return;
 
         const fetchStatus = async () => {
             try {
@@ -37,6 +47,9 @@ export const useStreamStatus = (streamId: string, requireUser: boolean = true) =
                     triggerError(error ?? "No stream data returned from API");
                     return;
                 }
+                // Store the complete data response
+                setFullResponse(data);
+                // Also extract the main status string for any existing UI (if needed)
                 setStatus(data?.state);
                 setError(null);
                 failureCountRef.current = 0;
@@ -44,43 +57,19 @@ export const useStreamStatus = (streamId: string, requireUser: boolean = true) =
             } catch (err: any) {
                 triggerError(err.message);
                 setLoading(false);
+            } finally {
+                setLoading(false);
             }
-        };
-
-        const triggerError = (errorMsg: string) => {
-            console.log("[useStreamStatus] Error:", errorMsg);
-            setError(errorMsg);
-            failureCountRef.current += 1;
-            adjustPollingInterval();
-        };
-
-        const adjustPollingInterval = () => {
-            const nextInterval = Math.min(
-                BASE_POLLING_INTERVAL * 2 ** failureCountRef.current,
-                MAX_BACKOFF_INTERVAL
-            );
-            if (intervalIdRef.current) {
-                clearInterval(intervalIdRef.current);
-            }
-            intervalIdRef.current = setInterval(fetchStatus, nextInterval);
-        };
-
-        const resetPollingInterval = () => {
-            if (intervalIdRef.current) {
-                clearInterval(intervalIdRef.current);
-            }
-            intervalIdRef.current = setInterval(fetchStatus, BASE_POLLING_INTERVAL);
         };
 
         fetchStatus();
-        intervalIdRef.current = setInterval(fetchStatus, BASE_POLLING_INTERVAL);
+        const intervalId = setInterval(fetchStatus, BASE_POLLING_INTERVAL);
+        intervalIdRef.current = intervalId;
 
         return () => {
-            if (intervalIdRef.current) {
-                clearInterval(intervalIdRef.current);
-            }
+            if (intervalIdRef.current) clearInterval(intervalIdRef.current);
         };
-    }, [streamId, ready, user, requireUser]);
+    }, [ready, streamId, requireUser, user]);
 
-    return { status, loading, error };
+    return { status, fullResponse, loading, error };
 };

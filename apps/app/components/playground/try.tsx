@@ -124,7 +124,7 @@ export default function Try({
 
   const isAdmin = user?.email?.address?.endsWith("@livepeer.org");
 
-  const { status, loading: statusLoading, error: statusError } = useStreamStatus(streamId || "", false);
+  const { status, fullResponse, loading: statusLoading, error: statusError } = useStreamStatus(streamId || "", false);
 
   const handleInputChange = (id: string, value: any) => {
     const newValues = {
@@ -595,7 +595,7 @@ export default function Try({
       )}
 
       {debugOpen && (
-        <div className="fixed top-0 right-0 h-full w-80 bg-gray-800 text-white p-4 shadow-lg z-50">
+        <div className="fixed top-0 right-0 h-full w-80 bg-gray-800/80 text-white p-4 shadow-lg z-50">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-lg font-semibold">Debug Status</h2>
             <Button variant="outline" size="sm" onClick={() => setDebugOpen(false)}>
@@ -606,15 +606,9 @@ export default function Try({
             <p>
               <strong>Stream ID:</strong> {streamId || "N/A"}
             </p>
-            <p>
-              <strong>Status:</strong>{" "}
-              {statusLoading ? "Loading..." : status || "N/A"}
-            </p>
-            {statusError && (
-              <p>
-                <strong>Error:</strong> {statusError}
-              </p>
-            )}
+            <pre className="text-xs whitespace-pre-wrap">
+              {fullResponse ? JSON.stringify(fullResponse, null, 2) : "Loading..."}
+            </pre>
           </div>
         </div>
       )}
