@@ -60,13 +60,12 @@ export default function Dreamshaper({
 
   // Get initial time from localStorage if available (for non‑authenticated users)
   const getInitialTime = () => {
-    if (!authenticated) {
+    if (typeof window !== "undefined") {
       const stored = localStorage.getItem("unregistered_time_remaining");
       if (stored !== null) {
         const parsed = parseInt(stored, 10);
         return isNaN(parsed) ? UNREGISTERED_TIMEOUT_SECONDS : parsed;
       }
-      return UNREGISTERED_TIMEOUT_SECONDS;
     }
     return UNREGISTERED_TIMEOUT_SECONDS;
   };
