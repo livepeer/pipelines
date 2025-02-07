@@ -245,9 +245,17 @@ const Interstitial: React.FC<InterstitialProps> = ({
       <div className="fixed inset-0 bg-background/95 backdrop-blur-sm z-50 flex flex-col items-center justify-center">
         <h1 className="text-3xl font-bold mb-4">Session Timed Out</h1>
         <p className="text-muted-foreground mb-8 text-center">
-          Thank you for trying out Livepeer's AI pipelines. Please sign in to continue streaming.
+        Thank you for trying out Livepeer pipelines. Please create an account to continue exploring the possibilities of AI video.
         </p>
-        <Button onClick={login}>Sign In</Button>
+        <div className="flex flex-col items-center gap-4">
+          <Button onClick={login}>Sign Up</Button>
+          <Button
+            variant="outline"
+            onClick={() => window.open("https://discord.gg/livepeer", "_blank")}
+          >
+            Join the Community
+          </Button>
+        </div>
       </div>
     );
   }

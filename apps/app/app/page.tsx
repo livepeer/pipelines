@@ -6,6 +6,8 @@ import { ReactElement, useState, useEffect } from "react";
 import { useDreamshaper } from "@/components/welcome/featured/useDreamshaper";
 import { usePrivy } from "@privy-io/react-auth";
 
+const UNREGISTERED_APP_TRIAL_TIMEOUT = 10 * 60 * 1000; 
+
 const App = (): ReactElement => {
   const { user, authenticated } = usePrivy();
   const [showInterstitial, setShowInterstitial] = useState(false);
@@ -27,7 +29,7 @@ const App = (): ReactElement => {
         console.log("Killing stream due to reach timeout and user is not authenticated");
         setStreamKilled(true);
         setShowInterstitial(true);
-      }, 2 * 60 * 1000); // 10 minutes in ms - DEBUG is just 2 minutes
+      }, UNREGISTERED_APP_TRIAL_TIMEOUT);
       return () => clearTimeout(timer);
     }
   }, [authenticated]);
