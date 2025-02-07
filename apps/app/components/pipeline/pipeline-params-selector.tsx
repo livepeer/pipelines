@@ -126,6 +126,7 @@ export default function PipelineParamsSelector({
         classType: ""
       },
     ]);
+    setValidationErrors([]);
   };
 
   const removeParameter = (index: number) => {
@@ -148,6 +149,13 @@ export default function PipelineParamsSelector({
       };
     }
     setParameters(newParameters);
+    setValidationErrors(prev => {
+      const newErrors = [...prev];
+      if (newErrors[index]) {
+        delete newErrors[index][field as keyof ParameterValidationError];
+      }
+      return newErrors;
+    });
   };
 
   const updateWidgetConfig = (index: number, config: Partial<WidgetConfig>) => {
@@ -268,6 +276,13 @@ export default function PipelineParamsSelector({
                       : {},
                 };
                 return newParameters;
+              });
+              setValidationErrors(prev => {
+                const newErrors = [...prev];
+                if (newErrors[index]) {
+                  delete newErrors[index][value as keyof ParameterValidationError];
+                }
+                return newErrors;
               });
             }}
           />
