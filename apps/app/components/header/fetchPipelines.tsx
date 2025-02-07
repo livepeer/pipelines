@@ -8,7 +8,7 @@ export async function fetchPipelines(query: string) {
     const { data, error } = await supabase
       .from("pipelines")
       .select("*")
-      .eq("is_featured", true)
+      .eq("is_private", false)
       .ilike("name", `%${query}%`);
 
     if (error) {
