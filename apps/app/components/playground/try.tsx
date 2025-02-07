@@ -679,27 +679,29 @@ export default function Try({
               {status || "Unknown"}
             </span>
           </div>
-          <div className="flex flex-col flex-1 mt-2">
-            <div className="flex-1 overflow-y-auto border-b border-gray-600 pr-2">
-              <h3 className="text-sm font-semibold mb-1">Full Status</h3>
-              <pre className="text-xs whitespace-pre-wrap">
-                {fullResponse ? JSON.stringify(fullResponse, null, 2) : "Loading..."}
-              </pre>
-            </div>
-            <div className="flex-1 overflow-y-auto pt-2 pr-2">
-              <h3 className="text-sm font-semibold mb-1">Error History</h3>
-              {errorHistory.length > 0 ? (
-                errorHistory.map((err, index) => (
-                  <div key={index} className="mb-2">
-                    <div className="text-xs font-bold">
-                      {new Date(err.time).toLocaleString()}
+          <div className="mt-2 flex-1">
+            <div className="h-full flex flex-col">
+              <div className="h-1/2 overflow-y-auto border-b border-gray-600 pr-2">
+                <h3 className="text-sm font-semibold mb-1">Full Status</h3>
+                <pre className="text-xs whitespace-pre-wrap">
+                  {fullResponse ? JSON.stringify(fullResponse, null, 2) : "Loading..."}
+                </pre>
+              </div>
+              <div className="h-1/2 overflow-y-auto pt-2 pr-2">
+                <h3 className="text-sm font-semibold mb-1">Error History</h3>
+                {errorHistory.length > 0 ? (
+                  errorHistory.map((err, index) => (
+                    <div key={index} className="mb-2">
+                      <div className="text-xs font-bold">
+                        {new Date(err.time).toLocaleString()}
+                      </div>
+                      <div className="text-xs break-all">{err.error}</div>
                     </div>
-                    <div className="text-xs break-all">{err.error}</div>
-                  </div>
-                ))
-              ) : (
-                <p className="text-xs">No errors recorded</p>
-              )}
+                  ))
+                ) : (
+                  <p className="text-xs">No errors recorded</p>
+                )}
+              </div>
             </div>
           </div>
         </div>
