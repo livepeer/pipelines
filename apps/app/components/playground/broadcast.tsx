@@ -91,6 +91,10 @@ export function BroadcastWithControls({
                 </Broadcast.AudioEnabledTrigger>
               </div>
               <div className="flex sm:flex-1 md:flex-[1.5] justify-end items-center gap-2.5">
+                <Broadcast.FullscreenIndicator matcher={false} asChild>
+                  <Settings className="w-6 h-6 transition flex-shrink-0" />
+                </Broadcast.FullscreenIndicator>
+
                 <Broadcast.ScreenshareTrigger className="w-6 h-6 hover:scale-110 transition flex-shrink-0">
                   <Broadcast.ScreenshareIndicator asChild>
                     <StopScreenshareIcon className="w-full h-full text-white/50" />
@@ -177,6 +181,60 @@ export const BroadcastLoading = ({
       </div>
     )}
   </div>
+);
+
+export const Settings = React.forwardRef(
+  (
+    { className }: { className?: string },
+    ref: React.Ref<HTMLButtonElement> | undefined
+  ) => {
+    return (
+      <Popover.Root>
+        <Popover.Trigger ref={ref} asChild>
+          <button
+            type="button"
+            className={className}
+            aria-label="Stream settings"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <SettingsIcon />
+          </button>
+        </Popover.Trigger>
+        <Popover.Portal>
+          <Popover.Content
+            className="w-60 rounded-md bg-black/50 border border-white/50 backdrop-blur-md p-3 shadow-md outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2"
+            side="top"
+            alignOffset={-70}
+            align="end"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex flex-col gap-2">
+              <p className="text-white/90 font-medium text-sm mb-1">
+                Stream settings
+              </p>
+
+              <div className="gap-2 flex-col flex">
+                <label
+                  className="text-xs text-white/90 font-medium"
+                  htmlFor="cameraSource"
+                >
+                  Camera ('c' to rotate)
+                </label>
+                <SourceSelectComposed name="cameraSource" type="videoinput" />
+              </div>
+            </div>
+            <Popover.Close
+              className="rounded-full h-5 w-5 inline-flex items-center justify-center absolute top-2.5 right-2.5 outline-none"
+              aria-label="Close"
+            >
+              <XIcon />
+            </Popover.Close>
+            <Popover.Arrow className="fill-white/50" />
+          </Popover.Content>
+        </Popover.Portal>
+      </Popover.Root>
+    );
+  }
 );
 
 export const SourceSelectComposed = React.forwardRef(

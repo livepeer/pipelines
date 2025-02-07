@@ -46,7 +46,7 @@ export default function Dreamshaper({
 }: DreamshaperProps) {
   const isMac =
     typeof navigator !== "undefined"
-      ? navigator.userAgent?.includes("Mac") ?? false
+      ? (navigator.userAgent?.includes("Mac") ?? false)
       : false;
   const { currentPromptIndex } = usePrompts();
   const [inputValue, setInputValue] = useState("");
@@ -97,11 +97,11 @@ export default function Dreamshaper({
           />
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button 
+              <Button
                 onClick={submitPrompt}
                 className="absolute right-0 inset-y-0 my-auto"
               >
-                Apply {isMac ? "(⌘ + Enter)" : "(Ctrl + Enter)"}
+                Apply {isMobile ? "" : isMac ? "(⌘ + Enter)" : "(Ctrl + Enter)"}
               </Button>
             </TooltipTrigger>
             <TooltipContent>
@@ -116,9 +116,7 @@ export default function Dreamshaper({
               target="_blank"
               className="hidden md:block"
             >
-              <Button variant="outline">
-                Build your own pipeline
-              </Button>
+              <Button variant="outline">Build your own pipeline</Button>
             </Link>
           </TooltipTrigger>
           <TooltipContent>Build your own pipeline</TooltipContent>
