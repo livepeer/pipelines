@@ -13,6 +13,8 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useStreamStatus } from "@/hooks/useStreamStatus";
+import { usePrivy } from "@privy-io/react-auth";
+import LoggedOutComponent from "@/components/modals/logged-out";
 
 interface ExamplePrompt {
   prompt: string;
@@ -107,6 +109,7 @@ interface InterstitialProps {
   outputPlaybackId?: string;
   streamId?: string;
   onPromptApply?: (prompt: string) => void;
+  showLoginPrompt?: boolean;
 }
 
 const Interstitial: React.FC<InterstitialProps> = ({
@@ -115,7 +118,9 @@ const Interstitial: React.FC<InterstitialProps> = ({
   outputPlaybackId,
   streamId,
   onPromptApply,
+  showLoginPrompt = false,
 }) => {
+  const { authenticated, login } = usePrivy();
   const [cameraPermission, setCameraPermission] = useState<"prompt" | "granted" | "denied">("prompt");
   const [currentScreen, setCurrentScreen] = useState<"camera" | "prompts">("camera");
   const [redirected, setRedirected] = useState(false);
@@ -234,6 +239,18 @@ const Interstitial: React.FC<InterstitialProps> = ({
       ? "Almost there! Please hold on. Your stream is still being prepared."
       : "We are preparing your experience. This may take up to 45 seconds. You will be automatically redirected when the stream is ready.";
   };
+
+  if (showLoginPrompt) {
+    return (
+      <div className="fixed inset-0 bg-background/95 backdrop-blur-sm z-50 flex flex-col items-center justify-center">
+        <h1 className="text-3xl font-bold mb-4">Session Timed Out</h1>
+        <p className="text-muted-foreground mb-8 text-center">
+          Thank you for trying out Livepeer's AI pipelines. Please sign in to continue streaming.
+        </p>
+        <Button onClick={login}>Sign In</Button>
+      </div>
+    );
+  }
 
   if (!streamId) {
     return (

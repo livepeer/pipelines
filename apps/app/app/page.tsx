@@ -4,9 +4,12 @@ import Dreamshaper from "@/components/welcome/featured/dreamshaper";
 import Interstitial from "@/components/welcome/featured/interstitial";
 import { ReactElement, useState, useEffect } from "react";
 import { useDreamshaper } from "@/components/welcome/featured/useDreamshaper";
+import { usePrivy } from "@privy-io/react-auth";
 
 const App = (): ReactElement => {
+  const { user, authenticated } = usePrivy();
   const [showInterstitial, setShowInterstitial] = useState(false);
+  const [streamKilled, setStreamKilled] = useState(false);
   const dreamshaperState = useDreamshaper();
   const { stream, outputPlaybackId, handleUpdate, loading } = dreamshaperState;
 
@@ -18,8 +21,20 @@ const App = (): ReactElement => {
     }
   }, []);
 
+  useEffect(() => {
+    if (!authenticated) {
+      const timer = setTimeout(() => {
+        console.log("Killing stream due to reach timeout and user is not authenticated");
+        setStreamKilled(true);
+        setShowInterstitial(true);
+      }, 2 * 60 * 1000); // 10 minutes in ms - DEBUG is just 2 minutes
+      return () => clearTimeout(timer);
+    }
+  }, [authenticated]);
+
   const handleReady = () => {
     setShowInterstitial(false);
+    setStreamKilled(false);
   };
 
   const handlePromptApply = (prompt: string) => {
@@ -31,7 +46,7 @@ const App = (): ReactElement => {
 
   return (
     <div className="relative">
-      <Dreamshaper {...dreamshaperState} />
+      <Dreamshaper {...dreamshaperState} streamKilled={streamKilled} />
       <ClientSideTracker eventName="home_page_view" />
       {showInterstitial && (
         <Interstitial
@@ -39,6 +54,7 @@ const App = (): ReactElement => {
           outputPlaybackId={outputPlaybackId}
           onReady={handleReady}
           onPromptApply={handlePromptApply}
+          showLoginPrompt={streamKilled}
         />
       )}
     </div>

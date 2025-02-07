@@ -36,6 +36,7 @@ interface DreamshaperProps {
   streamUrl: string | null;
   handleUpdate: (prompt: string) => void;
   loading: boolean;
+  streamKilled?: boolean;
 }
 
 export default function Dreamshaper({
@@ -43,6 +44,7 @@ export default function Dreamshaper({
   streamUrl,
   handleUpdate,
   loading,
+  streamKilled = false,
 }: DreamshaperProps) {
   const isMac =
     typeof navigator !== "undefined"
@@ -129,6 +131,10 @@ export default function Dreamshaper({
           {loading ? (
             <div className="w-full h-full flex items-center justify-center">
               <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            </div>
+          ) : streamKilled ? (
+            <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+              Thank you for trying out Livepeer's AI pipelines. Please sign in to continue streaming.
             </div>
           ) : outputPlaybackId ? (
             <LPPLayer output_playback_id={outputPlaybackId} />
