@@ -13,6 +13,9 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useStreamStatus } from "@/hooks/useStreamStatus";
+import { usePrivy } from "@privy-io/react-auth";
+import LoggedOutComponent from "@/components/modals/logged-out";
+import { TrialExpiredModal } from "@/components/modals/trial-expired-modal";
 
 interface ExamplePrompt {
   prompt: string;
@@ -107,6 +110,7 @@ interface InterstitialProps {
   outputPlaybackId?: string;
   streamId?: string;
   onPromptApply?: (prompt: string) => void;
+  showLoginPrompt?: boolean;
 }
 
 const Interstitial: React.FC<InterstitialProps> = ({
@@ -115,7 +119,9 @@ const Interstitial: React.FC<InterstitialProps> = ({
   outputPlaybackId,
   streamId,
   onPromptApply,
+  showLoginPrompt = false,
 }) => {
+  const { authenticated, login } = usePrivy();
   const [cameraPermission, setCameraPermission] = useState<"prompt" | "granted" | "denied">("prompt");
   const [currentScreen, setCurrentScreen] = useState<"camera" | "prompts">("camera");
   const [redirected, setRedirected] = useState(false);
@@ -234,6 +240,19 @@ const Interstitial: React.FC<InterstitialProps> = ({
       ? "Almost there! Please hold on. Your stream is still being prepared."
       : "We are preparing your experience. This may take up to 45 seconds. You will be automatically redirected when the stream is ready.";
   };
+
+  if (showLoginPrompt) {
+    return (
+      <TrialExpiredModal 
+        open={true} 
+        onOpenChange={(open) => {
+          if (!open) {
+            window.location.href = '/explore';
+          }
+        }} 
+      />
+    );
+  }
 
   if (!streamId) {
     return (

@@ -5,13 +5,15 @@ import { TooltipTrigger } from "@repo/design-system/components/ui/tooltip";
 import { TooltipContent } from "@repo/design-system/components/ui/tooltip";
 import { Tooltip } from "@repo/design-system/components/ui/tooltip";
 import { motion, AnimatePresence } from "framer-motion";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useDreamshaper } from "./useDreamshaper";
 import { BroadcastWithControls } from "@/components/playground/broadcast";
 import { Loader2 } from "lucide-react";
 import { LPPLayer } from "@/components/playground/player";
 import Link from "next/link";
 import { useIsMobile } from "@repo/design-system/hooks/use-mobile";
+import { usePrivy } from "@privy-io/react-auth";
+import { useTrialTimer } from "@/hooks/useTrialTimer";
 
 const PROMPT_INTERVAL = 4000;
 const samplePrompts = examplePrompts.map((prompt) => prompt.prompt);
@@ -36,6 +38,7 @@ interface DreamshaperProps {
   streamUrl: string | null;
   handleUpdate: (prompt: string) => void;
   loading: boolean;
+  streamKilled?: boolean;
 }
 
 export default function Dreamshaper({
@@ -43,6 +46,7 @@ export default function Dreamshaper({
   streamUrl,
   handleUpdate,
   loading,
+  streamKilled = false,
 }: DreamshaperProps) {
   const isMac =
     typeof navigator !== "undefined"
@@ -52,6 +56,9 @@ export default function Dreamshaper({
   const [inputValue, setInputValue] = useState("");
   const isMobile = useIsMobile();
 
+  const { authenticated, login } = usePrivy();
+  const { timeRemaining, formattedTime } = useTrialTimer();
+
   const submitPrompt = () => {
     if (inputValue) {
       handleUpdate(inputValue);
@@ -59,14 +66,28 @@ export default function Dreamshaper({
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-10rem)] overflow-hidden">
+    <div className="relative flex flex-col h-[calc(100vh-10rem)] overflow-hidden">
       {/* Header section */}
-      <div className="flex-shrink-0 p-3">
-        <h1 className="text-2xl font-bold">Livepeer Pipelines</h1>
-        <p className="text-muted-foreground">
-          Transform your video in real-time with AI - and build your own
-          workflow with ComfyUI
-        </p>
+      <div className="flex justify-between items-start p-3">
+        <div>
+          <h1 className="text-2xl font-bold">Livepeer Pipelines</h1>
+          <p className="text-muted-foreground">
+            Transform your video in real-time with AI - and build your own workflow with ComfyUI
+          </p>
+        </div>
+        {!authenticated && timeRemaining !== null && (
+          <div className="text-right">
+            <div className="text-sm font-medium">
+              Time remaining: {formattedTime}
+            </div>
+            <button
+              onClick={login}
+              className="text-xs text-muted-foreground cursor-pointer bg-transparent border-0"
+            >
+              Sign in to continue streaming
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="flex-shrink-0 flex items-center gap-4 px-4 h-[42px]">
@@ -97,16 +118,11 @@ export default function Dreamshaper({
           />
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button
-                onClick={submitPrompt}
-                className="absolute right-0 inset-y-0 my-auto"
-              >
+              <Button onClick={submitPrompt} className="absolute right-0 inset-y-0 my-auto">
                 Apply {isMobile ? "" : isMac ? "(⌘ + Enter)" : "(Ctrl + Enter)"}
               </Button>
             </TooltipTrigger>
-            <TooltipContent>
-              {isMac ? "⌘ + Enter" : "Ctrl + Enter"}
-            </TooltipContent>
+            <TooltipContent>{isMac ? "⌘ + Enter" : "Ctrl + Enter"}</TooltipContent>
           </Tooltip>
         </div>
         <Tooltip>
@@ -129,6 +145,10 @@ export default function Dreamshaper({
           {loading ? (
             <div className="w-full h-full flex items-center justify-center">
               <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            </div>
+          ) : streamKilled ? (
+            <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+              Thank you for trying out Livepeer's AI pipelines. Please sign in to continue streaming.
             </div>
           ) : outputPlaybackId ? (
             <LPPLayer output_playback_id={outputPlaybackId} />
