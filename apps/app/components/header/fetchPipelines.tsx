@@ -1,4 +1,4 @@
-"use server"
+"use server";
 
 import { createServerClient } from "@repo/supabase";
 
@@ -8,6 +8,7 @@ export async function fetchPipelines(query: string) {
     const { data, error } = await supabase
       .from("pipelines")
       .select("*")
+      .eq("is_featured", true)
       .ilike("name", `%${query}%`);
 
     if (error) {
@@ -21,7 +22,6 @@ export async function fetchPipelines(query: string) {
     return [];
   }
 }
-
 
 export async function fetchFeaturedPipelines(limit: number = 3) {
   const supabase = await createServerClient();
