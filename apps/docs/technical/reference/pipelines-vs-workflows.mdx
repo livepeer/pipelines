@@ -1,0 +1,25 @@
+---
+title: "Pipelines vs. Workflows"
+description: "Learn how pipelines differ from ComfyUI workflows"
+icon: "code"
+---
+
+## Workflows
+
+### Description
+
+A workflow is a ComfyUI / ComfyStream concept representing the blueprint of an AI task, often as the combination of multiple nodes. Data flow is managed through a directed acyclic graph (DAG); it is unidirectional but may incorporate multiple inputs or execution chains.
+
+### How it’s built
+
+Workflows are most commonly implemented through the ComfyUI interface and developed+tested using a development environment including ComfyStream, ComfyUI, and a GPU provider like RunPod or a local GPU.
+
+## Pipelines
+
+### Description
+
+A Livepeer pipeline is a workflow that is deployed on the Livepeer network and is available for public or private usage by streamers or application developers. It constitutes a unidirectional data-in/data-out flow, the behavior of which may be changed through workflow parameter updates. Right now, pipelines are simply deployed ComfyUI Workflows; in the future, a pipeline may combine multiple inference engines (for example, ComfyStream + Blender)
+
+### How it’s created
+
+Pipelines are deployed via the Livepeer Pipelines UI.
