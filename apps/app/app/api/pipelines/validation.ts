@@ -86,11 +86,13 @@ export async function createSmokeTestStream(pipelineId: string) {
 }
 
 export async function triggerSmokeTest(streamKey: string) {
+  console.log("Triggering smoke test for stream:", streamKey);
   // Check if we're in the dev environment and skip triggering the smoke test if so - to not waste resources 
   if (process.env.NEXT_PUBLIC_ENV === "dev") {
     console.log("Skipping smoke test trigger in development environment (NEXT_PUBLIC_ENV=dev)");
     return;
   }
+  console.log("Non-dev environment, triggering smoke test for stream:", streamKey);
 
   const { gateway } = await serverConfig();
   const gatewayUrl = gateway.url;
