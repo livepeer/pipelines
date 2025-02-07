@@ -199,7 +199,7 @@ export default function Dreamshaper({
       )}
 
       {/* Debug button (only shown in development) */}
-      {process.env.NODE_ENV === "development" && (
+      {process.env.NODE_ENV === "development" || process.env.NODE_ENV === "staging" && (
         <div className="absolute top-2 right-2 z-50">
           <Button
             variant="destructive"
