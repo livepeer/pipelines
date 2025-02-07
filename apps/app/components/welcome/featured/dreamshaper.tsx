@@ -57,16 +57,40 @@ export default function Dreamshaper({
 
   const { authenticated, login } = usePrivy();
   const UNREGISTERED_TIMEOUT_SECONDS = 10 * 60; // 10 minutes
-  const [timeRemaining, setTimeRemaining] = useState(UNREGISTERED_TIMEOUT_SECONDS);
+
+  // Get initial time from localStorage if available (for non‑authenticated users)
+  const getInitialTime = () => {
+    if (!authenticated) {
+      const stored = localStorage.getItem("unregistered_time_remaining");
+      if (stored !== null) {
+        const parsed = parseInt(stored, 10);
+        return isNaN(parsed) ? UNREGISTERED_TIMEOUT_SECONDS : parsed;
+      }
+      return UNREGISTERED_TIMEOUT_SECONDS;
+    }
+    return UNREGISTERED_TIMEOUT_SECONDS;
+  };
+
+  const [timeRemaining, setTimeRemaining] = useState(getInitialTime);
 
   useEffect(() => {
     if (!authenticated) {
       const intervalId = setInterval(() => {
-        setTimeRemaining((prev) => (prev > 0 ? prev - 1 : 0));
+        setTimeRemaining((prev) => {
+          const newTime = prev > 0 ? prev - 1 : 0;
+          localStorage.setItem("unregistered_time_remaining", newTime.toString());
+          return newTime;
+        });
       }, 1000);
       return () => clearInterval(intervalId);
     }
   }, [authenticated]);
+
+  useEffect(() => {
+    if (!authenticated && timeRemaining === 0) {
+      window.dispatchEvent(new CustomEvent("trialExpired"));
+    }
+  }, [timeRemaining, authenticated]);
 
   const formattedTime = useMemo(() => {
     const minutes = Math.floor(timeRemaining / 60);
@@ -195,18 +219,6 @@ export default function Dreamshaper({
           ) : (
             <BroadcastWithControls ingestUrl={streamUrl} />
           )}
-        </div>
-      )}
-
-      {/* Debug button (only shown in development) */}
-      {process.env.NODE_ENV === "development" || process.env.NODE_ENV === "staging" && (
-        <div className="absolute top-2 right-2 z-50">
-          <Button
-            variant="destructive"
-            onClick={() => window.dispatchEvent(new CustomEvent("triggerTimeoutDebug"))}
-          >
-            Debug: Trigger Timeout
-          </Button>
         </div>
       )}
     </div>

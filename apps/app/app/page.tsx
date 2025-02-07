@@ -16,10 +16,10 @@ const App = (): ReactElement => {
   const { stream, outputPlaybackId, handleUpdate, loading } = dreamshaperState;
 
   useEffect(() => {
-    const hasVisited = localStorage.getItem('hasSeenLandingPage');
+    const hasVisited = localStorage.getItem("hasSeenLandingPage");
     if (!hasVisited) {
       setShowInterstitial(true);
-      localStorage.setItem('hasSeenLandingPage', 'true');
+      localStorage.setItem("hasSeenLandingPage", "true");
     }
   }, []);
 
@@ -43,6 +43,16 @@ const App = (): ReactElement => {
     };
     window.addEventListener("triggerTimeoutDebug", debugHandler);
     return () => window.removeEventListener("triggerTimeoutDebug", debugHandler);
+  }, []);
+
+  useEffect(() => {
+    const trialExpiredHandler = () => {
+      console.log("Trial expired: Not enough time remaining");
+      setStreamKilled(true);
+      setShowInterstitial(true);
+    };
+    window.addEventListener("trialExpired", trialExpiredHandler);
+    return () => window.removeEventListener("trialExpired", trialExpiredHandler);
   }, []);
 
   const handleReady = () => {
