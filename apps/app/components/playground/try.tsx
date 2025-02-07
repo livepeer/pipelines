@@ -680,13 +680,13 @@ export default function Try({
             </span>
           </div>
           <div className="flex flex-col flex-1 mt-2">
-            <div className="h-1/2 overflow-y-auto border-b border-gray-600 pr-2">
+            <div className="flex-1 overflow-y-auto border-b border-gray-600 pr-2">
               <h3 className="text-sm font-semibold mb-1">Full Status</h3>
               <pre className="text-xs whitespace-pre-wrap">
                 {fullResponse ? JSON.stringify(fullResponse, null, 2) : "Loading..."}
               </pre>
             </div>
-            <div className="h-1/2 overflow-y-auto pt-2 pr-2">
+            <div className="flex-1 overflow-y-auto pt-2 pr-2">
               <h3 className="text-sm font-semibold mb-1">Error History</h3>
               {errorHistory.length > 0 ? (
                 errorHistory.map((err, index) => (
