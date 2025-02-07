@@ -681,7 +681,7 @@ export default function Try({
           </div>
           <div className="mt-2 flex-1">
             <div className="h-full flex flex-col">
-              <div className="h-1/2 overflow-y-auto border-b border-gray-600 pr-2">
+              <div style={{ height: "50vh" }} className="h-1/2 overflow-y-auto border-b border-gray-600 pr-2">
                 <h3 className="text-sm font-semibold mb-1">Full Status</h3>
                 <pre className="text-xs whitespace-pre-wrap">
                   {fullResponse ? JSON.stringify(fullResponse, null, 2) : "Loading..."}
