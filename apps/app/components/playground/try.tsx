@@ -17,7 +17,7 @@ import { Switch } from "@repo/design-system/components/ui/switch";
 import { Slider } from "@repo/design-system/components/ui/slider";
 import { cn } from "@repo/design-system/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, HelpCircle } from "lucide-react";
+import { ChevronDown, HelpCircle, Copy } from "lucide-react";
 import { ScrollArea } from "@repo/design-system/components/ui/scroll-area";
 import { Button } from "@repo/design-system/components/ui/button";
 import { toast } from "sonner";
@@ -32,6 +32,7 @@ import {
   TooltipTrigger,
 } from "@repo/design-system/components/ui/tooltip";
 import ComfyUIParamsEditor from "@/components/stream/comfyui-param-editor";
+import { useStreamStatus } from "@/hooks/useStreamStatus";
 
 import { useTrialTimer } from "@/hooks/useTrialTimer";
 import { TrialExpiredModal } from "@/components/modals/trial-expired-modal";
@@ -118,6 +119,62 @@ export default function Try({
     window.addEventListener("trialExpired", handleTrialExpired);
     return () => window.removeEventListener("trialExpired", handleTrialExpired);
   }, []);
+
+  const [debugOpen, setDebugOpen] = useState(false);
+
+  const isAdmin = user?.email?.address?.endsWith("@livepeer.org");
+
+  const { status, fullResponse, loading: statusLoading, error: statusError } = useStreamStatus(streamId || "", false);
+
+  const [errorHistory, setErrorHistory] = useState<
+    { source: string; error: string; time: number }[]
+  >([]);
+
+  useEffect(() => {
+    if (fullResponse) {
+      const newErrors: { source: string; error: string; time: number }[] = [];
+      if (fullResponse.inference_status && fullResponse.inference_status.last_error) {
+        newErrors.push({
+          source: "inference_status",
+          error: fullResponse.inference_status.last_error,
+          time: fullResponse.inference_status.last_error_time,
+        });
+      }
+      if (fullResponse.gateway_last_error) {
+        newErrors.push({
+          source: "gateway",
+          error: fullResponse.gateway_last_error,
+          time: fullResponse.gateway_last_error_time,
+        });
+      }
+      if (newErrors.length > 0) {
+        setErrorHistory((prev) => {
+          const updated = [...prev];
+          newErrors.forEach((ne) => {
+            if (!prev.some((e) => e.error === ne.error && e.time === ne.time)) {
+              updated.push(ne);
+            }
+          });
+          return updated;
+        });
+      }
+    }
+  }, [fullResponse]);
+
+  const getStatusClass = (currentStatus: string | null): string => {
+    switch (currentStatus) {
+      case "OFFLINE":
+        return "bg-red-500 text-white";
+      case "DEGRADED_INPUT":
+        return "bg-yellow-500 text-black";
+      case "DEGRADED_INFERENCE":
+        return "bg-orange-500 text-white";
+      case "ONLINE":
+        return "bg-green-500 text-white";
+      default:
+        return "bg-gray-500 text-white";
+    }
+  };
 
   const handleInputChange = (id: string, value: any) => {
     const newValues = {
@@ -324,248 +381,263 @@ export default function Try({
     }
   };
 
+  const handleCopyLogs = () => {
+    if (fullResponse) {
+      navigator.clipboard.writeText(JSON.stringify(fullResponse, null, 2));
+      toast.success("Logs copied to clipboard");
+    }
+  };
+
   return (
     <>
       <div className={streamKilled ? "opacity-50 pointer-events-none" : ""}>
         <div className="relative">
-          <div>
-            <div className="flex justify-end h-10">
-              {streamId && (
-                <>
-                  <Button onClick={handleUpdate} disabled={!hasChanges}>
-                    Save Parameters
+          <div className="flex justify-end h-10">
+            {streamId && (
+              <>
+                <Button onClick={handleUpdate} disabled={!hasChanges}>
+                  Save Parameters
+                </Button>
+                {isAdmin && (
+                  <Button
+                    variant="outline"
+                    className="ml-2"
+                    onClick={() => setDebugOpen(!debugOpen)}
+                  >
+                    {debugOpen ? "Close Debug" : "Open Debug"}
                   </Button>
-                </>
-              )}
+                )}
+              </>
+            )}
+          </div>
+          
+          <div className="flex flex-col gap-4 mt-2">
+            <div className="flex flex-col gap-2">
+              <Label className="text-muted-foreground">Source</Label>
+              <Select
+                defaultValue="Webcam"
+                value={source}
+                disabled
+                onValueChange={setSource}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Webcam" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Webcam">Webcam</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-            <div className="flex flex-col gap-4 mt-2">
-              <div className="flex flex-col gap-2">
-                <Label className="text-muted-foreground">Source</Label>
-                <Select
-                  defaultValue="Webcam"
-                  value={source}
-                  disabled
-                  onValueChange={setSource}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Webcam" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Webcam">Webcam</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
 
-              {inputs.primary && (
-                <>
-                  {pipeline.type == "comfyui" ? (
-                    <div className="flex flex-col gap-4">
-                      <Label className="text-muted-foreground">
-                        ComfyUI Parameters
-                      </Label>
-                      
-                      {pipeline.prioritized_params && (
-                        <div className="space-y-4 border rounded-lg p-4 mb-4">
-                          <Label className="text-muted-foreground">Quick Settings</Label>
-                          {(
-                            typeof pipeline.prioritized_params === "string"
-                              ? JSON.parse(pipeline.prioritized_params)
-                              : pipeline.prioritized_params
-                          ).map((param: PrioritizedParam) => {
-                            const currentJson =
-                              typeof inputValues["prompt"] === "string"
-                                ? JSON.parse(inputValues["prompt"])
-                                : inputValues["prompt"];
-                            const currentValue =
-                              currentJson?.[param.nodeId]?.inputs?.[param.field];
+            {inputs.primary && (
+              <>
+                {pipeline.type == "comfyui" ? (
+                  <div className="flex flex-col gap-4">
+                    <Label className="text-muted-foreground">
+                      ComfyUI Parameters
+                    </Label>
+                    
+                    {pipeline.prioritized_params && (
+                      <div className="space-y-4 border rounded-lg p-4 mb-4">
+                        <Label className="text-muted-foreground">Quick Settings</Label>
+                        {(
+                          typeof pipeline.prioritized_params === "string"
+                            ? JSON.parse(pipeline.prioritized_params)
+                            : pipeline.prioritized_params
+                        ).map((param: PrioritizedParam) => {
+                          const currentJson =
+                            typeof inputValues["prompt"] === "string"
+                              ? JSON.parse(inputValues["prompt"])
+                              : inputValues["prompt"];
+                          const currentValue =
+                            currentJson?.[param.nodeId]?.inputs?.[param.field];
 
-                            const handlePrioritizedParamChange = (newValue: any) => {
-                              const updatedJson = JSON.parse(JSON.stringify(inputValues["prompt"]));
-                              
-                              if (!updatedJson[param.nodeId]) {
-                                updatedJson[param.nodeId] = { inputs: {} };
-                              }
-                              if (!updatedJson[param.nodeId].inputs) {
-                                updatedJson[param.nodeId].inputs = {};
-                              }
-                              
-                              updatedJson[param.nodeId].inputs[param.field] = newValue;
-                              handleInputChange("prompt", updatedJson);
-                            };
+                          const handlePrioritizedParamChange = (newValue: any) => {
+                            const updatedJson = JSON.parse(JSON.stringify(inputValues["prompt"]));
+                            
+                            if (!updatedJson[param.nodeId]) {
+                              updatedJson[param.nodeId] = { inputs: {} };
+                            }
+                            if (!updatedJson[param.nodeId].inputs) {
+                              updatedJson[param.nodeId].inputs = {};
+                            }
+                            
+                            updatedJson[param.nodeId].inputs[param.field] = newValue;
+                            handleInputChange("prompt", updatedJson);
+                          };
 
-                            return (
-                              <div key={param.path} className="space-y-2">
-                                <div className="flex flex-col gap-1">
-                                  <div className="flex items-center gap-1.5">
-                                    <Label>{param.name}</Label>
-                                    <Tooltip>
-                                      <TooltipTrigger>
-                                        <HelpCircle className="h-4 w-4 text-muted-foreground hover:text-foreground transition-colors" />
-                                      </TooltipTrigger>
-                                      <TooltipContent className="bg-popover text-popover-foreground border border-border">
-                                        <p>
-                                          {param.classType}.inputs.{param.field}
-                                        </p>
-                                      </TooltipContent>
-                                    </Tooltip>
-                                  </div>
-                                  {param.description && (
-                                    <span className="text-xs text-muted-foreground">
-                                      {param.description}
-                                    </span>
-                                  )}
+                          return (
+                            <div key={param.path} className="space-y-2">
+                              <div className="flex flex-col gap-1">
+                                <div className="flex items-center gap-1.5">
+                                  <Label>{param.name}</Label>
+                                  <Tooltip>
+                                    <TooltipTrigger>
+                                      <HelpCircle className="h-4 w-4 text-muted-foreground hover:text-foreground transition-colors" />
+                                    </TooltipTrigger>
+                                    <TooltipContent className="bg-popover text-popover-foreground border border-border">
+                                      <p>
+                                        {param.classType}.inputs.{param.field}
+                                      </p>
+                                    </TooltipContent>
+                                  </Tooltip>
                                 </div>
-
-                                {param.widget === "slider" ? (
-                                  <Slider
-                                    value={[Number(currentValue) || 0]}
-                                    min={param.widgetConfig!.min}
-                                    max={param.widgetConfig!.max}
-                                    step={param.widgetConfig!.step}
-                                    onValueChange={([val]) =>
-                                      handlePrioritizedParamChange(val)
-                                    }
-                                  />
-                                ) : param.widget === "number" ? (
-                                  <Input
-                                    type="number"
-                                    value={currentValue}
-                                    onChange={(e) =>
-                                      handlePrioritizedParamChange(
-                                        Number(e.target.value)
-                                      )
-                                    }
-                                    min={param.widgetConfig!.min}
-                                    max={param.widgetConfig!.max}
-                                    step={param.widgetConfig!.step}
-                                  />
-                                ) : param.widget === "select" ? (
-                                  <Select
-                                    value={String(currentValue)}
-                                    onValueChange={handlePrioritizedParamChange}
-                                  >
-                                    <SelectTrigger>
-                                      <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      {param.widgetConfig.options?.map((option) => (
-                                        <SelectItem
-                                          key={option.value}
-                                          value={option.value}
-                                        >
-                                          {option.label}
-                                        </SelectItem>
-                                      ))}
-                                    </SelectContent>
-                                  </Select>
-                                ) : param.widget === "checkbox" ? (
-                                  <Switch
-                                    checked={
-                                      typeof currentValue === "boolean"
-                                        ? currentValue
-                                        : Boolean(currentValue)
-                                    }
-                                    onCheckedChange={(checked: boolean) => {
-                                      const newVal =
-                                        typeof currentValue === "number"
-                                          ? (checked ? 1 : 0)
-                                          : checked;
-                                      handlePrioritizedParamChange(newVal);
-                                    }}
-                                  />
-                                ) : (
-                                  <Input
-                                    type="text"
-                                    value={currentValue}
-                                    onChange={(e) =>
-                                      handlePrioritizedParamChange(e.target.value)
-                                    }
-                                  />
+                                {param.description && (
+                                  <span className="text-xs text-muted-foreground">
+                                    {param.description}
+                                  </span>
                                 )}
                               </div>
-                            );
-                          })}
-                        </div>
-                      )}
 
-                      <ComfyUIParamsEditor
-                        value={inputValues["prompt"]}
-                        onChange={(value) => handleInputChange("prompt", value)}
-                      />
-                    </div>
-                  ) : (
-                    <div className="flex flex-col gap-2">
-                      <Label className="text-muted-foreground">
-                        {inputs.primary.label}
-                      </Label>
-                      {renderInput(inputs.primary)}
-                    </div>
-                  )}
-                </>
-              )}
-
-              {inputs.advanced.length > 0 && (
-                <div className="flex flex-col gap-2">
-                  <button
-                    onClick={() => setIsOpen(!isOpen)}
-                    className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    <motion.div
-                      animate={{ rotate: isOpen ? 180 : 0 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <ChevronDown className="h-4 w-4" />
-                    </motion.div>
-                    Advanced Settings
-                  </button>
-
-                  <AnimatePresence>
-                    {isOpen && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="overflow-hidden"
-                      >
-                        <ScrollArea className="h-[400px]  border">
-                          <div className="p-4 space-y-4">
-                            {inputs.advanced
-                              .filter((input: any) => input.id !== "prompt")
-                              .map((input: any) => (
-                                <div
-                                  key={input.id}
-                                  className={cn({
-                                    "flex flex-col gap-2": true,
-                                    "flex flex-row justify-between items-center":
-                                      input.type === "switch",
-                                  })}
+                              {param.widget === "slider" ? (
+                                <Slider
+                                  value={[Number(currentValue) || 0]}
+                                  min={param.widgetConfig!.min}
+                                  max={param.widgetConfig!.max}
+                                  step={param.widgetConfig!.step}
+                                  onValueChange={([val]) =>
+                                    handlePrioritizedParamChange(val)
+                                  }
+                                />
+                              ) : param.widget === "number" ? (
+                                <Input
+                                  type="number"
+                                  value={currentValue}
+                                  onChange={(e) =>
+                                    handlePrioritizedParamChange(
+                                      Number(e.target.value)
+                                    )
+                                  }
+                                  min={param.widgetConfig!.min}
+                                  max={param.widgetConfig!.max}
+                                  step={param.widgetConfig!.step}
+                                />
+                              ) : param.widget === "select" ? (
+                                <Select
+                                  value={String(currentValue)}
+                                  onValueChange={handlePrioritizedParamChange}
                                 >
-                                  <Label className="text-muted-foreground">
-                                    {input.label}
-                                  </Label>
-                                  {renderInput(input)}
-                                </div>
-                              ))}
-                          </div>
-                        </ScrollArea>
-                      </motion.div>
+                                  <SelectTrigger>
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {param.widgetConfig.options?.map((option) => (
+                                      <SelectItem
+                                        key={option.value}
+                                        value={option.value}
+                                      >
+                                        {option.label}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              ) : param.widget === "checkbox" ? (
+                                <Switch
+                                  checked={
+                                    typeof currentValue === "boolean"
+                                      ? currentValue
+                                      : Boolean(currentValue)
+                                  }
+                                  onCheckedChange={(checked: boolean) => {
+                                    const newVal =
+                                      typeof currentValue === "number"
+                                        ? (checked ? 1 : 0)
+                                        : checked;
+                                    handlePrioritizedParamChange(newVal);
+                                  }}
+                                />
+                              ) : (
+                                <Input
+                                  type="text"
+                                  value={currentValue}
+                                  onChange={(e) =>
+                                    handlePrioritizedParamChange(e.target.value)
+                                  }
+                                />
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
                     )}
-                  </AnimatePresence>
-                </div>
-              )}
 
-              <div className="flex flex-col gap-1.5">
-                <Label className="text-muted-foreground">Video Source</Label>
-                <div className="flex flex-row h-[300px] w-full bg-sidebar rounded-2xl items-center justify-center overflow-hidden relative">
-                  {streamUrl ? (
-                    <BroadcastWithControls ingestUrl={streamUrl} />
-                  ) : (
-                    <p className="text-muted-foreground">
-                      Waiting for webcam to start...
-                    </p>
+                    <ComfyUIParamsEditor
+                      value={inputValues["prompt"]}
+                      onChange={(value) => handleInputChange("prompt", value)}
+                    />
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-2">
+                    <Label className="text-muted-foreground">
+                      {inputs.primary.label}
+                    </Label>
+                    {renderInput(inputs.primary)}
+                  </div>
+                )}
+              </>
+            )}
+
+            {inputs.advanced.length > 0 && (
+              <div className="flex flex-col gap-2">
+                <button
+                  onClick={() => setIsOpen(!isOpen)}
+                  className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <motion.div
+                    animate={{ rotate: isOpen ? 180 : 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <ChevronDown className="h-4 w-4" />
+                  </motion.div>
+                  Advanced Settings
+                </button>
+
+                <AnimatePresence>
+                  {isOpen && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="overflow-hidden"
+                    >
+                      <ScrollArea className="h-[400px]  border">
+                        <div className="p-4 space-y-4">
+                          {inputs.advanced
+                            .filter((input: any) => input.id !== "prompt")
+                            .map((input: any) => (
+                              <div
+                                key={input.id}
+                                className={cn({
+                                  "flex flex-col gap-2": true,
+                                  "flex flex-row justify-between items-center":
+                                    input.type === "switch",
+                                })}
+                              >
+                                <Label className="text-muted-foreground">
+                                  {input.label}
+                                </Label>
+                                {renderInput(input)}
+                              </div>
+                            ))}
+                        </div>
+                      </ScrollArea>
+                    </motion.div>
                   )}
-                </div>
+                </AnimatePresence>
+              </div>
+            )}
+
+            <div className="flex flex-col gap-1.5">
+              <Label className="text-muted-foreground">Video Source</Label>
+              <div className="flex flex-row h-[300px] w-full bg-sidebar rounded-2xl items-center justify-center overflow-hidden relative">
+                {streamUrl ? (
+                  <BroadcastWithControls ingestUrl={streamUrl} />
+                ) : (
+                  <p className="text-muted-foreground">
+                    Waiting for webcam to start...
+                  </p>
+                )}
               </div>
             </div>
           </div>
@@ -581,6 +653,58 @@ export default function Try({
             }
           }} 
         />
+      )}
+
+      {debugOpen && (
+        <div className="fixed top-0 right-0 h-full w-96 bg-gray-800/80 text-white p-4 shadow-lg z-50 flex flex-col">
+          <div className="flex justify-between items-center mb-2">
+            <h2 className="text-lg font-semibold">Debug Status</h2>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={handleCopyLogs}>
+                <Copy className="mr-2" /> Copy Logs
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => setDebugOpen(false)}>
+                Close
+              </Button>
+            </div>
+          </div>
+          <p>
+            <strong>Stream ID:</strong> {streamId || "N/A"}
+          </p>
+          <div className="mb-2">
+            <span className="mr-2 font-semibold">State:</span>
+            <span className={`inline-block rounded px-2 py-1 text-xs font-bold ${getStatusClass(
+              status
+            )}`}>
+              {status || "Unknown"}
+            </span>
+          </div>
+          <div className="mt-2 flex-1">
+            <div className="h-full flex flex-col">
+              <div style={{ height: "50vh" }} className="h-1/2 overflow-y-auto border-b border-gray-600 pr-2">
+                <h3 className="text-sm font-semibold mb-1">Full Status</h3>
+                <pre className="text-xs whitespace-pre-wrap">
+                  {fullResponse ? JSON.stringify(fullResponse, null, 2) : "Loading..."}
+                </pre>
+              </div>
+              <div className="h-1/2 overflow-y-auto pt-2 pr-2">
+                <h3 className="text-sm font-semibold mb-1">Error History</h3>
+                {errorHistory.length > 0 ? (
+                  errorHistory.map((err, index) => (
+                    <div key={index} className="mb-2">
+                      <div className="text-xs font-bold">
+                        {new Date(err.time).toLocaleString()}
+                      </div>
+                      <div className="text-xs break-all">{err.error}</div>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-xs">No errors recorded</p>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </>
   );

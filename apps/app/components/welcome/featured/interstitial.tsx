@@ -132,7 +132,7 @@ const Interstitial: React.FC<InterstitialProps> = ({
   const hasScheduledRedirect = useRef(false);
 
   const effectiveStreamId = streamId || "";
-  const { status: streamStatus, loading: statusLoading, error: statusError } = useStreamStatus(effectiveStreamId, false);
+  const { status: streamStatus, loading: statusLoading, error: statusError, fullResponse } = useStreamStatus(effectiveStreamId, false);
 
   useEffect(() => {
     const triggerCamera = async () => {
@@ -183,17 +183,18 @@ const Interstitial: React.FC<InterstitialProps> = ({
   useEffect(() => {
     if ((streamStatus === "ONLINE" || streamStatus === "DEGRADED_INFERENCE") &&
         !redirected &&
-        !hasScheduledRedirect.current) {
+        !hasScheduledRedirect.current &&
+        fullResponse?.inference_status?.fps > 0) {
       hasScheduledRedirect.current = true;
+      if (selectedPrompt && onPromptApply) {
+        onPromptApply(selectedPrompt);
+      }
       redirectTimerRef.current = setTimeout(() => {
-        if (selectedPrompt && onPromptApply) {
-          onPromptApply(selectedPrompt);
-        }
         setRedirected(true);
         onReady();
-      }, 45000);
+      }, 2000);
     }
-  }, [streamStatus, redirected, selectedPrompt, onPromptApply, onReady]);
+  }, [streamStatus, redirected, selectedPrompt, onPromptApply, onReady, fullResponse]);
 
   useEffect(() => {
     if (currentScreen === "prompts") {
@@ -347,7 +348,13 @@ const Interstitial: React.FC<InterstitialProps> = ({
                   </p>
                   {streamId && (
                     <div className="mt-2 text-xs text-muted-foreground">
-                      {getStatusMessage()}
+                      {statusLoading 
+                        ? (streamStatus && streamStatus !== "OFFLINE"
+                            ? "Stream is now active and being processed. You will be automatically redirected in a moment."
+                            : "Stream is getting started, please wait...")
+                        : statusError
+                        ? "Error retrieving status"
+                        : null}
                     </div>
                   )}
                   <div className="mt-4 flex flex-col items-center justify-center">
