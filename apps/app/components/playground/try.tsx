@@ -110,6 +110,7 @@ export default function Try({
   const [streamKey, setStreamKey] = useState<string | null>(null);
   const [streamKilled, setStreamKilled] = useState(false);
   const { timeRemaining } = useTrialTimer();
+  const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
     const handleTrialExpired = () => {
@@ -405,6 +406,12 @@ export default function Try({
     };
   }, []);
 
+  useEffect(() => {
+    return () => {
+      setIsVisible(false);
+    };
+  }, []);
+
   return (
     <>
       <div className={streamKilled ? "opacity-50 pointer-events-none" : ""}>
@@ -648,11 +655,8 @@ export default function Try({
             <div className="flex flex-col gap-1.5">
               <Label className="text-muted-foreground">Video Source</Label>
               <div className="flex flex-row h-[300px] w-full bg-sidebar rounded-2xl items-center justify-center overflow-hidden relative">
-                {streamUrl ? (
-                  <BroadcastWithControls 
-                    ingestUrl={streamUrl} 
-                    onUnmount={handleBroadcastCleanup}
-                  />
+                {streamUrl && isVisible ? (
+                  <BroadcastWithControls ingestUrl={streamUrl} />
                 ) : (
                   <p className="text-muted-foreground">
                     Waiting for webcam to start...

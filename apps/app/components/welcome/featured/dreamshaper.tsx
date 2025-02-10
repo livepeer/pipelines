@@ -55,6 +55,7 @@ export default function Dreamshaper({
   const { currentPromptIndex } = usePrompts();
   const [inputValue, setInputValue] = useState("");
   const isMobile = useIsMobile();
+  const [isVisible, setIsVisible] = useState(true);
 
   const { authenticated, login } = usePrivy();
   const { timeRemaining, formattedTime } = useTrialTimer();
@@ -79,6 +80,7 @@ export default function Dreamshaper({
   useEffect(() => {
     return () => {
       handleBroadcastCleanup();
+      setIsVisible(false);
     };
   }, []);
 
@@ -185,10 +187,7 @@ export default function Dreamshaper({
               <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
             </div>
           ) : (
-            <BroadcastWithControls 
-              ingestUrl={streamUrl} 
-              onUnmount={handleBroadcastCleanup}
-            />
+            streamUrl && isVisible && <BroadcastWithControls ingestUrl={streamUrl} />
           )}
         </div>
       ) : (
@@ -198,10 +197,7 @@ export default function Dreamshaper({
               <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
             </div>
           ) : (
-            <BroadcastWithControls 
-              ingestUrl={streamUrl}
-              onUnmount={handleBroadcastCleanup} 
-            />
+            streamUrl && isVisible && <BroadcastWithControls ingestUrl={streamUrl} />
           )}
         </div>
       )}
