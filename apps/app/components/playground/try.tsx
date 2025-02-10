@@ -17,7 +17,7 @@ import { Switch } from "@repo/design-system/components/ui/switch";
 import { Slider } from "@repo/design-system/components/ui/slider";
 import { cn } from "@repo/design-system/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, HelpCircle } from "lucide-react";
+import { ChevronDown, HelpCircle, Copy } from "lucide-react";
 import { ScrollArea } from "@repo/design-system/components/ui/scroll-area";
 import { Button } from "@repo/design-system/components/ui/button";
 import { toast } from "sonner";
@@ -331,6 +331,13 @@ export default function Try({
     }
   };
 
+  const handleCopyLogs = () => {
+    if (fullResponse) {
+      navigator.clipboard.writeText(JSON.stringify(fullResponse, null, 2));
+      toast.success("Logs copied to clipboard");
+    }
+  };
+
   return (
     <>
       <div className={streamKilled ? "opacity-50 pointer-events-none" : ""}>
@@ -342,7 +349,11 @@ export default function Try({
                   Save Parameters
                 </Button>
                 {isAdmin && (
-                  <Button variant="outline" className="ml-2" onClick={() => setDebugOpen(!debugOpen)}>
+                  <Button
+                    variant="outline"
+                    className="ml-2"
+                    onClick={() => setDebugOpen(!debugOpen)}
+                  >
                     {debugOpen ? "Close Debug" : "Open Debug"}
                   </Button>
                 )}
@@ -595,12 +606,17 @@ export default function Try({
       )}
 
       {debugOpen && (
-        <div className="fixed top-0 right-0 h-full w-80 bg-gray-800/80 text-white p-4 shadow-lg z-50">
+        <div className="fixed top-0 right-0 h-full w-96 bg-gray-800/80 text-white p-4 shadow-lg z-50 overflow-y-auto">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-lg font-semibold">Debug Status</h2>
-            <Button variant="outline" size="sm" onClick={() => setDebugOpen(false)}>
-              Close
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={handleCopyLogs}>
+                <Copy className="mr-2" /> Copy Logs
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => setDebugOpen(false)}>
+                Close
+              </Button>
+            </div>
           </div>
           <div>
             <p>
