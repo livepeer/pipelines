@@ -132,7 +132,7 @@ const Interstitial: React.FC<InterstitialProps> = ({
   const hasScheduledRedirect = useRef(false);
 
   const effectiveStreamId = streamId || "";
-  const { status: streamStatus, loading: statusLoading, error: statusError } = useStreamStatus(effectiveStreamId, false);
+  const { status: streamStatus, loading: statusLoading, error: statusError, fullResponse } = useStreamStatus(effectiveStreamId, false);
 
   useEffect(() => {
     const triggerCamera = async () => {
@@ -183,7 +183,8 @@ const Interstitial: React.FC<InterstitialProps> = ({
   useEffect(() => {
     if ((streamStatus === "ONLINE" || streamStatus === "DEGRADED_INFERENCE") &&
         !redirected &&
-        !hasScheduledRedirect.current) {
+        !hasScheduledRedirect.current &&
+        fullResponse?.inference_status?.fps > 0) {
       hasScheduledRedirect.current = true;
       redirectTimerRef.current = setTimeout(() => {
         if (selectedPrompt && onPromptApply) {
@@ -191,9 +192,9 @@ const Interstitial: React.FC<InterstitialProps> = ({
         }
         setRedirected(true);
         onReady();
-      }, 45000);
+      }, 2000);
     }
-  }, [streamStatus, redirected, selectedPrompt, onPromptApply, onReady]);
+  }, [streamStatus, redirected, selectedPrompt, onPromptApply, onReady, fullResponse]);
 
   useEffect(() => {
     if (currentScreen === "prompts") {
