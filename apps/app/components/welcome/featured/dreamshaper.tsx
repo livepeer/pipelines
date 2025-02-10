@@ -65,6 +65,23 @@ export default function Dreamshaper({
     }
   };
 
+  const handleBroadcastCleanup = () => {
+    navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+      .then(stream => {
+        stream.getTracks().forEach(track => {
+          track.stop();
+        });
+      })
+      .catch(err => console.error('Error cleaning up media tracks:', err));
+  };
+
+  // Add cleanup effect
+  useEffect(() => {
+    return () => {
+      handleBroadcastCleanup();
+    };
+  }, []);
+
   return (
     <div className="relative flex flex-col h-[calc(100vh-10rem)] overflow-hidden">
       {/* Header section */}
@@ -168,7 +185,10 @@ export default function Dreamshaper({
               <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
             </div>
           ) : (
-            <BroadcastWithControls ingestUrl={streamUrl} />
+            <BroadcastWithControls 
+              ingestUrl={streamUrl} 
+              onUnmount={handleBroadcastCleanup}
+            />
           )}
         </div>
       ) : (
@@ -178,7 +198,10 @@ export default function Dreamshaper({
               <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
             </div>
           ) : (
-            <BroadcastWithControls ingestUrl={streamUrl} />
+            <BroadcastWithControls 
+              ingestUrl={streamUrl}
+              onUnmount={handleBroadcastCleanup} 
+            />
           )}
         </div>
       )}

@@ -388,6 +388,23 @@ export default function Try({
     }
   };
 
+  const handleBroadcastCleanup = () => {
+    navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+      .then(stream => {
+        stream.getTracks().forEach(track => {
+          track.stop();
+        });
+      })
+      .catch(err => console.error('Error cleaning up media tracks:', err));
+  };
+
+  // Add cleanup effect
+  useEffect(() => {
+    return () => {
+      handleBroadcastCleanup();
+    };
+  }, []);
+
   return (
     <>
       <div className={streamKilled ? "opacity-50 pointer-events-none" : ""}>
@@ -632,7 +649,10 @@ export default function Try({
               <Label className="text-muted-foreground">Video Source</Label>
               <div className="flex flex-row h-[300px] w-full bg-sidebar rounded-2xl items-center justify-center overflow-hidden relative">
                 {streamUrl ? (
-                  <BroadcastWithControls ingestUrl={streamUrl} />
+                  <BroadcastWithControls 
+                    ingestUrl={streamUrl} 
+                    onUnmount={handleBroadcastCleanup}
+                  />
                 ) : (
                   <p className="text-muted-foreground">
                     Waiting for webcam to start...

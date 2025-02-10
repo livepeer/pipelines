@@ -17,15 +17,25 @@ import * as Broadcast from "@livepeer/react/broadcast";
 import * as Popover from "@radix-ui/react-popover";
 import { cn } from "@repo/design-system/lib/utils";
 import { CheckIcon, ChevronDownIcon, XIcon } from "lucide-react";
-import React from "react";
+import React, { useEffect } from "react";
 
 import { toast } from "sonner";
 
 export function BroadcastWithControls({
   ingestUrl,
+  onUnmount,
 }: {
   ingestUrl: string | null;
+  onUnmount?: () => void;
 }) {
+  useEffect(() => {
+    return () => {
+      if (onUnmount) {
+        onUnmount();
+      }
+    };
+  }, [onUnmount]);
+
   return !ingestUrl ? (
     <BroadcastLoading
       title="Invalid stream key"
