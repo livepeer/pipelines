@@ -186,10 +186,10 @@ const Interstitial: React.FC<InterstitialProps> = ({
         !hasScheduledRedirect.current &&
         fullResponse?.inference_status?.fps > 0) {
       hasScheduledRedirect.current = true;
+      if (selectedPrompt && onPromptApply) {
+        onPromptApply(selectedPrompt);
+      }
       redirectTimerRef.current = setTimeout(() => {
-        if (selectedPrompt && onPromptApply) {
-          onPromptApply(selectedPrompt);
-        }
         setRedirected(true);
         onReady();
       }, 2000);
