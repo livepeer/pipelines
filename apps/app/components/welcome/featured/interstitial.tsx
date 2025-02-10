@@ -347,7 +347,13 @@ const Interstitial: React.FC<InterstitialProps> = ({
                   </p>
                   {streamId && (
                     <div className="mt-2 text-xs text-muted-foreground">
-                      {getStatusMessage()}
+                      {statusLoading 
+                        ? (streamStatus && streamStatus !== "OFFLINE"
+                            ? "Stream is now active and being processed. You will be automatically redirected in a moment."
+                            : "Stream is getting started, please wait...")
+                        : statusError
+                        ? "Error retrieving status"
+                        : null}
                     </div>
                   )}
                   <div className="mt-4 flex flex-col items-center justify-center">
