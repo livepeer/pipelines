@@ -3,17 +3,14 @@ title: "Advanced Node Usage"
 description: "Advanced techniques for using custom nodes in ComfyStream"
 icon: "code"
 ---
+Congratulations on completing your first pipeline! Now, let's explore a usage of some advanced nodes and features.
 
-While executing a workflow many times per second presents unique challenges, it also opens up new opportunities. Modulating parameters over time is more straightforward than in ComfyUI's normal batch paradigm.
-
-<Note>
-The techniques described here are specific to real-time streaming workflows and may not work in standard ComfyUI batch processing.
-</Note>
+While executing a workflow many times per second presents unique challenges, it also opens up new opportunities. For instance, modulating parameters over time is more straightforward than in ComfyUI's normal batch paradigm.
 
 ## Reactive Controls
 
 ### RealtimeNodes
-RealtimeNodes were created specifically for ComfyStream and enable unique reactive behaviors. Used with [ComfyUI-Logic nodes](https://github.com/theUpsider/ComfyUI-Logic), they enable sophisticated control flows.
+RealtimeNodes were created specifically for ComfyStream and enable unique reactive behaviors. Used in combination with [ComfyUI-Logic nodes](https://github.com/theUpsider/ComfyUI-Logic) and other nodes in the ecosystem, they enable sophisticated control flows.
 
 <Tip>
 These nodes are under active development, with new features being added often. Feedback is welcome!
@@ -42,6 +39,9 @@ Common use cases:
 - Cycling through prompts over time
 - Triggering a certain prompt according to a condition
 
+Example:
+- [Shape Resize Control](https://github.com/ryanontheinside/ComfyUI_RealtimeNodes/blob/main/examples/shape_resize_example_API.json) - Demonstrates transitioning the shape of a mask in a composite workflowusing FloatControl. This simple example demonstrates a concept that can be extrapolated to more complex behaviors.
+
 ### Motion Detection 
 
 <Warning>
@@ -55,7 +55,15 @@ Use cases:
 - Motion-triggered mask intensity
 - Dynamic parameter adjustment based on movement
 
+Examples:
+- [Motion Detected Bluring](https://github.com/ryanontheinside/ComfyUI_RealtimeNodes/blob/main/examples/motioncontrol.json) - This example demonstrates using two regions of interest to trigger different behaviors. 
+- [Motion Triggered Processing](https://github.com/ryanontheinside/ComfyUI_RealtimeNodes/blob/main/examples/on_off_example_api.json) - This example demonstrates using motion detection in combination with a logic node to acheive an 'on-off' effect.
+
 ### Tracking and Masking
+
+<Warning>
+Hand tracking features are currently in experimental beta
+</Warning>
 
 <AccordionGroup>
   <Accordion title="HandTracking">
@@ -68,6 +76,9 @@ Use cases:
   </Accordion>
 </AccordionGroup>
 
+Example:
+- [Hand Tracking with Dynamic Masks](https://github.com/ryanontheinside/ComfyUI_RealtimeNodes/blob/main/examples/hand_tracking_mask_resizer.json) - Demonstrates real-time hand tracking, as well as dynamic mask resizing based on the proximity of the hands to the mask.
+
 ### Logic Control
 - `LazyCondition` - Skip portions of a workflow conditionally
    
@@ -76,20 +87,20 @@ Use cases:
    - Output different images based on motion detection results
    - Switch between different processing paths based on input frame similarity
 
+Example:
+- [Similarity Filter](https://github.com/ryanontheinside/ComfyUI_RealtimeNodes/blob/main/examples/similarity_filter_example_api.json) - This is a simple demonstration of a powerful technique, which allows for skipping a computationally expensive path in a workflow based on a condition.
+
 ### Utility Nodes
 - `FPSMonitor` - Performance overlay with image and mask output
 - `QuickShapeMask` - Fast shape mask generation
 - `DTypeConverter` - Convert between mask data types
 - `FastWebcamCapture` - Optimized webcam input
 - `SimilarityFilter` - Skip processing of similar frames
+- `StateResetNode` - Resets the state of all nodes in the workflow when triggered
 
 <Note>
 Audio reactivity features are coming soon!
 </Note>
 
 ### Advanced Examples
-These are real-world examples of advanced usage of the above nodes and concepts.
-
-<Info>
-Example workflows demonstrating each feature can be found in the [ComfyUI_RealTimeNodes repository](https://github.com/ryanontheinside/ComfyUI_RealTimeNodes/tree/main/examples).
-</Info> 
+Please refer to the [ComfyUI_RealTimeNodes repository](https://github.com/ryanontheinside/ComfyUI_RealTimeNodes/tree/main/examples) for more examples demonstrating each feature.
