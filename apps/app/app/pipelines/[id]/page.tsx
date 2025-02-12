@@ -16,17 +16,18 @@ export async function generateMetadata({
   params: { id: string };
 }): Promise<Metadata> {
   const pipelineId = params.id;
+  const pipelineUrl = `${process.env.NEXT_PUBLIC_APP_URL}/pipelines/${pipelineId}`;
 
   // Return default metadata for create page
   if (pipelineId === "create") {
     return {
-      title: "Create Pipeline",
+      title: "Livepeer Pipelines | Create Pipeline",
       openGraph: {
         title: "Create New Pipeline",
         description: "Create a new video processing pipeline on Livepeer",
         type: "website",
         siteName: "Livepeer Pipelines",
-        url: `/pipelines/create`,
+        url: pipelineUrl,
       },
     };
   }
@@ -35,14 +36,14 @@ export async function generateMetadata({
   const pipeline = await getCachedPipeline(pipelineId);
 
   return {
-    title: pipeline.name,
+    title: `Livepeer Pipelines | ${pipeline.name}`,
     openGraph: {
       title: pipeline.name,
       description:
         pipeline.description || "Video processing pipeline on Livepeer",
       type: "website",
       siteName: "Livepeer Pipelines",
-      url: `${process.env.NEXT_PUBLIC_APP_URL}/pipelines/${pipelineId}`,
+      url: pipelineUrl,
       images: pipeline.cover_image
         ? [{ url: pipeline.cover_image }]
         : undefined,
