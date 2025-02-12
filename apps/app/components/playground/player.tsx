@@ -26,7 +26,7 @@ export function LPPLayer({
   return (
     <div className="aspect-video">
       <iframe
-        src={`https://${isProduction() ? "lvpr.tv" : "monster.lvpr.tv"}/?v=${output_playback_id}&lowLatency=force&backoffMax=1000`}
+        src={`https://${isProduction() ? "lvpr.tv" : "monster.lvpr.tv"}/?v=${output_playback_id}&lowLatency=force&backoffMax=1000&ingestPlayback=true`}
         className="w-full h-full"
       />
     </div>
