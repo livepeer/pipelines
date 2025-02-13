@@ -5,6 +5,7 @@ import Interstitial from "@/components/welcome/featured/interstitial";
 import { ReactElement, useState, useEffect } from "react";
 import { useDreamshaper } from "@/components/welcome/featured/useDreamshaper";
 import { usePrivy } from "@privy-io/react-auth";
+import { useStreamStatus } from "@/hooks/useStreamStatus";
 
 const UNREGISTERED_APP_TRIAL_TIMEOUT = 10 * 60 * 1000; 
 
@@ -14,6 +15,10 @@ const App = (): ReactElement => {
   const [streamKilled, setStreamKilled] = useState(false);
   const dreamshaperState = useDreamshaper();
   const { stream, outputPlaybackId, handleUpdate, loading } = dreamshaperState;
+
+  const [pendingPrompt, setPendingPrompt] = useState<string | null>(null);
+
+  const { status } = useStreamStatus(stream?.id || "", false);
 
   useEffect(() => {
     const hasVisited = localStorage.getItem("hasSeenLandingPage");
@@ -61,11 +66,19 @@ const App = (): ReactElement => {
   };
 
   const handlePromptApply = (prompt: string) => {
-    console.log("Auto-applying selected prompt silently:", prompt);
-    if (handleUpdate) {
-      handleUpdate(prompt, { silent: true });
-    }
+    console.log("Saving selected prompt silently for later application:", prompt);
+    setPendingPrompt(prompt);
   };
+
+  useEffect(() => {
+    if (pendingPrompt && status === "ONLINE") {
+      console.log("Stream is ONLINE, applying pending prompt:", pendingPrompt);
+      if (handleUpdate) {
+        handleUpdate(pendingPrompt, { silent: true });
+      }
+      setPendingPrompt(null);
+    }
+  }, [pendingPrompt, status, handleUpdate]);
 
   return (
     <div className="relative">
