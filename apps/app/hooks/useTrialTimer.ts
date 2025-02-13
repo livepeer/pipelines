@@ -47,11 +47,17 @@ export function useTrialTimer() {
     }
   }, [timeRemaining, authenticated, ready]);
 
+  const formatTime = (minutes: number, seconds: number) => {
+    const paddedMinutes = minutes.toString().padStart(2, '0');
+    const paddedSeconds = seconds.toString().padStart(2, '0');
+    return `${paddedMinutes}:${paddedSeconds}`;
+  };
+
   const formattedTime = useMemo(() => {
     if (timeRemaining === null) return "";
     const minutes = Math.floor(timeRemaining / 60);
     const seconds = timeRemaining % 60;
-    return `${minutes}:${seconds < 10 ? "0" + seconds : seconds}`;
+    return formatTime(minutes, seconds);
   }, [timeRemaining]);
 
   return { timeRemaining, formattedTime };

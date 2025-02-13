@@ -120,26 +120,13 @@ export default function Dreamshaper({
   return (
     <div className="relative flex flex-col h-[calc(100vh-10rem)] overflow-hidden">
       {/* Header section */}
-      <div className="flex justify-between items-start p-3">
+      <div className="flex justify-center items-center p-3">
         <div className="mx-auto text-center">
           <h1 className="text-2xl font-bold">Livepeer Pipelines</h1>
           <p className="text-muted-foreground">
             Transform your video in real-time with AI - and build your own workflow with ComfyUI
           </p>
         </div>
-        {!authenticated && timeRemaining !== null && (
-          <div className="text-right absolute right-3">
-            <div className="text-sm font-medium">
-              Time remaining: {formattedTime}
-            </div>
-            <button
-              onClick={login}
-              className="text-xs text-muted-foreground cursor-pointer bg-transparent border-0"
-            >
-              Sign in to continue streaming
-            </button>
-          </div>
-        )}
       </div>
 
       {/* Main content area */}
@@ -148,13 +135,19 @@ export default function Dreamshaper({
           ref={outputPlayerRef}
           className="w-full max-w-[calc(min(100%,calc((100vh-20rem)*16/9)))] aspect-video bg-sidebar rounded-2xl overflow-hidden relative"
         >
+          {/* Timer overlay */}
+          {timeRemaining !== null && (
+            <div className="absolute top-4 right-4 bg-neutral-800 text-gray-400 px-6 py-1 text-xs rounded-full border border-gray-500">
+              <span className="text-[10px] mr-2">left</span> {formattedTime}
+            </div>
+          )}
           {loading ? (
             <div className="w-full h-full flex items-center justify-center">
               <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
             </div>
           ) : streamKilled ? (
             <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-              Thank you for trying out Livepeer's AI pipelines. Please sign in to continue streaming.
+              Thank you for trying out Livepeer's AI pipelines.
             </div>
           ) : outputPlaybackId ? (
             <>
