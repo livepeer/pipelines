@@ -78,8 +78,9 @@
       "group": "Getting Started",
       "pages": [
         "technical/getting-started/install-comfystream",
-        "technical/getting-started/publish-pipeline"  
-       ]
+        "technical/getting-started/publish-pipeline",
+        "quickstart"
+      ]
     },
     {
       "group": "Custom Nodes",
