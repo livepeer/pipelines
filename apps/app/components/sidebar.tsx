@@ -142,7 +142,7 @@ export const GlobalSidebar = ({ children }: GlobalSidebarProperties) => {
     ],
     footer: [
       {
-        title: "Community Support",
+        title: "Join Community",
         url: "https://discord.gg/livepeer",
         external: true,
         icon: DiscordLogoIcon,
@@ -171,9 +171,15 @@ export const GlobalSidebar = ({ children }: GlobalSidebarProperties) => {
 
   return (
     <>
-      <Sidebar variant="inset" collapsible="icon">
+      <Sidebar collapsible="icon">
         <SidebarHeader>
-          <Link href="/" className="flex items-center justify-between ml-2">
+          <Link
+            href="/"
+            className={cn(
+              "flex items-center justify-between ml-2",
+              !_sidebar.openMobile && "-mt-8"
+            )}
+          >
             {_sidebar.open ? (
               <div className="flex items-center gap-2">
                 <svg

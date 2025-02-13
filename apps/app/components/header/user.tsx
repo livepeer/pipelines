@@ -48,80 +48,72 @@ export default function User() {
     }
   }, [user]);
 
-  return (
-    <div>
-      {authenticated ? (
-        <DropdownMenu>
-          <DropdownMenuTrigger className="mt-2">
-            <Avatar className="h-6 w-6">
+  return authenticated ? (
+    <DropdownMenu>
+      <DropdownMenuTrigger className="mt-2">
+        <Avatar className="h-6 w-6">
+          <AvatarImage
+            src={`https://github.com/${user?.github?.username}.png`}
+            alt={name || ""}
+            className="rounded-lg"
+          />
+          <AvatarFallback className="bg-gray-300 dark:bg-gray-800">
+            <span className="capitalize">{name?.charAt(0)}</span>
+          </AvatarFallback>
+        </Avatar>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="w-72 p-3 pb-1" side="right" align="end">
+        <div>
+          <p className="mb-2 text-muted-foreground text-sm">{email}</p>
+          <div className="mb-2 flex items-center gap-2">
+            <Avatar className="h-10 w-10 rounded-lg">
               <AvatarImage
                 src={`https://github.com/${user?.github?.username}.png`}
                 alt={name || ""}
                 className="rounded-lg"
               />
-              <AvatarFallback className="bg-gray-300 dark:bg-gray-800">
+              <AvatarFallback className="rounded-lg">
                 <span className="capitalize">{name?.charAt(0)}</span>
               </AvatarFallback>
             </Avatar>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            className="w-72 p-3 pb-1"
-            side="right"
-            align="end"
-          >
-            <div>
-              <p className="mb-2 text-muted-foreground text-sm">{email}</p>
-              <div className="mb-2 flex items-center gap-2">
-                <Avatar className="h-10 w-10 rounded-lg">
-                  <AvatarImage
-                    src={`https://github.com/${user?.github?.username}.png`}
-                    alt={name || ""}
-                    className="rounded-lg"
-                  />
-                  <AvatarFallback className="rounded-lg">
-                    <span className="capitalize">{name?.charAt(0)}</span>
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex flex-col ">
-                  <span className="text-sm">{name}</span>
-                  <span className="text-muted-foreground text-sm ">
-                    via {provider}
-                  </span>
-                </div>
-              </div>
+            <div className="flex flex-col ">
+              <span className="text-sm">{name}</span>
+              <span className="text-muted-foreground text-sm ">
+                via {provider}
+              </span>
             </div>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem className="h-10" onClick={logout}>
-              <LogOut />
-              Sign Out
-            </DropdownMenuItem>
-            <DropdownMenuItem className="h-10" onClick={toggleTheme}>
-              {theme === "light" ? <SunIcon /> : <MoonIcon />}
-              Toggle Theme
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      ) : (
-        <Tooltip>
-          <TooltipTrigger>
-            <Button
-              onClick={() => {
-                track("login_clicked", undefined, user || undefined);
-                login();
-              }}
-              disabled={disableLogin}
-              variant="ghost"
-              size="icon"
-              className="mt-2 items-center"
-            >
-              <UserIcon />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent side="right" align="center">
-            Sign in
-          </TooltipContent>
-        </Tooltip>
-      )}
-    </div>
+          </div>
+        </div>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem className="h-10" onClick={logout}>
+          <LogOut />
+          Sign Out
+        </DropdownMenuItem>
+        <DropdownMenuItem className="h-10" onClick={toggleTheme}>
+          {theme === "light" ? <SunIcon /> : <MoonIcon />}
+          Toggle Theme
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  ) : (
+    <Tooltip>
+      <TooltipTrigger>
+        <Button
+          onClick={() => {
+            track("login_clicked", undefined, user || undefined);
+            login();
+          }}
+          disabled={disableLogin}
+          variant="ghost"
+          size="icon"
+          className="mt-2 items-center"
+        >
+          <UserIcon />
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent side="right" align="center">
+        Sign in
+      </TooltipContent>
+    </Tooltip>
   );
 }

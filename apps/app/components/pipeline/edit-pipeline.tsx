@@ -24,14 +24,16 @@ export default function EditPipeline({
 }) {
   const router = useRouter();
   const { authenticated, user, ready: isAuthLoaded } = usePrivy();
-  
+
   // currentStep === 1: edit basic pipeline info
   // currentStep === 2: edit prioritized params via the selector
   const [currentStep, setCurrentStep] = useState(1);
 
   const [formData, setFormData] = useState<Record<string, unknown>>(() => {
-    const defaultValue = (pipeline.config as any)?.inputs?.primary?.defaultValue || pipeline.config;
-    
+    const defaultValue =
+      (pipeline.config as any)?.inputs?.primary?.defaultValue ||
+      pipeline.config;
+
     const initialFormData = {
       id: pipeline.id,
       name: pipeline.name,
@@ -64,7 +66,7 @@ export default function EditPipeline({
     try {
       const formDataToSend = new FormData();
       Object.entries(finalData).forEach(([key, value]) => {
-        if (key === 'prioritized_params' && typeof value === 'string') {
+        if (key === "prioritized_params" && typeof value === "string") {
           formDataToSend.append(decamelize(key), value);
         } else {
           formDataToSend.append(decamelize(key), value as any);
@@ -117,11 +119,21 @@ export default function EditPipeline({
   }, []);
 
   if (!isAuthLoaded) {
-    return <LoaderCircleIcon className="w-8 h-8 animate-spin" />;
+    return (
+      <div className="p-4">
+        <h3 className="font-medium text-lg">Edit Pipeline</h3>
+        <LoaderCircleIcon className="w-8 h-8 animate-spin mt-4" />
+      </div>
+    );
   }
 
   if (!authenticated) {
-    return <LoggedOutComponent text="Sign in to edit pipelines" />;
+    return (
+      <div className="p-4">
+        <h3 className="font-medium text-lg">Edit Pipeline</h3>
+        <LoggedOutComponent text="Sign in to edit pipelines" />
+      </div>
+    );
   }
 
   return (
@@ -198,10 +210,7 @@ export default function EditPipeline({
             </div>
 
             <div className="flex justify-end">
-              <Button
-                className="mt-4 uppercase text-xs"
-                onClick={handleNext}
-              >
+              <Button className="mt-4 uppercase text-xs" onClick={handleNext}>
                 Next: Edit Prioritized Params
               </Button>
             </div>
