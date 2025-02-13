@@ -3,15 +3,12 @@ import { GlobalSidebar } from "@/components/sidebar";
 import { SidebarProvider } from "@repo/design-system/components/ui/sidebar";
 import { DesignSystemProvider } from "@repo/design-system/providers";
 import type { ReactNode } from "react";
-import { SidebarTrigger } from "@repo/design-system/components/ui/sidebar";
-import Header from "@/components/header/index";
-import { Separator } from "@repo/design-system/components/ui/separator";
 import Intercom from "@/components/intercom";
-import { AlarmCheck } from "lucide-react";
 import AlphaBanner from "@/components/header/alpha-banner";
 import { Metadata } from "next";
 import { MixpanelProvider } from "@/components/analytics/MixpanelProvider";
 import { VersionInfo } from "@/components/footer/version-info";
+import MobileSidebarTrigger from "@/components/header/sidebar-trigger";
 
 type RootLayoutProperties = {
   readonly children: ReactNode;
@@ -29,6 +26,7 @@ const RootLayout = ({ children }: RootLayoutProperties) => (
           <SidebarProvider open={false}>
             <GlobalSidebar>
               <div>
+                <MobileSidebarTrigger />
                 <div className="flex h-[calc(100vh-5rem)] flex-col overflow-y-auto px-6 py-4">
                   <AlphaBanner />
                   {children}
