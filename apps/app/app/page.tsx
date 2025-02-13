@@ -69,7 +69,7 @@ const App = (): ReactElement => {
 
   return (
     <div className="relative">
-      <Dreamshaper {...dreamshaperState} streamKilled={streamKilled} />
+      <Dreamshaper {...dreamshaperState} streamKilled={streamKilled} fullResponse={dreamshaperState.fullResponse} />
       <ClientSideTracker eventName="home_page_view" />
       {showInterstitial && (
         <Interstitial
