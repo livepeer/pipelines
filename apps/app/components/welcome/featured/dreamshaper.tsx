@@ -5,7 +5,7 @@ import { TooltipTrigger } from "@repo/design-system/components/ui/tooltip";
 import { TooltipContent } from "@repo/design-system/components/ui/tooltip";
 import { Tooltip } from "@repo/design-system/components/ui/tooltip";
 import { motion, AnimatePresence } from "framer-motion";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useDreamshaper } from "./useDreamshaper";
 import { BroadcastWithControls } from "@/components/playground/broadcast";
 import { Loader2 } from "lucide-react";
@@ -55,9 +55,35 @@ export default function Dreamshaper({
   const { currentPromptIndex } = usePrompts();
   const [inputValue, setInputValue] = useState("");
   const isMobile = useIsMobile();
+  const outputPlayerRef = useRef<HTMLDivElement>(null);
+  const [dragConstraints, setDragConstraints] = useState({ top: 0, left: 0, right: 0, bottom: 0 });
 
   const { authenticated, login } = usePrivy();
   const { timeRemaining, formattedTime } = useTrialTimer();
+
+  useEffect(() => {
+    const calculateConstraints = () => {
+      if (outputPlayerRef.current) {
+        const playerRect = outputPlayerRef.current.getBoundingClientRect();
+        const broadcastWidth = 320;
+        const broadcastHeight = 180;
+        const margin = 32;
+
+        setDragConstraints({
+          top: -playerRect.height + broadcastHeight + margin,
+          left: -playerRect.width + broadcastWidth + margin,
+          right: 0,
+          bottom: 0
+        });
+      }
+    };
+
+    calculateConstraints();
+
+    window.addEventListener('resize', calculateConstraints);
+
+    return () => window.removeEventListener('resize', calculateConstraints);
+  }, [outputPlaybackId]);
 
   const submitPrompt = () => {
     if (inputValue) {
@@ -92,7 +118,10 @@ export default function Dreamshaper({
 
       {/* Main content area */}
       <div className="flex-1 min-h-0 p-4 flex items-center justify-center">
-        <div className="w-full max-w-[calc(min(100%,calc((100vh-20rem)*16/9)))] aspect-video bg-sidebar rounded-2xl overflow-hidden relative">
+        <div 
+          ref={outputPlayerRef}
+          className="w-full max-w-[calc(min(100%,calc((100vh-20rem)*16/9)))] aspect-video bg-sidebar rounded-2xl overflow-hidden relative"
+        >
           {loading ? (
             <div className="w-full h-full flex items-center justify-center">
               <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -105,9 +134,15 @@ export default function Dreamshaper({
             <>
               <LPPLayer output_playback_id={outputPlaybackId} />
               {!isMobile && streamUrl && (
-                <div className="absolute bottom-4 right-4 w-80 h-[180px] shadow-lg z-50 rounded-xl overflow-hidden border border-white/10">
+                <motion.div
+                  drag
+                  dragConstraints={dragConstraints}
+                  dragElastic={0}
+                  dragMomentum={false}
+                  className="absolute bottom-4 right-4 w-80 h-[180px] shadow-lg z-50 rounded-xl overflow-hidden border border-white/10 cursor-move"
+                >
                   <BroadcastWithControls ingestUrl={streamUrl} />
-                </div>
+                </motion.div>
               )}
             </>
           ) : (
