@@ -7,7 +7,6 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@repo/design-system/components/ui/dialog";
-import { useRouter } from "next/navigation";
 
 interface TrialExpiredModalProps {
   open: boolean;
@@ -16,33 +15,39 @@ interface TrialExpiredModalProps {
 
 export function TrialExpiredModal({ open, onOpenChange }: TrialExpiredModalProps) {
   const { login } = usePrivy();
-  const router = useRouter();
-
-  const handleClose = () => {
-    onOpenChange(false);
-    router.push('/explore');  // Redirect to explore page when closed
-  };
 
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md">
+    <Dialog open={open} onOpenChange={() => {}}>
+      <DialogContent className="trial-expired-content bg-[#161616] border border-[#232323] rounded-xl p-8 max-w-2xl w-full mx-auto shadow-lg">
         <DialogHeader>
-          <DialogTitle>Session Timed Out</DialogTitle>
-          <DialogDescription className="text-center">
-            Thank you for trying out Livepeer pipelines. Please create an account to continue exploring the possibilities of AI video.
+          <DialogTitle className="text-2xl font-semibold text-left">
+            Time expired on your free version
+          </DialogTitle>
+          <DialogDescription className="text-muted-foreground text-left">
+            In order to continue streaming, please sign in using discord
           </DialogDescription>
         </DialogHeader>
-        <div className="flex flex-col items-center gap-4 mt-4">
-          <Button onClick={login} className="w-full">Sign Up</Button>
+        <div className="mt-4 flex justify-center">
+          <img src="/images/free-trial.svg" alt="Trial expired illustration" />
+        </div>
+        <div className="flex gap-4 mt-8">
           <Button
-            variant="outline"
             onClick={() => window.open("https://discord.gg/livepeer", "_blank")}
-            className="w-full"
+            size="lg"
+            className="rounded-full h-12 flex-1 bg-black text-white hover:bg-black/90"
           >
             Join the Community
           </Button>
+          <Button onClick={login} size="lg" className="rounded-full h-12 flex-1">
+            Sign Up
+          </Button>
         </div>
       </DialogContent>
+      <style jsx global>{`
+        .trial-expired-content > button {
+          display: none !important;
+        }
+      `}</style>
     </Dialog>
   );
 }
