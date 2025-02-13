@@ -90,7 +90,52 @@ export default function Dreamshaper({
         )}
       </div>
 
-      <div className="flex-shrink-0 flex items-center gap-4 px-4 h-[42px]">
+      {/* Main content area */}
+      <div className="flex-1 min-h-0 p-4 flex items-center justify-center">
+        <div className="w-full max-w-[calc(min(100%,calc((100vh-20rem)*16/9)))] aspect-video bg-sidebar rounded-2xl overflow-hidden relative">
+          {loading ? (
+            <div className="w-full h-full flex items-center justify-center">
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            </div>
+          ) : streamKilled ? (
+            <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+              Thank you for trying out Livepeer's AI pipelines. Please sign in to continue streaming.
+            </div>
+          ) : outputPlaybackId ? (
+            <LPPLayer output_playback_id={outputPlaybackId} />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+              Waiting for stream to start...
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Broadcast component */}
+      {isMobile ? (
+        <div className="flex-shrink-0 h-64 p-4">
+          {loading || !streamUrl ? (
+            <div className="w-full h-full flex items-center justify-center">
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            </div>
+          ) : (
+            <BroadcastWithControls ingestUrl={streamUrl} />
+          )}
+        </div>
+      ) : (
+        <div className="absolute bottom-4 right-4 w-64 h-32 shadow-lg">
+          {loading || !streamUrl ? (
+            <div className="w-full h-full flex items-center justify-center bg-background rounded-md">
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            </div>
+          ) : (
+            <BroadcastWithControls ingestUrl={streamUrl} />
+          )}
+        </div>
+      )}
+
+      {/* Prompt input section - moved to bottom */}
+      <div className="flex-shrink-0 flex items-center gap-4 px-4 h-[42px] mb-4">
         <div className="relative flex-1">
           <AnimatePresence mode="wait">
             {!inputValue && (
@@ -138,50 +183,6 @@ export default function Dreamshaper({
           <TooltipContent>Build your own pipeline</TooltipContent>
         </Tooltip>
       </div>
-
-      {/* Main content area */}
-      <div className="flex-1 min-h-0 p-4 flex items-center justify-center">
-        <div className="w-full max-w-[calc(min(100%,calc((100vh-20rem)*16/9)))] aspect-video bg-sidebar rounded-2xl relative">
-          {loading ? (
-            <div className="w-full h-full flex items-center justify-center">
-              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-            </div>
-          ) : streamKilled ? (
-            <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-              Thank you for trying out Livepeer's AI pipelines. Please sign in to continue streaming.
-            </div>
-          ) : outputPlaybackId ? (
-            <LPPLayer output_playback_id={outputPlaybackId} />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-              Waiting for stream to start...
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Broadcast component */}
-      {isMobile ? (
-        <div className="flex-shrink-0 h-64 p-4">
-          {loading || !streamUrl ? (
-            <div className="w-full h-full flex items-center justify-center">
-              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-            </div>
-          ) : (
-            <BroadcastWithControls ingestUrl={streamUrl} />
-          )}
-        </div>
-      ) : (
-        <div className="absolute bottom-4 right-4 w-64 h-32 shadow-lg">
-          {loading || !streamUrl ? (
-            <div className="w-full h-full flex items-center justify-center bg-background rounded-md">
-              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-            </div>
-          ) : (
-            <BroadcastWithControls ingestUrl={streamUrl} />
-          )}
-        </div>
-      )}
     </div>
   );
 }
