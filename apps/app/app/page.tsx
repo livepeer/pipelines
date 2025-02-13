@@ -18,8 +18,10 @@ const App = (): ReactElement => {
 
   const [pendingPrompt, setPendingPrompt] = useState<string | null>(null);
 
-  const { status } = useStreamStatus(stream?.id || "", false);
-  const isLive = status === "ONLINE" || status === "DEGRADED_INFERENCE";
+  const { status, fullResponse } = useStreamStatus(stream?.id || "", false);
+  const isLive =
+    (status === "ONLINE" || status === "DEGRADED_INFERENCE" || status === "DEGRADED_INPUT") &&
+    (fullResponse?.inference_status?.fps > 0);
 
   useEffect(() => {
     const hasVisited = localStorage.getItem("hasSeenLandingPage");
