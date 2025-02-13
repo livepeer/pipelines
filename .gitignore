@@ -27,6 +27,8 @@ out/
 build
 dist
 
+# Include documentation media
+!apps/docs/images/**
 
 # Debug
 npm-debug.log*
