@@ -51,6 +51,7 @@ interface DreamshaperProps {
   fullResponse?: any;
   updating: boolean;
   live: boolean;
+  statusMessage: string;
 }
 
 export default function Dreamshaper({
@@ -62,6 +63,7 @@ export default function Dreamshaper({
   fullResponse,
   updating,
   live,
+  statusMessage,
 }: DreamshaperProps) {
   const isMac =
     typeof navigator !== "undefined"
@@ -216,6 +218,14 @@ export default function Dreamshaper({
                 >
                   <BroadcastWithControls ingestUrl={streamUrl} />
                 </motion.div>
+              )}
+              {!live && (
+                <div className="absolute inset-0 bg-black flex flex-col items-center justify-center rounded-2xl">
+                  <Loader2 className="h-8 w-8 animate-spin text-white" />
+                  {statusMessage && (
+                    <span className="mt-4 text-white text-sm">{statusMessage}</span>
+                  )}
+                </div>
               )}
             </>
           ) : (

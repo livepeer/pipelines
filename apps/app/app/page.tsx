@@ -23,6 +23,37 @@ const App = (): ReactElement => {
     (status === "ONLINE" || status === "DEGRADED_INFERENCE" || status === "DEGRADED_INPUT") &&
     (fullResponse?.inference_status?.fps > 0);
 
+  const [maxStatusLevel, setMaxStatusLevel] = useState(0);
+
+  useEffect(() => {
+    let currentLevel = 0;
+    if (status === "OFFLINE") {
+      currentLevel = 1;
+    } else if (status === "DEGRADED_INPUT" && fullResponse?.inference_status?.fps === 0) {
+      currentLevel = 2;
+    } else if ((status === "ONLINE" || status === "DEGRADED_INFERENCE") && fullResponse?.inference_status?.fps === 0) {
+      currentLevel = 3;
+    }
+    if (currentLevel > maxStatusLevel) {
+      setMaxStatusLevel(currentLevel);
+    }
+  }, [status, fullResponse]);
+
+  let streamStatusMessage = "";
+  switch (maxStatusLevel) {
+    case 1:
+      streamStatusMessage = "Initializing your stream...";
+      break;
+    case 2:
+      streamStatusMessage = "Your stream has started. Hang tight while we load it...";
+      break;
+    case 3:
+      streamStatusMessage = "Almost there—finalizing your stream...";
+      break;
+    default:
+      streamStatusMessage = "";
+  }
+
   useEffect(() => {
     const hasVisited = localStorage.getItem("hasSeenLandingPage");
     if (!hasVisited) {
@@ -89,6 +120,7 @@ const App = (): ReactElement => {
         {...dreamshaperState}
         streamKilled={streamKilled}
         live={isLive}
+        statusMessage={streamStatusMessage}
       />
       <ClientSideTracker eventName="home_page_view" />
       {showInterstitial && (
