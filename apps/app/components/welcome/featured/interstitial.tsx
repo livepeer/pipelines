@@ -5,7 +5,7 @@ import { Button } from "@repo/design-system/components/ui/button";
 import {
   Camera,
   Wand2,
-  Video,
+  Mic,
   ArrowRight,
   XCircle,
   ChevronLeft,
@@ -16,6 +16,7 @@ import { useStreamStatus } from "@/hooks/useStreamStatus";
 import { usePrivy } from "@privy-io/react-auth";
 import LoggedOutComponent from "@/components/modals/logged-out";
 import { TrialExpiredModal } from "@/components/modals/trial-expired-modal";
+import InterstitialDecor from "./interstitial-decor";
 
 interface ExamplePrompt {
   prompt: string;
@@ -46,18 +47,13 @@ export const examplePrompts: ExamplePrompt[] = [
 const steps: Step[] = [
   {
     icon: Camera,
-    title: "Enable Camera",
+    title: "Use your camera",
     description: "Grant camera access to begin the transformation",
   },
   {
-    icon: Wand2,
-    title: "Enter Prompt",
-    description: "Describe the style or effect you want to apply",
-  },
-  {
-    icon: Video,
-    title: "Real-time Transform",
-    description: "Watch as AI transforms your video feed instantly",
+    icon: Mic,
+    title: "Use your microphone",
+    description: "Enable audio for your stream",
   },
 ];
 
@@ -113,6 +109,8 @@ interface InterstitialProps {
   showLoginPrompt?: boolean;
 }
 
+type PermissionState = "prompt" | "granted" | "denied";
+
 const Interstitial: React.FC<InterstitialProps> = ({
   onReady = () => {},
   onCameraPermissionGranted = useCallback(() => {}, []),
@@ -122,7 +120,7 @@ const Interstitial: React.FC<InterstitialProps> = ({
   showLoginPrompt = false,
 }) => {
   const { authenticated, login } = usePrivy();
-  const [cameraPermission, setCameraPermission] = useState<"prompt" | "granted" | "denied">("prompt");
+  const [cameraPermission, setCameraPermission] = useState<PermissionState>("prompt");
   const [currentScreen, setCurrentScreen] = useState<"camera" | "prompts">("camera");
   const [redirected, setRedirected] = useState(false);
   const [timedOut, setTimedOut] = useState(false);
@@ -130,9 +128,29 @@ const Interstitial: React.FC<InterstitialProps> = ({
   const [selectedPrompt, setSelectedPrompt] = useState<string | null>(null);
   const redirectTimerRef = useRef<NodeJS.Timeout | null>(null);
   const hasScheduledRedirect = useRef(false);
+  const [micPermission, setMicPermission] = useState<PermissionState>("prompt");
 
   const effectiveStreamId = streamId || "";
   const { status: streamStatus, loading: statusLoading, error: statusError, fullResponse } = useStreamStatus(effectiveStreamId, false);
+
+  useEffect(() => {
+    const checkPermissions = async () => {
+      try {
+        if ("permissions" in navigator) {
+          const permissionStatus = await navigator.permissions.query({
+            name: "camera" as PermissionName,
+          });
+          if (permissionStatus.state === "denied") {
+            setCameraPermission("denied");
+          }
+        }
+      } catch (err) {
+        console.error("Error checking camera permission:", err);
+      }
+    };
+    
+    checkPermissions();
+  }, []);
 
   useEffect(() => {
     const triggerCamera = async () => {
@@ -268,39 +286,46 @@ const Interstitial: React.FC<InterstitialProps> = ({
       <AnimatePresence mode="wait" initial={false}>
         {currentScreen === "camera" ? (
           <Slide keyName="camera" slideVariants={slideVariants}>
-            <div className="text-center space-y-2">
-              <h1 className="text-3xl font-bold">Livepeer Pipelines</h1>
-              <p className="text-muted-foreground">
-                Transform your content in real-time using AI
-              </p>
-            </div>
-            <div className="grid md:grid-cols-3 gap-6">
-              {steps.map((step, i) => (
-                <div key={i} className="flex flex-col items-center text-center space-y-2 p-4 rounded-lg border bg-card cursor-default">
-                  <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-                    <step.icon className="h-6 w-6 text-primary" />
+            <div className="bg-[#161616] border border-[#232323] rounded-xl p-8 max-w-2xl w-full mx-auto shadow-lg">
+              <div className="space-y-3 mb-8">
+                <h1 className="text-2xl font-semibold">Start by granting Livepeer Permissions</h1>
+                <p className="text-muted-foreground">
+                  Before we start there are some permissions you need to give livepeer
+                </p>
+              </div>
+              <div className="flex flex-col gap-4">
+                {steps.map((step, i) => (
+                  <div 
+                    key={i} 
+                    className="flex items-center gap-6 py-12 px-6 rounded-lg border border-[#2e2e2e] bg-[#1c1c1c] relative overflow-hidden"
+                  >
+                    <step.icon className="h-6 w-6 text-[#00eb88] shrink-0" />
+                    <div className="flex flex-col relative z-10">
+                      <h3 className="text-lg font-bold">{step.title}</h3>
+                      <p className="text-sm text-muted-foreground">{step.description}</p>
+                    </div>
+                    <InterstitialDecor flip={i === 1} opacity={0.2} />
                   </div>
-                  <h3 className="font-medium">{step.title}</h3>
-                  <p className="text-sm text-muted-foreground">{step.description}</p>
-                </div>
-              ))}
-            </div>
-            <div className="flex flex-col items-center gap-4">
-              {cameraPermission === "prompt" && (
-                <Button onClick={requestCamera} size="lg" className="gap-2">
-                  <Camera className="h-4 w-4" />
-                  Enable Camera
-                </Button>
-              )}
-              {cameraPermission === "denied" && (
-                <div className="text-destructive flex items-center gap-2">
-                  <XCircle className="h-4 w-4" />
-                  Camera access denied. Please enable in browser settings.
-                </div>
-              )}
-              <Button variant="ghost" onClick={() => setCurrentScreen("prompts")}>
-                Skip for now
-              </Button>
+                ))}
+              </div>
+              <div className="flex flex-col items-center gap-4 mt-8">
+                {cameraPermission === "prompt" && (
+                  <Button 
+                    onClick={requestCamera} 
+                    size="lg" 
+                    className="w-full rounded-full h-12 text-base"
+                    disabled={cameraPermission === "prompt" || micPermission === "prompt"}
+                  >
+                    Continue
+                  </Button>
+                )}
+                {cameraPermission === "denied" && (
+                  <div className="text-destructive flex items-center gap-2">
+                    <XCircle className="h-4 w-4" />
+                    Camera access denied. Please enable in browser settings.
+                  </div>
+                )}
+              </div>
             </div>
           </Slide>
         ) : (
