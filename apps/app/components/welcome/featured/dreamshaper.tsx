@@ -58,7 +58,6 @@ export default function Dreamshaper({
   const outputPlayerRef = useRef<HTMLDivElement>(null);
   const [dragConstraints, setDragConstraints] = useState({ top: 0, left: 0, right: 0, bottom: 0 });
   
-  // Instead of using position state, we'll use motion values:
   const x = useMotionValue(0);
   const y = useMotionValue(0);
 
@@ -87,32 +86,25 @@ export default function Dreamshaper({
     return () => window.removeEventListener('resize', calculateConstraints);
   }, [outputPlaybackId]);
 
-  // A simple clamp helper
   const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
 
   const onDragEnd = (event: any, info: any) => {
-    // Get the current x and y from the motion values
     const currentX = x.get();
     const currentY = y.get();
 
-    // First, clamp to ensure we're within the outer constraints
     const clampedX = clamp(currentX, dragConstraints.left, dragConstraints.right);
     const clampedY = clamp(currentY, dragConstraints.top, dragConstraints.bottom);
 
-    // Calculate distances to each edge
     const distanceToRight = Math.abs(dragConstraints.right - clampedX);
     const distanceToLeft = Math.abs(dragConstraints.left - clampedX);
     const distanceToBottom = Math.abs(dragConstraints.bottom - clampedY);
     const distanceToTop = Math.abs(dragConstraints.top - clampedY);
 
-    // Determine which axis is closer to an edge
     if (Math.min(distanceToRight, distanceToLeft) < Math.min(distanceToBottom, distanceToTop)) {
-      // Snap horizontally: update x to snap to the closest horizontal edge while y remains clamped.
       const targetX = distanceToRight <= distanceToLeft ? dragConstraints.right : dragConstraints.left;
       animate(x, targetX, { type: "spring", damping: 20, stiffness: 300 });
       animate(y, clampedY, { type: "spring", damping: 20, stiffness: 300 });
     } else {
-      // Snap vertically: update y to snap to the closest vertical edge while x remains clamped.
       const targetY = distanceToBottom <= distanceToTop ? dragConstraints.bottom : dragConstraints.top;
       animate(x, clampedX, { type: "spring", damping: 20, stiffness: 300 });
       animate(y, targetY, { type: "spring", damping: 20, stiffness: 300 });
@@ -205,8 +197,9 @@ export default function Dreamshaper({
         </div>
       )}
 
-      <div className="flex-shrink-0 flex items-center gap-4 px-4 h-[42px] mb-4">
-        <div className="relative flex-1">
+      {/* Updated Input Prompt + Button Section */}
+      <div className="flex justify-center items-center gap-2 my-4">
+        <div className="relative">
           <AnimatePresence mode="wait">
             {!inputValue && (
               <motion.span
@@ -215,14 +208,14 @@ export default function Dreamshaper({
                 animate={{ opacity: 0.5, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.3 }}
-                className="absolute left-3 inset-y-0 flex items-center text-muted-foreground pointer-events-none"
+                className="absolute inset-y-0 left-3 flex items-center text-muted-foreground pointer-events-none"
               >
                 {samplePrompts[currentPromptIndex]}
               </motion.span>
             )}
           </AnimatePresence>
           <Input
-            className="w-full h-[42px]"
+            className="w-80 h-10 pl-3 pr-2"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={(e) => {
@@ -231,26 +224,14 @@ export default function Dreamshaper({
               }
             }}
           />
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button onClick={submitPrompt} className="absolute right-0 inset-y-0 my-auto">
-                Apply {isMobile ? "" : isMac ? "(⌘ + Enter)" : "(Ctrl + Enter)"}
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>{isMac ? "⌘ + Enter" : "Ctrl + Enter"}</TooltipContent>
-          </Tooltip>
         </div>
         <Tooltip>
           <TooltipTrigger asChild>
-            <Link
-              href="https://pipelines.livepeer.org/docs/knowledge-base/get-started/what-is-pipeline"
-              target="_blank"
-              className="hidden md:block"
-            >
-              <Button variant="outline">Build your own pipeline</Button>
-            </Link>
+            <Button onClick={submitPrompt} className="h-10">
+              Apply {isMobile ? "" : isMac ? "(⌘ + Enter)" : "(Ctrl + Enter)"}
+            </Button>
           </TooltipTrigger>
-          <TooltipContent>Build your own pipeline</TooltipContent>
+          <TooltipContent>{isMac ? "⌘ + Enter" : "Ctrl + Enter"}</TooltipContent>
         </Tooltip>
       </div>
     </div>
