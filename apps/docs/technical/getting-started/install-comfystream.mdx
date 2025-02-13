@@ -55,7 +55,7 @@ New-Item -ItemType Directory -Path "$env:USERPROFILE\models\ComfyUI--models", "$
 2. Pull and run the container:
 
 ```bash
-docker pull livepeer/comfyui-base:server
+docker pull livepeer/comfystream:latest
 ```
 
 <Info>
@@ -71,7 +71,7 @@ docker run -it --gpus all \
 -p 3000:3000 \
 -v ~/models/ComfyUI--models:/ComfyUI/models \
 -v ~/models/ComfyUI--output:/ComfyUI/output \
-livepeer/comfyui-base:server --download-models --build-engines --server
+livepeer/comfystream:latest --download-models --build-engines --server
 ```
 ```batch Command Line
 docker run -it --gpus all ^
@@ -81,7 +81,7 @@ docker run -it --gpus all ^
 -p 3000:3000 ^
 -v %USERPROFILE%\models\ComfyUI--models:/ComfyUI/models ^
 -v %USERPROFILE%\models\ComfyUI--output:/ComfyUI/output ^
-livepeer/comfyui-base:server --download-models --build-engines --server
+livepeer/comfystream:latest --download-models --build-engines --server
 ```
 ```powershell PowerShell
 docker run -it --gpus all `
@@ -91,7 +91,7 @@ docker run -it --gpus all `
 -p 3000:3000 `
 -v $env:USERPROFILE\models\ComfyUI--models:/ComfyUI/models `
 -v $env:USERPROFILE\models\ComfyUI--output:/ComfyUI/output `
-livepeer/comfyui-base:server --download-models --build-engines --server
+livepeer/comfystream:latest --download-models --build-engines --server
 ```
 </CodeGroup>
 
