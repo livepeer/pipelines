@@ -47,6 +47,7 @@ export function useDreamshaper() {
   const [stream, setStream] = useState<any>(null);
   const [pipeline, setPipeline] = useState<any>(null);
   const [inputValues, setInputValues] = useState<any>(null);
+  const [fullResponse, setFullResponse] = useState<any>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -148,5 +149,6 @@ export function useDreamshaper() {
     pipeline,
     handleUpdate,
     loading,
+    fullResponse,
   };
 }
