@@ -24,11 +24,15 @@ Install the necessary software depending on your platform
 
 <CodeGroup>
 ```bash Linux
-mkdir -p ~/models/ComfyUI--models ~/models/ComfyUI--output
+mkdir -p ~/models/ComfyUI--models ~/models/ComfyUI--output  
 ```
 ```batch Windows
 mkdir %USERPROFILE%\models\ComfyUI--models %USERPROFILE%\models\ComfyUI--output
 ```
+```powershell Windows
+New-Item -ItemType Directory -Path "$env:USERPROFILE\models\ComfyUI--models", "$env:USERPROFILE\models\ComfyUI--output"
+```
+
 </CodeGroup>
 
 2. Download the docker image:
@@ -43,13 +47,13 @@ If you are using Windows, make sure Docker Desktop is running first
 <CodeGroup>
 ```bash Linux
 docker run -it --gpus all \
-  -p 8188:8188 \
-  -p 8888:8888 \
-  -p 5678:5678 \
-  -p 3000:3000 \
-  -v ~/models/ComfyUI--models:/ComfyUI/models \
-  -v ~/models/ComfyUI--output:/ComfyUI/output \
-  livepeer/comfyui-base:server --download-models --build-engines --server
+-p 8188:8188 \
+-p 8888:8888 \
+-p 5678:5678 \
+-p 3000:3000 \
+-v ~/models/ComfyUI--models:/ComfyUI/models \
+-v ~/models/ComfyUI--output:/ComfyUI/output \
+livepeer/comfyui-base:server --download-models --build-engines --server
 ```
 ```batch Windows
 docker run -it --gpus all ^
@@ -59,6 +63,16 @@ docker run -it --gpus all ^
 -p 3000:3000 ^
 -v %USERPROFILE%\models\ComfyUI--models:/ComfyUI/models ^
 -v %USERPROFILE%\models\ComfyUI--output:/ComfyUI/output ^
+livepeer/comfyui-base:server --download-models --build-engines --server
+```
+```powershell Windows
+docker run -it --gpus all `
+-p 8188:8188 `
+-p 8888:8888 `
+-p 5678:5678 `
+-p 3000:3000 `
+-v $env:USERPROFILE\models\ComfyUI--models:/ComfyUI/models `
+-v $env:USERPROFILE\models\ComfyUI--output:/ComfyUI/output `
 livepeer/comfyui-base:server --download-models --build-engines --server
 ```
 </CodeGroup>
