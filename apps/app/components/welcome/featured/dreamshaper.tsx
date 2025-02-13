@@ -4,7 +4,7 @@ import { examplePrompts } from "./interstitial";
 import { TooltipTrigger } from "@repo/design-system/components/ui/tooltip";
 import { TooltipContent } from "@repo/design-system/components/ui/tooltip";
 import { Tooltip } from "@repo/design-system/components/ui/tooltip";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useMotionValue, animate } from "framer-motion";
 import { useState, useEffect, useMemo, useRef } from "react";
 import { useDreamshaper } from "./useDreamshaper";
 import { BroadcastWithControls } from "@/components/playground/broadcast";
@@ -57,6 +57,10 @@ export default function Dreamshaper({
   const isMobile = useIsMobile();
   const outputPlayerRef = useRef<HTMLDivElement>(null);
   const [dragConstraints, setDragConstraints] = useState({ top: 0, left: 0, right: 0, bottom: 0 });
+  
+  // Instead of using position state, we'll use motion values:
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
 
   const { authenticated, login } = usePrivy();
   const { timeRemaining, formattedTime } = useTrialTimer();
@@ -79,11 +83,41 @@ export default function Dreamshaper({
     };
 
     calculateConstraints();
-
     window.addEventListener('resize', calculateConstraints);
-
     return () => window.removeEventListener('resize', calculateConstraints);
   }, [outputPlaybackId]);
+
+  // A simple clamp helper
+  const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
+
+  const onDragEnd = (event: any, info: any) => {
+    // Get the current x and y from the motion values
+    const currentX = x.get();
+    const currentY = y.get();
+
+    // First, clamp to ensure we're within the outer constraints
+    const clampedX = clamp(currentX, dragConstraints.left, dragConstraints.right);
+    const clampedY = clamp(currentY, dragConstraints.top, dragConstraints.bottom);
+
+    // Calculate distances to each edge
+    const distanceToRight = Math.abs(dragConstraints.right - clampedX);
+    const distanceToLeft = Math.abs(dragConstraints.left - clampedX);
+    const distanceToBottom = Math.abs(dragConstraints.bottom - clampedY);
+    const distanceToTop = Math.abs(dragConstraints.top - clampedY);
+
+    // Determine which axis is closer to an edge
+    if (Math.min(distanceToRight, distanceToLeft) < Math.min(distanceToBottom, distanceToTop)) {
+      // Snap horizontally: update x to snap to the closest horizontal edge while y remains clamped.
+      const targetX = distanceToRight <= distanceToLeft ? dragConstraints.right : dragConstraints.left;
+      animate(x, targetX, { type: "spring", damping: 20, stiffness: 300 });
+      animate(y, clampedY, { type: "spring", damping: 20, stiffness: 300 });
+    } else {
+      // Snap vertically: update y to snap to the closest vertical edge while x remains clamped.
+      const targetY = distanceToBottom <= distanceToTop ? dragConstraints.bottom : dragConstraints.top;
+      animate(x, clampedX, { type: "spring", damping: 20, stiffness: 300 });
+      animate(y, targetY, { type: "spring", damping: 20, stiffness: 300 });
+    }
+  };
 
   const submitPrompt = () => {
     if (inputValue) {
@@ -95,14 +129,14 @@ export default function Dreamshaper({
     <div className="relative flex flex-col h-[calc(100vh-10rem)] overflow-hidden">
       {/* Header section */}
       <div className="flex justify-between items-start p-3">
-        <div>
+        <div className="mx-auto text-center">
           <h1 className="text-2xl font-bold">Livepeer Pipelines</h1>
           <p className="text-muted-foreground">
             Transform your video in real-time with AI - and build your own workflow with ComfyUI
           </p>
         </div>
         {!authenticated && timeRemaining !== null && (
-          <div className="text-right">
+          <div className="text-right absolute right-3">
             <div className="text-sm font-medium">
               Time remaining: {formattedTime}
             </div>
@@ -139,6 +173,12 @@ export default function Dreamshaper({
                   dragConstraints={dragConstraints}
                   dragElastic={0}
                   dragMomentum={false}
+                  dragTransition={{
+                    bounceStiffness: 600,
+                    bounceDamping: 20
+                  }}
+                  onDragEnd={onDragEnd}
+                  style={{ x, y }}
                   className="absolute bottom-4 right-4 w-80 h-[180px] shadow-lg z-50 rounded-xl overflow-hidden border border-white/10 cursor-move"
                 >
                   <BroadcastWithControls ingestUrl={streamUrl} />
