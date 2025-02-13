@@ -69,8 +69,8 @@ docker run -it --gpus all \
 -p 8888:8888 \
 -p 5678:5678 \
 -p 3000:3000 \
--v ~/models/ComfyUI--models:/ComfyUI/models \
--v ~/models/ComfyUI--output:/ComfyUI/output \
+-v ~/models/ComfyUI--models:/workspace/ComfyUI/models \
+-v ~/models/ComfyUI--output:/workspace/ComfyUI/output \
 livepeer/comfystream:latest --download-models --build-engines --server
 ```
 ```batch Command Line
@@ -79,8 +79,8 @@ docker run -it --gpus all ^
 -p 8888:8888 ^
 -p 5678:5678 ^
 -p 3000:3000 ^
--v %USERPROFILE%\models\ComfyUI--models:/ComfyUI/models ^
--v %USERPROFILE%\models\ComfyUI--output:/ComfyUI/output ^
+-v %USERPROFILE%\models\ComfyUI--models:/workspace/ComfyUI/models ^
+-v %USERPROFILE%\models\ComfyUI--output:/workspace/ComfyUI/output ^
 livepeer/comfystream:latest --download-models --build-engines --server
 ```
 ```powershell PowerShell
@@ -89,8 +89,8 @@ docker run -it --gpus all `
 -p 8888:8888 `
 -p 5678:5678 `
 -p 3000:3000 `
--v $env:USERPROFILE\models\ComfyUI--models:/ComfyUI/models `
--v $env:USERPROFILE\models\ComfyUI--output:/ComfyUI/output `
+-v $env:USERPROFILE\models\ComfyUI--models:/workspace/ComfyUI/models `
+-v $env:USERPROFILE\models\ComfyUI--output:/workspace/ComfyUI/output `
 livepeer/comfystream:latest --download-models --build-engines --server
 ```
 </CodeGroup>
