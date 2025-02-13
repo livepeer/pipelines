@@ -48,7 +48,7 @@ const App = (): ReactElement => {
       streamStatusMessage = "Your stream has started. Hang tight while we load it...";
       break;
     case 3:
-      streamStatusMessage = "Almost there—finalizing your stream...";
+      streamStatusMessage = "Almost there...";
       break;
     default:
       streamStatusMessage = "";
