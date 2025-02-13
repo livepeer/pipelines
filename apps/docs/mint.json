@@ -75,11 +75,10 @@
       ]
     },
     {
-      "group": "Getting Started",
+      "group": "Get Started",
       "pages": [
         "technical/getting-started/install-comfystream",
-        "technical/getting-started/publish-pipeline",
-        "quickstart"
+        "technical/getting-started/publish-pipeline"
       ]
     },
     {
