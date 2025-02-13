@@ -26,11 +26,11 @@ const RootLayout = ({ children }: RootLayoutProperties) => (
     <body className="bg-sidebar">
       <MixpanelProvider>
         <DesignSystemProvider defaultTheme="dark">
-          <AlphaBanner />
           <SidebarProvider open={false}>
             <GlobalSidebar>
               <div>
                 <div className="flex h-[calc(100vh-5rem)] flex-col overflow-y-auto px-6 py-4">
+                  <AlphaBanner />
                   {children}
                 </div>
                 <footer className="fixed bottom-0 right-0 p-4">
