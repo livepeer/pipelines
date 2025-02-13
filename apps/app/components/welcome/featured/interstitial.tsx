@@ -20,7 +20,7 @@ import InterstitialDecor from "./interstitial-decor";
 
 interface ExamplePrompt {
   prompt: string;
-  description: string;
+  image: string;
 }
 
 interface Step {
@@ -31,16 +31,12 @@ interface Step {
 
 export const examplePrompts: ExamplePrompt[] = [
   {
-    prompt: "Cyberpunk neon city",
-    description: "Transform your feed into a futuristic neon-lit cityscape",
-  },
-  {
     prompt: "Van Gogh's Starry Night",
-    description: "Apply the iconic painting style to your video",
+    image: "/images/vangogh.png"
   },
   {
-    prompt: "Anime character style",
-    description: "Convert your feed into an anime-inspired look",
+    prompt: "Cyberpunk neon city",
+    image: "/images/cyberpunk.png"
   },
 ];
 
@@ -78,28 +74,6 @@ const Slide: React.FC<SlideProps> = ({ keyName, children, slideVariants }) => (
   </motion.div>
 );
 
-interface ExamplePromptComponentProps {
-  example: ExamplePrompt;
-  selected: boolean;
-  onSelect: () => void;
-}
-
-const ExamplePromptComponent: React.FC<ExamplePromptComponentProps> = ({ example, selected, onSelect }) => (
-  <div
-    onClick={onSelect}
-    onKeyDown={(e) => {
-      if (e.key === "Enter") onSelect();
-    }}
-    tabIndex={0}
-    className={`p-4 rounded-lg border bg-card cursor-pointer outline-none focus:ring-2 ${
-      selected ? "border-blue-500" : "border-gray-300"
-    }`}
-  >
-    <p className="font-medium">{example.prompt}</p>
-    <p className="text-sm text-muted-foreground">{example.description}</p>
-  </div>
-);
-
 interface InterstitialProps {
   onReady?: () => void;
   onCameraPermissionGranted?: () => void;
@@ -122,12 +96,7 @@ const Interstitial: React.FC<InterstitialProps> = ({
   const { authenticated, login } = usePrivy();
   const [cameraPermission, setCameraPermission] = useState<PermissionState>("prompt");
   const [currentScreen, setCurrentScreen] = useState<"camera" | "prompts">("camera");
-  const [redirected, setRedirected] = useState(false);
-  const [timedOut, setTimedOut] = useState(false);
-  const [busy, setBusy] = useState(false);
   const [selectedPrompt, setSelectedPrompt] = useState<string | null>(null);
-  const redirectTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const hasScheduledRedirect = useRef(false);
   const [micPermission, setMicPermission] = useState<PermissionState>("prompt");
 
   const effectiveStreamId = streamId || "";
@@ -198,37 +167,6 @@ const Interstitial: React.FC<InterstitialProps> = ({
 
   const handleBack = () => setCurrentScreen("camera");
 
-  useEffect(() => {
-    if ((streamStatus === "ONLINE" || streamStatus === "DEGRADED_INFERENCE") &&
-        !redirected &&
-        !hasScheduledRedirect.current &&
-        fullResponse?.inference_status?.fps > 0) {
-      hasScheduledRedirect.current = true;
-      if (selectedPrompt && onPromptApply) {
-        onPromptApply(selectedPrompt);
-      }
-      redirectTimerRef.current = setTimeout(() => {
-        setRedirected(true);
-        onReady();
-      }, 2000);
-    }
-  }, [streamStatus, redirected, selectedPrompt, onPromptApply, onReady, fullResponse]);
-
-  useEffect(() => {
-    if (currentScreen === "prompts") {
-      const busyTimeout = setTimeout(() => {
-        setBusy(true);
-      }, 45000);
-      const finalTimeout = setTimeout(() => {
-        setTimedOut(true);
-      }, 180000);
-      return () => {
-        clearTimeout(busyTimeout);
-        clearTimeout(finalTimeout);
-      };
-    }
-  }, [currentScreen]);
-
   const slideVariants = {
     enter: (direction: number) => ({
       x: direction > 0 ? 1000 : -1000,
@@ -244,20 +182,6 @@ const Interstitial: React.FC<InterstitialProps> = ({
       x: direction < 0 ? 1000 : -1000,
       opacity: 0,
     }),
-  };
-
-  const getStatusMessage = () => {
-    if (statusLoading) {
-      return streamStatus && streamStatus !== "OFFLINE"
-        ? "Stream is now active and being processed. You will be automatically redirected in a moment."
-        : "Stream is getting started, please wait...";
-    }
-    if (statusError) {
-      return "Error retrieving status";
-    }
-    return busy
-      ? "Almost there! Please hold on. Your stream is still being prepared."
-      : "We are preparing your experience. This may take up to 45 seconds. You will be automatically redirected when the stream is ready.";
   };
 
   if (showLoginPrompt) {
@@ -330,63 +254,60 @@ const Interstitial: React.FC<InterstitialProps> = ({
           </Slide>
         ) : (
           <Slide keyName="prompts" slideVariants={slideVariants} flipDirection>
-            <div className="text-center space-y-2">
-              <h1 className="text-3xl font-bold">Get Inspired</h1>
-              <p className="text-muted-foreground">
-                Try these example prompts or create your own
-              </p>
-            </div>
-            <div className="grid md:grid-cols-3 gap-4">
-              {examplePrompts.map((example, i) => (
-                <ExamplePromptComponent
-                  key={i}
-                  example={example}
-                  selected={selectedPrompt === example.prompt}
-                  onSelect={() => {
-                    setSelectedPrompt(example.prompt);
-                  }}
-                />
-              ))}
-            </div>
-            <div className="mt-4">
-              <div className="flex justify-start">
-                <Button variant="ghost" onClick={handleBack} className="gap-2">
-                  <ChevronLeft className="h-4 w-4" />
+            <div className="bg-[#161616] border border-[#232323] rounded-xl p-8 max-w-2xl w-full mx-auto shadow-lg">
+              <div className="space-y-3 mb-8">
+                <h1 className="text-2xl font-semibold">Select your first prompt</h1>
+                <p className="text-muted-foreground">
+                  The same way you would with AI image generators like Midjourney, Dalle, or StableDiffusion. 
+                  To get most out of Livepeer remember about a good lightning and a stable background.
+                </p>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                {examplePrompts.map((example, i) => (
+                  <div
+                    key={i}
+                    onClick={() => setSelectedPrompt(example.prompt)}
+                    className={`
+                      relative h-64 rounded-xl overflow-hidden cursor-pointer
+                      ${selectedPrompt === example.prompt ? 'ring-2 ring-[#00eb88]' : 'border border-[#2e2e2e]'}
+                    `}
+                    style={{
+                      backgroundImage: `url(${example.image})`,
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center'
+                    }}
+                  >
+                    <div className="absolute bottom-0 w-full p-4 bg-black/50 backdrop-blur-md">
+                      <p className="text-white font-bold text-center">{example.prompt}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex gap-4 mt-8">
+                <Button 
+                  variant="secondary" 
+                  onClick={handleBack}
+                  size="lg"
+                  className="rounded-full h-12 flex-1"
+                >
                   Back
                 </Button>
+                <Button
+                  onClick={() => {
+                    if (selectedPrompt && onPromptApply) {
+                      onPromptApply(selectedPrompt);
+                    }
+                    onReady();
+                  }}
+                  disabled={!selectedPrompt}
+                  size="lg"
+                  className="rounded-full h-12 flex-1"
+                >
+                  Continue
+                </Button>
               </div>
-              {timedOut ? (
-                <div className="mt-4 flex flex-col items-center">
-                  <div className="text-sm text-destructive mb-2">
-                    Something went wrong or we are currently at full capacity.
-                  </div>
-                  <Button variant="default" onClick={() => { window.location.href = "/explore"; }}>
-                    Watch a Demo video
-                  </Button>
-                </div>
-              ) : (
-                <div className="mt-4 text-center">
-                  <p className="text-sm text-muted-foreground">
-                    {busy
-                      ? "Almost there! Please hold on. Your stream is still being prepared."
-                      : "We are preparing your experience. This may take up to 45 seconds. You will be automatically redirected when the stream is ready."}
-                  </p>
-                  {streamId && (
-                    <div className="mt-2 text-xs text-muted-foreground">
-                      {statusLoading 
-                        ? (streamStatus && streamStatus !== "OFFLINE"
-                            ? "Stream is now active and being processed. You will be automatically redirected in a moment."
-                            : "Stream is getting started, please wait...")
-                        : statusError
-                        ? "Error retrieving status"
-                        : null}
-                    </div>
-                  )}
-                  <div className="mt-4 flex flex-col items-center justify-center">
-                    <Loader2 className="w-8 h-8 animate-spin" />
-                  </div>
-                </div>
-              )}
             </div>
           </Slide>
         )}
