@@ -89,19 +89,34 @@ export default function Page() {
   );
 
   if (loading) {
-    return <LoaderCircleIcon className="w-8 h-8 animate-spin" />;
+    return (
+      <div className="p-4">
+        <h3 className="font-medium text-lg">My Pipelines</h3>
+        <LoaderCircleIcon className="w-8 h-8 animate-spin mt-4" />
+      </div>
+    );
   }
 
   if (!authenticated) {
-    return <LoggedOutComponent text="Sign in to view your pipelines" />;
+    return (
+      <div className="p-4">
+        <h3 className="font-medium text-lg">My Pipelines</h3>
+        <LoggedOutComponent text="Sign in to view your pipelines" />
+      </div>
+    );
   }
 
   if (!pipelines || pipelines?.length === 0) {
-    return <EmptyState user={user} />;
+    return (
+      <div className="p-4">
+        <h3 className="font-medium text-lg">My Pipelines</h3>
+        <EmptyState user={user} />
+      </div>
+    );
   }
 
   // TODO: remove non-admin restriction when pre-validation is available
-  if (!user?.email?.address?.endsWith('@livepeer.org')) {
+  if (!user?.email?.address?.endsWith("@livepeer.org")) {
     return (
       <div className="p-4">
         <h3 className="text-lg font-medium">Access Restricted</h3>

@@ -31,7 +31,6 @@ export default function CreatePipeline() {
   };
 
   const handleNext = async () => {
-
     if (!formData.name) {
       toast.error("Please enter a name");
       return;
@@ -49,12 +48,12 @@ export default function CreatePipeline() {
       const jsonFile = formData.comfyJson as File;
       const jsonContent = await jsonFile.text();
       const parsedJson = JSON.parse(jsonContent);
-      
-      setFormData(prev => ({
+
+      setFormData((prev) => ({
         ...prev,
-        comfyJson: parsedJson
+        comfyJson: parsedJson,
       }));
-      
+
       setCurrentStep(2);
     } catch (error) {
       console.error("Error parsing JSON:", error);
@@ -77,10 +76,12 @@ export default function CreatePipeline() {
     try {
       const formDataToSend = new FormData();
       Object.entries(updatedFormData).forEach(([key, value]) => {
-        if (key === 'comfyJson') {
+        if (key === "comfyJson") {
           // Create a new File object from the JSON string
-          const jsonBlob = new Blob([JSON.stringify(value)], { type: 'application/json' });
-          formDataToSend.append(decamelize(key), jsonBlob, 'workflow.json');
+          const jsonBlob = new Blob([JSON.stringify(value)], {
+            type: "application/json",
+          });
+          formDataToSend.append(decamelize(key), jsonBlob, "workflow.json");
         } else {
           formDataToSend.append(decamelize(key), value as any);
         }
@@ -98,7 +99,8 @@ export default function CreatePipeline() {
     } catch (error) {
       console.error("Error details:", error);
       toast.dismiss(toastId);
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       toast.error(`Failed to create pipeline: ${errorMessage}`);
     } finally {
       setIsSubmitting(false);
@@ -106,11 +108,21 @@ export default function CreatePipeline() {
   };
 
   if (!isAuthLoaded) {
-    return <LoaderCircleIcon className="w-8 h-8 animate-spin" />;
+    return (
+      <div className="p-4">
+        <h3 className="font-medium text-lg">Create pipeline</h3>
+        <LoaderCircleIcon className="w-8 h-8 animate-spin mt-4" />
+      </div>
+    );
   }
 
   if (!authenticated) {
-    return <LoggedOutComponent text="Sign in to create pipelines" />;
+    return (
+      <div className="p-4">
+        <h3 className="font-medium text-lg">Create pipeline</h3>
+        <LoggedOutComponent text="Sign in to create pipelines" />
+      </div>
+    );
   }
 
   // TODO: remove non-admin restriction when pre-validation is available
@@ -143,7 +155,7 @@ export default function CreatePipeline() {
             <div className="space-y-1.5">
               <Label className="text-muted-foreground">Version</Label>
               <Input
-                value={formData.version as string || "1.0.0"}
+                value={(formData.version as string) || "1.0.0"}
                 placeholder="e.g., 1.0.0 in format major.minor.patch"
                 id="version"
                 onChange={(e) => handleChange(e, "version")}
@@ -181,10 +193,7 @@ export default function CreatePipeline() {
             </div>
 
             <div className="flex">
-              <Button
-                className="mt-4 uppercase text-xs"
-                onClick={handleNext}
-              >
+              <Button className="mt-4 uppercase text-xs" onClick={handleNext}>
                 Next
               </Button>
             </div>
