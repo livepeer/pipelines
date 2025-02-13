@@ -102,7 +102,14 @@ export default function Dreamshaper({
               Thank you for trying out Livepeer's AI pipelines. Please sign in to continue streaming.
             </div>
           ) : outputPlaybackId ? (
-            <LPPLayer output_playback_id={outputPlaybackId} />
+            <>
+              <LPPLayer output_playback_id={outputPlaybackId} />
+              {!isMobile && streamUrl && (
+                <div className="absolute bottom-4 right-4 w-80 h-[180px] shadow-lg z-50 rounded-xl overflow-hidden border border-white/10">
+                  <BroadcastWithControls ingestUrl={streamUrl} />
+                </div>
+              )}
+            </>
           ) : (
             <div className="w-full h-full flex items-center justify-center text-muted-foreground">
               Waiting for stream to start...
@@ -111,30 +118,18 @@ export default function Dreamshaper({
         </div>
       </div>
 
-      {/* Broadcast component */}
-      {isMobile ? (
+      {isMobile && (
         <div className="flex-shrink-0 h-64 p-4">
           {loading || !streamUrl ? (
             <div className="w-full h-full flex items-center justify-center">
               <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
             </div>
           ) : (
-            <BroadcastWithControls ingestUrl={streamUrl} />
-          )}
-        </div>
-      ) : (
-        <div className="absolute bottom-4 right-4 w-64 h-32 shadow-lg">
-          {loading || !streamUrl ? (
-            <div className="w-full h-full flex items-center justify-center bg-background rounded-md">
-              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-            </div>
-          ) : (
-            <BroadcastWithControls ingestUrl={streamUrl} />
+            <BroadcastWithControls ingestUrl={streamUrl} className="w-full h-full object-cover" />
           )}
         </div>
       )}
 
-      {/* Prompt input section - moved to bottom */}
       <div className="flex-shrink-0 flex items-center gap-4 px-4 h-[42px] mb-4">
         <div className="relative flex-1">
           <AnimatePresence mode="wait">
