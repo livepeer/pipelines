@@ -286,12 +286,7 @@ export default function Dreamshaper({
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={(e) => {
-              if (
-                !updating &&
-                !profanity &&
-                e.key === "Enter" &&
-                (e.metaKey || e.ctrlKey)
-              ) {
+              if (!updating && !profanity && e.key === "Enter") {
                 submitPrompt();
               }
             }}
