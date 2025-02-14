@@ -5,7 +5,7 @@ import Link from "next/link";
 import React, { useState } from "react";
 
 export default function AlphaBanner() {
-  const [showBanner, setShowBanner] = useState(true);
+  const [showBanner, setShowBanner] = useState(false); // Always non displayed for now
   const FEEDBACK_URL =
     "https://livepeer.notion.site/15f0a348568781aab037c863d91b05e2";
 

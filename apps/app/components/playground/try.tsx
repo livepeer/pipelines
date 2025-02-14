@@ -37,6 +37,7 @@ import { useStreamStatus } from "@/hooks/useStreamStatus";
 import { useTrialTimer } from "@/hooks/useTrialTimer";
 import { TrialExpiredModal } from "@/components/modals/trial-expired-modal";
 import { useRouter } from "next/navigation";
+import { StreamStatus } from "@/hooks/useStreamStatus";
 
 type BaseParam = {
   nodeId: string;
@@ -163,13 +164,13 @@ export default function Try({
 
   const getStatusClass = (currentStatus: string | null): string => {
     switch (currentStatus) {
-      case "OFFLINE":
+      case StreamStatus.Offline:
         return "bg-red-500 text-white";
-      case "DEGRADED_INPUT":
+      case StreamStatus.DegradedInput:
         return "bg-yellow-500 text-black";
-      case "DEGRADED_INFERENCE":
+      case StreamStatus.DegradedInference:
         return "bg-orange-500 text-white";
-      case "ONLINE":
+      case StreamStatus.Online:
         return "bg-green-500 text-white";
       default:
         return "bg-gray-500 text-white";

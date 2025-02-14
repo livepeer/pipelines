@@ -91,12 +91,12 @@ export const GlobalSidebar = ({ children }: GlobalSidebarProperties) => {
   const isLivepeerEmail = user?.email?.address?.endsWith("@livepeer.org");
 
   const data: {
-    streams: NavItem[];
+    /*streams: NavItem[];
     pipelines: NavItem[];
-    settings: NavItem[];
+    settings: NavItem[];*/
     footer: NavItem[];
   } = {
-    pipelines: [
+    /*pipelines: [
       {
         title: "Create Pipeline",
         url: `/pipelines/create`,
@@ -139,7 +139,7 @@ export const GlobalSidebar = ({ children }: GlobalSidebarProperties) => {
         url: `?gateway=true`,
         icon: DoorOpenIcon,
       },
-    ],
+    ],*/
     footer: [
       {
         title: "Join Community",
@@ -163,9 +163,9 @@ export const GlobalSidebar = ({ children }: GlobalSidebarProperties) => {
   };
 
   const labelMap: Record<string, string> = {
-    streams: "Streams",
+    /*streams: "Streams",
     pipelines: "Pipelines",
-    settings: "Settings",
+    settings: "Settings",*/
     footer: "More",
   };
 

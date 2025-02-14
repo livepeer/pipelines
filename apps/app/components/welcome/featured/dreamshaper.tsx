@@ -50,6 +50,8 @@ interface DreamshaperProps {
   streamKilled?: boolean;
   fullResponse?: any;
   updating: boolean;
+  live: boolean;
+  statusMessage: string;
 }
 
 export default function Dreamshaper({
@@ -60,6 +62,8 @@ export default function Dreamshaper({
   streamKilled = false,
   fullResponse,
   updating,
+  live,
+  statusMessage,
 }: DreamshaperProps) {
   const isMac =
     typeof navigator !== "undefined"
@@ -150,13 +154,15 @@ export default function Dreamshaper({
   const submitPrompt = () => {
     if (inputValue) {
       handleUpdate(inputValue, { silent: true });
+    } else {
+      console.error("No input value to submit");
     }
   };
 
   return (
     <div className="relative flex flex-col h-[calc(100vh-6rem)] md:h-[calc(100vh-2rem)]">
       {/* Header section */}
-      <div className="flex justify-center items-center p-3">
+      <div className="flex justify-center items-center p-3 mt-8">
         <div className="mx-auto text-center">
           <h1 className="text-2xl font-bold">Livepeer Pipelines</h1>
           <p className="text-muted-foreground">
@@ -172,8 +178,8 @@ export default function Dreamshaper({
           ref={outputPlayerRef}
           className="w-full max-w-[calc(min(100%,calc((100vh-20rem)*16/9)))] aspect-video bg-sidebar rounded-2xl overflow-hidden relative"
         >
-          {/* Live indicator */}
-          {fullResponse?.inference_status?.fps > 0 && (
+          {/* Live indicator*/}
+          {live && (
             <div className="absolute top-4 left-4 bg-neutral-800 text-gray-400 px-5 py-1 text-xs rounded-full border border-gray-500">
               <span className="inline-block w-2 h-2 bg-red-500 rounded-full mr-2"></span>
               <span className="text-white font-bold">Live</span>
@@ -181,8 +187,8 @@ export default function Dreamshaper({
           )}
 
           {/* Timer overlay */}
-          {timeRemaining !== null && (
-            <div className="absolute top-4 right-4 bg-neutral-800 text-gray-400 px-5 py-1 text-xs rounded-full border border-gray-500">
+          {!authenticated && timeRemaining !== null && (
+            <div className="absolute top-4 right-4 bg-neutral-800/30 text-gray-400 px-5 py-1 text-xs rounded-full border border-gray-500">
               <span className="text-[10px] mr-2">left</span> {formattedTime}
             </div>
           )}
@@ -215,6 +221,14 @@ export default function Dreamshaper({
                   <BroadcastWithControls ingestUrl={streamUrl} />
                 </motion.div>
               )}
+              {!live && (
+                <div className="absolute inset-0 bg-black flex flex-col items-center justify-center rounded-2xl">
+                  <Loader2 className="h-8 w-8 animate-spin text-white" />
+                  {statusMessage && (
+                    <span className="mt-4 text-white text-sm">{statusMessage}</span>
+                  )}
+                </div>
+              )}
             </>
           ) : (
             <div className="w-full h-full flex items-center justify-center text-muted-foreground">
@@ -239,8 +253,7 @@ export default function Dreamshaper({
         </div>
       )}
 
-      {/* Updated Input Prompt + Button Section */}
-      <div className="mx-auto flex justify-center items-center gap-2 my-4 h-12 dark:bg-[#1A1A1A] rounded-full py-2.5 px-4 w-[calc(min(100%,965px))] border-2 border-muted-foreground/10">
+      <div className="mx-auto flex justify-center items-center gap-4 my-4 h-14 dark:bg-[#1A1A1A] rounded-xl py-3.5 px-6 w-[calc(min(100%,965px))] border-2 border-muted-foreground/10">
         <div className="relative flex-1">
           <AnimatePresence mode="wait">
             {!inputValue && (
@@ -263,7 +276,8 @@ export default function Dreamshaper({
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+              if (e.key === "Enter") {
+                e.preventDefault();
                 submitPrompt();
               }
             }}
@@ -272,9 +286,11 @@ export default function Dreamshaper({
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
-              onClick={submitPrompt}
+              onClick={(e) => {
+                submitPrompt();
+              }}
               className={cn(
-                "border-none rounded-full w-36 items-center justify-center font-semibold text-xs",
+                "border-none rounded-xl w-36 items-center justify-center font-semibold text-xs",
                 updating && "bg-muted text-muted-foreground",
                 isMobile && "text-xs w-24"
               )}
@@ -308,7 +324,7 @@ export default function Dreamshaper({
             </Button>
           </TooltipTrigger>
           <TooltipContent>
-            {isMac ? "⌘ + Enter" : "Ctrl + Enter"}
+            Press Enter
           </TooltipContent>
         </Tooltip>
       </div>
