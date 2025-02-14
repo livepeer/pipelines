@@ -113,10 +113,10 @@ export default function Dreamshaper({
       </div>
 
       {/* Main content area */}
-      <div className="flex-1 min-h-0 p-4 flex items-center justify-center mb-4">
+      <div className="px-4 my-12 flex items-center justify-center">
         <div
           ref={outputPlayerRef}
-          className="w-full max-w-[calc(min(100%,calc((100vh-20rem)*16/9)))] md:aspect-video aspect-square bg-sidebar rounded-2xl overflow-hidden relative"
+          className="w-full max-w-[calc(min(100%,calc((100vh-24rem)*16/9)))] md:aspect-video aspect-square bg-sidebar rounded-2xl overflow-hidden relative"
         >
           {/* Live indicator*/}
           {live && (
