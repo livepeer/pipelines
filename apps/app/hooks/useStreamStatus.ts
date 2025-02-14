@@ -2,11 +2,18 @@ import { usePrivy } from '@privy-io/react-auth';
 import { useEffect, useState, useRef } from 'react';
 
 const BASE_POLLING_INTERVAL = 5000;
-const MAX_BACKOFF_INTERVAL = 120000;
+
+export enum StreamStatus {
+    Online = "ONLINE",
+    Offline = "OFFLINE",
+    DegradedInference = "DEGRADED_INFERENCE",
+    DegradedInput = "DEGRADED_INPUT",
+    Unknown = "UNKNOWN"
+}
 
 export const useStreamStatus = (streamId: string, requireUser: boolean = true) => {
     const { ready, user } = usePrivy();
-    const [status, setStatus] = useState<string | null>(null);
+    const [status, setStatus] = useState<StreamStatus | null>(null);
     const [fullResponse, setFullResponse] = useState<any>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
@@ -14,16 +21,19 @@ export const useStreamStatus = (streamId: string, requireUser: boolean = true) =
     const failureCountRef = useRef(0);
     const intervalIdRef = useRef<NodeJS.Timeout | null>(null);
 
-    const isLive = (status === "ONLINE" || status === "DEGRADED_INFERENCE" || status === "DEGRADED_INPUT") &&
-        (fullResponse?.inference_status?.fps > 0);
+    const isLive = [
+        StreamStatus.Online,
+        StreamStatus.DegradedInference,
+        StreamStatus.DegradedInput
+    ].includes(status as StreamStatus) && fullResponse?.inference_status?.fps > 0;
 
     useEffect(() => {
         let currentLevel = 0;
-        if (status === "OFFLINE") {
+        if (status === StreamStatus.Offline) {
             currentLevel = 1;
-        } else if (status === "DEGRADED_INPUT" && fullResponse?.inference_status?.fps === 0) {
+        } else if (status === StreamStatus.DegradedInput && fullResponse?.inference_status?.fps === 0) {
             currentLevel = 2;
-        } else if ((status === "ONLINE" || status === "DEGRADED_INFERENCE") && fullResponse?.inference_status?.fps === 0) {
+        } else if ((status === StreamStatus.Online || status === StreamStatus.DegradedInference) && fullResponse?.inference_status?.fps === 0) {
             currentLevel = 3;
         }
         if (currentLevel > maxStatusLevel) {
@@ -79,7 +89,7 @@ export const useStreamStatus = (streamId: string, requireUser: boolean = true) =
                     return;
                 }
                 setFullResponse(data);
-                setStatus(data?.state);
+                setStatus(data?.state as StreamStatus || StreamStatus.Unknown);
                 setError(null);
                 failureCountRef.current = 0;
                 resetPollingInterval();
