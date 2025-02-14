@@ -30,6 +30,8 @@ export function LPPLayer({
       <iframe
         src={`https://${isProduction() ? "lvpr.tv" : "monster.lvpr.tv"}/?v=${output_playback_id}&lowLatency=force&backoffMax=1000&ingestPlayback=true`}
         className="w-full h-full"
+        allow="fullscreen"
+        allowFullScreen
       />
     </div>
   );
