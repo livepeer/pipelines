@@ -152,8 +152,12 @@ export default function Dreamshaper({
   };
 
   const submitPrompt = () => {
+    console.log("submitPrompt called with inputValue:", inputValue);
     if (inputValue) {
-      handleUpdate(inputValue);
+      console.log("Calling handleUpdate with prompt:", inputValue);
+      handleUpdate(inputValue, { silent: true });
+    } else {
+      console.log("No input value to submit");
     }
   };
 
@@ -284,7 +288,10 @@ export default function Dreamshaper({
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
-              onClick={submitPrompt}
+              onClick={(e) => {
+                console.log("Button clicked");
+                submitPrompt();
+              }}
               className={cn(
                 "border-none rounded-full w-36 items-center justify-center font-semibold text-xs",
                 updating && "bg-muted text-muted-foreground",
