@@ -162,7 +162,7 @@ export default function Dreamshaper({
   return (
     <div className="relative flex flex-col h-[calc(100vh-6rem)] md:h-[calc(100vh-2rem)]">
       {/* Header section */}
-      <div className="flex justify-center items-center p-3">
+      <div className="flex justify-center items-center p-3 mt-8">
         <div className="mx-auto text-center">
           <h1 className="text-2xl font-bold">Livepeer Pipelines</h1>
           <p className="text-muted-foreground">
