@@ -125,10 +125,6 @@ export function BroadcastWithControls({
               </Broadcast.AudioEnabledTrigger>
             </div>
             <div className="flex sm:flex-1 md:flex-[1.5] justify-end items-center gap-2.5">
-              <Broadcast.FullscreenIndicator matcher={false} asChild>
-                <Settings className="w-6 h-6 transition flex-shrink-0" />
-              </Broadcast.FullscreenIndicator>
-
               <Broadcast.ScreenshareTrigger className="w-6 h-6 hover:scale-110 transition flex-shrink-0">
                 <Broadcast.ScreenshareIndicator asChild>
                   <StopScreenshareIcon className="w-full h-full text-white/50" />
@@ -144,16 +140,6 @@ export function BroadcastWithControls({
               >
                 <PictureInPictureIcon className="w-full h-full text-white/50" />
               </Broadcast.PictureInPictureTrigger>
-
-              <Broadcast.FullscreenTrigger className="w-6 h-6 hover:scale-110 transition flex-shrink-0">
-                <Broadcast.FullscreenIndicator asChild>
-                  <ExitFullscreenIcon className="w-full h-full text-white/50" />
-                </Broadcast.FullscreenIndicator>
-
-                <Broadcast.FullscreenIndicator matcher={false} asChild>
-                  <EnterFullscreenIcon className="w-full h-full text-white/50" />
-                </Broadcast.FullscreenIndicator>
-              </Broadcast.FullscreenTrigger>
             </div>
           </div>
         </Broadcast.Controls>

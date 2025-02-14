@@ -149,7 +149,7 @@ export default function Dreamshaper({
                 <div className="absolute inset-x-0 top-0 h-[85%] bg-transparent" />
               </div>
               {!isMobile && streamUrl && (
-                <div className="absolute bottom-4 right-4 w-80 h-[180px] shadow-lg z-50 rounded-xl overflow-hidden">
+                <div className="absolute bottom-16 right-4 w-80 h-[180px] shadow-lg z-50 rounded-xl overflow-hidden">
                   <BroadcastWithControls ingestUrl={streamUrl} />
                 </div>
               )}
