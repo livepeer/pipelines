@@ -85,18 +85,14 @@ export function useDreamshaper() {
 
   const handleUpdate = useCallback(
     async (prompt: string, options?: UpdateOptions) => {
-      console.log("handleUpdate called with prompt:", prompt, "options:", options);
       
       if (!stream) {
-        console.log("No stream found, aborting update");
+        console.error("No stream found, aborting update");
         if (!options?.silent) {
           toast.error("No stream found");
         }
         return;
       }
-
-      console.log("Current stream state:", stream);
-      console.log("Current inputValues:", inputValues);
 
       setUpdating(true);
       const streamId = stream.id;
@@ -107,7 +103,6 @@ export function useDreamshaper() {
       }
 
       try {
-        console.log("Fetching stream data for ID:", streamId);
         const { data, error } = await getStream(streamId);
         
         if (error) {
@@ -128,13 +123,11 @@ export function useDreamshaper() {
 
         // Update the prompt in the input values
         const updatedInputValues = { ...inputValues };
-        console.log("Current input values structure:", updatedInputValues);
         
         if (updatedInputValues?.prompt?.["5"]?.inputs?.text) {
-          console.log("Updating prompt at prompt.5.inputs.text");
           updatedInputValues.prompt["5"].inputs.text = prompt;
         } else {
-          console.log("Could not find expected prompt structure:", {
+          console.error("Could not find expected prompt structure:", {
             hasPrompt: !!updatedInputValues?.prompt,
             hasNode5: !!updatedInputValues?.prompt?.["5"],
             hasInputs: !!updatedInputValues?.prompt?.["5"]?.inputs,
@@ -142,11 +135,6 @@ export function useDreamshaper() {
           });
         }
 
-        console.log("Sending update with values:", {
-          body: updatedInputValues,
-          host: data.gateway_host,
-          streamKey: streamKey
-        });
 
         const response = await updateParams({
           body: updatedInputValues,
@@ -154,7 +142,6 @@ export function useDreamshaper() {
           streamKey: streamKey as string,
         });
 
-        console.log("Update response:", response);
 
         if (!options?.silent) {
           if (response.status == 200 || response.status == 201) {
