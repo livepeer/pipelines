@@ -253,8 +253,7 @@ export default function Dreamshaper({
         </div>
       )}
 
-      {/* Updated Input Prompt + Button Section */}
-      <div className="mx-auto flex justify-center items-center gap-2 my-4 h-12 dark:bg-[#1A1A1A] rounded-full py-2.5 px-4 w-[calc(min(100%,965px))] border-2 border-muted-foreground/10">
+      <div className="mx-auto flex justify-center items-center gap-4 my-4 h-14 dark:bg-[#1A1A1A] rounded-xl py-3.5 px-6 w-[calc(min(100%,965px))] border-2 border-muted-foreground/10">
         <div className="relative flex-1">
           <AnimatePresence mode="wait">
             {!inputValue && (
@@ -291,7 +290,7 @@ export default function Dreamshaper({
                 submitPrompt();
               }}
               className={cn(
-                "border-none rounded-full w-36 items-center justify-center font-semibold text-xs",
+                "border-none rounded-xl w-36 items-center justify-center font-semibold text-xs",
                 updating && "bg-muted text-muted-foreground",
                 isMobile && "text-xs w-24"
               )}
