@@ -277,7 +277,8 @@ export default function Dreamshaper({
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+              if (e.key === "Enter") {
+                e.preventDefault();
                 submitPrompt();
               }
             }}
@@ -324,7 +325,7 @@ export default function Dreamshaper({
             </Button>
           </TooltipTrigger>
           <TooltipContent>
-            {isMac ? "⌘ + Enter" : "Ctrl + Enter"}
+            Press Enter
           </TooltipContent>
         </Tooltip>
       </div>
