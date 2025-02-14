@@ -31,7 +31,6 @@ const App = (): ReactElement => {
   useEffect(() => {
     if (!authenticated) {
       const timer = setTimeout(() => {
-        console.log("Killing stream due to reach timeout and user is not authenticated");
         setStreamKilled(true);
         setShowInterstitial(true);
       }, UNREGISTERED_APP_TRIAL_TIMEOUT);
@@ -39,10 +38,8 @@ const App = (): ReactElement => {
     }
   }, [authenticated]);
 
-  // Debug event listener to trigger the timeout manually.
   useEffect(() => {
     const debugHandler = () => {
-      console.log("Debug: Triggering manual stream timeout");
       setStreamKilled(true);
       setShowInterstitial(true);
     };
@@ -52,7 +49,6 @@ const App = (): ReactElement => {
 
   useEffect(() => {
     const trialExpiredHandler = () => {
-      console.log("Trial expired: Not enough time remaining");
       setStreamKilled(true);
       setShowInterstitial(true);
     };
@@ -66,13 +62,11 @@ const App = (): ReactElement => {
   };
 
   const handlePromptApply = (prompt: string) => {
-    console.log("Saving selected prompt silently for later application:", prompt);
     setPendingPrompt(prompt);
   };
 
   useEffect(() => {
     if (pendingPrompt && status === "ONLINE") {
-      console.log("Stream is ONLINE, applying pending prompt:", pendingPrompt);
       if (handleUpdate) {
         handleUpdate(pendingPrompt, { silent: true });
       }
