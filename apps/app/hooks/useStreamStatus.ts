@@ -10,8 +10,39 @@ export const useStreamStatus = (streamId: string, requireUser: boolean = true) =
     const [fullResponse, setFullResponse] = useState<any>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
+    const [maxStatusLevel, setMaxStatusLevel] = useState(0);
     const failureCountRef = useRef(0);
     const intervalIdRef = useRef<NodeJS.Timeout | null>(null);
+
+    const isLive = (status === "ONLINE" || status === "DEGRADED_INFERENCE" || status === "DEGRADED_INPUT") &&
+        (fullResponse?.inference_status?.fps > 0);
+
+    useEffect(() => {
+        let currentLevel = 0;
+        if (status === "OFFLINE") {
+            currentLevel = 1;
+        } else if (status === "DEGRADED_INPUT" && fullResponse?.inference_status?.fps === 0) {
+            currentLevel = 2;
+        } else if ((status === "ONLINE" || status === "DEGRADED_INFERENCE") && fullResponse?.inference_status?.fps === 0) {
+            currentLevel = 3;
+        }
+        if (currentLevel > maxStatusLevel) {
+            setMaxStatusLevel(currentLevel);
+        }
+    }, [status, fullResponse, maxStatusLevel]);
+
+    const getStatusMessage = () => {
+        switch (maxStatusLevel) {
+            case 1:
+                return "Initializing your stream...";
+            case 2:
+                return "Your stream has started. Hang tight while we load it...";
+            case 3:
+                return "Almost there...";
+            default:
+                return "";
+        }
+    };
 
     const triggerError = (errMsg: string) => {
         setError(errMsg);
@@ -19,7 +50,7 @@ export const useStreamStatus = (streamId: string, requireUser: boolean = true) =
     };
 
     const resetPollingInterval = () => {
-        // Optionally, add functionality to adjust the polling interval.
+        // Optinal func to adjust the polling interval.
     };
 
     useEffect(() => {
@@ -47,9 +78,7 @@ export const useStreamStatus = (streamId: string, requireUser: boolean = true) =
                     triggerError(error ?? "No stream data returned from API");
                     return;
                 }
-                // Store the complete data response
                 setFullResponse(data);
-                // Also extract the main status string for any existing UI (if needed)
                 setStatus(data?.state);
                 setError(null);
                 failureCountRef.current = 0;
@@ -71,5 +100,12 @@ export const useStreamStatus = (streamId: string, requireUser: boolean = true) =
         };
     }, [ready, streamId, requireUser, user]);
 
-    return { status, fullResponse, loading, error };
+    return { 
+        status, 
+        fullResponse, 
+        loading, 
+        error,
+        isLive,
+        statusMessage: getStatusMessage()
+    };
 };
