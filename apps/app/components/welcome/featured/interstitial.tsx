@@ -274,7 +274,7 @@ const Interstitial: React.FC<InterstitialProps> = ({
                     key={i}
                     onClick={() => setSelectedPrompt(example.prompt)}
                     className={`
-                      relative h-64 rounded-xl overflow-hidden cursor-pointer
+                      relative h-48 md:h-64 rounded-xl overflow-hidden cursor-pointer
                       ${selectedPrompt === example.prompt ? 'ring-2 ring-[#00eb88]' : 'border border-[#2e2e2e]'}
                     `}
                     style={{
@@ -291,14 +291,6 @@ const Interstitial: React.FC<InterstitialProps> = ({
               </div>
 
               <div className="flex gap-4 mt-8">
-                <Button 
-                  variant="secondary" 
-                  onClick={handleBack}
-                  size="lg"
-                  className="rounded-full h-12 flex-1"
-                >
-                  Back
-                </Button>
                 <Button
                   onClick={() => {
                     if (selectedPrompt && onPromptApply) {

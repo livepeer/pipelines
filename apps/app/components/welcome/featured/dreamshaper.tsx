@@ -164,8 +164,8 @@ export default function Dreamshaper({
       {/* Header section */}
       <div className="flex justify-center items-center p-3 mt-8">
         <div className="mx-auto text-center">
-          <h1 className="text-2xl font-bold">Livepeer Pipelines</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-xl md:text-2xl font-bold">Livepeer Pipelines</h1>
+          <p className="text-sm md:text-base text-muted-foreground">
             Transform your video in real-time with AI - and build your own
             workflow with ComfyUI
           </p>
@@ -173,10 +173,10 @@ export default function Dreamshaper({
       </div>
 
       {/* Main content area */}
-      <div className="flex-1 min-h-0 p-4 flex items-center justify-center">
+      <div className="flex-1 min-h-0 p-4 flex items-center justify-center mb-4">
         <div
           ref={outputPlayerRef}
-          className="w-full max-w-[calc(min(100%,calc((100vh-20rem)*16/9)))] aspect-video bg-sidebar rounded-2xl overflow-hidden relative"
+          className="w-full max-w-[calc(min(100%,calc((100vh-20rem)*16/9)))] md:aspect-video aspect-square bg-sidebar rounded-2xl overflow-hidden relative"
         >
           {/* Live indicator*/}
           {live && (
@@ -239,7 +239,7 @@ export default function Dreamshaper({
       </div>
 
       {isMobile && (
-        <div className="flex-shrink-0 h-64 p-4">
+        <div className="flex-shrink-0 h-48 px-4 mb-4">
           {loading || !streamUrl ? (
             <div className="w-full h-full flex items-center justify-center">
               <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -247,13 +247,13 @@ export default function Dreamshaper({
           ) : (
             <BroadcastWithControls
               ingestUrl={streamUrl}
-              className="w-full h-full object-cover"
+              className="w-full h-full rounded-2xl overflow-hidden"
             />
           )}
         </div>
       )}
 
-      <div className="mx-auto flex justify-center items-center gap-4 my-4 h-14 dark:bg-[#1A1A1A] rounded-xl py-3.5 px-6 w-[calc(min(100%,965px))] border-2 border-muted-foreground/10">
+      <div className="mx-auto flex justify-center items-center gap-2 md:gap-4 my-4 h-14 dark:bg-[#1A1A1A] rounded-[100px] md:rounded-xl py-3.5 px-3 md:px-6 w-[calc(min(100%,965px))] border-2 border-muted-foreground/10">
         <div className="relative flex-1">
           <AnimatePresence mode="wait">
             {!inputValue && (
@@ -272,7 +272,7 @@ export default function Dreamshaper({
             )}
           </AnimatePresence>
           <Input
-            className="w-full shadow-none border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-sm"
+            className="w-full shadow-none border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-sm !rounded-[100px] md:!rounded-xl"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={(e) => {
@@ -290,7 +290,7 @@ export default function Dreamshaper({
                 submitPrompt();
               }}
               className={cn(
-                "border-none rounded-xl w-36 items-center justify-center font-semibold text-xs",
+                "border-none rounded-[100px] md:rounded-xl w-36 items-center justify-center font-semibold text-xs",
                 updating && "bg-muted text-muted-foreground",
                 isMobile && "text-xs w-24"
               )}
