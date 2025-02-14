@@ -24,7 +24,7 @@ export function TrialExpiredModal({ open, onOpenChange }: TrialExpiredModalProps
             Time expired on your free version
           </DialogTitle>
           <DialogDescription className="text-muted-foreground text-left">
-            In order to continue streaming, please sign in using discord
+            In order to continue streaming, please sign up or sign in.
           </DialogDescription>
         </DialogHeader>
         <div className="mt-4 flex justify-center">
