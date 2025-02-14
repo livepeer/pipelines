@@ -23,6 +23,7 @@ import { cn } from "@repo/design-system/lib/utils";
 import { UpdateOptions } from "./useDreamshaper";
 import Link from "next/link";
 import { Separator } from "@repo/design-system/components/ui/separator";
+import { useProfanity } from "./useProfanity";
 
 const PROMPT_INTERVAL = 4000;
 const samplePrompts = examplePrompts.map((prompt) => prompt.prompt);
@@ -71,6 +72,7 @@ export default function Dreamshaper({
       : false;
   const { currentPromptIndex } = usePrompts();
   const [inputValue, setInputValue] = useState("");
+  const profanity = useProfanity(inputValue);
   const isMobile = useIsMobile();
   const outputPlayerRef = useRef<HTMLDivElement>(null);
   const [dragConstraints, setDragConstraints] = useState({
@@ -225,7 +227,9 @@ export default function Dreamshaper({
                 <div className="absolute inset-0 bg-black flex flex-col items-center justify-center rounded-2xl">
                   <Loader2 className="h-8 w-8 animate-spin text-white" />
                   {statusMessage && (
-                    <span className="mt-4 text-white text-sm">{statusMessage}</span>
+                    <span className="mt-4 text-white text-sm">
+                      {statusMessage}
+                    </span>
                   )}
                 </div>
               )}
@@ -253,7 +257,13 @@ export default function Dreamshaper({
         </div>
       )}
 
-      <div className="mx-auto flex justify-center items-center gap-4 my-4 h-14 dark:bg-[#1A1A1A] rounded-xl py-3.5 px-6 w-[calc(min(100%,965px))] border-2 border-muted-foreground/10">
+      {/* Updated Input Prompt + Button Section */}
+      <div
+        className={cn(
+          "mx-auto flex justify-center items-center gap-2 my-4 h-12 dark:bg-[#1A1A1A] rounded-full py-2.5 px-4 w-[calc(min(100%,965px))] border-2 border-muted-foreground/10",
+          profanity && "dark:border-red-700 border-red-600"
+        )}
+      >
         <div className="relative flex-1">
           <AnimatePresence mode="wait">
             {!inputValue && (
@@ -276,8 +286,12 @@ export default function Dreamshaper({
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault();
+              if (
+                !updating &&
+                !profanity &&
+                e.key === "Enter" &&
+                (e.metaKey || e.ctrlKey)
+              ) {
                 submitPrompt();
               }
             }}
@@ -286,12 +300,12 @@ export default function Dreamshaper({
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
-              onClick={(e) => {
-                submitPrompt();
-              }}
+              disabled={profanity || updating || !inputValue}
+              onClick={submitPrompt}
               className={cn(
-                "border-none rounded-xl w-36 items-center justify-center font-semibold text-xs",
-                updating && "bg-muted text-muted-foreground",
+                "border-none rounded-full w-36 items-center justify-center font-semibold text-xs",
+                updating &&
+                  "bg-muted text-muted-foreground disabled:opacity-100",
                 isMobile && "text-xs w-24"
               )}
             >
@@ -323,9 +337,7 @@ export default function Dreamshaper({
               )}
             </Button>
           </TooltipTrigger>
-          <TooltipContent>
-            Press Enter
-          </TooltipContent>
+          <TooltipContent>Press Enter</TooltipContent>
         </Tooltip>
       </div>
 
