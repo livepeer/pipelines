@@ -214,7 +214,11 @@ export default function Dreamshaper({
             </div>
           ) : outputPlaybackId ? (
             <>
-              <LPPLayer output_playback_id={outputPlaybackId} isMobile={isMobile} />
+              <div className="relative w-full h-full">
+                <LPPLayer output_playback_id={outputPlaybackId} isMobile={isMobile} />
+                {/* Overlay */}
+                <div className="absolute inset-x-0 top-0 h-[85%] bg-transparent" />
+              </div>
               {!isMobile && streamUrl && (
                 <motion.div
                   drag
