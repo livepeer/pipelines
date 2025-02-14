@@ -36,7 +36,7 @@ const processInputValues = (inputValues: any) => {
   );
 };
 
-interface UpdateOptions {
+export interface UpdateOptions {
   silent?: boolean;
 }
 
@@ -44,6 +44,7 @@ export function useDreamshaper() {
   const { user } = usePrivy();
 
   const [loading, setLoading] = useState(true);
+  const [updating, setUpdating] = useState(false);
   const [stream, setStream] = useState<any>(null);
   const [pipeline, setPipeline] = useState<any>(null);
   const [inputValues, setInputValues] = useState<any>(null);
@@ -91,6 +92,7 @@ export function useDreamshaper() {
         return;
       }
 
+      setUpdating(true);
       const streamId = stream.id;
       const streamKey = stream.stream_key;
       let toastId;
@@ -137,6 +139,8 @@ export function useDreamshaper() {
         if (!options?.silent) {
           toast.error("An unexpected error occurred", { id: toastId });
         }
+      } finally {
+        setUpdating(false);
       }
     },
     [stream, inputValues]
@@ -150,5 +154,6 @@ export function useDreamshaper() {
     handleUpdate,
     loading,
     fullResponse,
+    updating,
   };
 }

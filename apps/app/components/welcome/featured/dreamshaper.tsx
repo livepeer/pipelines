@@ -1,19 +1,28 @@
+"use client";
+
 import { Button } from "@repo/design-system/components/ui/button";
 import { Input } from "@repo/design-system/components/ui/input";
 import { examplePrompts } from "./interstitial";
 import { TooltipTrigger } from "@repo/design-system/components/ui/tooltip";
 import { TooltipContent } from "@repo/design-system/components/ui/tooltip";
 import { Tooltip } from "@repo/design-system/components/ui/tooltip";
-import { motion, AnimatePresence, useMotionValue, animate } from "framer-motion";
-import { useState, useEffect, useMemo, useRef } from "react";
-import { useDreamshaper } from "./useDreamshaper";
+import {
+  motion,
+  AnimatePresence,
+  useMotionValue,
+  animate,
+} from "framer-motion";
+import { useState, useEffect, useRef } from "react";
 import { BroadcastWithControls } from "@/components/playground/broadcast";
 import { Loader2 } from "lucide-react";
 import { LPPLayer } from "@/components/playground/player";
-import Link from "next/link";
 import { useIsMobile } from "@repo/design-system/hooks/use-mobile";
 import { usePrivy } from "@privy-io/react-auth";
 import { useTrialTimer } from "@/hooks/useTrialTimer";
+import { cn } from "@repo/design-system/lib/utils";
+import { UpdateOptions } from "./useDreamshaper";
+import Link from "next/link";
+import { Separator } from "@repo/design-system/components/ui/separator";
 
 const PROMPT_INTERVAL = 4000;
 const samplePrompts = examplePrompts.map((prompt) => prompt.prompt);
@@ -36,10 +45,11 @@ function usePrompts() {
 interface DreamshaperProps {
   outputPlaybackId: string | null;
   streamUrl: string | null;
-  handleUpdate: (prompt: string) => void;
+  handleUpdate: (prompt: string, options?: UpdateOptions) => void;
   loading: boolean;
   streamKilled?: boolean;
   fullResponse?: any;
+  updating: boolean;
 }
 
 export default function Dreamshaper({
@@ -49,6 +59,7 @@ export default function Dreamshaper({
   loading,
   streamKilled = false,
   fullResponse,
+  updating,
 }: DreamshaperProps) {
   const isMac =
     typeof navigator !== "undefined"
@@ -58,8 +69,13 @@ export default function Dreamshaper({
   const [inputValue, setInputValue] = useState("");
   const isMobile = useIsMobile();
   const outputPlayerRef = useRef<HTMLDivElement>(null);
-  const [dragConstraints, setDragConstraints] = useState({ top: 0, left: 0, right: 0, bottom: 0 });
-  
+  const [dragConstraints, setDragConstraints] = useState({
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  });
+
   const x = useMotionValue(0);
   const y = useMotionValue(0);
 
@@ -78,36 +94,54 @@ export default function Dreamshaper({
           top: -playerRect.height + broadcastHeight + margin,
           left: -playerRect.width + broadcastWidth + margin,
           right: 0,
-          bottom: 0
+          bottom: 0,
         });
       }
     };
 
     calculateConstraints();
-    window.addEventListener('resize', calculateConstraints);
-    return () => window.removeEventListener('resize', calculateConstraints);
+    window.addEventListener("resize", calculateConstraints);
+    return () => window.removeEventListener("resize", calculateConstraints);
   }, [outputPlaybackId]);
 
-  const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
+  const clamp = (value: number, min: number, max: number) =>
+    Math.min(Math.max(value, min), max);
 
   const onDragEnd = (event: any, info: any) => {
     const currentX = x.get();
     const currentY = y.get();
 
-    const clampedX = clamp(currentX, dragConstraints.left, dragConstraints.right);
-    const clampedY = clamp(currentY, dragConstraints.top, dragConstraints.bottom);
+    const clampedX = clamp(
+      currentX,
+      dragConstraints.left,
+      dragConstraints.right
+    );
+    const clampedY = clamp(
+      currentY,
+      dragConstraints.top,
+      dragConstraints.bottom
+    );
 
     const distanceToRight = Math.abs(dragConstraints.right - clampedX);
     const distanceToLeft = Math.abs(dragConstraints.left - clampedX);
     const distanceToBottom = Math.abs(dragConstraints.bottom - clampedY);
     const distanceToTop = Math.abs(dragConstraints.top - clampedY);
 
-    if (Math.min(distanceToRight, distanceToLeft) < Math.min(distanceToBottom, distanceToTop)) {
-      const targetX = distanceToRight <= distanceToLeft ? dragConstraints.right : dragConstraints.left;
+    if (
+      Math.min(distanceToRight, distanceToLeft) <
+      Math.min(distanceToBottom, distanceToTop)
+    ) {
+      const targetX =
+        distanceToRight <= distanceToLeft
+          ? dragConstraints.right
+          : dragConstraints.left;
       animate(x, targetX, { type: "spring", damping: 20, stiffness: 300 });
       animate(y, clampedY, { type: "spring", damping: 20, stiffness: 300 });
     } else {
-      const targetY = distanceToBottom <= distanceToTop ? dragConstraints.bottom : dragConstraints.top;
+      const targetY =
+        distanceToBottom <= distanceToTop
+          ? dragConstraints.bottom
+          : dragConstraints.top;
       animate(x, clampedX, { type: "spring", damping: 20, stiffness: 300 });
       animate(y, targetY, { type: "spring", damping: 20, stiffness: 300 });
     }
@@ -115,25 +149,26 @@ export default function Dreamshaper({
 
   const submitPrompt = () => {
     if (inputValue) {
-      handleUpdate(inputValue);
+      handleUpdate(inputValue, { silent: true });
     }
   };
 
   return (
-    <div className="relative flex flex-col h-[calc(100vh-10rem)] overflow-hidden">
+    <div className="relative flex flex-col h-[calc(100vh-6rem)] md:h-[calc(100vh-2rem)]">
       {/* Header section */}
       <div className="flex justify-center items-center p-3">
         <div className="mx-auto text-center">
           <h1 className="text-2xl font-bold">Livepeer Pipelines</h1>
           <p className="text-muted-foreground">
-            Transform your video in real-time with AI - and build your own workflow with ComfyUI
+            Transform your video in real-time with AI - and build your own
+            workflow with ComfyUI
           </p>
         </div>
       </div>
 
       {/* Main content area */}
       <div className="flex-1 min-h-0 p-4 flex items-center justify-center">
-        <div 
+        <div
           ref={outputPlayerRef}
           className="w-full max-w-[calc(min(100%,calc((100vh-20rem)*16/9)))] aspect-video bg-sidebar rounded-2xl overflow-hidden relative"
         >
@@ -144,13 +179,14 @@ export default function Dreamshaper({
               <span className="text-white font-bold">Live</span>
             </div>
           )}
-          
+
           {/* Timer overlay */}
           {timeRemaining !== null && (
             <div className="absolute top-4 right-4 bg-neutral-800 text-gray-400 px-5 py-1 text-xs rounded-full border border-gray-500">
               <span className="text-[10px] mr-2">left</span> {formattedTime}
             </div>
           )}
+
           {loading ? (
             <div className="w-full h-full flex items-center justify-center">
               <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -170,7 +206,7 @@ export default function Dreamshaper({
                   dragMomentum={false}
                   dragTransition={{
                     bounceStiffness: 600,
-                    bounceDamping: 20
+                    bounceDamping: 20,
                   }}
                   onDragEnd={onDragEnd}
                   style={{ x, y }}
@@ -195,14 +231,17 @@ export default function Dreamshaper({
               <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
             </div>
           ) : (
-            <BroadcastWithControls ingestUrl={streamUrl} className="w-full h-full object-cover" />
+            <BroadcastWithControls
+              ingestUrl={streamUrl}
+              className="w-full h-full object-cover"
+            />
           )}
         </div>
       )}
 
       {/* Updated Input Prompt + Button Section */}
-      <div className="flex justify-center items-center gap-2 my-4">
-        <div className="relative">
+      <div className="mx-auto flex justify-center items-center gap-2 my-4 h-12 dark:bg-[#1A1A1A] rounded-full py-2.5 px-4 w-[calc(min(100%,965px))] border-2 border-muted-foreground/10">
+        <div className="relative flex-1">
           <AnimatePresence mode="wait">
             {!inputValue && (
               <motion.span
@@ -211,14 +250,16 @@ export default function Dreamshaper({
                 animate={{ opacity: 0.5, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.3 }}
-                className="absolute inset-y-0 left-3 flex items-center text-muted-foreground pointer-events-none"
+                className={cn(
+                  "absolute inset-y-0 left-3 flex items-center text-muted-foreground pointer-events-none text-xs"
+                )}
               >
                 {samplePrompts[currentPromptIndex]}
               </motion.span>
             )}
           </AnimatePresence>
           <Input
-            className="w-80 h-10 pl-3 pr-2"
+            className="w-full shadow-none border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-sm"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={(e) => {
@@ -230,13 +271,67 @@ export default function Dreamshaper({
         </div>
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button onClick={submitPrompt} className="h-10">
-              Apply {isMobile ? "" : isMac ? "(⌘ + Enter)" : "(Ctrl + Enter)"}
+            <Button
+              onClick={submitPrompt}
+              className={cn(
+                "border-none rounded-full w-36 items-center justify-center font-semibold text-xs",
+                updating && "bg-muted text-muted-foreground",
+                isMobile && "text-xs w-24"
+              )}
+            >
+              {updating ? (
+                <span>
+                  Applying
+                  <div className="inline-flex ml-1">
+                    {[0, 1, 2].map((i) => (
+                      <motion.span
+                        key={i}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{
+                          repeat: Infinity,
+                          duration: 0.6,
+                          delay: i * 0.2,
+                          repeatDelay: 0.6,
+                        }}
+                      >
+                        .
+                      </motion.span>
+                    ))}
+                  </div>
+                </span>
+              ) : isMobile ? (
+                "Apply"
+              ) : (
+                "Apply changes"
+              )}
             </Button>
           </TooltipTrigger>
-          <TooltipContent>{isMac ? "⌘ + Enter" : "Ctrl + Enter"}</TooltipContent>
+          <TooltipContent>
+            {isMac ? "⌘ + Enter" : "Ctrl + Enter"}
+          </TooltipContent>
         </Tooltip>
       </div>
+
+      {
+        <div className="mx-auto flex items-center justify-center gap-4 text-xs capitalize text-muted-foreground mt-4">
+          <Link
+            target="_blank"
+            href="https://pipelines.livepeer.org/docs/knowledge-base/get-started/what-is-pipeline"
+            className=" hover:text-muted-foreground/80"
+          >
+            Build a pipeline
+          </Link>
+          <Separator orientation="vertical" />
+          <Link
+            target="_blank"
+            href="https://discord.gg/livepeer"
+            className=" hover:text-muted-foreground/80"
+          >
+            Join our community
+          </Link>
+        </div>
+      }
     </div>
   );
 }
