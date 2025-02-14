@@ -50,6 +50,7 @@ interface DreamshaperProps {
   streamKilled?: boolean;
   fullResponse?: any;
   updating: boolean;
+  live: boolean;
 }
 
 export default function Dreamshaper({
@@ -60,6 +61,7 @@ export default function Dreamshaper({
   streamKilled = false,
   fullResponse,
   updating,
+  live,
 }: DreamshaperProps) {
   const isMac =
     typeof navigator !== "undefined"
@@ -172,9 +174,8 @@ export default function Dreamshaper({
           ref={outputPlayerRef}
           className="w-full max-w-[calc(min(100%,calc((100vh-20rem)*16/9)))] aspect-video bg-sidebar rounded-2xl overflow-hidden relative"
         >
-          {/* Live indicator */}
-          {(fullResponse?.state === "ONLINE" || fullResponse?.state === "DEGRADED_INFERENCE") && 
-            fullResponse?.inference_status?.fps > 0 && (
+          {/* Live indicator*/}
+          {live && (
             <div className="absolute top-4 left-4 bg-neutral-800 text-gray-400 px-5 py-1 text-xs rounded-full border border-gray-500">
               <span className="inline-block w-2 h-2 bg-red-500 rounded-full mr-2"></span>
               <span className="text-white font-bold">Live</span>
@@ -183,7 +184,7 @@ export default function Dreamshaper({
 
           {/* Timer overlay */}
           {!authenticated && timeRemaining !== null && (
-            <div className="absolute top-4 right-4 bg-neutral-800 text-gray-400 px-5 py-1 text-xs rounded-full border border-gray-500">
+            <div className="absolute top-4 right-4 bg-neutral-800/30 text-gray-400 px-5 py-1 text-xs rounded-full border border-gray-500">
               <span className="text-[10px] mr-2">left</span> {formattedTime}
             </div>
           )}

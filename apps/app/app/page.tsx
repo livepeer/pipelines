@@ -19,6 +19,7 @@ const App = (): ReactElement => {
   const [pendingPrompt, setPendingPrompt] = useState<string | null>(null);
 
   const { status } = useStreamStatus(stream?.id || "", false);
+  const isLive = status === "ONLINE" || status === "DEGRADED_INFERENCE";
 
   useEffect(() => {
     const hasVisited = localStorage.getItem("hasSeenLandingPage");
@@ -82,7 +83,11 @@ const App = (): ReactElement => {
 
   return (
     <div className="relative">
-      <Dreamshaper {...dreamshaperState} streamKilled={streamKilled} />
+      <Dreamshaper
+        {...dreamshaperState}
+        streamKilled={streamKilled}
+        live={isLive}
+      />
       <ClientSideTracker eventName="home_page_view" />
       {showInterstitial && (
         <Interstitial
