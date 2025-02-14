@@ -10,26 +10,26 @@ export async function updateParams({
   host: string;
   streamKey: string;
 }) {
-  console.log("updateParams called with:", { body, host, streamKey });
+  console.log("updateParams", body, host);
+  const credentials = Buffer.from(
+    process.env.USERNAME_PASSWORD as string
+  ).toString("base64");
 
-  const url = `${host}/api/stream/${streamKey}/params`;
-  console.log("Making request to URL:", url);
-
-  try {
-    const response = await fetch(url, {
+  const response = await fetch(
+    `https://${host}/live/video-to-video/${streamKey}/update`,
+    {
       method: "POST",
       headers: {
+        Authorization: `Basic ${credentials}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify(body),
-    });
+    }
+  );
 
-    console.log("Response status:", response.status);
-    console.log("Response:", response);
+  console.log("response", response);
 
-    return { status: response.status };
-  } catch (error) {
-    console.error("Error in updateParams:", error);
-    throw error;
-  }
+  const status = response.status;
+
+  return { status };
 }
