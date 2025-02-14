@@ -43,11 +43,6 @@ export function TrialExpiredModal({ open, onOpenChange }: TrialExpiredModalProps
           </Button>
         </div>
       </DialogContent>
-      <style jsx global>{`
-        .trial-expired-content > button {
-          display: none !important;
-        }
-      `}</style>
     </Dialog>
   );
 }
