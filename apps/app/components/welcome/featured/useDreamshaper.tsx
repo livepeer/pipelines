@@ -85,7 +85,6 @@ export function useDreamshaper() {
 
   const handleUpdate = useCallback(
     async (prompt: string, options?: UpdateOptions) => {
-      
       if (!stream) {
         console.error("No stream found, aborting update");
         if (!options?.silent) {
@@ -104,7 +103,7 @@ export function useDreamshaper() {
 
       try {
         const { data, error } = await getStream(streamId);
-        
+
         if (error) {
           console.error("Error fetching stream:", error);
           if (!options?.silent) {
@@ -123,7 +122,7 @@ export function useDreamshaper() {
 
         // Update the prompt in the input values
         const updatedInputValues = { ...inputValues };
-        
+
         if (updatedInputValues?.prompt?.["5"]?.inputs?.text) {
           updatedInputValues.prompt["5"].inputs.text = prompt;
         } else {
@@ -131,17 +130,15 @@ export function useDreamshaper() {
             hasPrompt: !!updatedInputValues?.prompt,
             hasNode5: !!updatedInputValues?.prompt?.["5"],
             hasInputs: !!updatedInputValues?.prompt?.["5"]?.inputs,
-            hasText: !!updatedInputValues?.prompt?.["5"]?.inputs?.text
+            hasText: !!updatedInputValues?.prompt?.["5"]?.inputs?.text,
           });
         }
-
 
         const response = await updateParams({
           body: updatedInputValues,
           host: data.gateway_host as string,
           streamKey: streamKey as string,
         });
-
 
         if (!options?.silent) {
           if (response.status == 200 || response.status == 201) {
