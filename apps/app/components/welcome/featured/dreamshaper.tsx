@@ -153,7 +153,7 @@ export default function Dreamshaper({
 
   const submitPrompt = () => {
     if (inputValue) {
-      handleUpdate(inputValue, { silent: true });
+      handleUpdate(inputValue);
     }
   };
 
