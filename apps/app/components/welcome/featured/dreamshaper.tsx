@@ -260,7 +260,7 @@ export default function Dreamshaper({
       {/* Updated Input Prompt + Button Section */}
       <div
         className={cn(
-          "mx-auto flex justify-center items-center gap-2 my-4 h-12 dark:bg-[#1A1A1A] rounded-full py-2.5 px-4 w-[calc(min(100%,965px))] border-2 border-muted-foreground/10",
+          "relative mx-auto flex justify-center items-center gap-2 my-4 h-12 dark:bg-[#1A1A1A] rounded-full py-2.5 px-4 w-[calc(min(100%,965px))] border-2 border-muted-foreground/10",
           profanity && "dark:border-red-700 border-red-600"
         )}
       >
@@ -334,27 +334,32 @@ export default function Dreamshaper({
           </TooltipTrigger>
           <TooltipContent>Press Enter</TooltipContent>
         </Tooltip>
+        {profanity && (
+          <div className="absolute -top-12 mx-auto flex items-center justify-center gap-4 text-xs text-muted-foreground mt-4">
+            <span className="text-red-600">
+              Please fix your prompt as it may contain harmful words
+            </span>
+          </div>
+        )}
       </div>
 
-      {
-        <div className="mx-auto flex items-center justify-center gap-4 text-xs capitalize text-muted-foreground mt-4">
-          <Link
-            target="_blank"
-            href="https://pipelines.livepeer.org/docs/knowledge-base/get-started/what-is-pipeline"
-            className=" hover:text-muted-foreground/80"
-          >
-            Build a pipeline
-          </Link>
-          <Separator orientation="vertical" />
-          <Link
-            target="_blank"
-            href="https://discord.gg/livepeer"
-            className=" hover:text-muted-foreground/80"
-          >
-            Join our community
-          </Link>
-        </div>
-      }
+      <div className="mx-auto flex items-center justify-center gap-4 text-xs capitalize text-muted-foreground mt-4">
+        <Link
+          target="_blank"
+          href="https://pipelines.livepeer.org/docs/knowledge-base/get-started/what-is-pipeline"
+          className=" hover:text-muted-foreground/80"
+        >
+          Build a pipeline
+        </Link>
+        <Separator orientation="vertical" />
+        <Link
+          target="_blank"
+          href="https://discord.gg/livepeer"
+          className=" hover:text-muted-foreground/80"
+        >
+          Join our community
+        </Link>
+      </div>
     </div>
   );
 }
