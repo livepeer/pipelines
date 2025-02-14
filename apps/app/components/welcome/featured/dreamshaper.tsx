@@ -73,40 +73,12 @@ export default function Dreamshaper({
   const [inputValue, setInputValue] = useState("");
   const isMobile = useIsMobile();
   const outputPlayerRef = useRef<HTMLDivElement>(null);
-  const [dragConstraints, setDragConstraints] = useState({
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-  });
 
   const x = useMotionValue(0);
   const y = useMotionValue(0);
 
   const { authenticated, login } = usePrivy();
   const { timeRemaining, formattedTime } = useTrialTimer();
-
-  useEffect(() => {
-    const calculateConstraints = () => {
-      if (outputPlayerRef.current) {
-        const playerRect = outputPlayerRef.current.getBoundingClientRect();
-        const broadcastWidth = 320;
-        const broadcastHeight = 180;
-        const margin = 32;
-
-        setDragConstraints({
-          top: -playerRect.height + broadcastHeight + margin,
-          left: -playerRect.width + broadcastWidth + margin,
-          right: 0,
-          bottom: 0,
-        });
-      }
-    };
-
-    calculateConstraints();
-    window.addEventListener("resize", calculateConstraints);
-    return () => window.removeEventListener("resize", calculateConstraints);
-  }, [outputPlaybackId]);
 
   useEffect(() => {
     const setVh = () => {
@@ -118,49 +90,6 @@ export default function Dreamshaper({
     window.addEventListener('resize', setVh);
     return () => window.removeEventListener('resize', setVh);
   }, []);
-
-  const clamp = (value: number, min: number, max: number) =>
-    Math.min(Math.max(value, min), max);
-
-  const onDragEnd = (event: any, info: any) => {
-    const currentX = x.get();
-    const currentY = y.get();
-
-    const clampedX = clamp(
-      currentX,
-      dragConstraints.left,
-      dragConstraints.right
-    );
-    const clampedY = clamp(
-      currentY,
-      dragConstraints.top,
-      dragConstraints.bottom
-    );
-
-    const distanceToRight = Math.abs(dragConstraints.right - clampedX);
-    const distanceToLeft = Math.abs(dragConstraints.left - clampedX);
-    const distanceToBottom = Math.abs(dragConstraints.bottom - clampedY);
-    const distanceToTop = Math.abs(dragConstraints.top - clampedY);
-
-    if (
-      Math.min(distanceToRight, distanceToLeft) <
-      Math.min(distanceToBottom, distanceToTop)
-    ) {
-      const targetX =
-        distanceToRight <= distanceToLeft
-          ? dragConstraints.right
-          : dragConstraints.left;
-      animate(x, targetX, { type: "spring", damping: 20, stiffness: 300 });
-      animate(y, clampedY, { type: "spring", damping: 20, stiffness: 300 });
-    } else {
-      const targetY =
-        distanceToBottom <= distanceToTop
-          ? dragConstraints.bottom
-          : dragConstraints.top;
-      animate(x, clampedX, { type: "spring", damping: 20, stiffness: 300 });
-      animate(y, targetY, { type: "spring", damping: 20, stiffness: 300 });
-    }
-  };
 
   const submitPrompt = () => {
     if (inputValue) {
@@ -220,21 +149,9 @@ export default function Dreamshaper({
                 <div className="absolute inset-x-0 top-0 h-[85%] bg-transparent" />
               </div>
               {!isMobile && streamUrl && (
-                <motion.div
-                  drag
-                  dragConstraints={dragConstraints}
-                  dragElastic={0}
-                  dragMomentum={false}
-                  dragTransition={{
-                    bounceStiffness: 600,
-                    bounceDamping: 20,
-                  }}
-                  onDragEnd={onDragEnd}
-                  style={{ x, y }}
-                  className="absolute bottom-4 right-4 w-80 h-[180px] shadow-lg z-50 rounded-xl overflow-hidden border border-white/10 cursor-move"
-                >
+                <div className="absolute bottom-4 right-4 w-80 h-[180px] shadow-lg z-50 rounded-xl overflow-hidden">
                   <BroadcastWithControls ingestUrl={streamUrl} />
-                </motion.div>
+                </div>
               )}
               {!live && (
                 <div className="absolute inset-0 bg-black flex flex-col items-center justify-center rounded-2xl">
