@@ -228,7 +228,9 @@ const Interstitial: React.FC<InterstitialProps> = ({
                       <h3 className="text-lg font-bold">{step.title}</h3>
                       <p className="text-sm text-muted-foreground">{step.description}</p>
                     </div>
-                    <InterstitialDecor flip={i === 1} opacity={0.2} />
+                    <div className="hidden md:block">
+                      <InterstitialDecor flip={i === 1} opacity={0.2} />
+                    </div>
                   </div>
                 ))}
               </div>
@@ -258,12 +260,15 @@ const Interstitial: React.FC<InterstitialProps> = ({
               <div className="space-y-3 mb-8">
                 <h1 className="text-2xl font-semibold">Select your first prompt</h1>
                 <p className="text-muted-foreground">
-                  The same way you would with AI image generators like Midjourney, Dalle, or StableDiffusion. 
-                  To get most out of Livepeer remember about a good lightning and a stable background.
+                  The same way you would with AI image generators like Midjourney, Dalle, or StableDiffusion.
+                  <br />
+                  <span className="hidden md:inline">
+                    To get most out of Livepeer remember about a good lightning and a stable background.
+                  </span>
                 </p>
               </div>
               
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {examplePrompts.map((example, i) => (
                   <div
                     key={i}
@@ -278,7 +283,7 @@ const Interstitial: React.FC<InterstitialProps> = ({
                       backgroundPosition: 'center'
                     }}
                   >
-                    <div className="absolute bottom-0 w-full p-4 bg-black/50 backdrop-blur-md">
+                    <div className="absolute bottom-0 w-full p-4 bg-black/50 backdrop-blur-md rounded-t-xl">
                       <p className="text-white font-bold text-center">{example.prompt}</p>
                     </div>
                   </div>
