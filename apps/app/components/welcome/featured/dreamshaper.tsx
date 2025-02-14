@@ -108,6 +108,17 @@ export default function Dreamshaper({
     return () => window.removeEventListener("resize", calculateConstraints);
   }, [outputPlaybackId]);
 
+  useEffect(() => {
+    const setVh = () => {
+      const vh = window.innerHeight * 0.01;
+      document.documentElement.style.setProperty('--vh', `${vh}px`);
+    };
+    
+    setVh();
+    window.addEventListener('resize', setVh);
+    return () => window.removeEventListener('resize', setVh);
+  }, []);
+
   const clamp = (value: number, min: number, max: number) =>
     Math.min(Math.max(value, min), max);
 
@@ -160,7 +171,7 @@ export default function Dreamshaper({
   };
 
   return (
-    <div className="relative flex flex-col h-[calc(100vh-6rem)] md:h-[calc(100vh-2rem)]">
+    <div className="relative flex flex-col min-h-screen overflow-y-auto">
       {/* Header section */}
       <div className="flex justify-center items-center p-3 mt-8">
         <div className="mx-auto text-center">
@@ -203,7 +214,7 @@ export default function Dreamshaper({
             </div>
           ) : outputPlaybackId ? (
             <>
-              <LPPLayer output_playback_id={outputPlaybackId} />
+              <LPPLayer output_playback_id={outputPlaybackId} isMobile={isMobile} />
               {!isMobile && streamUrl && (
                 <motion.div
                   drag
