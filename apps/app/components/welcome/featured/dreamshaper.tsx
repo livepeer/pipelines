@@ -191,8 +191,8 @@ export default function Dreamshaper({
         </div>
       )}
 
-      <div className="mx-auto flex justify-center items-center gap-2 md:gap-4 my-4 h-14 dark:bg-[#1A1A1A] rounded-[100px] md:rounded-xl py-3.5 px-3 md:px-6 w-[calc(min(100%,965px))] border-2 border-muted-foreground/10">
-        <div className="relative flex-1">
+      <div className="mx-auto flex justify-center items-center gap-2 h-14 md:h-full md:gap-4 my-4 dark:bg-[#1A1A1A] rounded-[100px] md:rounded-xl py-3.5 px-3 md:py-1.5 md:px-6 w-[calc(min(100%,965px))] border-2 border-muted-foreground/10">
+        <div className="relative flex items-center flex-1">
           <AnimatePresence mode="wait">
             {!inputValue && (
               <motion.span
@@ -202,27 +202,35 @@ export default function Dreamshaper({
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.3 }}
                 className={cn(
-                  "absolute inset-y-0 left-1 flex items-center text-muted-foreground pointer-events-none text-xs"
+                  "absolute inset-y-0 left-3 md:left-1 flex items-center text-muted-foreground pointer-events-none text-xs"
                 )}
               >
                 {samplePrompts[currentPromptIndex]}
               </motion.span>
             )}
           </AnimatePresence>
-          <TextareaAutosize
-            minRows={1}
-            maxRows={5}
-            className="w-full shadow-none border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-sm outline-none bg-transparent h-14"
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault();
-                submitPrompt();
-              }
-            }}
-            style={{ resize: "none" }}
-          />
+          {isMobile ? (
+            <Input
+              className="w-full shadow-none border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-sm outline-none bg-transparent h-14"
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+            />
+          ) : (
+            <TextareaAutosize
+              minRows={1}
+              maxRows={5}
+              className="w-full shadow-none border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-sm outline-none bg-transparent h-14"
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  submitPrompt();
+                }
+              }}
+              style={{ resize: "none" }}
+            />
+          )}
         </div>
         <Tooltip>
           <TooltipTrigger asChild>
