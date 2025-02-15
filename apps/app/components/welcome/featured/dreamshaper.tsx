@@ -73,12 +73,6 @@ export default function Dreamshaper({
   const [inputValue, setInputValue] = useState("");
   const isMobile = useIsMobile();
   const outputPlayerRef = useRef<HTMLDivElement>(null);
-  const [dragConstraints, setDragConstraints] = useState({
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-  });
 
   const x = useMotionValue(0);
   const y = useMotionValue(0);
@@ -87,69 +81,15 @@ export default function Dreamshaper({
   const { timeRemaining, formattedTime } = useTrialTimer();
 
   useEffect(() => {
-    const calculateConstraints = () => {
-      if (outputPlayerRef.current) {
-        const playerRect = outputPlayerRef.current.getBoundingClientRect();
-        const broadcastWidth = 320;
-        const broadcastHeight = 180;
-        const margin = 32;
-
-        setDragConstraints({
-          top: -playerRect.height + broadcastHeight + margin,
-          left: -playerRect.width + broadcastWidth + margin,
-          right: 0,
-          bottom: 0,
-        });
-      }
+    const setVh = () => {
+      const vh = window.innerHeight * 0.01;
+      document.documentElement.style.setProperty('--vh', `${vh}px`);
     };
-
-    calculateConstraints();
-    window.addEventListener("resize", calculateConstraints);
-    return () => window.removeEventListener("resize", calculateConstraints);
-  }, [outputPlaybackId]);
-
-  const clamp = (value: number, min: number, max: number) =>
-    Math.min(Math.max(value, min), max);
-
-  const onDragEnd = (event: any, info: any) => {
-    const currentX = x.get();
-    const currentY = y.get();
-
-    const clampedX = clamp(
-      currentX,
-      dragConstraints.left,
-      dragConstraints.right
-    );
-    const clampedY = clamp(
-      currentY,
-      dragConstraints.top,
-      dragConstraints.bottom
-    );
-
-    const distanceToRight = Math.abs(dragConstraints.right - clampedX);
-    const distanceToLeft = Math.abs(dragConstraints.left - clampedX);
-    const distanceToBottom = Math.abs(dragConstraints.bottom - clampedY);
-    const distanceToTop = Math.abs(dragConstraints.top - clampedY);
-
-    if (
-      Math.min(distanceToRight, distanceToLeft) <
-      Math.min(distanceToBottom, distanceToTop)
-    ) {
-      const targetX =
-        distanceToRight <= distanceToLeft
-          ? dragConstraints.right
-          : dragConstraints.left;
-      animate(x, targetX, { type: "spring", damping: 20, stiffness: 300 });
-      animate(y, clampedY, { type: "spring", damping: 20, stiffness: 300 });
-    } else {
-      const targetY =
-        distanceToBottom <= distanceToTop
-          ? dragConstraints.bottom
-          : dragConstraints.top;
-      animate(x, clampedX, { type: "spring", damping: 20, stiffness: 300 });
-      animate(y, targetY, { type: "spring", damping: 20, stiffness: 300 });
-    }
-  };
+    
+    setVh();
+    window.addEventListener('resize', setVh);
+    return () => window.removeEventListener('resize', setVh);
+  }, []);
 
   const submitPrompt = () => {
     if (inputValue) {
@@ -160,12 +100,12 @@ export default function Dreamshaper({
   };
 
   return (
-    <div className="relative flex flex-col h-[calc(100vh-6rem)] md:h-[calc(100vh-2rem)]">
+    <div className="relative flex flex-col min-h-screen overflow-y-auto">
       {/* Header section */}
       <div className="flex justify-center items-center p-3 mt-8">
         <div className="mx-auto text-center">
-          <h1 className="text-2xl font-bold">Livepeer Pipelines</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-xl md:text-2xl font-bold">Livepeer Pipelines</h1>
+          <p className="text-sm md:text-base text-muted-foreground">
             Transform your video in real-time with AI - and build your own
             workflow with ComfyUI
           </p>
@@ -173,10 +113,10 @@ export default function Dreamshaper({
       </div>
 
       {/* Main content area */}
-      <div className="flex-1 min-h-0 p-4 flex items-center justify-center">
+      <div className="px-4 my-12 flex items-center justify-center">
         <div
           ref={outputPlayerRef}
-          className="w-full max-w-[calc(min(100%,calc((100vh-20rem)*16/9)))] aspect-video bg-sidebar rounded-2xl overflow-hidden relative"
+          className="w-full max-w-[calc(min(100%,calc((100vh-24rem)*16/9)))] md:aspect-video aspect-square bg-sidebar rounded-2xl overflow-hidden relative"
         >
           {/* Live indicator*/}
           {live && (
@@ -203,23 +143,15 @@ export default function Dreamshaper({
             </div>
           ) : outputPlaybackId ? (
             <>
-              <LPPLayer output_playback_id={outputPlaybackId} />
+              <div className="relative w-full h-full">
+                <LPPLayer output_playback_id={outputPlaybackId} isMobile={isMobile} />
+                {/* Overlay */}
+                <div className="absolute inset-x-0 top-0 h-[85%] bg-transparent" />
+              </div>
               {!isMobile && streamUrl && (
-                <motion.div
-                  drag
-                  dragConstraints={dragConstraints}
-                  dragElastic={0}
-                  dragMomentum={false}
-                  dragTransition={{
-                    bounceStiffness: 600,
-                    bounceDamping: 20,
-                  }}
-                  onDragEnd={onDragEnd}
-                  style={{ x, y }}
-                  className="absolute bottom-4 right-4 w-80 h-[180px] shadow-lg z-50 rounded-xl overflow-hidden border border-white/10 cursor-move"
-                >
+                <div className="absolute bottom-16 right-4 w-80 h-[180px] shadow-lg z-50 rounded-xl overflow-hidden">
                   <BroadcastWithControls ingestUrl={streamUrl} />
-                </motion.div>
+                </div>
               )}
               {!live && (
                 <div className="absolute inset-0 bg-black flex flex-col items-center justify-center rounded-2xl">
@@ -239,7 +171,7 @@ export default function Dreamshaper({
       </div>
 
       {isMobile && (
-        <div className="flex-shrink-0 h-64 p-4">
+        <div className="flex-shrink-0 h-48 px-4 mb-4">
           {loading || !streamUrl ? (
             <div className="w-full h-full flex items-center justify-center">
               <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -247,13 +179,13 @@ export default function Dreamshaper({
           ) : (
             <BroadcastWithControls
               ingestUrl={streamUrl}
-              className="w-full h-full object-cover"
+              className="w-full h-full rounded-2xl overflow-hidden"
             />
           )}
         </div>
       )}
 
-      <div className="mx-auto flex justify-center items-center gap-4 my-4 h-14 dark:bg-[#1A1A1A] rounded-xl py-3.5 px-6 w-[calc(min(100%,965px))] border-2 border-muted-foreground/10">
+      <div className="mx-auto flex justify-center items-center gap-2 md:gap-4 my-4 h-14 dark:bg-[#1A1A1A] rounded-[100px] md:rounded-xl py-3.5 px-3 md:px-6 w-[calc(min(100%,965px))] border-2 border-muted-foreground/10">
         <div className="relative flex-1">
           <AnimatePresence mode="wait">
             {!inputValue && (
@@ -272,7 +204,7 @@ export default function Dreamshaper({
             )}
           </AnimatePresence>
           <Input
-            className="w-full shadow-none border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-sm"
+            className="w-full shadow-none border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-sm !rounded-[100px] md:!rounded-xl"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={(e) => {
@@ -290,7 +222,7 @@ export default function Dreamshaper({
                 submitPrompt();
               }}
               className={cn(
-                "border-none rounded-xl w-36 items-center justify-center font-semibold text-xs",
+                "border-none rounded-[100px] md:rounded-xl w-36 items-center justify-center font-semibold text-xs",
                 updating && "bg-muted text-muted-foreground",
                 isMobile && "text-xs w-24"
               )}
