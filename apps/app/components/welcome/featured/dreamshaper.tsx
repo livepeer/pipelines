@@ -23,6 +23,7 @@ import { cn } from "@repo/design-system/lib/utils";
 import { UpdateOptions } from "./useDreamshaper";
 import Link from "next/link";
 import { Separator } from "@repo/design-system/components/ui/separator";
+import TextareaAutosize from "react-textarea-autosize";
 
 const PROMPT_INTERVAL = 4000;
 const samplePrompts = examplePrompts.map((prompt) => prompt.prompt);
@@ -225,7 +226,9 @@ export default function Dreamshaper({
                 <div className="absolute inset-0 bg-black flex flex-col items-center justify-center rounded-2xl">
                   <Loader2 className="h-8 w-8 animate-spin text-white" />
                   {statusMessage && (
-                    <span className="mt-4 text-white text-sm">{statusMessage}</span>
+                    <span className="mt-4 text-white text-sm">
+                      {statusMessage}
+                    </span>
                   )}
                 </div>
               )}
@@ -253,8 +256,8 @@ export default function Dreamshaper({
         </div>
       )}
 
-      <div className="mx-auto flex justify-center items-center gap-4 my-4 h-14 dark:bg-[#1A1A1A] rounded-xl py-3.5 px-6 w-[calc(min(100%,965px))] border-2 border-muted-foreground/10">
-        <div className="relative flex-1">
+      <div className="mx-auto flex justify-center items-center gap-4 my-4 dark:bg-[#1A1A1A] rounded-xl py-1.5 px-6 w-[calc(min(100%,965px))] border-2 border-muted-foreground/10">
+        <div className="relative flex items-center flex-1 h-full">
           <AnimatePresence mode="wait">
             {!inputValue && (
               <motion.span
@@ -264,15 +267,17 @@ export default function Dreamshaper({
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.3 }}
                 className={cn(
-                  "absolute inset-y-0 left-3 flex items-center text-muted-foreground pointer-events-none text-xs"
+                  "absolute inset-y-0 left-1 flex items-center text-muted-foreground pointer-events-none text-xs"
                 )}
               >
                 {samplePrompts[currentPromptIndex]}
               </motion.span>
             )}
           </AnimatePresence>
-          <Input
-            className="w-full shadow-none border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-sm"
+          <TextareaAutosize
+            minRows={1}
+            maxRows={5}
+            className="w-full shadow-none border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-sm outline-none bg-transparent h-14"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={(e) => {
@@ -281,6 +286,7 @@ export default function Dreamshaper({
                 submitPrompt();
               }
             }}
+            style={{ resize: "none" }}
           />
         </div>
         <Tooltip>
@@ -291,7 +297,7 @@ export default function Dreamshaper({
               }}
               className={cn(
                 "border-none rounded-xl w-36 items-center justify-center font-semibold text-xs",
-                updating && "bg-muted text-muted-foreground",
+                updating && "bg-muted text-muted-foreground hover:bg-muted",
                 isMobile && "text-xs w-24"
               )}
             >
@@ -323,9 +329,7 @@ export default function Dreamshaper({
               )}
             </Button>
           </TooltipTrigger>
-          <TooltipContent>
-            Press Enter
-          </TooltipContent>
+          <TooltipContent>Press Enter</TooltipContent>
         </Tooltip>
       </div>
 
