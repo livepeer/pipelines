@@ -184,6 +184,15 @@ const Interstitial: React.FC<InterstitialProps> = ({
     }),
   };
 
+  const TermsNotice = () => (
+    <p className="text-xs text-muted-foreground text-center mt-4">
+      By using this service, you accept the{" "}
+      <a href="/terms" className="underline hover:text-primary">Terms of Service</a>{" "}
+      and{" "}
+      <a href="/privacy" className="underline hover:text-primary">Privacy Policy</a>
+    </p>
+  );
+
   if (showLoginPrompt) {
     return (
       <TrialExpiredModal 
@@ -251,6 +260,7 @@ const Interstitial: React.FC<InterstitialProps> = ({
                     Camera access denied. Please enable in browser settings.
                   </div>
                 )}
+                <TermsNotice />
               </div>
             </div>
           </Slide>
@@ -276,6 +286,7 @@ const Interstitial: React.FC<InterstitialProps> = ({
                     className={`
                       relative h-48 md:h-64 rounded-xl overflow-hidden cursor-pointer
                       ${selectedPrompt === example.prompt ? 'ring-2 ring-[#00eb88]' : 'border border-[#2e2e2e]'}
+                      ${selectedPrompt && selectedPrompt !== example.prompt ? 'opacity-25' : ''}
                     `}
                     style={{
                       backgroundImage: `url(${example.image})`,
@@ -305,6 +316,7 @@ const Interstitial: React.FC<InterstitialProps> = ({
                   Continue
                 </Button>
               </div>
+              <TermsNotice />
             </div>
           </Slide>
         )}

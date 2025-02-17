@@ -5,8 +5,7 @@ import { SidebarTrigger } from "@repo/design-system/components/ui/sidebar";
 import { useIsMobile } from "@repo/design-system/hooks/use-mobile";
 
 const MobileSidebarTrigger = () => {
-  return null;
-  /*const isMobile = useIsMobile();
+  const isMobile = useIsMobile();
 
   if (!isMobile) return null;
 
@@ -15,7 +14,7 @@ const MobileSidebarTrigger = () => {
       <SidebarTrigger className="-ml-1" />
       <Separator orientation="vertical" className="mr-2 h-4" />
     </div>
-  );*/
+  );
 };
 
 export default MobileSidebarTrigger;

@@ -177,7 +177,8 @@ export const GlobalSidebar = ({ children }: GlobalSidebarProperties) => {
             href="/"
             className={cn(
               "flex items-center justify-between ml-2",
-              !_sidebar.openMobile && "-mt-8"
+              !_sidebar.openMobile && "-mt-8",
+              isMobile && (_sidebar.openMobile ? "ml-8 mt-8" : "ml-4 mt-4")
             )}
           >
             {_sidebar.open ? (
@@ -276,7 +277,10 @@ export const GlobalSidebar = ({ children }: GlobalSidebarProperties) => {
                 {items.map((item) => (
                   <SidebarMenuItem key={item.title} className="w-full">
                     <SidebarMenuButton
-                      className="hover:bg-muted cursor-pointer"
+                      className={cn(
+                        "hover:bg-muted cursor-pointer",
+                        key === "footer" && isMobile && _sidebar.openMobile && "ml-4"
+                      )}
                       onClick={() => {
                         if (item.external) {
                           window.open(item.url, "_blank");
@@ -303,7 +307,10 @@ export const GlobalSidebar = ({ children }: GlobalSidebarProperties) => {
                     className="w-full flex items-center justify-center cursor-pointer"
                   >
                     <SidebarMenuButton
-                      className="hover:bg-muted cursor-pointer"
+                      className={cn(
+                        "hover:bg-muted cursor-pointer",
+                        isMobile && _sidebar.openMobile && "ml-4"
+                      )}
                       asChild
                       tooltip="My Account"
                     >

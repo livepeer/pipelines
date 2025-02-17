@@ -166,3 +166,12 @@ body {
 .trial-expired-content > button {
   display: none !important;
 }
+
+@media (max-width: 768px) {
+  #intercom-container,
+  .intercom-lightweight-app {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+}
