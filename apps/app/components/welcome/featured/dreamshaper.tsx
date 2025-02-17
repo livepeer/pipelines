@@ -262,6 +262,16 @@ export default function Dreamshaper({
             />
           )}
         </div>
+        {inputValue && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 rounded-full"
+            onClick={() => setInputValue("")}
+          >
+            <span className="text-muted-foreground text-lg">×</span>
+          </Button>
+        )}
         <Tooltip>
           <TooltipTrigger asChild>
             <Button

@@ -24,8 +24,9 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@repo/design-system/components/ui/tooltip";
+import { cn } from "@repo/design-system/lib/utils";
 
-export default function User() {
+export default function User({ className }: { className?: string }) {
   const { ready, authenticated, user, login, logout } = usePrivy();
   const { theme, setTheme } = useTheme();
 
@@ -50,7 +51,7 @@ export default function User() {
 
   return authenticated ? (
     <DropdownMenu>
-      <DropdownMenuTrigger className="mt-2">
+      <DropdownMenuTrigger className={cn("mt-2 flex items-center gap-2", className)}>
         <Avatar className="h-6 w-6">
           <AvatarImage
             src={`https://github.com/${user?.github?.username}.png`}
@@ -61,6 +62,7 @@ export default function User() {
             <span className="capitalize">{name?.charAt(0)}</span>
           </AvatarFallback>
         </Avatar>
+        <span className="text-sm truncate">{name}</span>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-72 p-3 pb-1" side="right" align="end">
         <div>
