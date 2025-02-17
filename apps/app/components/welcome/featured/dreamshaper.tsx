@@ -95,6 +95,7 @@ export default function Dreamshaper({
   const submitPrompt = () => {
     if (inputValue) {
       handleUpdate(inputValue, { silent: true });
+      setInputValue("");
     } else {
       console.error("No input value to submit");
     }
@@ -224,8 +225,13 @@ export default function Dreamshaper({
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
-                  e.preventDefault();
-                  submitPrompt();
+                  if (e.metaKey || e.ctrlKey) {
+                    // new line when Cmd/Ctrl + Enter is pressed
+                    setInputValue(prev => prev + "\n");
+                  } else {
+                    e.preventDefault();
+                    submitPrompt();
+                  }
                 }
               }}
               style={{ resize: "none" }}
