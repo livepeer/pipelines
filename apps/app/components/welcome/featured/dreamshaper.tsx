@@ -14,7 +14,7 @@ import {
 } from "framer-motion";
 import { useState, useEffect, useRef } from "react";
 import { BroadcastWithControls } from "@/components/playground/broadcast";
-import { Loader2 } from "lucide-react";
+import { Loader2, Maximize, Minimize } from "lucide-react";
 import { LPPLayer } from "@/components/playground/player";
 import { useIsMobile } from "@repo/design-system/hooks/use-mobile";
 import { usePrivy } from "@privy-io/react-auth";
@@ -82,6 +82,7 @@ export default function Dreamshaper({
   const { timeRemaining, formattedTime } = useTrialTimer();
 
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   useEffect(() => {
     setIsCollapsed(isMobile);
@@ -107,10 +108,33 @@ export default function Dreamshaper({
     }
   };
 
+  const toggleFullscreen = () => {
+    if (!isFullscreen) {
+      document.documentElement.requestFullscreen();
+    } else {
+      document.exitFullscreen();
+    }
+    setIsFullscreen(!isFullscreen);
+  };
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      if (!document.fullscreenElement) {
+        setIsFullscreen(false);
+      }
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
+
   return (
     <div className="relative flex flex-col min-h-screen overflow-y-auto">
       {/* Header section */}
-      <div className="flex justify-center items-center p-3 mt-8">
+      <div className={cn(
+        "flex justify-center items-center p-3 mt-8",
+        isFullscreen && "hidden"
+      )}>
         <div className="mx-auto text-center">
           <h1 className="text-xl md:text-2xl font-bold">Livepeer Pipelines</h1>
           <p className="text-sm md:text-base text-muted-foreground">
@@ -121,11 +145,31 @@ export default function Dreamshaper({
       </div>
 
       {/* Main content area */}
-      <div className="px-4 my-8 flex items-center justify-center">
+      <div className={cn(
+        "px-4 my-8 flex items-center justify-center",
+        isFullscreen && "fixed inset-0 z-[9999] p-0 m-0"
+      )}>
         <div
           ref={outputPlayerRef}
-          className="w-full max-w-[calc(min(100%,calc((100vh-24rem)*16/9)))] md:aspect-video aspect-square bg-sidebar rounded-2xl overflow-hidden relative"
+          className={cn(
+            "w-full max-w-[calc(min(100%,calc((100vh-24rem)*16/9)))] md:aspect-video aspect-square bg-sidebar rounded-2xl overflow-hidden relative",
+            isFullscreen && "w-full h-full max-w-none rounded-none"
+          )}
         >
+          {/* Go full screen */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute top-4 right-4 z-50"
+            onClick={toggleFullscreen}
+          >
+            {isFullscreen ? (
+              <Minimize className="h-4 w-4" />
+            ) : (
+              <Maximize className="h-4 w-4" />
+            )}
+          </Button>
+
           {/* Live indicator*/}
           {live && (
             <div className="absolute top-4 left-4 bg-neutral-800 text-gray-400 px-5 py-1 text-xs rounded-full border border-gray-500">
@@ -216,7 +260,10 @@ export default function Dreamshaper({
         </div>
       )}
 
-      <div className="mx-auto flex justify-center items-center gap-2 h-14 md:h-full md:gap-4 mt-8 mb-4 dark:bg-[#1A1A1A] rounded-[100px] md:rounded-xl py-3.5 px-3 md:py-1.5 md:px-3 w-[calc(100%-2rem)] md:w-[calc(min(100%,965px))] border-2 border-muted-foreground/10 relative z-[30]">
+      <div className={cn(
+        "mx-auto flex justify-center items-center gap-2 h-14 md:h-full md:gap-4 mt-8 mb-4 dark:bg-[#1A1A1A] rounded-[100px] md:rounded-xl py-3.5 px-3 md:py-1.5 md:px-3 w-[calc(100%-2rem)] md:w-[calc(min(100%,965px))] border-2 border-muted-foreground/10 relative",
+        isFullscreen ? "fixed bottom-8 left-1/2 -translate-x-1/2 z-[10000] mb-0 mt-0 w-[600px] max-w-[calc(100%-2rem)] max-h-16" : "z-[30]"
+      )}>
         <div className="relative flex items-center flex-1">
           <AnimatePresence mode="wait">
             {!inputValue && (
@@ -320,7 +367,10 @@ export default function Dreamshaper({
         </Tooltip>
       </div>
 
-      <div className="mx-auto flex items-center justify-center gap-4 text-xs capitalize text-muted-foreground mt-4 mb-8">
+      <div className={cn(
+        "mx-auto flex items-center justify-center gap-4 text-xs capitalize text-muted-foreground mt-4 mb-8",
+        isFullscreen && "hidden"
+      )}>
         <Link
           target="_blank"
           href="https://pipelines.livepeer.org/docs/knowledge-base/get-started/what-is-pipeline"
