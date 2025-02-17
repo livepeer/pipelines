@@ -16,10 +16,11 @@ import {
 import * as Broadcast from "@livepeer/react/broadcast";
 import * as Popover from "@radix-ui/react-popover";
 import { cn } from "@repo/design-system/lib/utils";
-import { CheckIcon, ChevronDownIcon, XIcon, Minimize2, Maximize2, Video } from "lucide-react";
+import { CheckIcon, ChevronDownIcon, XIcon, Minimize2, Maximize, Video, Camera } from "lucide-react";
 import React, { useState, useEffect, useRef } from "react";
 
 import { toast } from "sonner";
+import { useIsMobile } from "@repo/design-system/hooks/use-mobile";
 
 export function BroadcastWithControls({
   ingestUrl,
@@ -36,6 +37,7 @@ export function BroadcastWithControls({
   const videoId = "live-video";
   const [localCollapsed, setLocalCollapsed] = useState(false);
   const collapsed = isCollapsed ?? localCollapsed;
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     const videoEl = document.getElementById(videoId) as HTMLVideoElement | null;
@@ -82,12 +84,12 @@ export function BroadcastWithControls({
       <Broadcast.Container
         id={videoId}
         className={cn(
-          "text-white/50 overflow-hidden rounded-sm bg-gray-950 border-0 relative",
+          "text-white/50 overflow-visible rounded-sm bg-gray-950 border-0 relative",
           className,
           isPiP ? "hidden" : "",
-          !collapsed ? "w-full h-full" : "!w-12 !h-8 rounded-full border border-white/10"
+          !collapsed ? "w-full h-full" : isMobile ? "!w-full !h-12 bg-[#161616] rounded-2xl" : "!w-12 !h-12 rounded-full"
         )}
-        style={collapsed ? { width: "3rem", height: "2rem" } : {}}
+        style={collapsed && !isMobile ? { width: "3rem", height: "3rem" } : {}}
         onClick={(e) => collapsed && e.stopPropagation()}
       >
         <Broadcast.Video
@@ -101,13 +103,33 @@ export function BroadcastWithControls({
         {collapsed ? (
           <button
             onClick={(e) => {
+              e.preventDefault();
               e.stopPropagation();
               onCollapse?.(!collapsed) ?? setLocalCollapsed(!collapsed);
             }}
-            className="w-12 h-8 px-2 flex items-center gap-1.5 hover:scale-110 transition cursor-pointer absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 z-50 bg-black/50 backdrop-blur rounded-full border border-white/10"
+            className={cn(
+              "flex items-center hover:scale-105 transition cursor-pointer absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 z-50",
+              isMobile ? "w-full h-12 pl-2 pr-4 bg-[#161616] rounded-2xl justify-between" : "w-full h-full"
+            )}
           >
-            <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-            <Video className="w-4 h-4 text-white/50" />
+            <div className="flex items-center gap-3">
+              <div className={cn(
+                "flex items-center justify-center border border-white/10 rounded-full",
+                isMobile ? "px-4 py-2" : "p-2",
+                "bg-[#161616]"
+              )}>
+                <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse mr-1.5" />
+                <Camera className="w-4 h-4 text-white/50" />
+              </div>
+              {isMobile && (
+                <span className="text-sm text-white font-medium">
+                  Input Video
+                </span>
+              )}
+            </div>
+            {isMobile && (
+              <Maximize className="w-4 h-4 text-white/50" />
+            )}
           </button>
         ) : (
           <>
@@ -116,7 +138,7 @@ export function BroadcastWithControls({
               style={{ pointerEvents: 'auto' }}
             >
               <button
-                onPointerDown={(e) => {
+                onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
                   onCollapse?.(true) ?? setLocalCollapsed(true);
@@ -174,7 +196,9 @@ export function BroadcastWithControls({
                   </Broadcast.AudioEnabledTrigger>
                 </div>
                 <div className="flex sm:flex-1 md:flex-[1.5] justify-end items-center gap-2.5">
-                  <Settings className="w-6 h-6 transition flex-shrink-0" />
+                  {isMobile && (
+                    <Settings className="w-6 h-6 transition flex-shrink-0" />
+                  )}
                   
                   <Broadcast.ScreenshareTrigger className="w-6 h-6 hover:scale-110 transition flex-shrink-0">
                     <Broadcast.ScreenshareIndicator asChild>

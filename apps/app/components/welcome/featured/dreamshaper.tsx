@@ -121,7 +121,7 @@ export default function Dreamshaper({
       </div>
 
       {/* Main content area */}
-      <div className="px-4 my-12 flex items-center justify-center">
+      <div className="px-4 my-8 flex items-center justify-center">
         <div
           ref={outputPlayerRef}
           className="w-full max-w-[calc(min(100%,calc((100vh-24rem)*16/9)))] md:aspect-video aspect-square bg-sidebar rounded-2xl overflow-hidden relative"
@@ -193,7 +193,7 @@ export default function Dreamshaper({
 
       {/* Mobile broadcast controls */}
       {isMobile && streamUrl && (
-        <div className="mx-4 -mt-2 mb-4">
+        <div className="mx-4 w-auto -mt-2 mb-4">
           {loading ? (
             <div className="w-8 h-8 flex items-center justify-center">
               <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -202,21 +202,21 @@ export default function Dreamshaper({
             <div className={cn(
               "flex-shrink-0 transition-all duration-300",
               isCollapsed 
-                ? "w-12 h-8 mx-auto" 
-                : "w-full max-w-[calc(100vw-2rem)] h-48"
+                ? "h-8" 
+                : "h-48"
             )}>
               <BroadcastWithControls
                 ingestUrl={streamUrl}
                 isCollapsed={isCollapsed}
                 onCollapse={setIsCollapsed}
-                className="rounded-xl overflow-hidden"
+                className="rounded-xl overflow-hidden w-full"
               />
             </div>
           )}
         </div>
       )}
 
-      <div className="mx-auto flex justify-center items-center gap-2 h-14 md:h-full md:gap-4 my-4 dark:bg-[#1A1A1A] rounded-[100px] md:rounded-xl py-3.5 px-3 md:py-1.5 md:px-3 w-[calc(min(100%,965px))] border-2 border-muted-foreground/10">
+      <div className="mx-auto flex justify-center items-center gap-2 h-14 md:h-full md:gap-4 mt-8 mb-4 dark:bg-[#1A1A1A] rounded-[100px] md:rounded-xl py-3.5 px-3 md:py-1.5 md:px-3 w-[calc(100%-2rem)] md:w-[calc(min(100%,965px))] border-2 border-muted-foreground/10">
         <div className="relative flex items-center flex-1">
           <AnimatePresence mode="wait">
             {!inputValue && (
