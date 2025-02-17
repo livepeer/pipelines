@@ -84,6 +84,9 @@ export default function Dreamshaper({
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
+  const [initialHeight, setInitialHeight] = useState<number>(0);
+  const [keyboardHeight, setKeyboardHeight] = useState<number>(0);
+
   useEffect(() => {
     setIsCollapsed(isMobile);
   }, [isMobile]);
@@ -98,6 +101,28 @@ export default function Dreamshaper({
     window.addEventListener("resize", setVh);
     return () => window.removeEventListener("resize", setVh);
   }, []);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setInitialHeight(window.innerHeight);
+    }
+  }, []);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (initialHeight > 0) {
+        const diff = initialHeight - window.innerHeight;
+        if (diff > 100) {
+          setKeyboardHeight(diff);
+        } else {
+          setKeyboardHeight(0);
+        }
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [initialHeight]);
 
   const submitPrompt = () => {
     if (inputValue) {
@@ -266,10 +291,26 @@ export default function Dreamshaper({
         </div>
       )}
 
-      <div className={cn(
-        "mx-auto flex justify-center items-center gap-2 h-14 md:h-full md:gap-4 mt-8 mb-4 dark:bg-[#1A1A1A] rounded-[100px] md:rounded-xl py-3.5 px-3 md:py-1.5 md:px-3 w-[calc(100%-2rem)] md:w-[calc(min(100%,965px))] border-2 border-muted-foreground/10 relative",
-        isFullscreen ? "fixed bottom-8 left-1/2 -translate-x-1/2 z-[10000] mb-0 mt-0 w-[600px] max-w-[calc(100%-2rem)] max-h-16" : "z-[30]"
-      )}>
+      {/* Input Prompt container */}
+      <div
+        className={cn(
+          "mx-auto flex justify-center items-center gap-2 h-14 md:h-full md:gap-4 mt-8 mb-4 dark:bg-[#1A1A1A] rounded-[100px] md:rounded-xl py-3.5 px-3 md:py-1.5 md:px-3 w-[calc(100%-2rem)] md:w-[calc(min(100%,965px))] border-2 border-muted-foreground/10 relative",
+          isFullscreen
+            ? "fixed bottom-8 left-1/2 -translate-x-1/2 z-[10000] mb-0 mt-0 w-[600px] max-w-[calc(100%-2rem)] max-h-16"
+            : "z-[30]"
+        )}
+        style={
+          isMobile && !isFullscreen && keyboardHeight > 0
+            ? {
+                position: "fixed",
+                bottom: keyboardHeight,
+                left: "50%",
+                transform: "translateX(-50%)",
+                zIndex: 10000
+              }
+            : {}
+        }
+      >
         <div className="relative flex items-center flex-1">
           <AnimatePresence mode="wait">
             {!inputValue && (
