@@ -156,6 +156,12 @@ export default function Dreamshaper({
             isFullscreen && "w-full h-full max-w-none rounded-none"
           )}
         >
+          {/* Hide controls for mobile (TODO: when it's a react component,
+          we can use the component's own controls - now it's an iframe) */}
+          {isFullscreen && isMobile && (
+            <div className="absolute bottom-0 left-0 right-0 h-[10%] bg-black z-40" />
+          )}
+
           {/* Go full screen */}
           <Button
             variant="ghost"
@@ -286,6 +292,12 @@ export default function Dreamshaper({
               className="w-full shadow-none border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-sm outline-none bg-transparent h-14"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  submitPrompt();
+                }
+              }}
             />
           ) : (
             <TextareaAutosize
