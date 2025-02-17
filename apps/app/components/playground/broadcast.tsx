@@ -34,6 +34,8 @@ export function BroadcastWithControls({
 }) {
   const [isPiP, setIsPiP] = useState(false);
   const videoId = "live-video";
+  const [localCollapsed, setLocalCollapsed] = useState(false);
+  const collapsed = isCollapsed ?? localCollapsed;
 
   useEffect(() => {
     const videoEl = document.getElementById(videoId) as HTMLVideoElement | null;
@@ -73,36 +75,56 @@ export function BroadcastWithControls({
           : null
       }
       forceEnabled={true}
-      audio={true}
+      audio={false}
       aspectRatio={16 / 9}
       ingestUrl={ingestUrl}
     >
       <Broadcast.Container
         id={videoId}
         className={cn(
-          "w-full h-full text-white/50 overflow-hidden rounded-sm bg-gray-950 border-0 relative group",
+          "text-white/50 overflow-hidden rounded-sm bg-gray-950 border-0 relative",
           className,
           isPiP ? "hidden" : "",
-          isCollapsed && "!w-8 !h-8 rounded-full border border-white/10"
+          !collapsed ? "w-full h-full" : "!w-12 !h-8 rounded-full border border-white/10"
         )}
-        onClick={(e) => isCollapsed && e.stopPropagation()}
+        style={collapsed ? { width: "3rem", height: "2rem" } : {}}
+        onClick={(e) => collapsed && e.stopPropagation()}
       >
         <Broadcast.Video
           title="Live stream"
           className={cn(
             "w-full h-full object-cover",
-            isCollapsed && "opacity-0"
+            collapsed && "opacity-0"
           )}
         />
         
-        {!isCollapsed ? (
+        {collapsed ? (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onCollapse?.(!collapsed) ?? setLocalCollapsed(!collapsed);
+            }}
+            className="w-12 h-8 px-2 flex items-center gap-1.5 hover:scale-110 transition cursor-pointer absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 z-50 bg-black/50 backdrop-blur rounded-full border border-white/10"
+          >
+            <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+            <Video className="w-4 h-4 text-white/50" />
+          </button>
+        ) : (
           <>
-            <div className="absolute top-2 right-2 z-10 hidden md:block opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-[3000ms] group-hover:delay-0">
+            <div 
+              className="absolute top-2 right-2 z-50 block" 
+              style={{ pointerEvents: 'auto' }}
+            >
               <button
-                onClick={() => onCollapse?.(!isCollapsed)}
-                className="w-4 h-4 hover:scale-110 transition flex-shrink-0"
+                onPointerDown={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onCollapse?.(true) ?? setLocalCollapsed(true);
+                }}
+                className="p-2 hover:scale-110 transition cursor-pointer"
+                aria-label="Collapse stream"
               >
-                <Minimize2 className="w-full h-full text-white/50" />
+                <Minimize2 className="w-4 h-4 text-white/50" />
               </button>
             </div>
 
@@ -116,7 +138,7 @@ export function BroadcastWithControls({
               matcher="not-permissions"
               className={cn(
                 "absolute select-none inset-0 text-center bg-gray-950 flex flex-col items-center justify-center gap-4 duration-1000 data-[visible=true]:animate-in data-[visible=false]:animate-out data-[visible=false]:fade-out-0 data-[visible=true]:fade-in-0",
-                isCollapsed && "opacity-0"
+                collapsed && "opacity-0"
               )}
             >
               <OfflineErrorIcon className="h-[120px] w-full sm:flex hidden" />
@@ -130,7 +152,7 @@ export function BroadcastWithControls({
             </Broadcast.ErrorIndicator>
             <Broadcast.Controls className={cn(
               "bg-gradient-to-b gap-1 px-3 md:px-3 py-1.5 flex-col-reverse flex from-black/20 via-80% via-black/30 to-black/60",
-              isCollapsed && "opacity-0"
+              collapsed && "opacity-0"
             )}>
               <div className="flex justify-between gap-4">
                 <div className="flex flex-1 items-center gap-3">
@@ -176,7 +198,7 @@ export function BroadcastWithControls({
             <Broadcast.LoadingIndicator asChild matcher={false}>
               <div className={cn(
                 "absolute overflow-hidden py-1 px-2 rounded-full top-1 left-1 bg-black/50 flex items-center backdrop-blur",
-                isCollapsed && "opacity-0"
+                collapsed && "opacity-0"
               )}>
                 <Broadcast.StatusIndicator
                   matcher="live"
@@ -204,16 +226,6 @@ export function BroadcastWithControls({
               </div>
             </Broadcast.LoadingIndicator>
           </>
-        ) : (
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onCollapse?.(!isCollapsed);
-            }}
-            className="w-full h-full flex items-center justify-center hover:scale-110 transition cursor-pointer absolute inset-0 z-50"
-          >
-            <Video className="w-4 h-4 text-white/50" />
-          </button>
         )}
       </Broadcast.Container>
     </Broadcast.Root>

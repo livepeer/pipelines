@@ -84,6 +84,10 @@ export default function Dreamshaper({
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   useEffect(() => {
+    setIsCollapsed(isMobile);
+  }, [isMobile]);
+
+  useEffect(() => {
     const setVh = () => {
       const vh = window.innerHeight * 0.01;
       document.documentElement.style.setProperty("--vh", `${vh}px`);
@@ -187,17 +191,27 @@ export default function Dreamshaper({
         </div>
       </div>
 
-      {isMobile && (
-        <div className="flex-shrink-0 h-48 px-4 mb-4">
-          {loading || !streamUrl ? (
-            <div className="w-full h-full flex items-center justify-center">
+      {/* Mobile broadcast controls */}
+      {isMobile && streamUrl && (
+        <div className="mx-4 -mt-2 mb-4">
+          {loading ? (
+            <div className="w-8 h-8 flex items-center justify-center">
               <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
             </div>
           ) : (
-            <BroadcastWithControls
-              ingestUrl={streamUrl}
-              className="w-full h-full rounded-2xl overflow-hidden"
-            />
+            <div className={cn(
+              "flex-shrink-0 transition-all duration-300",
+              isCollapsed 
+                ? "w-12 h-8 mx-auto" 
+                : "w-full max-w-[calc(100vw-2rem)] h-48"
+            )}>
+              <BroadcastWithControls
+                ingestUrl={streamUrl}
+                isCollapsed={isCollapsed}
+                onCollapse={setIsCollapsed}
+                className="rounded-xl overflow-hidden"
+              />
+            </div>
           )}
         </div>
       )}
