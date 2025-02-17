@@ -161,7 +161,6 @@ export default function Dreamshaper({
             "w-full max-w-[calc(min(100%,calc((100vh-24rem)*16/9)))] md:aspect-video aspect-square bg-sidebar rounded-2xl overflow-hidden relative",
             isFullscreen && "w-full h-full max-w-none rounded-none"
           )}
-          style={isFullscreen && isMobile ? { height: `calc(var(--vh, 1vh) * 100 - ${keyboardOffset}px)` } : {}}
         >
           {/* Hide controls for mobile (TODO: when it's a react component,
           we can use the component's own controls - now it's an iframe) */}
