@@ -86,6 +86,10 @@ export default function Dreamshaper({
   const [isFullscreen, setIsFullscreen] = useState(false);
   const keyboardOffset = useKeyboardOffset(8);
 
+  const isFullscreenAPISupported =
+    typeof document !== "undefined" &&
+    (document.fullscreenEnabled || (document as any).webkitFullscreenEnabled);
+
   useEffect(() => {
     setIsCollapsed(isMobile);
   }, [isMobile]);
@@ -111,12 +115,22 @@ export default function Dreamshaper({
   };
 
   const toggleFullscreen = () => {
-    if (!isFullscreen) {
-      document.documentElement.requestFullscreen();
-    } else {
-      document.exitFullscreen();
+    if (isFullscreenAPISupported) {
+      if (!isFullscreen) {
+        if (document.documentElement.requestFullscreen) {
+          document.documentElement.requestFullscreen();
+        } else if ((document.documentElement as any).webkitRequestFullscreen) {
+          (document.documentElement as any).webkitRequestFullscreen();
+        }
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        } else if ((document as any).webkitExitFullscreen) {
+          (document as any).webkitExitFullscreen();
+        }
+      }
     }
-    setIsFullscreen(!isFullscreen);
+    setIsFullscreen((prev) => !prev);
   };
 
   useEffect(() => {
