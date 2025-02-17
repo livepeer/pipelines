@@ -292,7 +292,7 @@ export default function Dreamshaper({
         </Tooltip>
       </div>
 
-      <div className="mx-auto flex items-center justify-center gap-4 text-xs capitalize text-muted-foreground mt-4">
+      <div className="mx-auto flex items-center justify-center gap-4 text-xs capitalize text-muted-foreground mt-4 mb-8">
         <Link
           target="_blank"
           href="https://pipelines.livepeer.org/docs/knowledge-base/get-started/what-is-pipeline"
