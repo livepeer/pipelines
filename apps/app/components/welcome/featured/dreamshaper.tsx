@@ -23,6 +23,7 @@ import { cn } from "@repo/design-system/lib/utils";
 import { UpdateOptions } from "./useDreamshaper";
 import Link from "next/link";
 import { Separator } from "@repo/design-system/components/ui/separator";
+import TextareaAutosize from "react-textarea-autosize";
 
 const PROMPT_INTERVAL = 4000;
 const samplePrompts = examplePrompts.map((prompt) => prompt.prompt);
@@ -83,17 +84,18 @@ export default function Dreamshaper({
   useEffect(() => {
     const setVh = () => {
       const vh = window.innerHeight * 0.01;
-      document.documentElement.style.setProperty('--vh', `${vh}px`);
+      document.documentElement.style.setProperty("--vh", `${vh}px`);
     };
-    
+
     setVh();
-    window.addEventListener('resize', setVh);
-    return () => window.removeEventListener('resize', setVh);
+    window.addEventListener("resize", setVh);
+    return () => window.removeEventListener("resize", setVh);
   }, []);
 
   const submitPrompt = () => {
     if (inputValue) {
       handleUpdate(inputValue, { silent: true });
+      setInputValue("");
     } else {
       console.error("No input value to submit");
     }
@@ -144,7 +146,10 @@ export default function Dreamshaper({
           ) : outputPlaybackId ? (
             <>
               <div className="relative w-full h-full">
-                <LPPLayer output_playback_id={outputPlaybackId} isMobile={isMobile} />
+                <LPPLayer
+                  output_playback_id={outputPlaybackId}
+                  isMobile={isMobile}
+                />
                 {/* Overlay */}
                 <div className="absolute inset-x-0 top-0 h-[85%] bg-transparent" />
               </div>
@@ -157,7 +162,9 @@ export default function Dreamshaper({
                 <div className="absolute inset-0 bg-black flex flex-col items-center justify-center rounded-2xl">
                   <Loader2 className="h-8 w-8 animate-spin text-white" />
                   {statusMessage && (
-                    <span className="mt-4 text-white text-sm">{statusMessage}</span>
+                    <span className="mt-4 text-white text-sm">
+                      {statusMessage}
+                    </span>
                   )}
                 </div>
               )}
@@ -185,8 +192,8 @@ export default function Dreamshaper({
         </div>
       )}
 
-      <div className="mx-auto flex justify-center items-center gap-2 md:gap-4 my-4 h-14 dark:bg-[#1A1A1A] rounded-[100px] md:rounded-xl py-3.5 px-3 md:px-6 w-[calc(min(100%,965px))] border-2 border-muted-foreground/10">
-        <div className="relative flex-1">
+      <div className="mx-auto flex justify-center items-center gap-2 h-14 md:h-full md:gap-4 my-4 dark:bg-[#1A1A1A] rounded-[100px] md:rounded-xl py-3.5 px-3 md:py-1.5 md:px-6 w-[calc(min(100%,965px))] border-2 border-muted-foreground/10">
+        <div className="relative flex items-center flex-1">
           <AnimatePresence mode="wait">
             {!inputValue && (
               <motion.span
@@ -196,24 +203,40 @@ export default function Dreamshaper({
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.3 }}
                 className={cn(
-                  "absolute inset-y-0 left-3 flex items-center text-muted-foreground pointer-events-none text-xs"
+                  "absolute inset-y-0 left-3 md:left-1 flex items-center text-muted-foreground pointer-events-none text-xs"
                 )}
               >
                 {samplePrompts[currentPromptIndex]}
               </motion.span>
             )}
           </AnimatePresence>
-          <Input
-            className="w-full shadow-none border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-sm !rounded-[100px] md:!rounded-xl"
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault();
-                submitPrompt();
-              }
-            }}
-          />
+          {isMobile ? (
+            <Input
+              className="w-full shadow-none border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-sm outline-none bg-transparent h-14"
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+            />
+          ) : (
+            <TextareaAutosize
+              minRows={1}
+              maxRows={5}
+              className="w-full shadow-none border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-sm outline-none bg-transparent h-14"
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  if (e.metaKey || e.ctrlKey) {
+                    // new line when Cmd/Ctrl + Enter is pressed
+                    setInputValue(prev => prev + "\n");
+                  } else {
+                    e.preventDefault();
+                    submitPrompt();
+                  }
+                }
+              }}
+              style={{ resize: "none" }}
+            />
+          )}
         </div>
         <Tooltip>
           <TooltipTrigger asChild>
@@ -255,31 +278,27 @@ export default function Dreamshaper({
               )}
             </Button>
           </TooltipTrigger>
-          <TooltipContent>
-            Press Enter
-          </TooltipContent>
+          <TooltipContent>Press Enter</TooltipContent>
         </Tooltip>
       </div>
 
-      {
-        <div className="mx-auto flex items-center justify-center gap-4 text-xs capitalize text-muted-foreground mt-4">
-          <Link
-            target="_blank"
-            href="https://pipelines.livepeer.org/docs/knowledge-base/get-started/what-is-pipeline"
-            className=" hover:text-muted-foreground/80"
-          >
-            Build a pipeline
-          </Link>
-          <Separator orientation="vertical" />
-          <Link
-            target="_blank"
-            href="https://discord.gg/livepeer"
-            className=" hover:text-muted-foreground/80"
-          >
-            Join our community
-          </Link>
-        </div>
-      }
+      <div className="mx-auto flex items-center justify-center gap-4 text-xs capitalize text-muted-foreground mt-4">
+        <Link
+          target="_blank"
+          href="https://pipelines.livepeer.org/docs/knowledge-base/get-started/what-is-pipeline"
+          className=" hover:text-muted-foreground/80"
+        >
+          Build a pipeline
+        </Link>
+        <Separator orientation="vertical" />
+        <Link
+          target="_blank"
+          href="https://discord.gg/livepeer"
+          className=" hover:text-muted-foreground/80"
+        >
+          Join our community
+        </Link>
+      </div>
     </div>
   );
 }
