@@ -268,7 +268,6 @@ export default function Dreamshaper({
             size="icon"
             className="h-8 w-8 rounded-full"
             onClick={(e) => {
-              console.log('Clear button clicked', e.target);
               e.preventDefault();
               setInputValue("");
             }}
@@ -280,12 +279,6 @@ export default function Dreamshaper({
           <TooltipTrigger asChild>
             <Button
               onClick={(e) => {
-                console.log('Apply button clicked', {
-                  target: e.target,
-                  currentTarget: e.currentTarget,
-                  inputValue,
-                  isMobile
-                });
                 e.preventDefault();
                 submitPrompt();
               }}
