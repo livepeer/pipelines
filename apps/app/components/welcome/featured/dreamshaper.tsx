@@ -81,6 +81,8 @@ export default function Dreamshaper({
   const { authenticated, login } = usePrivy();
   const { timeRemaining, formattedTime } = useTrialTimer();
 
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
   useEffect(() => {
     const setVh = () => {
       const vh = window.innerHeight * 0.01;
@@ -154,8 +156,16 @@ export default function Dreamshaper({
                 <div className="absolute inset-x-0 top-0 h-[85%] bg-transparent" />
               </div>
               {!isMobile && streamUrl && (
-                <div className="absolute bottom-16 right-4 w-80 h-[180px] shadow-lg z-50 rounded-xl overflow-hidden">
-                  <BroadcastWithControls ingestUrl={streamUrl} />
+                <div className={cn(
+                  "absolute bottom-16 right-4 z-50 transition-all duration-300",
+                  isCollapsed ? "w-12 h-12" : "w-80 h-[180px]"
+                )}>
+                  <BroadcastWithControls 
+                    ingestUrl={streamUrl} 
+                    isCollapsed={isCollapsed}
+                    onCollapse={setIsCollapsed}
+                    className="rounded-xl overflow-hidden"
+                  />
                 </div>
               )}
               {!live && (

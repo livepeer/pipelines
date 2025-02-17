@@ -16,7 +16,7 @@ import {
 import * as Broadcast from "@livepeer/react/broadcast";
 import * as Popover from "@radix-ui/react-popover";
 import { cn } from "@repo/design-system/lib/utils";
-import { CheckIcon, ChevronDownIcon, XIcon } from "lucide-react";
+import { CheckIcon, ChevronDownIcon, XIcon, Minimize2, Maximize2, Video } from "lucide-react";
 import React, { useState, useEffect, useRef } from "react";
 
 import { toast } from "sonner";
@@ -24,9 +24,13 @@ import { toast } from "sonner";
 export function BroadcastWithControls({
   ingestUrl,
   className,
+  onCollapse,
+  isCollapsed,
 }: {
   ingestUrl: string | null;
   className?: string;
+  onCollapse?: (collapsed: boolean) => void;
+  isCollapsed?: boolean;
 }) {
   const [isPiP, setIsPiP] = useState(false);
   const videoId = "live-video";
@@ -76,101 +80,141 @@ export function BroadcastWithControls({
       <Broadcast.Container
         id={videoId}
         className={cn(
-          "w-full h-full text-white/50 overflow-hidden rounded-sm bg-gray-950 border-0",
+          "w-full h-full text-white/50 overflow-hidden rounded-sm bg-gray-950 border-0 relative group",
           className,
-          isPiP ? "hidden" : ""
+          isPiP ? "hidden" : "",
+          isCollapsed && "!w-8 !h-8 rounded-full border border-white/10"
         )}
+        onClick={(e) => isCollapsed && e.stopPropagation()}
       >
         <Broadcast.Video
           title="Live stream"
-          className="w-full h-full object-cover"
+          className={cn(
+            "w-full h-full object-cover",
+            isCollapsed && "opacity-0"
+          )}
         />
-        <Broadcast.LoadingIndicator className="w-full relative h-full">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-            <LoadingIcon className="w-8 h-8 animate-spin" />
-          </div>
-          <BroadcastLoading />
-        </Broadcast.LoadingIndicator>
-        <Broadcast.ErrorIndicator
-          matcher="not-permissions"
-          className="absolute select-none inset-0 text-center bg-gray-950 flex flex-col items-center justify-center gap-4 duration-1000 data-[visible=true]:animate-in data-[visible=false]:animate-out data-[visible=false]:fade-out-0 data-[visible=true]:fade-in-0"
-        >
-          <OfflineErrorIcon className="h-[120px] w-full sm:flex hidden" />
-          <div className="flex flex-col gap-1">
-            <div className="text-2xl font-bold">Broadcast failed</div>
-            <div className="text-sm text-gray-100">
-              There was an error with broadcasting - it is retrying in the
-              background.
-            </div>
-          </div>
-        </Broadcast.ErrorIndicator>
-        <Broadcast.Controls className="bg-gradient-to-b gap-1 px-3 md:px-3 py-1.5 flex-col-reverse flex from-black/20 via-80% via-black/30 to-black/60">
-          <div className="flex justify-between gap-4">
-            <div className="flex flex-1 items-center gap-3">
-              <Broadcast.VideoEnabledTrigger className="w-6 h-6 hover:scale-110 transition flex-shrink-0">
-                <Broadcast.VideoEnabledIndicator asChild matcher={false}>
-                  <DisableVideoIcon className="w-full h-full text-white/50" />
-                </Broadcast.VideoEnabledIndicator>
-                <Broadcast.VideoEnabledIndicator asChild matcher={true}>
-                  <EnableVideoIcon className="w-full h-full text-white/50" />
-                </Broadcast.VideoEnabledIndicator>
-              </Broadcast.VideoEnabledTrigger>
-              <Broadcast.AudioEnabledTrigger className="w-6 h-6 hover:scale-110 transition flex-shrink-0">
-                <Broadcast.AudioEnabledIndicator asChild matcher={false}>
-                  <DisableAudioIcon className="w-full h-full text-white/50" />
-                </Broadcast.AudioEnabledIndicator>
-                <Broadcast.AudioEnabledIndicator asChild matcher={true}>
-                  <EnableAudioIcon className="w-full h-full text-white/50" />
-                </Broadcast.AudioEnabledIndicator>
-              </Broadcast.AudioEnabledTrigger>
-            </div>
-            <div className="flex sm:flex-1 md:flex-[1.5] justify-end items-center gap-2.5">
-              <Broadcast.ScreenshareTrigger className="w-6 h-6 hover:scale-110 transition flex-shrink-0">
-                <Broadcast.ScreenshareIndicator asChild>
-                  <StopScreenshareIcon className="w-full h-full text-white/50" />
-                </Broadcast.ScreenshareIndicator>
-
-                <Broadcast.ScreenshareIndicator matcher={false} asChild>
-                  <StartScreenshareIcon className="w-full h-full text-white/50" />
-                </Broadcast.ScreenshareIndicator>
-              </Broadcast.ScreenshareTrigger>
-
-              <Broadcast.PictureInPictureTrigger
-                className="w-6 h-6 hover:scale-110 transition flex-shrink-0"
+        
+        {!isCollapsed ? (
+          <>
+            <div className="absolute top-2 right-2 z-10 hidden md:block opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-[3000ms] group-hover:delay-0">
+              <button
+                onClick={() => onCollapse?.(!isCollapsed)}
+                className="w-4 h-4 hover:scale-110 transition flex-shrink-0"
               >
-                <PictureInPictureIcon className="w-full h-full text-white/50" />
-              </Broadcast.PictureInPictureTrigger>
+                <Minimize2 className="w-full h-full text-white/50" />
+              </button>
             </div>
-          </div>
-        </Broadcast.Controls>
 
-        <Broadcast.LoadingIndicator asChild matcher={false}>
-          <div className="absolute overflow-hidden py-1 px-2 rounded-full top-1 left-1 bg-black/50 flex items-center backdrop-blur">
-            <Broadcast.StatusIndicator
-              matcher="live"
-              className="flex gap-2 items-center"
+            <Broadcast.LoadingIndicator className="w-full relative h-full">
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                <LoadingIcon className="w-8 h-8 animate-spin" />
+              </div>
+              <BroadcastLoading />
+            </Broadcast.LoadingIndicator>
+            <Broadcast.ErrorIndicator
+              matcher="not-permissions"
+              className={cn(
+                "absolute select-none inset-0 text-center bg-gray-950 flex flex-col items-center justify-center gap-4 duration-1000 data-[visible=true]:animate-in data-[visible=false]:animate-out data-[visible=false]:fade-out-0 data-[visible=true]:fade-in-0",
+                isCollapsed && "opacity-0"
+              )}
             >
-              <div className="bg-red-500 animate-pulse h-1.5 w-1.5 rounded-full" />
-              <span className="text-xs select-none">LIVE</span>
-            </Broadcast.StatusIndicator>
+              <OfflineErrorIcon className="h-[120px] w-full sm:flex hidden" />
+              <div className="flex flex-col gap-1">
+                <div className="text-2xl font-bold">Broadcast failed</div>
+                <div className="text-sm text-gray-100">
+                  There was an error with broadcasting - it is retrying in the
+                  background.
+                </div>
+              </div>
+            </Broadcast.ErrorIndicator>
+            <Broadcast.Controls className={cn(
+              "bg-gradient-to-b gap-1 px-3 md:px-3 py-1.5 flex-col-reverse flex from-black/20 via-80% via-black/30 to-black/60",
+              isCollapsed && "opacity-0"
+            )}>
+              <div className="flex justify-between gap-4">
+                <div className="flex flex-1 items-center gap-3">
+                  <Broadcast.VideoEnabledTrigger className="w-6 h-6 hover:scale-110 transition flex-shrink-0">
+                    <Broadcast.VideoEnabledIndicator asChild matcher={false}>
+                      <DisableVideoIcon className="w-full h-full text-white/50" />
+                    </Broadcast.VideoEnabledIndicator>
+                    <Broadcast.VideoEnabledIndicator asChild matcher={true}>
+                      <EnableVideoIcon className="w-full h-full text-white/50" />
+                    </Broadcast.VideoEnabledIndicator>
+                  </Broadcast.VideoEnabledTrigger>
+                  <Broadcast.AudioEnabledTrigger className="w-6 h-6 hover:scale-110 transition flex-shrink-0">
+                    <Broadcast.AudioEnabledIndicator asChild matcher={false}>
+                      <DisableAudioIcon className="w-full h-full text-white/50" />
+                    </Broadcast.AudioEnabledIndicator>
+                    <Broadcast.AudioEnabledIndicator asChild matcher={true}>
+                      <EnableAudioIcon className="w-full h-full text-white/50" />
+                    </Broadcast.AudioEnabledIndicator>
+                  </Broadcast.AudioEnabledTrigger>
+                </div>
+                <div className="flex sm:flex-1 md:flex-[1.5] justify-end items-center gap-2.5">
+                  <Settings className="w-6 h-6 transition flex-shrink-0" />
+                  
+                  <Broadcast.ScreenshareTrigger className="w-6 h-6 hover:scale-110 transition flex-shrink-0">
+                    <Broadcast.ScreenshareIndicator asChild>
+                      <StopScreenshareIcon className="w-full h-full text-white/50" />
+                    </Broadcast.ScreenshareIndicator>
 
-            <Broadcast.StatusIndicator
-              className="flex gap-2 items-center"
-              matcher="pending"
-            >
-              <div className="bg-white/80 h-1.5 w-1.5 rounded-full animate-pulse" />
-              <span className="text-xs select-none">PENDING</span>
-            </Broadcast.StatusIndicator>
+                    <Broadcast.ScreenshareIndicator matcher={false} asChild>
+                      <StartScreenshareIcon className="w-full h-full text-white/50" />
+                    </Broadcast.ScreenshareIndicator>
+                  </Broadcast.ScreenshareTrigger>
 
-            <Broadcast.StatusIndicator
-              className="flex gap-2 items-center"
-              matcher="idle"
-            >
-              <div className="bg-white/80 h-1.5 w-1.5 rounded-full" />
-              <span className="text-xs select-none">IDLE</span>
-            </Broadcast.StatusIndicator>
-          </div>
-        </Broadcast.LoadingIndicator>
+                  <Broadcast.PictureInPictureTrigger
+                    className="w-6 h-6 hover:scale-110 transition flex-shrink-0"
+                  >
+                    <PictureInPictureIcon className="w-full h-full text-white/50" />
+                  </Broadcast.PictureInPictureTrigger>
+                </div>
+              </div>
+            </Broadcast.Controls>
+
+            <Broadcast.LoadingIndicator asChild matcher={false}>
+              <div className={cn(
+                "absolute overflow-hidden py-1 px-2 rounded-full top-1 left-1 bg-black/50 flex items-center backdrop-blur",
+                isCollapsed && "opacity-0"
+              )}>
+                <Broadcast.StatusIndicator
+                  matcher="live"
+                  className="flex gap-2 items-center"
+                >
+                  <div className="bg-red-500 animate-pulse h-1.5 w-1.5 rounded-full" />
+                  <span className="text-xs select-none">LIVE</span>
+                </Broadcast.StatusIndicator>
+
+                <Broadcast.StatusIndicator
+                  className="flex gap-2 items-center"
+                  matcher="pending"
+                >
+                  <div className="bg-white/80 h-1.5 w-1.5 rounded-full animate-pulse" />
+                  <span className="text-xs select-none">PENDING</span>
+                </Broadcast.StatusIndicator>
+
+                <Broadcast.StatusIndicator
+                  className="flex gap-2 items-center"
+                  matcher="idle"
+                >
+                  <div className="bg-white/80 h-1.5 w-1.5 rounded-full" />
+                  <span className="text-xs select-none">IDLE</span>
+                </Broadcast.StatusIndicator>
+              </div>
+            </Broadcast.LoadingIndicator>
+          </>
+        ) : (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onCollapse?.(!isCollapsed);
+            }}
+            className="w-full h-full flex items-center justify-center hover:scale-110 transition cursor-pointer absolute inset-0 z-50"
+          >
+            <Video className="w-4 h-4 text-white/50" />
+          </button>
+        )}
       </Broadcast.Container>
     </Broadcast.Root>
   );
