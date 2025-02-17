@@ -216,7 +216,7 @@ export default function Dreamshaper({
         </div>
       )}
 
-      <div className="mx-auto flex justify-center items-center gap-2 h-14 md:h-full md:gap-4 mt-8 mb-4 dark:bg-[#1A1A1A] rounded-[100px] md:rounded-xl py-3.5 px-3 md:py-1.5 md:px-3 w-[calc(100%-2rem)] md:w-[calc(min(100%,965px))] border-2 border-muted-foreground/10">
+      <div className="mx-auto flex justify-center items-center gap-2 h-14 md:h-full md:gap-4 mt-8 mb-4 dark:bg-[#1A1A1A] rounded-[100px] md:rounded-xl py-3.5 px-3 md:py-1.5 md:px-3 w-[calc(100%-2rem)] md:w-[calc(min(100%,965px))] border-2 border-muted-foreground/10 relative z-[30]">
         <div className="relative flex items-center flex-1">
           <AnimatePresence mode="wait">
             {!inputValue && (
@@ -267,7 +267,11 @@ export default function Dreamshaper({
             variant="ghost"
             size="icon"
             className="h-8 w-8 rounded-full"
-            onClick={() => setInputValue("")}
+            onClick={(e) => {
+              console.log('Clear button clicked', e.target);
+              e.preventDefault();
+              setInputValue("");
+            }}
           >
             <span className="text-muted-foreground text-lg">×</span>
           </Button>
@@ -276,6 +280,13 @@ export default function Dreamshaper({
           <TooltipTrigger asChild>
             <Button
               onClick={(e) => {
+                console.log('Apply button clicked', {
+                  target: e.target,
+                  currentTarget: e.currentTarget,
+                  inputValue,
+                  isMobile
+                });
+                e.preventDefault();
                 submitPrompt();
               }}
               className={cn(

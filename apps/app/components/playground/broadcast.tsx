@@ -87,9 +87,13 @@ export function BroadcastWithControls({
           "text-white/50 overflow-visible rounded-sm bg-gray-950 border-0 relative",
           className,
           isPiP ? "hidden" : "",
-          !collapsed ? "w-full h-full" : isMobile ? "!w-full !h-12 bg-[#161616] rounded-2xl" : "!w-12 !h-12 rounded-full"
+          !collapsed 
+            ? "w-full h-full" 
+            : isMobile 
+              ? "!w-full !h-12 bg-[#161616] rounded-2xl" 
+              : "!w-12 !h-12 rounded-full opacity-0 !p-0"
         )}
-        style={collapsed && !isMobile ? { width: "3rem", height: "3rem" } : {}}
+        style={collapsed && !isMobile ? { width: "1px", height: "1px", padding: 0 } : {}}
         onClick={(e) => collapsed && e.stopPropagation()}
       >
         <Broadcast.Video
