@@ -216,14 +216,14 @@ export default function Dreamshaper({
         </div>
       )}
 
-      <div className="mx-auto flex justify-center items-center gap-2 h-14 md:h-full md:gap-4 my-4 dark:bg-[#1A1A1A] rounded-[100px] md:rounded-xl py-3.5 px-3 md:py-1.5 md:px-6 w-[calc(min(100%,965px))] border-2 border-muted-foreground/10">
+      <div className="mx-auto flex justify-center items-center gap-2 h-14 md:h-full md:gap-4 my-4 dark:bg-[#1A1A1A] rounded-[100px] md:rounded-xl py-3.5 px-3 md:py-1.5 md:px-3 w-[calc(min(100%,965px))] border-2 border-muted-foreground/10">
         <div className="relative flex items-center flex-1">
           <AnimatePresence mode="wait">
             {!inputValue && (
               <motion.span
                 key={currentPromptIndex}
                 initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 0.5, y: 0 }}
+                animate={{ opacity: 0.25, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.3 }}
                 className={cn(
