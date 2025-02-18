@@ -12,7 +12,7 @@ When adding custom nodes, you will need to install them in both `comfyui` and `c
 1. Change to the `custom_nodes` directory:
 
 ```bash
-cd /ComfyUIcustom_nodes
+cd /workspace/ComfyUI/custom_nodes
 ```
 
 2. Clone the node repository:
@@ -38,14 +38,14 @@ After adding a custom node to ComfyUI, you must also install the dependencies in
 1. Start a new terminal session and navigate to the comfystream directory
 
 ```bash
-cd /ComfyStream
+cd /workspace/comfystream
 ```
 
 2. Activate the comfystream environments and install the custom node requirements. The `--workspace` flag should point to the directory for ComfyUI:
 
 ```bash
 conda activate comfystream
-python install.py --workspace ../ComfyUI
+python install.py --workspace /workspace/ComfyUI
 ```
 
 ## Testing the Custom Node Installation

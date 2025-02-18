@@ -20,14 +20,18 @@ import { isProduction } from "@/lib/env";
 
 export function LPPLayer({
   output_playback_id,
+  isMobile,
 }: {
   output_playback_id: string;
+  isMobile?: boolean;
 }) {
   return (
-    <div className="aspect-video">
+    <div className={isMobile ? "w-full h-full" : "aspect-video"}>
       <iframe
-        src={`https://${isProduction() ? "lvpr.tv" : "monster.lvpr.tv"}/?v=${output_playback_id}&lowLatency=force&backoffMax=1000`}
+        src={`https://${isProduction() ? "lvpr.tv" : "monster.lvpr.tv"}/?v=${output_playback_id}&lowLatency=force&backoffMax=1000&ingestPlayback=true`}
         className="w-full h-full"
+        allow="fullscreen"
+        allowFullScreen
       />
     </div>
   );

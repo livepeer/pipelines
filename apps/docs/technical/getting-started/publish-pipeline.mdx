@@ -1,11 +1,10 @@
 ---
-title: Share a Pipeline
-description: 'Easily publish a ComfyUI workflow as a Livepeer pipeline, and share it with friends or colleagues'
-icon: 'lightbulb'
+title: "Share a Pipeline (Coming Soon)"
+description: "Easily publish a ComfyUI workflow as a Livepeer pipeline, and share it with friends or colleagues"
+icon: "lightbulb"
 ---
 
-
-<Info>Learn about the distinction between ComfyUI workflows and Livepeer pipelines [here](/technical/reference/pipelines-vs-workflows) </Info>
+<Info />
 
 # How to Publish a Pipeline
 
@@ -16,11 +15,13 @@ This guide will walk you through creating, configuring, and publishing a pipelin
 Before creating a pipeline, you’ll need to export your workflow JSON from ComfyUI:
 
 1. **Open ComfyUI**:
-   Launch ComfyUI and ensure your workflow is finalized.  
+   Launch ComfyUI and ensure your workflow is finalized.
+
 2. **Export Workflow JSON**:
-   Use the **Export (API)** option in ComfyUI to save your workflow as a JSON file.  
+   Use the **Export (API)** option in ComfyUI to save your workflow as a JSON file.
+
 3. **Save the File**:
-   Keep the exported JSON file handy for upload during pipeline creation.  
+   Keep the exported JSON file handy for upload during pipeline creation.
 
 ## Step 1: Create a New Pipeline
 
@@ -28,31 +29,43 @@ Before creating a pipeline, you’ll need to export your workflow JSON from Comf
    Navigate to the "Create Pipeline" interface.
 
 2. **Fill in the Pipeline Details**:
-   - **Name**: Enter a descriptive name for your pipeline (e.g., *Live Portrait Generator*).
-   - **Version**: Specify the version number (e.g., `1.0.0`).
-   - **Description**: Provide a clear description of what your pipeline does and its use cases.
+
+   * **Name**: Enter a descriptive name for your pipeline (e.g., *Live Portrait Generator*).
+
+   * **Version**: Specify the version number (e.g., `1.0.0`).
+
+   * **Description**: Provide a clear description of what your pipeline does and its use cases.
 
 3. **Upload Assets**:
-   - **Cover Image**: Upload an image that represents your pipeline.
-   - **ComfyUI JSON**: Upload your pipeline's ComfyUI workflow JSON file.
+
+   * **Cover Image**: Upload an image that represents your pipeline.
+
+   * **ComfyUI JSON**: Upload your pipeline's ComfyUI workflow JSON file.
 
 4. **Proceed to the Next Step**:
    Click **Next** to move to parameter configuration.
 
-
 ## Step 2: Configure Parameters
 
 1. **Select Key Parameters**:
-   - Choose up to **5 important parameters** that should always be visible to users.
-   - For each parameter:
-     - **Node**: Select the relevant node.
-     - **Field**: Choose the associated field.
-     - **Display Name**: Provide a user-friendly name for the parameter.
-     - **Description**: Explain what the parameter does.
-     - **Widget Type**: Specify the input type (e.g., Text).
+
+   * Choose up to **5 important parameters** that should always be visible to users.
+
+   * For each parameter:
+
+     * **Node**: Select the relevant node.
+
+     * **Field**: Choose the associated field.
+
+     * **Display Name**: Provide a user-friendly name for the parameter.
+
+     * **Description**: Explain what the parameter does.
+
+     * **Widget Type**: Specify the input type (e.g., Text).
 
 2. **Add Additional Parameters**:
-   - Click **Add Parameter** to configure additional parameters as needed.
+
+   * Click **Add Parameter** to configure additional parameters as needed.
 
 3. **Review Configuration**:
    Ensure all key parameters are accurately set up.
@@ -60,16 +73,19 @@ Before creating a pipeline, you’ll need to export your workflow JSON from Comf
 4. **Finalize**:
    Click **Create** to save and proceed to the validation step.
 
-
-
 ## Step 3: Validate and Publish the Pipeline
 
 1. **Run Pre-Deployment Tests**:
-   - The system will automatically validate your pipeline and benchmark its performance.
-   - Results include metrics like:
-     - **Average Framerate**: The frame rate achieved by your pipeline.
-     - **Framerate Degradation**: Indicates any drops in performance.
-     - **Status**: General pipeline validation status.
+
+   * The system will automatically validate your pipeline and benchmark its performance.
+
+   * Results include metrics like:
+
+     * **Average Framerate**: The frame rate achieved by your pipeline.
+
+     * **Framerate Degradation**: Indicates any drops in performance.
+
+     * **Status**: General pipeline validation status.
 
 2. **Review Results**:
    Ensure all benchmarks meet your requirements.
@@ -78,8 +94,11 @@ Before creating a pipeline, you’ll need to export your workflow JSON from Comf
    Once the tests are complete and successful, click **Publish Pipeline** to make it live.
 
 ## Sharing your Pipeline
+
 Congratulations! Your pipeline is now published and ready for use. For additional configurations or edits, revisit the pipeline settings.
 
 To share your pipeline, you have two options:
-- Simply share the link and let your friends try it themselves
-- Navigate to `https://pipelines.livepeer.org/stream/create`, create a stream with your pipeline, and stream to your favorite social media platform. Comprehensive streaming guides can be found [here](https://pipelines.livepeer.org/docs/knowledge-base/tutorials/create-a-stream)
+
+* Simply share the link and let your friends try it themselves
+
+* Navigate to [`https://pipelines.livepeer.org/stream/create`](https://pipelines.livepeer.org/stream/create), create a stream with your pipeline, and stream to your favorite social media platform. Comprehensive streaming guides can be found [here](https://pipelines.livepeer.org/docs/knowledge-base/tutorials/create-a-stream)

@@ -162,3 +162,16 @@ body {
   content: attr(title);
   @apply inline-block text-muted-foreground text-right mb-6 text-sm;
 }
+
+.trial-expired-content > button {
+  display: none !important;
+}
+
+@media (max-width: 768px) {
+  #intercom-container,
+  .intercom-lightweight-app {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+}

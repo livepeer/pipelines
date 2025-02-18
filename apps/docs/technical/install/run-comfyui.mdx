@@ -8,7 +8,7 @@ icon: "box"
 1. Start a new terminal and activate the `comfyui` conda environment:
 ```bash
 conda activate comfyui
-cd /ComfyUI
+cd /workspace/ComfyUI
 ```
 
 2. Run ComfyUI
@@ -20,9 +20,9 @@ python main.py --listen --disable-cuda-malloc
 It is normal to see logs for the tensorrt nodes failing to import, as they are only compatible with ComfyStream
 ```
 Import times for custom nodes:
-   0.0 seconds (IMPORT FAILED): /ComfyUI/custom_nodes/tensor_utils
-   0.0 seconds: /ComfyUI/custom_nodes/ComfyUI-Misc-Effects
-   0.0 seconds: /ComfyUI/custom_nodes/ComfyUI-Manager
+   0.0 seconds (IMPORT FAILED): /workspace/ComfyUI/custom_nodes/tensor_utils
+   0.0 seconds: /workspace/ComfyUI/custom_nodes/ComfyUI-Misc-Effects
+   0.0 seconds: /workspace/ComfyUI/custom_nodes/ComfyUI-Manager
 ```
 </Info>
 

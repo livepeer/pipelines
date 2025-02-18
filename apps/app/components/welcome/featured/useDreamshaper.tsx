@@ -36,7 +36,7 @@ const processInputValues = (inputValues: any) => {
   );
 };
 
-interface UpdateOptions {
+export interface UpdateOptions {
   silent?: boolean;
 }
 
@@ -44,9 +44,11 @@ export function useDreamshaper() {
   const { user } = usePrivy();
 
   const [loading, setLoading] = useState(true);
+  const [updating, setUpdating] = useState(false);
   const [stream, setStream] = useState<any>(null);
   const [pipeline, setPipeline] = useState<any>(null);
   const [inputValues, setInputValues] = useState<any>(null);
+  const [fullResponse, setFullResponse] = useState<any>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -84,12 +86,14 @@ export function useDreamshaper() {
   const handleUpdate = useCallback(
     async (prompt: string, options?: UpdateOptions) => {
       if (!stream) {
+        console.error("No stream found, aborting update");
         if (!options?.silent) {
           toast.error("No stream found");
         }
         return;
       }
 
+      setUpdating(true);
       const streamId = stream.id;
       const streamKey = stream.stream_key;
       let toastId;
@@ -99,7 +103,9 @@ export function useDreamshaper() {
 
       try {
         const { data, error } = await getStream(streamId);
+
         if (error) {
+          console.error("Error fetching stream:", error);
           if (!options?.silent) {
             toast.error("Error updating parameters", { id: toastId });
           }
@@ -107,6 +113,7 @@ export function useDreamshaper() {
         }
 
         if (!data?.gateway_host) {
+          console.error("No gateway host found in stream data:", data);
           if (!options?.silent) {
             toast.error("No gateway host found", { id: toastId });
           }
@@ -115,8 +122,16 @@ export function useDreamshaper() {
 
         // Update the prompt in the input values
         const updatedInputValues = { ...inputValues };
+
         if (updatedInputValues?.prompt?.["5"]?.inputs?.text) {
           updatedInputValues.prompt["5"].inputs.text = prompt;
+        } else {
+          console.error("Could not find expected prompt structure:", {
+            hasPrompt: !!updatedInputValues?.prompt,
+            hasNode5: !!updatedInputValues?.prompt?.["5"],
+            hasInputs: !!updatedInputValues?.prompt?.["5"]?.inputs,
+            hasText: !!updatedInputValues?.prompt?.["5"]?.inputs?.text,
+          });
         }
 
         const response = await updateParams({
@@ -133,9 +148,12 @@ export function useDreamshaper() {
           }
         }
       } catch (error) {
+        console.error("Error in handleUpdate:", error);
         if (!options?.silent) {
           toast.error("An unexpected error occurred", { id: toastId });
         }
+      } finally {
+        setUpdating(false);
       }
     },
     [stream, inputValues]
@@ -148,5 +166,7 @@ export function useDreamshaper() {
     pipeline,
     handleUpdate,
     loading,
+    fullResponse,
+    updating,
   };
 }

@@ -10,7 +10,6 @@ export async function updateParams({
   host: string;
   streamKey: string;
 }) {
-  console.log("updateParams", body, host);
   const credentials = Buffer.from(
     process.env.USERNAME_PASSWORD as string
   ).toString("base64");
@@ -26,8 +25,6 @@ export async function updateParams({
       body: JSON.stringify(body),
     }
   );
-
-  console.log("response", response);
 
   const status = response.status;
 
