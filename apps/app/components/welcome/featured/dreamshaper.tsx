@@ -32,16 +32,19 @@ const samplePrompts = examplePrompts.map((prompt) => prompt.prompt);
 // Rotate through prompts every 4 seconds
 function usePrompts() {
   const [currentPromptIndex, setCurrentPromptIndex] = useState(0);
+  const [lastSubmittedPrompt, setLastSubmittedPrompt] = useState<string | null>(null);
 
   useEffect(() => {
+    if (lastSubmittedPrompt) return;
+
     const interval = setInterval(() => {
       setCurrentPromptIndex((prev) => (prev + 1) % samplePrompts.length);
     }, PROMPT_INTERVAL);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [lastSubmittedPrompt]);
 
-  return { currentPromptIndex };
+  return { currentPromptIndex, lastSubmittedPrompt, setLastSubmittedPrompt };
 }
 
 interface DreamshaperProps {
@@ -73,7 +76,7 @@ export default function Dreamshaper({
     typeof navigator !== "undefined"
       ? (navigator.userAgent?.includes("Mac") ?? false)
       : false;
-  const { currentPromptIndex } = usePrompts();
+  const { currentPromptIndex, lastSubmittedPrompt, setLastSubmittedPrompt } = usePrompts();
   const [inputValue, setInputValue] = useState("");
   const isMobile = useIsMobile();
   const outputPlayerRef = useRef<HTMLDivElement>(null);
@@ -114,6 +117,7 @@ export default function Dreamshaper({
       
       const filteredPrompt = checkProfanity(inputValue);
       handleUpdate(filteredPrompt, { silent: true });
+      setLastSubmittedPrompt(filteredPrompt); // Store the submitted prompt
       setInputValue("");
     } else {
       console.error("No input value to submit");
@@ -311,7 +315,7 @@ export default function Dreamshaper({
           <AnimatePresence mode="wait">
             {!inputValue && (
               <motion.span
-                key={currentPromptIndex}
+                key={lastSubmittedPrompt || currentPromptIndex}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 0.25, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
@@ -320,7 +324,7 @@ export default function Dreamshaper({
                   "absolute inset-y-0 left-3 md:left-1 flex items-center text-muted-foreground pointer-events-none text-xs"
                 )}
               >
-                {samplePrompts[currentPromptIndex]}
+                {lastSubmittedPrompt || samplePrompts[currentPromptIndex]}
               </motion.span>
             )}
           </AnimatePresence>
