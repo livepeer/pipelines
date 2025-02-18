@@ -11,7 +11,7 @@ const UNREGISTERED_APP_TRIAL_TIMEOUT = 10 * 60 * 1000;
 
 const App = (): ReactElement => {
   const { user, authenticated } = usePrivy();
-  const [showInterstitial, setShowInterstitial] = useState(false);
+  const [showInterstitial, setShowInterstitial] = useState(true);
   const [streamKilled, setStreamKilled] = useState(false);
   const dreamshaperState = useDreamshaper();
   const { stream, outputPlaybackId, handleUpdate, loading } = dreamshaperState;
@@ -21,11 +21,25 @@ const App = (): ReactElement => {
   const { status, isLive, statusMessage } = useStreamStatus(stream?.id || "", false);
 
   useEffect(() => {
-    const hasVisited = localStorage.getItem("hasSeenLandingPage");
-    if (!hasVisited) {
-      setShowInterstitial(true);
-      localStorage.setItem("hasSeenLandingPage", "true");
-    }
+    const checkPermissions = async () => {
+      try {
+        if ("permissions" in navigator) {
+          const cameraPermission = await navigator.permissions.query({
+            name: "camera" as PermissionName,
+          });
+          if (cameraPermission.state === "granted") {
+            const hasVisited = localStorage.getItem("hasSeenLandingPage");
+            if (hasVisited) {
+              setShowInterstitial(false);
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Error checking camera permission:", err);
+      }
+    };
+    
+    checkPermissions();
   }, []);
 
   useEffect(() => {
