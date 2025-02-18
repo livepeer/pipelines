@@ -72,7 +72,7 @@ export default function Dreamshaper({
       : false;
   const { currentPromptIndex } = usePrompts();
   const [inputValue, setInputValue] = useState("");
-  const profanity = useProfanity(inputValue);
+  const { filteredPrompt } = useProfanity(inputValue);
   const isMobile = useIsMobile();
   const outputPlayerRef = useRef<HTMLDivElement>(null);
   const [dragConstraints, setDragConstraints] = useState({
@@ -155,7 +155,7 @@ export default function Dreamshaper({
 
   const submitPrompt = () => {
     if (inputValue) {
-      handleUpdate(inputValue, { silent: true });
+      handleUpdate(filteredPrompt, { silent: true });
     } else {
       console.error("No input value to submit");
     }
@@ -260,8 +260,7 @@ export default function Dreamshaper({
       {/* Updated Input Prompt + Button Section */}
       <div
         className={cn(
-          "relative mx-auto flex justify-center items-center gap-2 my-4 h-12 dark:bg-[#1A1A1A] rounded-full py-2.5 px-4 w-[calc(min(100%,965px))] border-2 border-muted-foreground/10",
-          profanity && "dark:border-red-700 border-red-600"
+          "relative mx-auto flex justify-center items-center gap-2 my-4 h-12 dark:bg-[#1A1A1A] rounded-full py-2.5 px-4 w-[calc(min(100%,965px))] border-2 border-muted-foreground/10"
         )}
       >
         <div className="relative flex-1">
@@ -286,7 +285,7 @@ export default function Dreamshaper({
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={(e) => {
-              if (!updating && !profanity && e.key === "Enter") {
+              if (!updating && e.key === "Enter") {
                 submitPrompt();
               }
             }}
@@ -295,7 +294,7 @@ export default function Dreamshaper({
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
-              disabled={profanity || updating || !inputValue}
+              disabled={updating || !inputValue}
               onClick={submitPrompt}
               className={cn(
                 "border-none rounded-full w-36 items-center justify-center font-semibold text-xs",
@@ -334,13 +333,6 @@ export default function Dreamshaper({
           </TooltipTrigger>
           <TooltipContent>Press Enter</TooltipContent>
         </Tooltip>
-        {profanity && (
-          <div className="absolute -top-12 mx-auto flex items-center justify-center gap-4 text-xs text-muted-foreground mt-4">
-            <span className="text-red-600">
-              Please fix your prompt as it may contain harmful words
-            </span>
-          </div>
-        )}
       </div>
 
       <div className="mx-auto flex items-center justify-center gap-4 text-xs capitalize text-muted-foreground mt-4">

@@ -11,12 +11,19 @@ function debounce(func: (...args: any[]) => void, delay: number) {
 
 export const useProfanity = (prompt: string) => {
   const [profanity, setProfanity] = useState(false);
+  const [filteredPrompt, setFilteredPrompt] = useState("");
 
   const checkProfanity = () => {
-    const profanity = Object.values(PROFANITY_WORD_LIST)
+    const words = prompt.toLowerCase().split(/\s+/);
+    const profanityWords = Object.values(PROFANITY_WORD_LIST)
       .flat()
-      .some((word) => prompt.toLowerCase().includes(word.toLowerCase()));
-    setProfanity(profanity);
+      .map((word) => word.toLowerCase());
+
+    const filtered = words.filter((word) => !profanityWords.includes(word));
+    const hasProfanity = filtered.length < words.length;
+
+    setProfanity(hasProfanity);
+    setFilteredPrompt(filtered.join(" "));
   };
 
   useEffect(() => {
@@ -24,5 +31,5 @@ export const useProfanity = (prompt: string) => {
     debouncedCheck();
   }, [prompt]);
 
-  return profanity;
+  return { profanity, filteredPrompt };
 };
