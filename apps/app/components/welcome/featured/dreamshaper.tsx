@@ -432,7 +432,7 @@ export default function Dreamshaper({
           <div
             className={cn(
               "absolute -top-10 left-0 mx-auto flex items-center justify-center gap-4 text-xs text-muted-foreground mt-4",
-              isMobile && "-top-8 text-[8px] left-6"
+              isMobile && "-top-8 text-[9px] left-auto"
             )}
           >
             <span className="text-red-600">
