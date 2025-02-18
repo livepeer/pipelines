@@ -84,7 +84,7 @@ export function BroadcastWithControls({
       <Broadcast.Container
         id={videoId}
         className={cn(
-          "text-white/50 overflow-visible rounded-sm bg-gray-950 border-0 relative",
+          "text-white/50 overflow-visible rounded-sm bg-transparent border-0 relative",
           className,
           isPiP ? "hidden" : "",
           !collapsed ? "w-full h-full" : isMobile ? "!w-full !h-12 bg-[#161616] rounded-2xl" : "!w-12 !h-12 rounded-full"
