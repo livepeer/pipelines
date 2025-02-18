@@ -24,6 +24,7 @@ import { UpdateOptions } from "./useDreamshaper";
 import Link from "next/link";
 import { Separator } from "@repo/design-system/components/ui/separator";
 import TextareaAutosize from "react-textarea-autosize";
+import { checkProfanity } from "./utils";
 
 const PROMPT_INTERVAL = 4000;
 const samplePrompts = examplePrompts.map((prompt) => prompt.prompt);
@@ -105,7 +106,8 @@ export default function Dreamshaper({
 
   const submitPrompt = () => {
     if (inputValue) {
-      handleUpdate(inputValue, { silent: true });
+      const filteredPrompt = checkProfanity(inputValue);
+      handleUpdate(filteredPrompt, { silent: true });
       setInputValue("");
     } else {
       console.error("No input value to submit");
@@ -138,17 +140,20 @@ export default function Dreamshaper({
       }
     };
 
-    document.addEventListener('fullscreenchange', handleFullscreenChange);
-    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () =>
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
   }, []);
 
   return (
     <div className="relative flex flex-col min-h-screen overflow-y-auto">
       {/* Header section */}
-      <div className={cn(
-        "flex justify-center items-center p-3 mt-8",
-        isFullscreen && "hidden"
-      )}>
+      <div
+        className={cn(
+          "flex justify-center items-center p-3 mt-8",
+          isFullscreen && "hidden"
+        )}
+      >
         <div className="mx-auto text-center">
           <h1 className="text-xl md:text-2xl font-bold">Livepeer Pipelines</h1>
           <p className="text-sm md:text-base text-muted-foreground">
@@ -159,10 +164,12 @@ export default function Dreamshaper({
       </div>
 
       {/* Main content area */}
-      <div className={cn(
-        "px-4 my-8 flex items-center justify-center",
-        isFullscreen && "fixed inset-0 z-[9999] p-0 m-0"
-      )}>
+      <div
+        className={cn(
+          "px-4 my-8 flex items-center justify-center",
+          isFullscreen && "fixed inset-0 z-[9999] p-0 m-0"
+        )}
+      >
         <div
           ref={outputPlayerRef}
           className={cn(
@@ -224,12 +231,14 @@ export default function Dreamshaper({
                 <div className="absolute inset-x-0 top-0 h-[85%] bg-transparent" />
               </div>
               {!isMobile && streamUrl && (
-                <div className={cn(
-                  "absolute bottom-16 right-4 z-50 transition-all duration-300",
-                  isCollapsed ? "w-12 h-12" : "w-80 h-[180px]"
-                )}>
-                  <BroadcastWithControls 
-                    ingestUrl={streamUrl} 
+                <div
+                  className={cn(
+                    "absolute bottom-16 right-4 z-50 transition-all duration-300",
+                    isCollapsed ? "w-12 h-12" : "w-80 h-[180px]"
+                  )}
+                >
+                  <BroadcastWithControls
+                    ingestUrl={streamUrl}
                     isCollapsed={isCollapsed}
                     onCollapse={setIsCollapsed}
                     className="rounded-xl overflow-hidden"
@@ -263,12 +272,12 @@ export default function Dreamshaper({
               <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
             </div>
           ) : (
-            <div className={cn(
-              "flex-shrink-0 transition-all duration-300 [&>div]:!pb-0 [&>div]:h-full",
-              isCollapsed 
-                ? "h-8" 
-                : "h-64"
-            )}>
+            <div
+              className={cn(
+                "flex-shrink-0 transition-all duration-300 [&>div]:!pb-0 [&>div]:h-full",
+                isCollapsed ? "h-8" : "h-64"
+              )}
+            >
               <BroadcastWithControls
                 ingestUrl={streamUrl}
                 isCollapsed={isCollapsed}
@@ -284,9 +293,9 @@ export default function Dreamshaper({
         className={cn(
           "mx-auto flex justify-center items-center gap-2 h-14 md:h-full md:gap-4 mt-8 mb-4 dark:bg-[#1A1A1A] rounded-[100px] md:rounded-xl py-3.5 px-3 md:py-1.5 md:px-3 w-[calc(100%-2rem)] md:w-[calc(min(100%,965px))] border-2 border-muted-foreground/10",
           isFullscreen
-            ? (isMobile
-                ? "fixed left-1/2 bottom-[calc(env(safe-area-inset-bottom)+16px)] -translate-x-1/2 z-[10000] w-[600px] max-w-[calc(100%-2rem)] max-h-16"
-                : "fixed left-1/2 bottom-0 -translate-x-1/2 z-[10000] w-[600px] max-w-[calc(100%-2rem)] max-h-16")
+            ? isMobile
+              ? "fixed left-1/2 bottom-[calc(env(safe-area-inset-bottom)+16px)] -translate-x-1/2 z-[10000] w-[600px] max-w-[calc(100%-2rem)] max-h-16"
+              : "fixed left-1/2 bottom-0 -translate-x-1/2 z-[10000] w-[600px] max-w-[calc(100%-2rem)] max-h-16"
             : "z-[30]"
         )}
       >
@@ -313,10 +322,13 @@ export default function Dreamshaper({
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onFocus={() => {
-                window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+                window.scrollTo({
+                  top: document.body.scrollHeight,
+                  behavior: "smooth",
+                });
               }}
               onKeyDown={(e) => {
-                if (e.key === "Enter") {
+                if (!updating && e.key === "Enter") {
                   e.preventDefault();
                   submitPrompt();
                 }
@@ -330,13 +342,13 @@ export default function Dreamshaper({
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  if (e.metaKey || e.ctrlKey) {
-                    setInputValue((prev) => prev + "\n");
-                  } else {
-                    e.preventDefault();
-                    submitPrompt();
-                  }
+                if (
+                  !updating &&
+                  e.key === "Enter" &&
+                  !(e.metaKey || e.ctrlKey || e.shiftKey)
+                ) {
+                  e.preventDefault();
+                  submitPrompt();
                 }
               }}
               style={{ resize: "none" }}
@@ -359,6 +371,7 @@ export default function Dreamshaper({
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
+              disabled={updating || !inputValue}
               onClick={(e) => {
                 e.preventDefault();
                 submitPrompt();
@@ -401,10 +414,12 @@ export default function Dreamshaper({
         </Tooltip>
       </div>
 
-      <div className={cn(
-        "mx-auto flex items-center justify-center gap-4 text-xs capitalize text-muted-foreground mt-4 mb-8",
-        isFullscreen && "hidden"
-      )}>
+      <div
+        className={cn(
+          "mx-auto flex items-center justify-center gap-4 text-xs capitalize text-muted-foreground mt-4 mb-8",
+          isFullscreen && "hidden"
+        )}
+      >
         <Link
           target="_blank"
           href="https://pipelines.livepeer.org/docs/knowledge-base/get-started/what-is-pipeline"
