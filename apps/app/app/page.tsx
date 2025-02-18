@@ -81,6 +81,7 @@ const App = (): ReactElement => {
         streamKilled={streamKilled}
         live={isLive}
         statusMessage={statusMessage}
+        streamKey={stream?.stream_key}
       />
       <ClientSideTracker eventName="home_page_view" />
       {showInterstitial && (
