@@ -213,7 +213,7 @@ export default function Dreamshaper({
 
           {/* Timer overlay */}
           {!authenticated && timeRemaining !== null && (
-            <div className="absolute top-4 right-4 bg-neutral-800/30 text-gray-400 px-5 py-1 text-xs rounded-full border border-gray-500">
+            <div className="absolute top-5 right-16 bg-neutral-800/30 text-gray-400 px-5 py-1 text-xs rounded-full border border-gray-500">
               <span className="text-[10px] mr-2">left</span> {formattedTime}
             </div>
           )}
