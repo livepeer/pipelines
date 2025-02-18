@@ -25,7 +25,7 @@ export function LPPLayer({
 }: {
   output_playback_id: string;
   isMobile?: boolean;
-  stream_key: string;
+  stream_key: string | null;
 }) {
   return (
     <div className={isMobile ? "w-full h-full" : "aspect-video"}>

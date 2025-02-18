@@ -46,6 +46,7 @@ function usePrompts() {
 
 interface DreamshaperProps {
   outputPlaybackId: string | null;
+  streamKey: string | null;
   streamUrl: string | null;
   handleUpdate: (prompt: string, options?: UpdateOptions) => void;
   loading: boolean;
@@ -58,6 +59,7 @@ interface DreamshaperProps {
 
 export default function Dreamshaper({
   outputPlaybackId,
+  streamKey,
   streamUrl,
   handleUpdate,
   loading,
@@ -225,6 +227,7 @@ export default function Dreamshaper({
               <div className="relative w-full h-full">
                 <LPPLayer
                   output_playback_id={outputPlaybackId}
+		              stream_key={streamKey}
                   isMobile={isMobile}
                 />
                 {/* Overlay */}
