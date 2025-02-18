@@ -284,7 +284,9 @@ export default function Dreamshaper({
         className={cn(
           "mx-auto flex justify-center items-center gap-2 h-14 md:h-full md:gap-4 mt-8 mb-4 dark:bg-[#1A1A1A] rounded-[100px] md:rounded-xl py-3.5 px-3 md:py-1.5 md:px-3 w-[calc(100%-2rem)] md:w-[calc(min(100%,965px))] border-2 border-muted-foreground/10",
           isFullscreen
-            ? "fixed left-1/2 bottom-0 -translate-x-1/2 z-[10000] w-[600px] max-w-[calc(100%-2rem)] max-h-16"
+            ? (isMobile
+                ? "fixed left-1/2 bottom-24 -translate-x-1/2 z-[10000] w-[600px] max-w-[calc(100%-2rem)] max-h-16"
+                : "fixed left-1/2 bottom-0 -translate-x-1/2 z-[10000] w-[600px] max-w-[calc(100%-2rem)] max-h-16")
             : "z-[30]"
         )}
       >
