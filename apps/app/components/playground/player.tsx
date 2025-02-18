@@ -21,14 +21,16 @@ import { isProduction } from "@/lib/env";
 export function LPPLayer({
   output_playback_id,
   isMobile,
+  stream_key,
 }: {
   output_playback_id: string;
   isMobile?: boolean;
+  stream_key: string;
 }) {
   return (
     <div className={isMobile ? "w-full h-full" : "aspect-video"}>
       <iframe
-        src={`https://${isProduction() ? "lvpr.tv" : "monster.lvpr.tv"}/?v=${output_playback_id}&lowLatency=force&backoffMax=1000&ingestPlayback=true`}
+        src={`https://ai.livepeer.monster/aiWebrtc/${stream_key}-out`}
         className="w-full h-full"
         allow="fullscreen"
         allowFullScreen
