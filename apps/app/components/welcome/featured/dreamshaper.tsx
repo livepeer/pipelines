@@ -154,13 +154,13 @@ export default function Dreamshaper({
       {/* Header section */}
       <div
         className={cn(
-          "flex justify-center items-center p-3 mt-8",
+          "flex justify-center items-center p-3 mt-4",
           isFullscreen && "hidden"
         )}
       >
         <div className="mx-auto text-center">
-          <h1 className="text-xl md:text-2xl font-bold">Livepeer Pipelines</h1>
-          <p className="text-sm md:text-base text-muted-foreground">
+          <h1 className="text-lg md:text-xl font-bold">Livepeer Pipelines</h1>
+          <p className="text-xs md:text-sm text-muted-foreground">
             Transform your video in real-time with AI - and build your own
             workflow with ComfyUI
           </p>
@@ -170,14 +170,14 @@ export default function Dreamshaper({
       {/* Main content area */}
       <div
         className={cn(
-          "px-4 my-8 flex items-center justify-center",
+          "px-4 my-4 flex items-center justify-center",
           isFullscreen && "fixed inset-0 z-[9999] p-0 m-0"
         )}
       >
         <div
           ref={outputPlayerRef}
           className={cn(
-            "w-full max-w-[calc(min(100%,calc((100vh-24rem)*16/9)))] md:aspect-video aspect-square bg-sidebar rounded-2xl overflow-hidden relative",
+            "w-full max-w-[calc(min(100%,calc((100vh-14rem)*16/9)))] mx-auto md:aspect-video aspect-square bg-sidebar rounded-2xl overflow-hidden relative",
             isFullscreen && "w-full h-full max-w-none rounded-none"
           )}
         >
@@ -238,7 +238,7 @@ export default function Dreamshaper({
                 <div
                   className={cn(
                     "absolute bottom-16 right-4 z-50 transition-all duration-300",
-                    isCollapsed ? "w-12 h-12" : "w-80 h-[180px]"
+                    isCollapsed ? "w-12 h-12" : "w-48 h-[108px]"
                   )}
                 >
                   <BroadcastWithControls
@@ -293,9 +293,10 @@ export default function Dreamshaper({
         </div>
       )}
 
+      {/* Input prompt */}
       <div
         className={cn(
-          "mx-auto flex justify-center items-center gap-2 h-14 md:h-full md:gap-4 mt-8 mb-4 dark:bg-[#1A1A1A] rounded-[100px] md:rounded-xl py-3.5 px-3 md:py-1.5 md:px-3 w-[calc(100%-2rem)] md:w-[calc(min(100%,965px))] border-2 border-muted-foreground/10",
+          "mx-auto flex justify-center items-center gap-2 h-12 md:h-12 md:gap-4 mt-4 mb-2 dark:bg-[#1A1A1A] rounded-[100px] md:rounded-xl py-2.5 px-3 md:py-1.5 md:px-3 w-[calc(100%-2rem)] md:w-[calc(min(100%,800px))] border-2 border-muted-foreground/10",
           isFullscreen
             ? isMobile
               ? "fixed left-1/2 bottom-[calc(env(safe-area-inset-bottom)+16px)] -translate-x-1/2 z-[10000] w-[600px] max-w-[calc(100%-2rem)] max-h-16"
@@ -420,7 +421,7 @@ export default function Dreamshaper({
 
       <div
         className={cn(
-          "mx-auto flex items-center justify-center gap-4 text-xs capitalize text-muted-foreground mt-4 mb-8",
+          "mx-auto flex items-center justify-center gap-4 text-xs capitalize text-muted-foreground mt-2 mb-4",
           isFullscreen && "hidden"
         )}
       >
