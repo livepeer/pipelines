@@ -180,7 +180,7 @@ export default function Dreamshaper({
           <Button
             variant="ghost"
             size="icon"
-            className="absolute top-4 right-4 z-50"
+            className="absolute top-4 right-4 z-50 bg-transparent hover:bg-transparent focus:outline-none focus-visible:ring-0 active:bg-transparent"
             onClick={toggleFullscreen}
           >
             {isFullscreen ? (
