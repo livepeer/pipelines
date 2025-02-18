@@ -96,7 +96,7 @@ export default function Dreamshaper({
 
   const submitPrompt = () => {
     if (inputValue) {
-      handleUpdate(inputValue, { silent: true });
+      handleUpdate(filteredPrompt, { silent: true });
       setInputValue("");
     } else {
       console.error("No input value to submit");

@@ -11,7 +11,7 @@ function debounce(func: (...args: any[]) => void, delay: number) {
 
 export const useProfanity = (prompt: string) => {
   const [profanity, setProfanity] = useState(false);
-  const [filteredPrompt, setFilteredPrompt] = useState("");
+  const [filteredPrompt, setFilteredPrompt] = useState(prompt);
 
   const checkProfanity = () => {
     const words = prompt.toLowerCase().split(/\s+/);
@@ -19,9 +19,10 @@ export const useProfanity = (prompt: string) => {
       .flat()
       .map((word) => word.toLowerCase());
 
-    const filtered = words.filter((word) => !profanityWords.includes(word));
+    const filtered = words.filter(
+      (word) => !profanityWords.some((pWord) => word === pWord)
+    );
     const hasProfanity = filtered.length < words.length;
-
     setProfanity(hasProfanity);
     setFilteredPrompt(filtered.join(" "));
   };
