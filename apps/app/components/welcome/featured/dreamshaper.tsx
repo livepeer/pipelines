@@ -106,7 +106,8 @@ export default function Dreamshaper({
 
   const submitPrompt = () => {
     if (inputValue) {
-      handleUpdate(checkProfanity(inputValue), { silent: true });
+      const filteredPrompt = checkProfanity(inputValue);
+      handleUpdate(filteredPrompt, { silent: true });
       setInputValue("");
     } else {
       console.error("No input value to submit");
@@ -327,7 +328,7 @@ export default function Dreamshaper({
                 });
               }}
               onKeyDown={(e) => {
-                if (e.key === "Enter") {
+                if (!updating && e.key === "Enter") {
                   e.preventDefault();
                   submitPrompt();
                 }
@@ -341,13 +342,13 @@ export default function Dreamshaper({
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  if (e.metaKey || e.ctrlKey) {
-                    setInputValue((prev) => prev + "\n");
-                  } else {
-                    e.preventDefault();
-                    submitPrompt();
-                  }
+                if (
+                  !updating &&
+                  e.key === "Enter" &&
+                  !(e.metaKey || e.ctrlKey || e.shiftKey)
+                ) {
+                  e.preventDefault();
+                  submitPrompt();
                 }
               }}
               style={{ resize: "none" }}
