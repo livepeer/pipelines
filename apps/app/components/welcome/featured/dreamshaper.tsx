@@ -106,6 +106,10 @@ export default function Dreamshaper({
 
   const submitPrompt = () => {
     if (inputValue) {
+      if (isMobile && document.activeElement instanceof HTMLElement) {
+        document.activeElement.blur();
+      }
+      
       const filteredPrompt = checkProfanity(inputValue);
       handleUpdate(filteredPrompt, { silent: true });
       setInputValue("");
