@@ -264,16 +264,16 @@ export default function Dreamshaper({
             </div>
           ) : (
             <div className={cn(
-              "flex-shrink-0 transition-all duration-300",
+              "flex-shrink-0 transition-all duration-300 [&>div]:!pb-0 [&>div]:h-full",
               isCollapsed 
                 ? "h-8" 
-                : "h-48"
+                : "h-64"
             )}>
               <BroadcastWithControls
                 ingestUrl={streamUrl}
                 isCollapsed={isCollapsed}
                 onCollapse={setIsCollapsed}
-                className="rounded-xl overflow-hidden w-full"
+                className="rounded-xl overflow-hidden w-full h-full"
               />
             </div>
           )}
