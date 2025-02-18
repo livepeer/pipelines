@@ -24,7 +24,6 @@ import { UpdateOptions } from "./useDreamshaper";
 import Link from "next/link";
 import { Separator } from "@repo/design-system/components/ui/separator";
 import TextareaAutosize from "react-textarea-autosize";
-import useKeyboardOffset from "./useKeyboardOffset";
 
 const PROMPT_INTERVAL = 4000;
 const samplePrompts = examplePrompts.map((prompt) => prompt.prompt);
@@ -84,7 +83,6 @@ export default function Dreamshaper({
 
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const keyboardOffset = useKeyboardOffset(8);
 
   const isFullscreenAPISupported =
     typeof document !== "undefined" &&
@@ -143,10 +141,6 @@ export default function Dreamshaper({
     document.addEventListener('fullscreenchange', handleFullscreenChange);
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
   }, []);
-
-  const bottomStyle = isFullscreen
-    ? { bottom: isMobile ? `${keyboardOffset}px` : "20px" }
-    : undefined;
 
   return (
     <div className="relative flex flex-col min-h-screen overflow-y-auto">
@@ -287,11 +281,10 @@ export default function Dreamshaper({
       )}
 
       <div
-        style={bottomStyle}
         className={cn(
-          "mx-auto flex justify-center items-center gap-2 h-14 md:h-full md:gap-4 mt-8 mb-4 dark:bg-[#1A1A1A] rounded-[100px] md:rounded-xl py-3.5 px-3 md:py-1.5 md:px-3 w-[calc(100%-2rem)] md:w-[calc(min(100%,965px))] border-2 border-muted-foreground/10 relative",
+          "mx-auto flex justify-center items-center gap-2 h-14 md:h-full md:gap-4 mt-8 mb-4 dark:bg-[#1A1A1A] rounded-[100px] md:rounded-xl py-3.5 px-3 md:py-1.5 md:px-3 w-[calc(100%-2rem)] md:w-[calc(min(100%,965px))] border-2 border-muted-foreground/10",
           isFullscreen
-            ? "fixed left-1/2 -translate-x-1/2 z-[10000] mb-0 mt-0 w-[600px] max-w-[calc(100%-2rem)] max-h-16"
+            ? "fixed left-1/2 bottom-0 -translate-x-1/2 z-[10000] w-[600px] max-w-[calc(100%-2rem)] max-h-16"
             : "z-[30]"
         )}
       >
@@ -317,6 +310,9 @@ export default function Dreamshaper({
               className="w-full shadow-none border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-sm outline-none bg-transparent h-14"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
+              onFocus={() => {
+                window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+              }}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   e.preventDefault();
@@ -334,8 +330,7 @@ export default function Dreamshaper({
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   if (e.metaKey || e.ctrlKey) {
-                    // new line when Cmd/Ctrl + Enter is pressed
-                    setInputValue(prev => prev + "\n");
+                    setInputValue((prev) => prev + "\n");
                   } else {
                     e.preventDefault();
                     submitPrompt();
