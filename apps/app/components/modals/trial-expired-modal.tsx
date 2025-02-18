@@ -18,7 +18,7 @@ export function TrialExpiredModal({ open, onOpenChange }: TrialExpiredModalProps
 
   return (
     <Dialog open={open} onOpenChange={() => {}}>
-      <DialogContent className="trial-expired-content bg-[#161616] border border-[#232323] rounded-xl p-8 max-w-2xl w-full mx-auto shadow-lg">
+      <DialogContent className="trial-expired-content mx-auto left-[50%] -translate-x-[50%] w-[calc(100%-2rem)] bg-[#161616] border border-[#232323] rounded-xl p-8 max-w-2xl shadow-lg">
         <DialogHeader>
           <DialogTitle className="text-2xl font-semibold text-left">
             Time expired on your free version

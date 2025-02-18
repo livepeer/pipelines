@@ -14,7 +14,7 @@ import {
 } from "framer-motion";
 import { useState, useEffect, useRef } from "react";
 import { BroadcastWithControls } from "@/components/playground/broadcast";
-import { Loader2 } from "lucide-react";
+import { Loader2, Maximize, Minimize } from "lucide-react";
 import { LPPLayer } from "@/components/playground/player";
 import { useIsMobile } from "@repo/design-system/hooks/use-mobile";
 import { usePrivy } from "@privy-io/react-auth";
@@ -81,6 +81,17 @@ export default function Dreamshaper({
   const { authenticated, login } = usePrivy();
   const { timeRemaining, formattedTime } = useTrialTimer();
 
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  const isFullscreenAPISupported =
+    typeof document !== "undefined" &&
+    (document.fullscreenEnabled || (document as any).webkitFullscreenEnabled);
+
+  useEffect(() => {
+    setIsCollapsed(isMobile);
+  }, [isMobile]);
+
   useEffect(() => {
     const setVh = () => {
       const vh = window.innerHeight * 0.01;
@@ -101,10 +112,43 @@ export default function Dreamshaper({
     }
   };
 
+  const toggleFullscreen = () => {
+    if (isFullscreenAPISupported) {
+      if (!isFullscreen) {
+        if (document.documentElement.requestFullscreen) {
+          document.documentElement.requestFullscreen();
+        } else if ((document.documentElement as any).webkitRequestFullscreen) {
+          (document.documentElement as any).webkitRequestFullscreen();
+        }
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        } else if ((document as any).webkitExitFullscreen) {
+          (document as any).webkitExitFullscreen();
+        }
+      }
+    }
+    setIsFullscreen((prev) => !prev);
+  };
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      if (!document.fullscreenElement) {
+        setIsFullscreen(false);
+      }
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
+
   return (
     <div className="relative flex flex-col min-h-screen overflow-y-auto">
       {/* Header section */}
-      <div className="flex justify-center items-center p-3 mt-8">
+      <div className={cn(
+        "flex justify-center items-center p-3 mt-8",
+        isFullscreen && "hidden"
+      )}>
         <div className="mx-auto text-center">
           <h1 className="text-xl md:text-2xl font-bold">Livepeer Pipelines</h1>
           <p className="text-sm md:text-base text-muted-foreground">
@@ -115,11 +159,37 @@ export default function Dreamshaper({
       </div>
 
       {/* Main content area */}
-      <div className="px-4 my-12 flex items-center justify-center">
+      <div className={cn(
+        "px-4 my-8 flex items-center justify-center",
+        isFullscreen && "fixed inset-0 z-[9999] p-0 m-0"
+      )}>
         <div
           ref={outputPlayerRef}
-          className="w-full max-w-[calc(min(100%,calc((100vh-24rem)*16/9)))] md:aspect-video aspect-square bg-sidebar rounded-2xl overflow-hidden relative"
+          className={cn(
+            "w-full max-w-[calc(min(100%,calc((100vh-24rem)*16/9)))] md:aspect-video aspect-square bg-sidebar rounded-2xl overflow-hidden relative",
+            isFullscreen && "w-full h-full max-w-none rounded-none"
+          )}
         >
+          {/* Hide controls for mobile (TODO: when it's a react component,
+          we can use the component's own controls - now it's an iframe) */}
+          {isFullscreen && isMobile && (
+            <div className="absolute bottom-0 left-0 right-0 h-[10%] bg-black z-40" />
+          )}
+
+          {/* Go full screen */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute top-4 right-4 z-50 bg-transparent hover:bg-transparent focus:outline-none focus-visible:ring-0 active:bg-transparent"
+            onClick={toggleFullscreen}
+          >
+            {isFullscreen ? (
+              <Minimize className="h-4 w-4" />
+            ) : (
+              <Maximize className="h-4 w-4" />
+            )}
+          </Button>
+
           {/* Live indicator*/}
           {live && (
             <div className="absolute top-4 left-4 bg-neutral-800 text-gray-400 px-5 py-1 text-xs rounded-full border border-gray-500">
@@ -154,8 +224,16 @@ export default function Dreamshaper({
                 <div className="absolute inset-x-0 top-0 h-[85%] bg-transparent" />
               </div>
               {!isMobile && streamUrl && (
-                <div className="absolute bottom-16 right-4 w-80 h-[180px] shadow-lg z-50 rounded-xl overflow-hidden">
-                  <BroadcastWithControls ingestUrl={streamUrl} />
+                <div className={cn(
+                  "absolute bottom-16 right-4 z-50 transition-all duration-300",
+                  isCollapsed ? "w-12 h-12" : "w-80 h-[180px]"
+                )}>
+                  <BroadcastWithControls 
+                    ingestUrl={streamUrl} 
+                    isCollapsed={isCollapsed}
+                    onCollapse={setIsCollapsed}
+                    className="rounded-xl overflow-hidden"
+                  />
                 </div>
               )}
               {!live && (
@@ -177,29 +255,48 @@ export default function Dreamshaper({
         </div>
       </div>
 
-      {isMobile && (
-        <div className="flex-shrink-0 h-48 px-4 mb-4">
-          {loading || !streamUrl ? (
-            <div className="w-full h-full flex items-center justify-center">
+      {/* Mobile broadcast controls */}
+      {isMobile && streamUrl && (
+        <div className="mx-4 w-auto -mt-2 mb-4">
+          {loading ? (
+            <div className="w-8 h-8 flex items-center justify-center">
               <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
             </div>
           ) : (
-            <BroadcastWithControls
-              ingestUrl={streamUrl}
-              className="w-full h-full rounded-2xl overflow-hidden"
-            />
+            <div className={cn(
+              "flex-shrink-0 transition-all duration-300 [&>div]:!pb-0 [&>div]:h-full",
+              isCollapsed 
+                ? "h-8" 
+                : "h-64"
+            )}>
+              <BroadcastWithControls
+                ingestUrl={streamUrl}
+                isCollapsed={isCollapsed}
+                onCollapse={setIsCollapsed}
+                className="rounded-xl overflow-hidden w-full h-full"
+              />
+            </div>
           )}
         </div>
       )}
 
-      <div className="mx-auto flex justify-center items-center gap-2 h-14 md:h-full md:gap-4 my-4 dark:bg-[#1A1A1A] rounded-[100px] md:rounded-xl py-3.5 px-3 md:py-1.5 md:px-6 w-[calc(min(100%,965px))] border-2 border-muted-foreground/10">
+      <div
+        className={cn(
+          "mx-auto flex justify-center items-center gap-2 h-14 md:h-full md:gap-4 mt-8 mb-4 dark:bg-[#1A1A1A] rounded-[100px] md:rounded-xl py-3.5 px-3 md:py-1.5 md:px-3 w-[calc(100%-2rem)] md:w-[calc(min(100%,965px))] border-2 border-muted-foreground/10",
+          isFullscreen
+            ? (isMobile
+                ? "fixed left-1/2 bottom-[calc(env(safe-area-inset-bottom)+16px)] -translate-x-1/2 z-[10000] w-[600px] max-w-[calc(100%-2rem)] max-h-16"
+                : "fixed left-1/2 bottom-0 -translate-x-1/2 z-[10000] w-[600px] max-w-[calc(100%-2rem)] max-h-16")
+            : "z-[30]"
+        )}
+      >
         <div className="relative flex items-center flex-1">
           <AnimatePresence mode="wait">
             {!inputValue && (
               <motion.span
                 key={currentPromptIndex}
                 initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 0.5, y: 0 }}
+                animate={{ opacity: 0.25, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.3 }}
                 className={cn(
@@ -215,6 +312,15 @@ export default function Dreamshaper({
               className="w-full shadow-none border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-sm outline-none bg-transparent h-14"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
+              onFocus={() => {
+                window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  submitPrompt();
+                }
+              }}
             />
           ) : (
             <TextareaAutosize
@@ -226,8 +332,7 @@ export default function Dreamshaper({
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   if (e.metaKey || e.ctrlKey) {
-                    // new line when Cmd/Ctrl + Enter is pressed
-                    setInputValue(prev => prev + "\n");
+                    setInputValue((prev) => prev + "\n");
                   } else {
                     e.preventDefault();
                     submitPrompt();
@@ -238,10 +343,24 @@ export default function Dreamshaper({
             />
           )}
         </div>
+        {inputValue && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 rounded-full"
+            onClick={(e) => {
+              e.preventDefault();
+              setInputValue("");
+            }}
+          >
+            <span className="text-muted-foreground text-lg">×</span>
+          </Button>
+        )}
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
               onClick={(e) => {
+                e.preventDefault();
                 submitPrompt();
               }}
               className={cn(
@@ -282,7 +401,10 @@ export default function Dreamshaper({
         </Tooltip>
       </div>
 
-      <div className="mx-auto flex items-center justify-center gap-4 text-xs capitalize text-muted-foreground mt-4">
+      <div className={cn(
+        "mx-auto flex items-center justify-center gap-4 text-xs capitalize text-muted-foreground mt-4 mb-8",
+        isFullscreen && "hidden"
+      )}>
         <Link
           target="_blank"
           href="https://pipelines.livepeer.org/docs/knowledge-base/get-started/what-is-pipeline"

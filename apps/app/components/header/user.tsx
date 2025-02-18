@@ -2,6 +2,7 @@
 
 import track from "@/lib/track";
 import { usePrivy, User as PrivyUser } from "@privy-io/react-auth";
+import { useSidebar } from "@repo/design-system/components/ui/sidebar";
 import {
   Avatar,
   AvatarFallback,
@@ -19,15 +20,14 @@ import { createUser } from "./action";
 import { LogOut, MoonIcon, SunIcon, UserIcon } from "lucide-react";
 import { useEffect } from "react";
 import { useTheme } from "next-themes";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@repo/design-system/components/ui/tooltip";
+import { cn } from "@repo/design-system/lib/utils";
+import { useIsMobile } from "@repo/design-system/hooks/use-mobile";
 
-export default function User() {
+export default function User({ className }: { className?: string }) {
   const { ready, authenticated, user, login, logout } = usePrivy();
   const { theme, setTheme } = useTheme();
+  const { open } = useSidebar();
+  const isMobile = useIsMobile();
 
   const name =
     user?.github?.name || user?.discord?.username || user?.email?.address;
@@ -50,7 +50,7 @@ export default function User() {
 
   return authenticated ? (
     <DropdownMenu>
-      <DropdownMenuTrigger className="mt-2">
+      <DropdownMenuTrigger className={cn("mt-2 flex items-center gap-2", className)}>
         <Avatar className="h-6 w-6">
           <AvatarImage
             src={`https://github.com/${user?.github?.username}.png`}
@@ -61,6 +61,7 @@ export default function User() {
             <span className="capitalize">{name?.charAt(0)}</span>
           </AvatarFallback>
         </Avatar>
+        <span className="text-sm truncate">{name}</span>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-72 p-3 pb-1" side="right" align="end">
         <div>
@@ -96,24 +97,21 @@ export default function User() {
       </DropdownMenuContent>
     </DropdownMenu>
   ) : (
-    <Tooltip>
-      <TooltipTrigger>
-        <Button
-          onClick={() => {
-            track("login_clicked", undefined, user || undefined);
-            login();
-          }}
-          disabled={disableLogin}
-          variant="ghost"
-          size="icon"
-          className="mt-2 items-center"
-        >
-          <UserIcon />
-        </Button>
-      </TooltipTrigger>
-      <TooltipContent side="right" align="center">
-        Sign in
-      </TooltipContent>
-    </Tooltip>
+    <Button
+      onClick={() => {
+        track("login_clicked", undefined, user || undefined);
+        login();
+      }}
+      disabled={disableLogin}
+      variant="ghost"
+      size="icon"
+      className={cn(
+        "flex items-center justify-start w-full gap-2 px-2",
+        isMobile && "ml-4"
+      )}
+    >
+      <UserIcon />
+      <span className="block md:hidden">Sign in</span>
+    </Button>
   );
 }
