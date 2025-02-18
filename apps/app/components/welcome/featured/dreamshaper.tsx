@@ -171,14 +171,18 @@ export default function Dreamshaper({
       <div
         className={cn(
           "px-4 my-8 flex items-center justify-center",
-          isFullscreen && "fixed inset-0 z-[9999] p-0 m-0"
+          isFullscreen && isMobile 
+            ? "fixed inset-0 z-[9999] p-0 m-0 h-screen w-screen" 
+            : isFullscreen && "fixed inset-0 z-[9999] p-0 m-0"
         )}
       >
         <div
           ref={outputPlayerRef}
           className={cn(
             "w-full max-w-[calc(min(100%,calc((100vh-24rem)*16/9)))] md:aspect-video aspect-square bg-sidebar rounded-2xl overflow-hidden relative",
-            isFullscreen && "w-full h-full max-w-none rounded-none"
+            isFullscreen && isMobile
+              ? "w-screen h-screen max-w-none rounded-none"
+              : isFullscreen && "w-full h-full max-w-none rounded-none"
           )}
         >
           {/* Hide controls for mobile (TODO: when it's a react component,
