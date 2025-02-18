@@ -23,8 +23,8 @@ import { cn } from "@repo/design-system/lib/utils";
 import { UpdateOptions } from "./useDreamshaper";
 import Link from "next/link";
 import { Separator } from "@repo/design-system/components/ui/separator";
-import { useProfanity } from "./useProfanity";
 import TextareaAutosize from "react-textarea-autosize";
+import { checkProfanity } from "./utils";
 
 const PROMPT_INTERVAL = 4000;
 const samplePrompts = examplePrompts.map((prompt) => prompt.prompt);
@@ -73,7 +73,6 @@ export default function Dreamshaper({
       : false;
   const { currentPromptIndex } = usePrompts();
   const [inputValue, setInputValue] = useState("");
-  const { filteredPrompt } = useProfanity(inputValue);
   const isMobile = useIsMobile();
   const outputPlayerRef = useRef<HTMLDivElement>(null);
 
@@ -107,7 +106,7 @@ export default function Dreamshaper({
 
   const submitPrompt = () => {
     if (inputValue) {
-      handleUpdate(filteredPrompt, { silent: true });
+      handleUpdate(checkProfanity(inputValue), { silent: true });
       setInputValue("");
     } else {
       console.error("No input value to submit");

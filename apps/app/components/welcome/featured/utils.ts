@@ -1,4 +1,4 @@
-export const PROFANITY_WORD_LIST = {
+const PROFANITY_WORD_LIST = {
   en: [
     "2g1c",
     "2 girls 1 cup",
@@ -233,6 +233,9 @@ export const PROFANITY_WORD_LIST = {
     "muffdiving",
     "nambla",
     "nawashi",
+    "naked",
+    "naked girls",
+    "nazi",
     "negro",
     "neonazi",
     "nigga",
@@ -474,4 +477,17 @@ export const PROFANITY_WORD_LIST = {
     "vete a la mierda",
     "Vulva",
   ],
+};
+
+export const checkProfanity = (prompt: string) => {
+  const words = prompt.toLowerCase().split(/\s+/);
+  const profanityWords = Object.values(PROFANITY_WORD_LIST)
+    .flat()
+    .map((word) => word.toLowerCase());
+
+  const filtered = words.filter(
+    (word) => !profanityWords.some((pWord) => word === pWord)
+  );
+
+  return filtered.join(" ");
 };
