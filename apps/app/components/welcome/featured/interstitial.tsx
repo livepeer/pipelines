@@ -148,29 +148,34 @@ const Interstitial: React.FC<InterstitialProps> = ({
   }, []);
 
   const requestCamera = async () => {
-    try {
-      const constraints = {
-        video: {
-          width: { ideal: 1280 },
-          height: { ideal: 720 },
-          facingMode: "user"
-        }
-      };
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    const constraints = isMobile
+      ? { video: { facingMode: "user" } }
+      : {
+          video: {
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
+            facingMode: "user",
+          },
+        };
 
+    try {
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
       stream.getTracks().forEach((track) => track.stop());
-      
+
       setCameraPermission("granted");
       onCameraPermissionGranted();
       setCurrentScreen("prompts");
     } catch (err) {
       console.error("Camera permission denied:", err);
-      
+
       setCameraPermission("denied");
-      
-      // error alert for mobile users
-      if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
-        alert("Please ensure camera permissions are enabled in your browser settings.");
+
+      // error alert for mobile users debug
+      if (isMobile) {
+        alert(
+          "Please ensure camera permissions are enabled in your browser settings."
+        );
       }
     }
   };
