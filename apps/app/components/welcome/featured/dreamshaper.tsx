@@ -73,23 +73,27 @@ interface DreamshaperProps {
 }
 
 function createSilentAudio() {
-  // Prevent hibernation
   try {
     const audioContext = new AudioContext();
     const oscillator = audioContext.createOscillator();
     const gainNode = audioContext.createGain();
     
-    gainNode.gain.value = 0.001;
+    gainNode.gain.value = 0.01;
     
-    oscillator.frequency.value = 1;
+    oscillator.frequency.value = 20;
     
-
     oscillator.connect(gainNode);
     gainNode.connect(audioContext.destination);
     
     oscillator.start();
+
+    const intervalId = setInterval(() => {
+      if (audioContext.state === 'suspended') {
+        audioContext.resume();
+      }
+    }, 1000);
     
-    return audioContext;
+    return { audioContext, intervalId };
   } catch (error) {
     console.error('Failed to create silent audio:', error);
     return null;
@@ -115,7 +119,7 @@ export default function Dreamshaper({
   const profanity = useProfanity(inputValue);
   const isMobile = useIsMobile();
   const outputPlayerRef = useRef<HTMLDivElement>(null);
-  const audioContextRef = useRef<AudioContext | null>(null);
+  const audioContextRef = useRef<{ audioContext: AudioContext, intervalId: NodeJS.Timeout } | null>(null);
 
   const x = useMotionValue(0);
   const y = useMotionValue(0);
@@ -203,30 +207,27 @@ export default function Dreamshaper({
     }
   }, [capacityReached, timeoutReached, live]);
 
-  // Debug keyboard shortcut - Cmd/Ctrl + T
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === "t") {
-        console.log("Debug: Triggering capacity reached toast");
-        showCapacityToast();
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
-
-  useEffect(() => {
-    // Create silent audio as soon as component mounts
     audioContextRef.current = createSilentAudio();
 
-    // Cleanup on unmount
-    return () => {
-      if (audioContextRef.current) {
-        audioContextRef.current.close().catch(console.error);
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        if (audioContextRef.current?.audioContext.state === 'suspended') {
+          audioContextRef.current.audioContext.resume();
+        }
       }
     };
-  }, []); // Empty dependency array means this runs once on mount
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      if (audioContextRef.current) {
+        clearInterval(audioContextRef.current.intervalId);
+        audioContextRef.current.audioContext.close().catch(console.error);
+      }
+    };
+  }, []);
 
   const submitPrompt = () => {
     if (inputValue) {
