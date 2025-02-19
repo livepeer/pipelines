@@ -450,7 +450,7 @@ export default function Dreamshaper({
       >
         <Link
           target="_blank"
-          href="https://pipelines.livepeer.org/docs/knowledge-base/get-started/what-is-pipeline"
+          href="https://www.livepeer.org/learn-about-pipelines"
           className=" hover:text-muted-foreground/80"
         >
           Build a pipeline
