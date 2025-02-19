@@ -21,6 +21,8 @@ export const useStreamStatus = (streamId: string, requireUser: boolean = true) =
     const failureCountRef = useRef(0);
     const intervalIdRef = useRef<NodeJS.Timeout | null>(null);
 
+    const capacityReached = fullResponse?.gateway_last_error === "no orchestrators available within 15s timeout";
+
     const isLive = [
         StreamStatus.Online,
         StreamStatus.DegradedInference,
@@ -116,6 +118,7 @@ export const useStreamStatus = (streamId: string, requireUser: boolean = true) =
         loading, 
         error,
         isLive,
-        statusMessage: getStatusMessage()
+        statusMessage: getStatusMessage(),
+        capacityReached
     };
 };

@@ -18,7 +18,7 @@ const App = (): ReactElement => {
 
   const [pendingPrompt, setPendingPrompt] = useState<string | null>(null);
 
-  const { status, isLive, statusMessage } = useStreamStatus(stream?.id || "", false);
+  const { status, isLive, statusMessage, capacityReached } = useStreamStatus(stream?.id || "", false);
 
   useEffect(() => {
     const checkPermissions = async () => {
@@ -96,6 +96,7 @@ const App = (): ReactElement => {
         live={isLive}
         statusMessage={statusMessage}
         streamKey={stream?.stream_key}
+        capacityReached={capacityReached}
       />
       <ClientSideTracker eventName="home_page_view" />
       {showInterstitial && (
