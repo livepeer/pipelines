@@ -72,6 +72,30 @@ interface DreamshaperProps {
   capacityReached: boolean;
 }
 
+function createSilentAudio() {
+  // Prevent hibernation
+  try {
+    const audioContext = new AudioContext();
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    gainNode.gain.value = 0.001;
+    
+    oscillator.frequency.value = 1;
+    
+
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    oscillator.start();
+    
+    return audioContext;
+  } catch (error) {
+    console.error('Failed to create silent audio:', error);
+    return null;
+  }
+}
+
 export default function Dreamshaper({
   outputPlaybackId,
   streamKey,
@@ -91,6 +115,7 @@ export default function Dreamshaper({
   const profanity = useProfanity(inputValue);
   const isMobile = useIsMobile();
   const outputPlayerRef = useRef<HTMLDivElement>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
 
   const x = useMotionValue(0);
   const y = useMotionValue(0);
@@ -190,6 +215,18 @@ export default function Dreamshaper({
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
+
+  useEffect(() => {
+    // Create silent audio as soon as component mounts
+    audioContextRef.current = createSilentAudio();
+
+    // Cleanup on unmount
+    return () => {
+      if (audioContextRef.current) {
+        audioContextRef.current.close().catch(console.error);
+      }
+    };
+  }, []); // Empty dependency array means this runs once on mount
 
   const submitPrompt = () => {
     if (inputValue) {
