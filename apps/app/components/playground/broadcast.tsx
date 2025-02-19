@@ -3,21 +3,26 @@ import {
   DisableVideoIcon,
   EnableAudioIcon,
   EnableVideoIcon,
-  EnterFullscreenIcon,
-  ExitFullscreenIcon,
   LoadingIcon,
   OfflineErrorIcon,
   PictureInPictureIcon,
   SettingsIcon,
   StartScreenshareIcon,
-  StopIcon,
   StopScreenshareIcon,
 } from "@livepeer/react/assets";
 import * as Broadcast from "@livepeer/react/broadcast";
 import * as Popover from "@radix-ui/react-popover";
 import { cn } from "@repo/design-system/lib/utils";
-import { CheckIcon, ChevronDownIcon, XIcon, Minimize2, Maximize, Video, Camera } from "lucide-react";
-import React, { useState, useEffect, useRef } from "react";
+import {
+  CheckIcon,
+  ChevronDownIcon,
+  XIcon,
+  Minimize2,
+  Maximize,
+  Camera,
+  SwitchCamera,
+} from "lucide-react";
+import React, { useState, useEffect } from "react";
 
 import { toast } from "sonner";
 import { useIsMobile } from "@repo/design-system/hooks/use-mobile";
@@ -42,7 +47,7 @@ export function BroadcastWithControls({
   useEffect(() => {
     const videoEl = document.getElementById(videoId) as HTMLVideoElement | null;
     if (!videoEl) return;
-    
+
     const onEnterPiP = () => {
       setIsPiP(true);
     };
@@ -51,12 +56,12 @@ export function BroadcastWithControls({
       setIsPiP(false);
     };
 
-    videoEl.addEventListener('enterpictureinpicture', onEnterPiP);
-    videoEl.addEventListener('leavepictureinpicture', onLeavePiP);
+    videoEl.addEventListener("enterpictureinpicture", onEnterPiP);
+    videoEl.addEventListener("leavepictureinpicture", onLeavePiP);
 
     return () => {
-      videoEl.removeEventListener('enterpictureinpicture', onEnterPiP);
-      videoEl.removeEventListener('leavepictureinpicture', onLeavePiP);
+      videoEl.removeEventListener("enterpictureinpicture", onEnterPiP);
+      videoEl.removeEventListener("leavepictureinpicture", onLeavePiP);
     };
   }, []);
 
@@ -73,7 +78,9 @@ export function BroadcastWithControls({
     <Broadcast.Root
       onError={(error) =>
         error?.type === "permissions"
-          ? toast.error("You must accept permissions to broadcast. Please try again.")
+          ? toast.error(
+              "You must accept permissions to broadcast. Please try again."
+            )
           : null
       }
       forceEnabled={true}
@@ -87,19 +94,20 @@ export function BroadcastWithControls({
           "text-white/50 overflow-visible rounded-sm bg-transparent border-0 relative",
           className,
           isPiP ? "hidden" : "",
-          !collapsed ? "w-full h-full" : isMobile ? "!w-full !h-12 bg-[#161616] rounded-2xl" : "!w-12 !h-12 rounded-full"
+          !collapsed
+            ? "w-full h-full"
+            : isMobile
+              ? "!w-full !h-12 bg-[#161616] rounded-2xl"
+              : "!w-12 !h-12 rounded-full"
         )}
         style={collapsed && !isMobile ? { width: "3rem", height: "3rem" } : {}}
         onClick={(e) => collapsed && e.stopPropagation()}
       >
         <Broadcast.Video
           title="Live stream"
-          className={cn(
-            "w-full h-full object-cover",
-            collapsed && "opacity-0"
-          )}
+          className={cn("w-full h-full object-cover", collapsed && "opacity-0")}
         />
-        
+
         {collapsed ? (
           <button
             onClick={(e) => {
@@ -109,15 +117,19 @@ export function BroadcastWithControls({
             }}
             className={cn(
               "flex items-center cursor-pointer absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 z-50",
-              isMobile ? "w-full h-12 pl-2 pr-4 bg-[#161616] rounded-2xl justify-between" : "w-full h-full"
+              isMobile
+                ? "w-full h-12 pl-2 pr-4 bg-[#161616] rounded-2xl justify-between"
+                : "w-full h-full"
             )}
           >
             <div className="flex items-center gap-3">
-              <div className={cn(
-                "flex items-center justify-center border border-white/10 rounded-full",
-                isMobile ? "px-4 py-2" : "p-2",
-                "bg-transparent"
-              )}>
+              <div
+                className={cn(
+                  "flex items-center justify-center border border-white/10 rounded-full",
+                  isMobile ? "px-4 py-2" : "p-2",
+                  "bg-transparent"
+                )}
+              >
                 <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse mr-1.5" />
                 <Camera className="w-4 h-4 text-white/50" />
               </div>
@@ -127,15 +139,13 @@ export function BroadcastWithControls({
                 </span>
               )}
             </div>
-            {isMobile && (
-              <Maximize className="w-4 h-4 text-white/50" />
-            )}
+            {isMobile && <Maximize className="w-4 h-4 text-white/50" />}
           </button>
         ) : (
           <>
-            <div 
-              className="absolute top-2 right-2 z-50 block" 
-              style={{ pointerEvents: 'auto' }}
+            <div
+              className="absolute top-2 right-2 z-50 block"
+              style={{ pointerEvents: "auto" }}
             >
               <button
                 onClick={(e) => {
@@ -172,10 +182,12 @@ export function BroadcastWithControls({
                 </div>
               </div>
             </Broadcast.ErrorIndicator>
-            <Broadcast.Controls className={cn(
-              "bg-gradient-to-b gap-1 px-3 md:px-3 py-1.5 flex-col-reverse flex from-black/20 via-80% via-black/30 to-black/60",
-              collapsed && "opacity-0"
-            )}>
+            <Broadcast.Controls
+              className={cn(
+                "bg-gradient-to-b gap-1 px-3 md:px-3 py-1.5 flex-col-reverse flex from-black/20 via-80% via-black/30 to-black/60",
+                collapsed && "opacity-0"
+              )}
+            >
               <div className="flex justify-between gap-4">
                 <div className="flex flex-1 items-center gap-3">
                   <Broadcast.VideoEnabledTrigger className="w-6 h-6 hover:scale-110 transition flex-shrink-0">
@@ -196,10 +208,8 @@ export function BroadcastWithControls({
                   </Broadcast.AudioEnabledTrigger>
                 </div>
                 <div className="flex sm:flex-1 md:flex-[1.5] justify-end items-center gap-2.5">
-                  {isMobile && (
-                    <Settings className="w-6 h-6 transition flex-shrink-0" />
-                  )}
-                  
+                  {isMobile && <FlipCamera />}
+
                   <Broadcast.ScreenshareTrigger className="w-6 h-6 hover:scale-110 transition flex-shrink-0">
                     <Broadcast.ScreenshareIndicator asChild>
                       <StopScreenshareIcon className="w-full h-full text-white/50" />
@@ -210,9 +220,7 @@ export function BroadcastWithControls({
                     </Broadcast.ScreenshareIndicator>
                   </Broadcast.ScreenshareTrigger>
 
-                  <Broadcast.PictureInPictureTrigger
-                    className="w-6 h-6 hover:scale-110 transition flex-shrink-0"
-                  >
+                  <Broadcast.PictureInPictureTrigger className="w-6 h-6 hover:scale-110 transition flex-shrink-0">
                     <PictureInPictureIcon className="w-full h-full text-white/50" />
                   </Broadcast.PictureInPictureTrigger>
                 </div>
@@ -220,10 +228,12 @@ export function BroadcastWithControls({
             </Broadcast.Controls>
 
             <Broadcast.LoadingIndicator asChild matcher={false}>
-              <div className={cn(
-                "absolute overflow-hidden py-1 px-2 rounded-full top-1 left-1 bg-black/50 flex items-center backdrop-blur",
-                collapsed && "opacity-0"
-              )}>
+              <div
+                className={cn(
+                  "absolute overflow-hidden py-1 px-2 rounded-full top-1 left-1 bg-black/50 flex items-center backdrop-blur",
+                  collapsed && "opacity-0"
+                )}
+              >
                 <Broadcast.StatusIndicator
                   matcher="live"
                   className="flex gap-2 items-center"
@@ -255,6 +265,37 @@ export function BroadcastWithControls({
     </Broadcast.Root>
   );
 }
+
+const FlipCamera = () => {
+  const context = Broadcast.useBroadcastContext("CurrentSource", undefined);
+
+  const state = Broadcast.useStore(context.store, (state) => state);
+  const videoDevices = state.mediaDevices?.filter(
+    (device) => device.kind === "videoinput"
+  );
+
+  const currentCameraId = state.mediaDeviceIds.videoinput;
+  const frontCameraId = videoDevices?.[0]?.deviceId;
+  const backCameraId = videoDevices?.[1]?.deviceId;
+
+  if (!frontCameraId || !backCameraId) return null;
+
+  return (
+    <button
+      onClick={() =>
+        state.__controlsFunctions.requestMediaDeviceId(
+          (currentCameraId === frontCameraId
+            ? backCameraId
+            : frontCameraId) as any,
+          "videoinput"
+        )
+      }
+      className="w-6 h-6 hover:scale-110 transition flex-shrink-0"
+    >
+      <SwitchCamera className="w-full h-full text-white/50" />
+    </button>
+  );
+};
 
 export const BroadcastLoading = ({
   title,
