@@ -120,6 +120,8 @@ export default function Dreamshaper({
     typeof document !== "undefined" &&
     (document.fullscreenEnabled || (document as any).webkitFullscreenEnabled);
 
+  const wakeLockRef = useRef<WakeLockSentinel | null>(null);
+
   useEffect(() => {
     setIsCollapsed(isMobile);
   }, [isMobile]);
@@ -254,6 +256,43 @@ export default function Dreamshaper({
     document.addEventListener("fullscreenchange", handleFullscreenChange);
     return () =>
       document.removeEventListener("fullscreenchange", handleFullscreenChange);
+  }, []);
+
+  async function requestWakeLock() {
+    if ("wakeLock" in navigator) {
+      try {
+        wakeLockRef.current = await navigator.wakeLock.request("screen");
+        wakeLockRef.current.addEventListener("release", () => {
+          console.log("Wake lock was released");
+        });
+        console.log("Wake lock is active");
+      } catch (err) {
+        console.error("Error acquiring wake lock:", err);
+      }
+    } else {
+      console.warn("Wake Lock API not supported on this browser.");
+    }
+  }
+
+  useEffect(() => {
+    requestWakeLock();
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        requestWakeLock();
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      if (wakeLockRef.current !== null) {
+        wakeLockRef.current
+          .release()
+          .catch((err) => console.error("Error releasing wake lock:", err));
+        wakeLockRef.current = null;
+      }
+    };
   }, []);
 
   return (
