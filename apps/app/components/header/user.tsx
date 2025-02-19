@@ -2,7 +2,6 @@
 
 import track from "@/lib/track";
 import { usePrivy, User as PrivyUser } from "@privy-io/react-auth";
-import { useSidebar } from "@repo/design-system/components/ui/sidebar";
 import {
   Avatar,
   AvatarFallback,
@@ -17,16 +16,13 @@ import {
   DropdownMenuTrigger,
 } from "@repo/design-system/components/ui/dropdown-menu";
 import { createUser } from "./action";
-import { LogOut, MoonIcon, SunIcon, UserIcon } from "lucide-react";
+import { LogOut, UserIcon } from "lucide-react";
 import { useEffect } from "react";
-import { useTheme } from "next-themes";
 import { cn } from "@repo/design-system/lib/utils";
 import { useIsMobile } from "@repo/design-system/hooks/use-mobile";
 
 export default function User({ className }: { className?: string }) {
   const { ready, authenticated, user, login, logout } = usePrivy();
-  const { theme, setTheme } = useTheme();
-  const { open } = useSidebar();
   const isMobile = useIsMobile();
 
   const name =
@@ -40,8 +36,6 @@ export default function User({ className }: { className?: string }) {
     await createUser(userToInsert);
   };
 
-  const toggleTheme = () => setTheme(theme === "dark" ? "light" : "dark");
-
   useEffect(() => {
     if (user?.id) {
       checkUser(user);
@@ -50,7 +44,9 @@ export default function User({ className }: { className?: string }) {
 
   return authenticated ? (
     <DropdownMenu>
-      <DropdownMenuTrigger className={cn("mt-2 flex items-center gap-2", className)}>
+      <DropdownMenuTrigger
+        className={cn("mt-2 flex items-center gap-2", className)}
+      >
         <Avatar className="h-6 w-6">
           <AvatarImage
             src={`https://github.com/${user?.github?.username}.png`}
@@ -89,10 +85,6 @@ export default function User({ className }: { className?: string }) {
         <DropdownMenuItem className="h-10" onClick={logout}>
           <LogOut />
           Sign Out
-        </DropdownMenuItem>
-        <DropdownMenuItem className="h-10" onClick={toggleTheme}>
-          {theme === "light" ? <SunIcon /> : <MoonIcon />}
-          Toggle Theme
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

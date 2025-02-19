@@ -32,7 +32,9 @@ const samplePrompts = examplePrompts.map((prompt) => prompt.prompt);
 // Rotate through prompts every 4 seconds
 function usePrompts() {
   const [currentPromptIndex, setCurrentPromptIndex] = useState(0);
-  const [lastSubmittedPrompt, setLastSubmittedPrompt] = useState<string | null>(null);
+  const [lastSubmittedPrompt, setLastSubmittedPrompt] = useState<string | null>(
+    null
+  );
 
   useEffect(() => {
     if (lastSubmittedPrompt) return;
@@ -76,7 +78,8 @@ export default function Dreamshaper({
     typeof navigator !== "undefined"
       ? (navigator.userAgent?.includes("Mac") ?? false)
       : false;
-  const { currentPromptIndex, lastSubmittedPrompt, setLastSubmittedPrompt } = usePrompts();
+  const { currentPromptIndex, lastSubmittedPrompt, setLastSubmittedPrompt } =
+    usePrompts();
   const [inputValue, setInputValue] = useState("");
   const isMobile = useIsMobile();
   const outputPlayerRef = useRef<HTMLDivElement>(null);
@@ -114,7 +117,7 @@ export default function Dreamshaper({
       if (isMobile && document.activeElement instanceof HTMLElement) {
         document.activeElement.blur();
       }
-      
+
       const filteredPrompt = checkProfanity(inputValue);
       handleUpdate(filteredPrompt, { silent: true });
       setLastSubmittedPrompt(filteredPrompt); // Store the submitted prompt
@@ -235,7 +238,7 @@ export default function Dreamshaper({
               <div className="relative w-full h-full">
                 <LPPLayer
                   output_playback_id={outputPlaybackId}
-		              stream_key={streamKey}
+                  stream_key={streamKey}
                   isMobile={isMobile}
                 />
                 {/* Overlay */}
@@ -434,7 +437,7 @@ export default function Dreamshaper({
       >
         <Link
           target="_blank"
-          href="https://pipelines.livepeer.org/docs/knowledge-base/get-started/what-is-pipeline"
+          href="https://www.livepeer.org/learn-about-pipelines"
           className=" hover:text-muted-foreground/80"
         >
           Build a pipeline
