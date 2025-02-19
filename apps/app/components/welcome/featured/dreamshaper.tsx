@@ -220,10 +220,9 @@ export default function Dreamshaper({
         )}
       >
         <div className="mx-auto text-center">
-          <h1 className="text-lg md:text-xl font-bold">Livepeer Pipelines</h1>
+          <h1 className="text-lg md:text-xl font-bold">Daydream</h1>
           <p className="text-xs md:text-sm text-muted-foreground">
-            Transform your video in real-time with AI - and build your own
-            workflow with ComfyUI
+            Explore Real-Time Video AI Pipelines - Powered by ComfyUI
           </p>
         </div>
       </div>

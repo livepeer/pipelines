@@ -43,13 +43,13 @@ export const examplePrompts: ExamplePrompt[] = [
 const steps: Step[] = [
   {
     icon: Camera,
-    title: "Use your camera",
-    description: "Grant camera access to begin the transformation",
+    title: "Enable Camera",
+    description: "Enable your camera to transform live video in real-time",
   },
   {
     icon: Mic,
-    title: "Use your microphone",
-    description: "We check for microphone access in the background.",
+    title: "Enable Microphone",
+    description: "Enable your microphone to add sound to your stream",
   },
 ];
 
@@ -253,9 +253,9 @@ const Interstitial: React.FC<InterstitialProps> = ({
           <Slide keyName="camera" slideVariants={slideVariants}>
             <div className="bg-[#161616] border border-[#232323] rounded-xl p-8 max-w-2xl w-full mx-auto shadow-lg">
               <div className="space-y-3 mb-8">
-                <h1 className="text-2xl font-semibold">Start by granting Livepeer Permissions</h1>
+                <h1 className="text-2xl font-semibold">Enable camera access to start creating</h1>
                 <p className="text-muted-foreground">
-                  Before we start there are some permissions you need to give livepeer
+                  Grant access to begin exploring pipelines
                 </p>
               </div>
               <div className="flex flex-col gap-4">
@@ -300,12 +300,12 @@ const Interstitial: React.FC<InterstitialProps> = ({
           <Slide keyName="prompts" slideVariants={slideVariants} flipDirection>
             <div className="bg-[#161616] border border-[#232323] rounded-xl p-8 max-w-2xl w-full mx-auto shadow-lg">
               <div className="space-y-3 mb-8">
-                <h1 className="text-2xl font-semibold">Select your first prompt</h1>
+                <h1 className="text-2xl font-semibold">Select Your First Prompt</h1>
                 <p className="text-muted-foreground">
-                  The same way you would with AI image generators like Midjourney, Dalle, or StableDiffusion.
-                  <br />
+                  Start tranforming your live video with AI. Select a preset prompt to continue.
+                  <br /><br />
                   <span className="hidden md:inline">
-                    To get most out of Livepeer remember about a good lightning and a stable background.
+                    Pro tip: Ensure good lightning and a steady background for best results.
                   </span>
                 </p>
               </div>
