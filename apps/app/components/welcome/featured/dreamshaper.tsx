@@ -300,7 +300,7 @@ export default function Dreamshaper({
                 <div
                   className={cn(
                     "absolute bottom-16 right-4 z-50 transition-all duration-300",
-                    isCollapsed ? "w-12 h-12" : "w-48 h-[108px]"
+                    isCollapsed ? "w-12 h-12" : "w-[25%] aspect-video"
                   )}
                 >
                   <BroadcastWithControls
