@@ -101,6 +101,7 @@ export default function Dreamshaper({
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [timeoutReached, setTimeoutReached] = useState(false);
+  const [showOverlay, setShowOverlay] = useState(true);
 
   const isFullscreenAPISupported =
     typeof document !== "undefined" &&
@@ -190,6 +191,17 @@ export default function Dreamshaper({
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
+
+  useEffect(() => {
+    if (live) {
+      const timer = setTimeout(() => {
+        setShowOverlay(false);
+      }, 1000);
+      return () => clearTimeout(timer);
+    } else {
+      setShowOverlay(true);
+    }
+  }, [live]);
 
   const submitPrompt = () => {
     if (inputValue) {
@@ -366,7 +378,7 @@ export default function Dreamshaper({
                   />
                 </div>
               )}
-              {!live && (
+              {!live || showOverlay ? (
                 <div className="absolute inset-0 bg-black flex flex-col items-center justify-center rounded-2xl">
                   <Loader2 className="h-8 w-8 animate-spin text-white" />
                   {statusMessage && (
@@ -375,7 +387,7 @@ export default function Dreamshaper({
                     </span>
                   )}
                 </div>
-              )}
+              ) : null}
             </>
           ) : (
             <div className="w-full h-full flex items-center justify-center text-muted-foreground">
