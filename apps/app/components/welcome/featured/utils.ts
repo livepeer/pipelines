@@ -1,4 +1,4 @@
-const PROFANITY_WORD_LIST = {
+export const PROFANITY_WORD_LIST = {
   en: [
     "2g1c",
     "2 girls 1 cup",
@@ -477,17 +477,4 @@ const PROFANITY_WORD_LIST = {
     "vete a la mierda",
     "Vulva",
   ],
-};
-
-export const checkProfanity = (prompt: string) => {
-  const words = prompt.toLowerCase().split(/\s+/);
-  const profanityWords = Object.values(PROFANITY_WORD_LIST)
-    .flat()
-    .map((word) => word.toLowerCase());
-
-  const filtered = words.filter(
-    (word) => !profanityWords.some((pWord) => word === pWord)
-  );
-
-  return filtered.join(" ");
 };

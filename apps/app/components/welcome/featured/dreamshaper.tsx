@@ -24,7 +24,7 @@ import { UpdateOptions } from "./useDreamshaper";
 import Link from "next/link";
 import { Separator } from "@repo/design-system/components/ui/separator";
 import TextareaAutosize from "react-textarea-autosize";
-import { checkProfanity } from "./utils";
+import { useProfanity } from "./useProfanity";
 
 const PROMPT_INTERVAL = 4000;
 const samplePrompts = examplePrompts.map((prompt) => prompt.prompt);
@@ -81,6 +81,7 @@ export default function Dreamshaper({
   const { currentPromptIndex, lastSubmittedPrompt, setLastSubmittedPrompt } =
     usePrompts();
   const [inputValue, setInputValue] = useState("");
+  const profanity = useProfanity(inputValue);
   const isMobile = useIsMobile();
   const outputPlayerRef = useRef<HTMLDivElement>(null);
 
@@ -118,9 +119,8 @@ export default function Dreamshaper({
         document.activeElement.blur();
       }
 
-      const filteredPrompt = checkProfanity(inputValue);
-      handleUpdate(filteredPrompt, { silent: true });
-      setLastSubmittedPrompt(filteredPrompt); // Store the submitted prompt
+      handleUpdate(inputValue, { silent: true });
+      setLastSubmittedPrompt(inputValue); // Store the submitted prompt
       setInputValue("");
     } else {
       console.error("No input value to submit");
@@ -306,12 +306,13 @@ export default function Dreamshaper({
       {/* Input prompt */}
       <div
         className={cn(
-          "mx-auto flex justify-center items-center gap-2 h-12 md:h-12 md:gap-4 mt-4 mb-2 dark:bg-[#1A1A1A] rounded-[100px] md:rounded-xl py-2.5 px-3 md:py-1.5 md:px-3 w-[calc(100%-2rem)] md:w-[calc(min(100%,800px))] border-2 border-muted-foreground/10",
+          "relative mx-auto flex justify-center items-center gap-2 h-12 md:h-12 md:gap-4 mt-4 mb-2 dark:bg-[#1A1A1A] rounded-[100px] md:rounded-xl py-2.5 px-3 md:py-1.5 md:px-3 w-[calc(100%-2rem)] md:w-[calc(min(100%,800px))] border-2 border-muted-foreground/10",
           isFullscreen
             ? isMobile
               ? "fixed left-1/2 bottom-[calc(env(safe-area-inset-bottom)+16px)] -translate-x-1/2 z-[10000] w-[600px] max-w-[calc(100%-2rem)] max-h-16"
               : "fixed left-1/2 bottom-0 -translate-x-1/2 z-[10000] w-[600px] max-w-[calc(100%-2rem)] max-h-16"
-            : "z-[30]"
+            : "z-[30]",
+          profanity && "dark:border-red-700 border-red-600"
         )}
       >
         <div className="relative flex items-center flex-1">
@@ -343,7 +344,7 @@ export default function Dreamshaper({
                 });
               }}
               onKeyDown={(e) => {
-                if (!updating && e.key === "Enter") {
+                if (!updating && !profanity && e.key === "Enter") {
                   e.preventDefault();
                   submitPrompt();
                 }
@@ -359,6 +360,7 @@ export default function Dreamshaper({
               onKeyDown={(e) => {
                 if (
                   !updating &&
+                  !profanity &&
                   e.key === "Enter" &&
                   !(e.metaKey || e.ctrlKey || e.shiftKey)
                 ) {
@@ -386,7 +388,7 @@ export default function Dreamshaper({
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
-              disabled={updating || !inputValue}
+              disabled={updating || !inputValue || profanity}
               onClick={(e) => {
                 e.preventDefault();
                 submitPrompt();
@@ -418,15 +420,26 @@ export default function Dreamshaper({
                     ))}
                   </div>
                 </span>
-              ) : isMobile ? (
-                "Apply"
               ) : (
-                "Apply changes"
+                <span>Apply</span>
               )}
             </Button>
           </TooltipTrigger>
           <TooltipContent>Press Enter</TooltipContent>
         </Tooltip>
+
+        {profanity && (
+          <div
+            className={cn(
+              "absolute -top-10 left-0 mx-auto flex items-center justify-center gap-4 text-xs text-muted-foreground mt-4",
+              isMobile && "-top-8 text-[9px] left-auto"
+            )}
+          >
+            <span className="text-red-600">
+              Please fix your prompt as it may contain harmful words
+            </span>
+          </div>
+        )}
       </div>
 
       <div

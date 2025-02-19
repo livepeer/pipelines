@@ -4,7 +4,7 @@ import type { ThemeProviderProps } from "next-themes";
 export const ThemeProvider = (properties: ThemeProviderProps) => (
   <ThemeProviderRaw
     attribute="class"
-    defaultTheme="system"
+    defaultTheme="dark"
     enableSystem
     disableTransitionOnChange
     {...properties}
