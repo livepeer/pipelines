@@ -17,7 +17,7 @@ import { usePrivy } from "@privy-io/react-auth";
 import LoggedOutComponent from "@/components/modals/logged-out";
 import { TrialExpiredModal } from "@/components/modals/trial-expired-modal";
 import InterstitialDecor from "./interstitial-decor";
-
+import track from "@/lib/track";
 interface ExamplePrompt {
   prompt: string;
   image: string;
@@ -142,7 +142,19 @@ const Interstitial: React.FC<InterstitialProps> = ({
           const permissionStatus = await navigator.permissions.query({
             name: "microphone" as PermissionName,
           });
-          setMicPermission(permissionStatus.state as PermissionState);
+          if (permissionStatus.state === "granted") {
+            setMicPermission("granted");
+            track("daydream_microphone_permission_granted", {
+              is_authenticated: authenticated
+            });
+            return;
+          } else if (permissionStatus.state === "denied") {
+            setMicPermission("denied");
+            track("daydream_microphone_permission_denied", {
+              is_authenticated: authenticated
+            });
+            return;
+          }
         }
         if (micPermission !== "granted") {
           const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -181,14 +193,26 @@ const Interstitial: React.FC<InterstitialProps> = ({
       stream.getTracks().forEach((track) => track.stop());
 
       setCameraPermission("granted");
+      track("daydream_camera_permission_granted", {
+        is_authenticated: authenticated
+      });
+      setCurrentScreen("prompts");
       onCameraPermissionGranted();
       setCurrentScreen("prompts");
     } catch (err) {
       console.error("Camera permission denied:", err);
-      setCameraPermission("denied");
-
-      if (isMobile) {
-        alert("Please ensure camera permissions are enabled in your browser settings.");
+      if ("permissions" in navigator) {
+        const permissionStatus = await navigator.permissions.query({
+          name: "camera" as PermissionName,
+        });
+        if (permissionStatus.state === "denied") {
+          setCameraPermission("denied");
+          track("daydream_camera_permission_denied", {
+            is_authenticated: authenticated
+          });
+        }
+      } else {
+        setCameraPermission("denied");
       }
     }
   };
@@ -222,6 +246,9 @@ const Interstitial: React.FC<InterstitialProps> = ({
   );
 
   if (showLoginPrompt) {
+    track("trial_expired_modal_shown", {
+      is_authenticated: authenticated
+    });
     return (
       <TrialExpiredModal 
         open={true} 
@@ -278,7 +305,14 @@ const Interstitial: React.FC<InterstitialProps> = ({
               <div className="flex flex-col items-center gap-4 mt-8">
                 {(cameraPermission === "prompt" || cameraPermission === "granted") && (
                   <Button 
-                    onClick={requestCamera} 
+                    onClick={() => {
+                      track("interstitial_continue_clicked", {
+                        is_authenticated: authenticated,
+                        camera_permission: cameraPermission,
+                        mic_permission: micPermission
+                      });
+                      requestCamera();
+                    }} 
                     size="lg" 
                     className="w-full rounded-full h-12 text-base active:opacity-70"
                     disabled={false}
@@ -337,6 +371,10 @@ const Interstitial: React.FC<InterstitialProps> = ({
                 <Button
                   onClick={() => {
                     if (selectedPrompt && onPromptApply) {
+                      track("prompt_selected_continue", {
+                        is_authenticated: authenticated,
+                        selected_prompt: selectedPrompt
+                      });
                       onPromptApply(selectedPrompt);
                     }
                     onReady();

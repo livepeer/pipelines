@@ -25,6 +25,7 @@ import Link from "next/link";
 import { Separator } from "@repo/design-system/components/ui/separator";
 import TextareaAutosize from "react-textarea-autosize";
 import { useProfanity } from "./useProfanity";
+import track from "@/lib/track";
 
 const PROMPT_INTERVAL = 4000;
 const samplePrompts = examplePrompts.map((prompt) => prompt.prompt);
@@ -113,11 +114,31 @@ export default function Dreamshaper({
     return () => window.removeEventListener("resize", setVh);
   }, []);
 
+  useEffect(() => {
+    track("daydream_page_view", {
+      is_authenticated: authenticated
+    });
+  }, []);
+
+  useEffect(() => {
+    if (live) {
+      track("daydream_stream_started", {
+        is_authenticated: authenticated,
+        playback_id: outputPlaybackId
+      });
+    }
+  }, [live]);
+
   const submitPrompt = () => {
     if (inputValue) {
       if (isMobile && document.activeElement instanceof HTMLElement) {
         document.activeElement.blur();
       }
+
+      track("daydream_prompt_submitted", {
+        is_authenticated: authenticated,
+        prompt: inputValue
+      });
 
       handleUpdate(inputValue, { silent: true });
       setLastSubmittedPrompt(inputValue); // Store the submitted prompt
