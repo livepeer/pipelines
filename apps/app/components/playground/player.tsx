@@ -29,9 +29,9 @@ export function LPPLayer({
   stream_key: string | null;
 }) {
   const searchParams = useSearchParams();
-  let playerUrl = `https://${isProduction() ? "lvpr.tv" : "monster.lvpr.tv"}/?v=${output_playback_id}&lowLatency=force&backoffMax=1000&ingestPlayback=true`
-  if (searchParams.get("directPlayback") === "true") {
-    playerUrl = `https://ai.livepeer.${isProduction() ? "com" : "monster"}/aiWebrtc/${stream_key}-out`
+  let playerUrl = `https://ai.livepeer.${isProduction() ? "com" : "monster"}/aiWebrtc/${stream_key}-out`
+  if ((searchParams.get("directPlayback") !== "true" && process.env.LIVEPEER_DIRECT_PLAYBACK === "false") || searchParams.get("directPlayback") === "false") {
+    let playerUrl = `https://${isProduction() ? "lvpr.tv" : "monster.lvpr.tv"}/?v=${output_playback_id}&lowLatency=force&backoffMax=1000&ingestPlayback=true`
   }
   return (
     <div className={isMobile ? "w-full h-full" : "aspect-video"}>
