@@ -84,6 +84,7 @@ export function BroadcastWithControls({
           : null
       }
       forceEnabled={true}
+      noIceGathering={true}
       audio={false}
       aspectRatio={16 / 9}
       ingestUrl={ingestUrl}
