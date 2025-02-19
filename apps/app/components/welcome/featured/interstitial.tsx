@@ -17,6 +17,7 @@ import { usePrivy } from "@privy-io/react-auth";
 import LoggedOutComponent from "@/components/modals/logged-out";
 import { TrialExpiredModal } from "@/components/modals/trial-expired-modal";
 import InterstitialDecor from "./interstitial-decor";
+import track from "@/lib/track";
 
 interface ExamplePrompt {
   prompt: string;
@@ -148,6 +149,9 @@ const Interstitial: React.FC<InterstitialProps> = ({
           const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
           stream.getTracks().forEach((track) => track.stop());
           setMicPermission("granted");
+          track("daydream_microphone_permission_granted", {
+            is_authenticated: authenticated
+          });
         }
       } catch (err) {
         setMicPermission("prompt");
@@ -181,11 +185,17 @@ const Interstitial: React.FC<InterstitialProps> = ({
       stream.getTracks().forEach((track) => track.stop());
 
       setCameraPermission("granted");
+      track("daydream_camera_permission_granted", {
+        is_authenticated: authenticated
+      });
       onCameraPermissionGranted();
       setCurrentScreen("prompts");
     } catch (err) {
       console.error("Camera permission denied:", err);
       setCameraPermission("denied");
+      track("daydream_camera_permission_denied", {
+        is_authenticated: authenticated
+      });
 
       if (isMobile) {
         alert("Please ensure camera permissions are enabled in your browser settings.");
@@ -222,6 +232,9 @@ const Interstitial: React.FC<InterstitialProps> = ({
   );
 
   if (showLoginPrompt) {
+    track("daydream_trial_expired_modal_shown", {
+      is_authenticated: authenticated
+    });
     return (
       <TrialExpiredModal 
         open={true} 
@@ -278,7 +291,14 @@ const Interstitial: React.FC<InterstitialProps> = ({
               <div className="flex flex-col items-center gap-4 mt-8">
                 {(cameraPermission === "prompt" || cameraPermission === "granted") && (
                   <Button 
-                    onClick={requestCamera} 
+                    onClick={() => {
+                      track("daydream_interstitial_continue_clicked", {
+                        is_authenticated: authenticated,
+                        camera_permission: cameraPermission,
+                        mic_permission: micPermission
+                      });
+                      requestCamera();
+                    }}
                     size="lg" 
                     className="w-full rounded-full h-12 text-base active:opacity-70"
                     disabled={false}
@@ -337,6 +357,10 @@ const Interstitial: React.FC<InterstitialProps> = ({
                 <Button
                   onClick={() => {
                     if (selectedPrompt && onPromptApply) {
+                      track("daydream_prompt_selected_continue", {
+                        is_authenticated: authenticated,
+                        selected_prompt: selectedPrompt
+                      });
                       onPromptApply(selectedPrompt);
                     }
                     onReady();

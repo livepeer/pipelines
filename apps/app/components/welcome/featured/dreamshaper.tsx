@@ -116,6 +116,21 @@ export default function Dreamshaper({
     return () => window.removeEventListener("resize", setVh);
   }, []);
 
+  useEffect(() => {
+    track("daydream_page_view", {
+      is_authenticated: authenticated
+    });
+  }, []);
+
+  useEffect(() => {
+    if (live) {
+      track("daydream_stream_started", {
+        is_authenticated: authenticated,
+        playback_id: outputPlaybackId
+      });
+    }
+  }, [live]);
+
   const showCapacityToast = () => {
     track("capacity_reached");
     toast("Platform at full capacity", {
@@ -148,6 +163,9 @@ export default function Dreamshaper({
 
   useEffect(() => {
     if (capacityReached || (timeoutReached && !live)) {
+      track("daydream_capacity_reached", {
+        is_authenticated: authenticated,
+      });
       showCapacityToast();
     }
   }, [capacityReached, timeoutReached, live]);
@@ -170,6 +188,11 @@ export default function Dreamshaper({
       if (isMobile && document.activeElement instanceof HTMLElement) {
         document.activeElement.blur();
       }
+
+      track("daydream_prompt_submitted", {
+        is_authenticated: authenticated,
+        prompt: inputValue
+      });
 
       handleUpdate(inputValue, { silent: true });
       setLastSubmittedPrompt(inputValue); // Store the submitted prompt
