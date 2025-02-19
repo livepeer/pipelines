@@ -102,6 +102,8 @@ const Interstitial: React.FC<InterstitialProps> = ({
   const [initialCameraGranted, setInitialCameraGranted] = useState<boolean | null>(null);
   const [currentScreen, setCurrentScreen] = useState<"camera" | "prompts">("camera");
   const [selectedPrompt, setSelectedPrompt] = useState<string | null>(null);
+  const [isPermissionLoading, setIsPermissionLoading] = useState(false);
+  const [isPromptLoading, setIsPromptLoading] = useState(false);
 
   const effectiveStreamId = streamId || "";
   const { status: streamStatus, loading: statusLoading, error: statusError, fullResponse } = useStreamStatus(effectiveStreamId, false);
@@ -236,6 +238,35 @@ const Interstitial: React.FC<InterstitialProps> = ({
     </p>
   );
 
+  const handlePermissionContinue = async () => {
+    setIsPermissionLoading(true);
+    track("daydream_interstitial_continue_clicked", {
+      is_authenticated: authenticated,
+      camera_permission: cameraPermission,
+      mic_permission: micPermission
+    });
+    
+    // Add 2s delay
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    await requestCamera();
+    setIsPermissionLoading(false);
+  };
+
+  const handlePromptContinue = async () => {
+    setIsPromptLoading(true);
+    if (selectedPrompt && onPromptApply) {
+      track("daydream_prompt_selected_continue", {
+        is_authenticated: authenticated,
+        selected_prompt: selectedPrompt
+      });
+      onPromptApply(selectedPrompt);
+    }
+    // Add 3s delay
+    await new Promise(resolve => setTimeout(resolve, 3000));
+    onReady();
+    setIsPromptLoading(false);
+  };
+
   if (showLoginPrompt) {
     track("daydream_trial_expired_modal_shown", {
       is_authenticated: authenticated
@@ -296,19 +327,18 @@ const Interstitial: React.FC<InterstitialProps> = ({
               <div className="flex flex-col items-center gap-4 mt-8">
                 {(cameraPermission === "prompt" || cameraPermission === "granted") && (
                   <Button 
-                    onClick={() => {
-                      track("daydream_interstitial_continue_clicked", {
-                        is_authenticated: authenticated,
-                        camera_permission: cameraPermission,
-                        mic_permission: micPermission
-                      });
-                      requestCamera();
-                    }}
+                    onClick={handlePermissionContinue}
                     size="lg" 
                     className="w-full rounded-full h-12 text-base active:opacity-70"
-                    disabled={false}
+                    disabled={isPermissionLoading}
                   >
-                    Continue
+                    {isPermissionLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      </>
+                    ) : (
+                      "Continue"
+                    )}
                   </Button>
                 )}
                 {cameraPermission === "denied" && (
@@ -360,21 +390,18 @@ const Interstitial: React.FC<InterstitialProps> = ({
 
               <div className="flex gap-4 mt-8">
                 <Button
-                  onClick={() => {
-                    if (selectedPrompt && onPromptApply) {
-                      track("daydream_prompt_selected_continue", {
-                        is_authenticated: authenticated,
-                        selected_prompt: selectedPrompt
-                      });
-                      onPromptApply(selectedPrompt);
-                    }
-                    onReady();
-                  }}
-                  disabled={!selectedPrompt}
+                  onClick={handlePromptContinue}
+                  disabled={!selectedPrompt || isPromptLoading}
                   size="lg"
                   className="rounded-full h-12 flex-1"
                 >
-                  Continue
+                  {isPromptLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    </>
+                  ) : (
+                    "Continue"
+                  )}
                 </Button>
               </div>
               <TermsNotice />

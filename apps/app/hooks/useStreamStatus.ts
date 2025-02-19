@@ -46,7 +46,7 @@ export const useStreamStatus = (streamId: string, requireUser: boolean = true) =
     const getStatusMessage = () => {
         switch (maxStatusLevel) {
             case 1:
-                return "Initializing your stream...";
+                return "Starting your stream on the Livepeer network...";
             case 2:
                 return "Your stream has started. Hang tight while we load it...";
             case 3:
