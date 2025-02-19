@@ -109,8 +109,9 @@ const Interstitial: React.FC<InterstitialProps> = ({
           const permissionStatus = await navigator.permissions.query({
             name: "camera" as PermissionName,
           });
-          if (permissionStatus.state === "denied") {
-            setCameraPermission("denied");
+          setCameraPermission(permissionStatus.state as PermissionState);
+          if (permissionStatus.state === "granted") {
+            onCameraPermissionGranted();
           }
         }
       } catch (err) {
@@ -119,31 +120,6 @@ const Interstitial: React.FC<InterstitialProps> = ({
     };
     
     checkPermissions();
-  }, []);
-
-  useEffect(() => {
-    const triggerCamera = async () => {
-      try {
-        if ("permissions" in navigator) {
-          const permissionStatus = await navigator.permissions.query({
-            name: "camera" as PermissionName,
-          });
-          if (permissionStatus.state === "granted") {
-            setCameraPermission("granted");
-            return;
-          } else if (permissionStatus.state === "denied") {
-            setCameraPermission("denied");
-            return;
-          }
-        }
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-        stream.getTracks().forEach((track) => track.stop());
-        setCameraPermission("granted");
-      } catch {
-        setCameraPermission("prompt");
-      }
-    };
-    triggerCamera();
   }, [onCameraPermissionGranted]);
 
   useEffect(() => {
@@ -278,8 +254,8 @@ const Interstitial: React.FC<InterstitialProps> = ({
                   <Button 
                     onClick={requestCamera} 
                     size="lg" 
-                    className="w-full rounded-full h-12 text-base"
-                    disabled={cameraPermission != "granted"}
+                    className="w-full rounded-full h-12 text-base active:opacity-70"
+                    disabled={false}
                   >
                     Continue
                   </Button>
