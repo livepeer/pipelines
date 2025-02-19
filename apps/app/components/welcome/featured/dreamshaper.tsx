@@ -27,6 +27,9 @@ import TextareaAutosize from "react-textarea-autosize";
 import { useProfanity } from "./useProfanity";
 import { toast } from "sonner";
 import track from "@/lib/track";
+import Image from "next/image";
+import { SidebarTrigger } from "@repo/design-system/components/ui/sidebar";
+import { Inter } from "next/font/google";
 
 const PROMPT_INTERVAL = 4000;
 const samplePrompts = examplePrompts.map((prompt) => prompt.prompt);
@@ -53,6 +56,8 @@ function usePrompts() {
   return { currentPromptIndex, lastSubmittedPrompt, setLastSubmittedPrompt };
 }
 
+const inter = Inter({ subsets: ["latin"] });
+
 interface DreamshaperProps {
   outputPlaybackId: string | null;
   streamKey: string | null;
@@ -78,7 +83,7 @@ export default function Dreamshaper({
   updating,
   live,
   statusMessage,
-  capacityReached
+  capacityReached,
 }: DreamshaperProps) {
   const { currentPromptIndex, lastSubmittedPrompt, setLastSubmittedPrompt } =
     usePrompts();
@@ -121,10 +126,13 @@ export default function Dreamshaper({
     toast("Platform at full capacity", {
       description: (
         <div className="flex flex-col gap-2">
-          <p>We are currently at capacity, join the waitlist to use the platform in the future</p>
-          <a 
-            href="/waitlist" 
-            target="_blank" 
+          <p>
+            We are currently at capacity, join the waitlist to use the platform
+            in the future
+          </p>
+          <a
+            href="/waitlist"
+            target="_blank"
             rel="noopener noreferrer"
             className="text-primary hover:underline font-medium"
           >
@@ -155,14 +163,14 @@ export default function Dreamshaper({
   // Debug keyboard shortcut - Cmd/Ctrl + T
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 't') {
-        console.log('Debug: Triggering capacity reached toast');
+      if ((e.metaKey || e.ctrlKey) && e.key === "t") {
+        console.log("Debug: Triggering capacity reached toast");
         showCapacityToast();
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
   const submitPrompt = () => {
@@ -219,10 +227,35 @@ export default function Dreamshaper({
           isFullscreen && "hidden"
         )}
       >
-        <div className="mx-auto text-center">
-          <h1 className="text-lg md:text-xl font-bold">Daydream</h1>
+        {isMobile && (
+          <div className="absolute flex items-center left-2 top-7">
+            <SidebarTrigger />
+            <Separator orientation="vertical" className="mr-2 h-4" />
+          </div>
+        )}
+        <div className="mx-auto text-center flex flex-col items-center gap-2">
+          <h1
+            className={cn(
+              inter.className,
+              "text-lg md:text-xl flex flex-col items-center uppercase font-light"
+            )}
+          >
+            Daydream
+            <div className="flex items-center gap-2 text-xs">
+              <span className="uppercase text-xs">by</span>
+              <span className="w-16">
+                <Image
+                  src="https://mintlify.s3.us-west-1.amazonaws.com/livepeer-ai/logo/dark.svg"
+                  alt="Livepeer logo"
+                  width={100}
+                  height={100}
+                />
+              </span>
+            </div>
+          </h1>
           <p className="text-xs md:text-sm text-muted-foreground">
-            Explore Real-Time Video AI Pipelines - Powered by ComfyUI
+            Transform your video in real-time with AI - and build your own
+            workflow with ComfyUI
           </p>
         </div>
       </div>
@@ -230,7 +263,7 @@ export default function Dreamshaper({
       {/* Main content area */}
       <div
         className={cn(
-          "px-4 my-4 flex items-center justify-center",
+          "px-4 my-2 flex items-center justify-center",
           isFullscreen && "fixed inset-0 z-[9999] p-0 m-0"
         )}
       >
