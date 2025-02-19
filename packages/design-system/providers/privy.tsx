@@ -10,8 +10,8 @@ export const PrivyProvider = ({ children }: { children: React.ReactNode }) => (
         theme: "dark",
       },
       legal: {
-        termsAndConditionsUrl: "/terms",
-        privacyPolicyUrl: "/privacy",
+        termsAndConditionsUrl: "https://www.livepeer.org/terms-of-service-p",
+        privacyPolicyUrl: "https://www.livepeer.org/privacy-policy-p",
       },
     }}
   >

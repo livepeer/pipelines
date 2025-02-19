@@ -215,9 +215,9 @@ const Interstitial: React.FC<InterstitialProps> = ({
   const TermsNotice = () => (
     <p className="text-xs text-muted-foreground text-center mt-4">
       By using this service, you accept the{" "}
-      <a href="/terms" className="underline hover:text-primary">Terms of Service</a>{" "}
+      <a href="https://www.livepeer.org/terms-of-service-p" className="underline hover:text-primary">Terms of Service</a>{" "}
       and{" "}
-      <a href="/privacy" className="underline hover:text-primary">Privacy Policy</a>
+      <a href="https://www.livepeer.org/privacy-policy-p" className="underline hover:text-primary">Privacy Policy</a>
     </p>
   );
 
