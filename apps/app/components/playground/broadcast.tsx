@@ -65,6 +65,18 @@ export function BroadcastWithControls({
     };
   }, []);
 
+  useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/workers/broadcast-worker.ts')
+        .then(registration => {
+          console.log('ServiceWorker registration successful');
+        })
+        .catch(err => {
+          console.error('ServiceWorker registration failed:', err);
+        });
+    }
+  }, []);
+
   if (!ingestUrl) {
     return (
       <BroadcastLoading
