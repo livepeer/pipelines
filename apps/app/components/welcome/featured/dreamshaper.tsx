@@ -277,22 +277,33 @@ export default function Dreamshaper({
   useEffect(() => {
     requestWakeLock();
 
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === "visible") {
-        requestWakeLock();
+    const handleVisibilityChange = async () => {
+      const broadcastVideo = document.querySelector('#live-video video');
+      if (!broadcastVideo || !(broadcastVideo instanceof HTMLVideoElement)) return;
+
+      if (document.visibilityState === "hidden") {
+        if (!document.pictureInPictureElement) {
+          try {
+            await broadcastVideo.requestPictureInPicture();
+            console.log("Entered Picture-in-Picture mode");
+          } catch (err) {
+            console.error("Error entering PiP:", err);
+          }
+        }
+      } else {
+        if (document.pictureInPictureElement) {
+          try {
+            await document.exitPictureInPicture();
+            console.log("Exited Picture-in-Picture mode");
+          } catch (err) {
+            console.error("Error exiting PiP:", err);
+          }
+        }
       }
     };
 
     document.addEventListener("visibilitychange", handleVisibilityChange);
-    return () => {
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-      if (wakeLockRef.current !== null) {
-        wakeLockRef.current
-          .release()
-          .catch((err) => console.error("Error releasing wake lock:", err));
-        wakeLockRef.current = null;
-      }
-    };
+    return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
   }, []);
 
   return (
