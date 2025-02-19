@@ -123,7 +123,7 @@ export default function Dreamshaper({
 
   useEffect(() => {
     track("daydream_page_view", {
-      is_authenticated: authenticated
+      is_authenticated: authenticated,
     });
   }, []);
 
@@ -131,7 +131,7 @@ export default function Dreamshaper({
     if (live) {
       track("daydream_stream_started", {
         is_authenticated: authenticated,
-        playback_id: outputPlaybackId
+        playback_id: outputPlaybackId,
       });
     }
   }, [live]);
@@ -199,7 +199,7 @@ export default function Dreamshaper({
 
       track("daydream_prompt_submitted", {
         is_authenticated: authenticated,
-        prompt: inputValue
+        prompt: inputValue,
       });
 
       handleUpdate(inputValue, { silent: true });
@@ -286,7 +286,7 @@ export default function Dreamshaper({
       {/* Main content area */}
       <div
         className={cn(
-          "px-4 my-2 flex items-center justify-center",
+          "px-4 my-4 flex items-center justify-center",
           isFullscreen && "fixed inset-0 z-[9999] p-0 m-0"
         )}
       >
