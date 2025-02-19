@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
   Camera,
@@ -49,7 +49,7 @@ const steps: Step[] = [
   {
     icon: Mic,
     title: "Use your microphone",
-    description: "Enable audio for your stream",
+    description: "We check for microphone access in the background.",
   },
 ];
 
@@ -95,57 +95,74 @@ const Interstitial: React.FC<InterstitialProps> = ({
 }) => {
   const { authenticated, login } = usePrivy();
   const [cameraPermission, setCameraPermission] = useState<PermissionState>("prompt");
+  const [micPermission, setMicPermission] = useState<PermissionState>("prompt");
+  const [permissionsChecked, setPermissionsChecked] = useState<boolean>(false);
+  const [autoProceeded, setAutoProceeded] = useState<boolean>(false);
+  const [initialCameraGranted, setInitialCameraGranted] = useState<boolean | null>(null);
   const [currentScreen, setCurrentScreen] = useState<"camera" | "prompts">("camera");
   const [selectedPrompt, setSelectedPrompt] = useState<string | null>(null);
-  const [micPermission, setMicPermission] = useState<PermissionState>("prompt");
 
   const effectiveStreamId = streamId || "";
   const { status: streamStatus, loading: statusLoading, error: statusError, fullResponse } = useStreamStatus(effectiveStreamId, false);
 
   useEffect(() => {
-    const checkPermissions = async () => {
+    const checkCamera = async () => {
       try {
         if ("permissions" in navigator) {
           const permissionStatus = await navigator.permissions.query({
             name: "camera" as PermissionName,
           });
-          setCameraPermission(permissionStatus.state as PermissionState);
-          if (permissionStatus.state === "granted") {
+          const state = permissionStatus.state as PermissionState;
+          setCameraPermission(state);
+          if (state === "granted") {
+            setInitialCameraGranted(true);
             onCameraPermissionGranted();
+          } else {
+            setInitialCameraGranted(false);
           }
+        } else {
+          setCameraPermission("prompt");
+          setInitialCameraGranted(false);
         }
       } catch (err) {
         console.error("Error checking camera permission:", err);
+        setInitialCameraGranted(false);
+      } finally {
+        setPermissionsChecked(true);
       }
     };
-    
-    checkPermissions();
+
+    checkCamera();
   }, [onCameraPermissionGranted]);
 
   useEffect(() => {
-    const triggerMic = async () => {
+    const checkMic = async () => {
       try {
         if ("permissions" in navigator) {
           const permissionStatus = await navigator.permissions.query({
             name: "microphone" as PermissionName,
           });
-          if (permissionStatus.state === "granted") {
-            setMicPermission("granted");
-            return;
-          } else if (permissionStatus.state === "denied") {
-            setMicPermission("denied");
-            return;
-          }
+          setMicPermission(permissionStatus.state as PermissionState);
         }
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        stream.getTracks().forEach((track) => track.stop());
-        setMicPermission("granted");
-      } catch {
+        if (micPermission !== "granted") {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          stream.getTracks().forEach((track) => track.stop());
+          setMicPermission("granted");
+        }
+      } catch (err) {
         setMicPermission("prompt");
       }
     };
-    triggerMic();
+
+    checkMic();
   }, []);
+
+  useEffect(() => {
+    if (permissionsChecked && cameraPermission === "granted" && initialCameraGranted && !autoProceeded) {
+      setAutoProceeded(true);
+      onReady();
+    }
+  }, [permissionsChecked, cameraPermission, autoProceeded, onReady, initialCameraGranted]);
 
   const requestCamera = async () => {
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
@@ -168,14 +185,10 @@ const Interstitial: React.FC<InterstitialProps> = ({
       setCurrentScreen("prompts");
     } catch (err) {
       console.error("Camera permission denied:", err);
-
       setCameraPermission("denied");
 
-      // error alert for mobile users debug
       if (isMobile) {
-        alert(
-          "Please ensure camera permissions are enabled in your browser settings."
-        );
+        alert("Please ensure camera permissions are enabled in your browser settings.");
       }
     }
   };
@@ -227,6 +240,10 @@ const Interstitial: React.FC<InterstitialProps> = ({
         <Loader2 className="h-8 w-8 animate-spin" />
       </div>
     );
+  }
+
+  if (permissionsChecked && cameraPermission === "granted" && initialCameraGranted) {
+    return null;
   }
 
   return (
