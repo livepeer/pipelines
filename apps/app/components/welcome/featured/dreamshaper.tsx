@@ -25,9 +25,13 @@ import Link from "next/link";
 import { Separator } from "@repo/design-system/components/ui/separator";
 import TextareaAutosize from "react-textarea-autosize";
 import { useProfanity } from "./useProfanity";
+import { toast } from "sonner";
+import track from "@/lib/track";
 
 const PROMPT_INTERVAL = 4000;
 const samplePrompts = examplePrompts.map((prompt) => prompt.prompt);
+
+const MAX_STREAM_TIMEOUT_MS = 90000; // 90 seconds
 
 // Rotate through prompts every 4 seconds
 function usePrompts() {
@@ -60,6 +64,7 @@ interface DreamshaperProps {
   updating: boolean;
   live: boolean;
   statusMessage: string;
+  capacityReached: boolean;
 }
 
 export default function Dreamshaper({
@@ -73,11 +78,8 @@ export default function Dreamshaper({
   updating,
   live,
   statusMessage,
+  capacityReached
 }: DreamshaperProps) {
-  const isMac =
-    typeof navigator !== "undefined"
-      ? (navigator.userAgent?.includes("Mac") ?? false)
-      : false;
   const { currentPromptIndex, lastSubmittedPrompt, setLastSubmittedPrompt } =
     usePrompts();
   const [inputValue, setInputValue] = useState("");
@@ -93,6 +95,7 @@ export default function Dreamshaper({
 
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [timeoutReached, setTimeoutReached] = useState(false);
 
   const isFullscreenAPISupported =
     typeof document !== "undefined" &&
@@ -111,6 +114,55 @@ export default function Dreamshaper({
     setVh();
     window.addEventListener("resize", setVh);
     return () => window.removeEventListener("resize", setVh);
+  }, []);
+
+  const showCapacityToast = () => {
+    track("capacity_reached");
+    toast("Platform at full capacity", {
+      description: (
+        <div className="flex flex-col gap-2">
+          <p>We are currently at capacity, join the waitlist to use the platform in the future</p>
+          <a 
+            href="/waitlist" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="text-primary hover:underline font-medium"
+          >
+            Join the waitlist
+          </a>
+        </div>
+      ),
+      duration: 1000000,
+    });
+  };
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (!live) {
+        setTimeoutReached(true);
+      }
+    }, MAX_STREAM_TIMEOUT_MS);
+
+    return () => clearTimeout(timer);
+  }, [live]);
+
+  useEffect(() => {
+    if (capacityReached || (timeoutReached && !live)) {
+      showCapacityToast();
+    }
+  }, [capacityReached, timeoutReached, live]);
+
+  // Debug keyboard shortcut - Cmd/Ctrl + T
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 't') {
+        console.log('Debug: Triggering capacity reached toast');
+        showCapacityToast();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
   const submitPrompt = () => {
