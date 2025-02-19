@@ -3,6 +3,7 @@ import { GlobalSidebar } from "@/components/sidebar";
 import { SidebarProvider } from "@repo/design-system/components/ui/sidebar";
 import { DesignSystemProvider } from "@repo/design-system/providers";
 import type { ReactNode } from "react";
+import type { Viewport } from "next";
 import Intercom from "@/components/intercom";
 import AlphaBanner from "@/components/header/alpha-banner";
 import { Metadata } from "next";
@@ -16,6 +17,13 @@ type RootLayoutProperties = {
 
 export const metadata: Metadata = {
   title: "Livepeer Pipelines", // This will be used for all pages
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 };
 
 const RootLayout = ({ children }: RootLayoutProperties) => (
