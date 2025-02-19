@@ -144,6 +144,11 @@ const Interstitial: React.FC<InterstitialProps> = ({
             name: "microphone" as PermissionName,
           });
           setMicPermission(permissionStatus.state as PermissionState);
+          if (permissionStatus.state === "denied") {
+            track("daydream_microphone_permission_denied", {
+              is_authenticated: authenticated
+            });
+          }
         }
         if (micPermission !== "granted") {
           const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
