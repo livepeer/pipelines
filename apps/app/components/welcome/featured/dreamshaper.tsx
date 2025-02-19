@@ -263,7 +263,7 @@ export default function Dreamshaper({
       {/* Main content area */}
       <div
         className={cn(
-          "px-4 my-2 flex items-center justify-center",
+          "px-4 my-4 flex items-center justify-center",
           isFullscreen && "fixed inset-0 z-[9999] p-0 m-0"
         )}
       >
