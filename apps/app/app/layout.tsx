@@ -34,7 +34,6 @@ const RootLayout = ({ children }: RootLayoutProperties) => (
           <SidebarProvider open={false}>
             <GlobalSidebar>
               <div>
-                <MobileSidebarTrigger />
                 <div className="flex h-screen md:h-[calc(100vh-2rem)] flex-col overflow-y-auto px-2 md:px-6">
                   <AlphaBanner />
                   {children}
