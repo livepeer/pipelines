@@ -19,9 +19,10 @@ export const useStreamStatus = (streamId: string, requireUser: boolean = true) =
     const [error, setError] = useState<string | null>(null);
     const [maxStatusLevel, setMaxStatusLevel] = useState(0);
     const failureCountRef = useRef(0);
+    const orchestratorFailureCountRef = useRef(0);
     const intervalIdRef = useRef<NodeJS.Timeout | null>(null);
 
-    const capacityReached = fullResponse?.gateway_last_error?.startsWith("no orchestrators available within");
+    const capacityReached = orchestratorFailureCountRef.current >= 5;
 
     const isLive = [
         StreamStatus.Online,
@@ -93,6 +94,13 @@ export const useStreamStatus = (streamId: string, requireUser: boolean = true) =
                 setFullResponse(data);
                 setStatus(data?.state as StreamStatus || StreamStatus.Unknown);
                 setError(null);
+                
+                if (data?.gateway_last_error?.startsWith("no orchestrators available within")) {
+                    orchestratorFailureCountRef.current += 1;
+                } else {
+                    orchestratorFailureCountRef.current = 0;
+                }
+                
                 failureCountRef.current = 0;
                 resetPollingInterval();
             } catch (err: any) {

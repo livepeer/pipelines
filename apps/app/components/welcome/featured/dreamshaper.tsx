@@ -107,6 +107,8 @@ export default function Dreamshaper({
     typeof document !== "undefined" &&
     (document.fullscreenEnabled || (document as any).webkitFullscreenEnabled);
 
+  const toastShownRef = useRef(false);
+
   useEffect(() => {
     setIsCollapsed(isMobile);
   }, [isMobile]);
@@ -171,18 +173,30 @@ export default function Dreamshaper({
   }, [live]);
 
   useEffect(() => {
-    if (capacityReached || (timeoutReached && !live)) {
+    if ((capacityReached || (timeoutReached && !live)) && !toastShownRef.current) {
+      const reason = capacityReached 
+        ? "capacity_reached" 
+        : "timeout_reached_not_live";
+      
+      console.error("Capacity reached, reason:", reason, {
+        capacityReached,
+        timeoutReached,
+        live
+      });
+
       track("daydream_capacity_reached", {
         is_authenticated: authenticated,
+        reason
       });
       showCapacityToast();
+      toastShownRef.current = true;
     }
   }, [capacityReached, timeoutReached, live]);
 
-  // Debug keyboard shortcut - Cmd/Ctrl + T
+  // Debug keyboard shortcut - Alt + T
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === "t") {
+      if (e.altKey && e.key === "t") {
         console.log("Debug: Triggering capacity reached toast");
         showCapacityToast();
       }
