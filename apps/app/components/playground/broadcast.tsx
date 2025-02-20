@@ -321,7 +321,7 @@ const CameraSwitchButton = () => {
   );
   const currentCameraId = state.mediaDeviceIds.videoinput;
 
-  if (!videoDevices || videoDevices.length <= 1) {
+  if (!state.mediaDevices) {
     return null;
   }
 
@@ -330,10 +330,11 @@ const CameraSwitchButton = () => {
       onClick={(e) => {
         e.preventDefault();
         e.stopPropagation();
-        const currentIndex = videoDevices.findIndex(
+        const currentIndex = videoDevices?.findIndex(
           device => device.deviceId === currentCameraId
-        );
-        const nextCameraId = videoDevices[currentIndex === 0 ? 1 : 0]?.deviceId;
+        ) ?? -1;
+        const nextIndex = (currentIndex + 1) % (videoDevices?.length ?? 1);
+        const nextCameraId = videoDevices?.[nextIndex]?.deviceId;
         
         if (nextCameraId) {
           state.__controlsFunctions.requestMediaDeviceId(
