@@ -21,7 +21,7 @@ export function TrialExpiredModal({ open, onOpenChange }: TrialExpiredModalProps
       <DialogContent className="trial-expired-content mx-auto left-[50%] -translate-x-[50%] w-[calc(100%-2rem)] bg-[#161616] border border-[#232323] rounded-xl p-8 max-w-2xl shadow-lg">
         <DialogHeader>
           <DialogTitle className="text-2xl font-semibold text-left">
-            Time expired on your free version
+            Sign in to continue streaming
           </DialogTitle>
           <DialogDescription className="text-muted-foreground text-left">
             In order to continue streaming, please sign up or sign in.
