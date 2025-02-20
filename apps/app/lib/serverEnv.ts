@@ -12,9 +12,16 @@ const GatewayConfig = z.object({
     password: z.string().min(1).optional(),
 });
 
-const ServerEnvironmentConfig = z.object({
+const KafkaConfig = z.object({
+  bootstrapServers: z.string().min(1),
+  username: z.string().min(1),
+  password: z.string().min(1),
+});
+
+export const ServerEnvironmentConfig = z.object({
   supabase: SupabaseConfig,
   gateway: GatewayConfig,
+  kafka: KafkaConfig,
 });
 
 type ServerEnvironmentConfig = z.infer<typeof ServerEnvironmentConfig>;
@@ -31,7 +38,12 @@ const serverOnlyEnvConfig = {
     url: process.env.STREAM_STATUS_ENDPOINT_URL,
     userId: process.env.STREAM_STATUS_ENDPOINT_USER,
     password: process.env.STREAM_STATUS_ENDPOINT_PASSWORD,
-  }
+  },
+  kafka: {
+    bootstrapServers: process.env.KAFKA_BOOTSTRAP_NODE,
+    username: process.env.KAFKA_USER,
+    password: process.env.KAFKA_PASSWORD,
+  },
 } as const;
 
 const serverOnlyConfig = ServerEnvironmentConfig.parse(serverOnlyEnvConfig);

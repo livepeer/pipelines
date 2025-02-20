@@ -5,6 +5,7 @@ import { z } from "zod";
 import { Livepeer } from "livepeer";
 import { newId } from "@/lib/generate-id";
 import { livepeer as livePeerEnv } from "@/lib/env";
+import { sendKafkaEvent } from "../metrics/kafka";
 
 const streamSchema = z
   .object({
