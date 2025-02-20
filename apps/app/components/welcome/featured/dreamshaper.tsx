@@ -172,8 +172,19 @@ export default function Dreamshaper({
 
   useEffect(() => {
     if (capacityReached || (timeoutReached && !live)) {
+      const reason = capacityReached 
+        ? "capacity_reached" 
+        : "timeout_reached_not_live";
+      
+      console.log("Toast shown due to:", reason, {
+        capacityReached,
+        timeoutReached,
+        live
+      });
+
       track("daydream_capacity_reached", {
         is_authenticated: authenticated,
+        reason
       });
       showCapacityToast();
     }
