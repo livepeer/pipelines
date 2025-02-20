@@ -140,7 +140,22 @@ export function BroadcastWithControls({
                 </span>
               )}
             </div>
-            {isMobile && <Maximize className="w-4 h-4 text-white/50" />}
+            {isMobile && (
+              <div className="flex items-center gap-3">
+                <CameraSwitchButton />
+                <div className="w-[1px] h-4 bg-white/10" />
+                <button 
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onCollapse?.(!collapsed) ?? setLocalCollapsed(!collapsed);
+                  }}
+                  className="p-1"
+                >
+                  <Maximize className="w-5 h-5 text-white/50" />
+                </button>
+              </div>
+            )}
           </button>
         ) : (
           <>
@@ -294,6 +309,39 @@ const FlipCamera = () => {
       className="w-6 h-6 hover:scale-110 transition flex-shrink-0"
     >
       <SwitchCamera className="w-full h-full text-white/50" />
+    </button>
+  );
+};
+
+const CameraSwitchButton = () => {
+  const context = Broadcast.useBroadcastContext("CurrentSource", undefined);
+  const state = Broadcast.useStore(context.store, (state) => state);
+  const videoDevices = state.mediaDevices?.filter(
+    (device) => device.kind === "videoinput"
+  );
+  const currentCameraId = state.mediaDeviceIds.videoinput;
+
+  return (
+    <button 
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (videoDevices && videoDevices.length > 1) {
+          const currentIndex = videoDevices.findIndex(
+            device => device.deviceId === currentCameraId
+          );
+          const nextIndex = (currentIndex + 1) % videoDevices.length;
+          const nextCameraId = videoDevices[nextIndex].deviceId;
+          
+          state.__controlsFunctions.requestMediaDeviceId(
+            nextCameraId as any,
+            "videoinput"
+          );
+        }
+      }} 
+      className="p-1"
+    >
+      <SwitchCamera className="w-5 h-5 text-white/50" />
     </button>
   );
 };

@@ -91,6 +91,7 @@ export default function Dreamshaper({
   const profanity = useProfanity(inputValue);
   const isMobile = useIsMobile();
   const outputPlayerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const x = useMotionValue(0);
   const y = useMotionValue(0);
@@ -217,6 +218,12 @@ export default function Dreamshaper({
     }
   }, [live]);
 
+  useEffect(() => {
+    if (!isMobile && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [isMobile]);
+
   const submitPrompt = () => {
     if (inputValue) {
       if (isMobile && document.activeElement instanceof HTMLElement) {
@@ -312,14 +319,14 @@ export default function Dreamshaper({
       {/* Main content area */}
       <div
         className={cn(
-          "px-4 my-2 flex items-center justify-center",
+          "px-4 my-4 flex items-center justify-center md:mb-0 mb-5",
           isFullscreen && "fixed inset-0 z-[9999] p-0 m-0"
         )}
       >
         <div
           ref={outputPlayerRef}
           className={cn(
-            "w-full max-w-[calc(min(100%,calc((100vh-14rem)*16/9)))] mx-auto md:aspect-video aspect-square bg-sidebar rounded-2xl overflow-hidden relative",
+            "w-full max-w-[calc(min(100%,calc((100vh-16rem)*16/9)))] mx-auto md:aspect-video aspect-square bg-sidebar rounded-2xl overflow-hidden relative",
             isFullscreen && "w-full h-full max-w-none rounded-none"
           )}
         >
@@ -439,12 +446,14 @@ export default function Dreamshaper({
       {/* Input prompt */}
       <div
         className={cn(
-          "relative mx-auto flex justify-center items-center gap-2 h-12 md:h-12 md:gap-4 mt-4 mb-2 dark:bg-[#1A1A1A] rounded-[100px] md:rounded-xl py-2.5 px-3 md:py-1.5 md:px-3 w-[calc(100%-2rem)] md:w-[calc(min(100%,800px))] border-2 border-muted-foreground/10",
+          "relative mx-auto flex justify-center items-center gap-2 h-14 md:h-14 md:gap-2 mt-4 mb-2 dark:bg-[#1A1A1A] md:rounded-xl py-2.5 px-3 md:py-1.5 md:px-3 w-[calc(100%-2rem)] md:w-[calc(min(100%,800px))] border-2 border-muted-foreground/10",
           isFullscreen
             ? isMobile
-              ? "fixed left-1/2 bottom-[calc(env(safe-area-inset-bottom)+16px)] -translate-x-1/2 z-[10000] w-[600px] max-w-[calc(100%-2rem)] max-h-16"
-              : "fixed left-1/2 bottom-0 -translate-x-1/2 z-[10000] w-[600px] max-w-[calc(100%-2rem)] max-h-16"
-            : "z-[30]",
+              ? "fixed left-1/2 bottom-[calc(env(safe-area-inset-bottom)+16px)] -translate-x-1/2 z-[10000] w-[600px] max-w-[calc(100%-2rem)] max-h-16 rounded-2xl"
+              : "fixed left-1/2 bottom-0 -translate-x-1/2 z-[10000] w-[600px] max-w-[calc(100%-2rem)] max-h-16 rounded-[100px]"
+            : isMobile 
+              ? "rounded-2xl"
+              : "rounded-[100px]",
           profanity && "dark:border-red-700 border-red-600"
         )}
       >
@@ -485,6 +494,7 @@ export default function Dreamshaper({
             />
           ) : (
             <TextareaAutosize
+              ref={inputRef}
               minRows={1}
               maxRows={5}
               className="w-full shadow-none border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-sm outline-none bg-transparent h-14"
@@ -527,9 +537,11 @@ export default function Dreamshaper({
                 submitPrompt();
               }}
               className={cn(
-                "border-none rounded-[100px] md:rounded-xl w-36 items-center justify-center font-semibold text-xs",
+                "border-none w-36 items-center justify-center font-semibold text-xs bg-[#00EB88]",
                 updating && "bg-muted text-muted-foreground",
-                isMobile && "text-xs w-24"
+                isMobile 
+                  ? "text-xs w-24 rounded-2xl"
+                  : "rounded-[100px]"
               )}
             >
               {updating ? (
@@ -554,7 +566,7 @@ export default function Dreamshaper({
                   </div>
                 </span>
               ) : (
-                <span>Apply</span>
+                <span>Dream</span>
               )}
             </Button>
           </TooltipTrigger>
