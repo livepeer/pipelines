@@ -296,27 +296,27 @@ const Interstitial: React.FC<InterstitialProps> = ({
   }
 
   return (
-    <div className="fixed inset-0 bg-background/95 backdrop-blur-sm z-50 flex items-center justify-center">
+    <div className="fixed inset-0 bg-background/95 backdrop-blur-sm z-50 flex items-center justify-center p-2 sm:p-4 md:p-0">
       <AnimatePresence mode="wait" initial={false}>
         {currentScreen === "camera" ? (
           <Slide keyName="camera" slideVariants={slideVariants}>
-            <div className="bg-[#161616] border border-[#232323] rounded-xl p-8 max-w-2xl w-full mx-auto shadow-lg">
-              <div className="space-y-3 mb-8">
-                <h1 className="text-2xl font-semibold">Enable camera access to start creating</h1>
-                <p className="text-muted-foreground">
+            <div className="bg-[#161616] border border-[#232323] rounded-xl p-3 sm:p-4 md:p-8 max-w-2xl w-full mx-auto shadow-lg">
+              <div className="space-y-1 sm:space-y-2 md:space-y-3 mb-3 sm:mb-4 md:mb-8">
+                <h1 className="text-lg sm:text-xl md:text-2xl font-semibold">Enable camera access to start creating</h1>
+                <p className="text-xs sm:text-sm md:text-base text-muted-foreground">
                   Grant access to begin exploring pipelines
                 </p>
               </div>
-              <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-2 sm:gap-3 md:gap-4">
                 {steps.map((step, i) => (
                   <div 
                     key={i} 
-                    className="flex items-center gap-6 py-12 px-6 rounded-lg border border-[#2e2e2e] bg-[#1c1c1c] relative overflow-hidden"
+                    className="flex items-center gap-3 sm:gap-4 md:gap-6 py-4 sm:py-6 md:py-12 px-3 sm:px-4 md:px-6 rounded-lg border border-[#2e2e2e] bg-[#1c1c1c] relative overflow-hidden"
                   >
-                    <step.icon className="h-6 w-6 text-[#00eb88] shrink-0" />
+                    <step.icon className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 text-[#00eb88] shrink-0" />
                     <div className="flex flex-col relative z-10">
-                      <h3 className="text-lg font-bold">{step.title}</h3>
-                      <p className="text-sm text-muted-foreground">{step.description}</p>
+                      <h3 className="text-sm sm:text-base md:text-lg font-bold">{step.title}</h3>
+                      <p className="text-xs sm:text-sm text-muted-foreground">{step.description}</p>
                     </div>
                     <div className="hidden md:block">
                       <InterstitialDecor flip={i === 1} opacity={0.2} />
@@ -353,10 +353,10 @@ const Interstitial: React.FC<InterstitialProps> = ({
           </Slide>
         ) : (
           <Slide keyName="prompts" slideVariants={slideVariants} flipDirection>
-            <div className="bg-[#161616] border border-[#232323] rounded-xl p-8 max-w-2xl w-full mx-auto shadow-lg">
-              <div className="space-y-3 mb-8">
-                <h1 className="text-2xl font-semibold">Select Your First Prompt</h1>
-                <p className="text-muted-foreground">
+            <div className="bg-[#161616] border border-[#232323] rounded-xl p-3 sm:p-4 md:p-8 max-w-2xl w-full mx-auto shadow-lg">
+              <div className="space-y-1 sm:space-y-2 md:space-y-3 mb-3 sm:mb-4 md:mb-8">
+                <h1 className="text-lg sm:text-xl md:text-2xl font-semibold">Select Your First Prompt</h1>
+                <p className="text-xs sm:text-sm md:text-base text-muted-foreground">
                   Start tranforming your live video with AI. Select a preset prompt to continue.
                   <br /><br />
                   <span className="hidden md:inline">
@@ -365,13 +365,13 @@ const Interstitial: React.FC<InterstitialProps> = ({
                 </p>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-3 md:gap-4">
                 {examplePrompts.map((example, i) => (
                   <div
                     key={i}
                     onClick={() => setSelectedPrompt(example.prompt)}
                     className={`
-                      relative h-48 md:h-64 rounded-xl overflow-hidden cursor-pointer
+                      relative h-32 sm:h-36 md:h-64 rounded-xl overflow-hidden cursor-pointer
                       ${selectedPrompt === example.prompt ? 'ring-2 ring-[#00eb88]' : 'border border-[#2e2e2e]'}
                       ${selectedPrompt && selectedPrompt !== example.prompt ? 'opacity-25' : ''}
                     `}
@@ -381,8 +381,8 @@ const Interstitial: React.FC<InterstitialProps> = ({
                       backgroundPosition: 'center'
                     }}
                   >
-                    <div className="absolute bottom-0 w-full p-4 bg-black/50 backdrop-blur-md rounded-t-xl">
-                      <p className="text-white font-bold text-center">{example.prompt}</p>
+                    <div className="absolute bottom-0 w-full p-2 sm:p-3 md:p-4 bg-black/50 backdrop-blur-md rounded-t-xl">
+                      <p className="text-white font-bold text-xs sm:text-sm md:text-base text-center">{example.prompt}</p>
                     </div>
                   </div>
                 ))}
