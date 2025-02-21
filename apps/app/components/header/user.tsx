@@ -20,7 +20,6 @@ import { LogOut, UserIcon } from "lucide-react";
 import { useEffect } from "react";
 import { cn } from "@repo/design-system/lib/utils";
 import { useIsMobile } from "@repo/design-system/hooks/use-mobile";
-import { useCleanupEmailProvider } from "@/hooks/useCleanupEmailProvider";
 
 export default function User({ className }: { className?: string }) {
   const { ready, authenticated, user, login, logout } = usePrivy();
@@ -42,8 +41,6 @@ export default function User({ className }: { className?: string }) {
       checkUser(user);
     }
   }, [user]);
-
-  useCleanupEmailProvider({ isMobile, authenticated });
 
   return authenticated ? (
     <DropdownMenu>
