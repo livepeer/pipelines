@@ -283,37 +283,6 @@ export function BroadcastWithControls({
   );
 }
 
-const FlipCamera = () => {
-  const context = Broadcast.useBroadcastContext("CurrentSource", undefined);
-
-  const state = Broadcast.useStore(context.store, (state) => state);
-  const videoDevices = state.mediaDevices?.filter(
-    (device) => device.kind === "videoinput"
-  );
-
-  const currentCameraId = state.mediaDeviceIds.videoinput;
-  const frontCameraId = videoDevices?.[0]?.deviceId;
-  const backCameraId = videoDevices?.[1]?.deviceId;
-
-  if (!frontCameraId || !backCameraId) return null;
-
-  return (
-    <button
-      onClick={() =>
-        state.__controlsFunctions.requestMediaDeviceId(
-          (currentCameraId === frontCameraId
-            ? backCameraId
-            : frontCameraId) as any,
-          "videoinput"
-        )
-      }
-      className="w-6 h-6 hover:scale-110 transition flex-shrink-0"
-    >
-      <SwitchCamera className="w-full h-full text-white/50" />
-    </button>
-  );
-};
-
 const CameraSwitchButton = () => {
   const context = Broadcast.useBroadcastContext("CurrentSource", undefined);
   const state = Broadcast.useStore(context.store, (state) => state);
