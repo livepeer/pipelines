@@ -343,18 +343,32 @@ const CameraSwitchButton = () => {
         
         try {
           if (isMobile) {
-            console.log('Mobile: Attempting camera switch');
-            console.log('Current camera type:', videoDevices[currentIndex]?.label?.toLowerCase().includes('front') ? 'front' : 'back');
+            const currentTrack = state.mediaStream?.getVideoTracks()[0];
+            const isFrontCamera = currentTrack?.getSettings()?.facingMode === 'user' || 
+                                currentTrack?.label?.toLowerCase().includes('front');
             
-            // Stop current tracks
-            state.mediaStream?.getTracks().forEach(track => track.stop());
-            
-            // Get new stream with opposite camera
-            const newStream = await navigator.mediaDevices.getUserMedia({
-              video: { facingMode: { exact: videoDevices[currentIndex]?.label?.toLowerCase().includes('front') ? 'environment' : 'user' } }
+            console.log('Mobile: Current camera', {
+              label: currentTrack?.label,
+              settings: currentTrack?.getSettings(),
+              isFrontCamera
             });
             
-            console.log('New stream obtained, updating');
+            state.mediaStream?.getTracks().forEach(track => track.stop());
+            
+            const newStream = await navigator.mediaDevices.getUserMedia({
+              video: { 
+                facingMode: { 
+                  exact: isFrontCamera ? 'environment' : 'user' 
+                } 
+              }
+            });
+            
+            const newTrack = newStream.getVideoTracks()[0];
+            console.log('Mobile: New camera', {
+              label: newTrack?.label,
+              settings: newTrack?.getSettings()
+            });
+            
             state.__controlsFunctions.updateMediaStream(newStream);
           } else {
             console.log('Desktop: Current state', {
