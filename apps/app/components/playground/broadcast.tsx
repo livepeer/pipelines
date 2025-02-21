@@ -224,7 +224,7 @@ export function BroadcastWithControls({
                   </Broadcast.AudioEnabledTrigger>
                 </div>
                 <div className="flex sm:flex-1 md:flex-[1.5] justify-end items-center gap-2.5">
-                  {isMobile && <FlipCamera />}
+                  <CameraSwitchButton />
 
                   <Broadcast.ScreenshareTrigger className="w-6 h-6 hover:scale-110 transition flex-shrink-0">
                     <Broadcast.ScreenshareIndicator asChild>
@@ -327,25 +327,32 @@ const CameraSwitchButton = () => {
 
   return (
     <button 
-      onClick={(e) => {
+      onClick={async (e) => {
         e.preventDefault();
         e.stopPropagation();
+        
         const currentIndex = videoDevices?.findIndex(
           device => device.deviceId === currentCameraId
         ) ?? -1;
-        const nextIndex = (currentIndex + 1) % (videoDevices?.length ?? 1);
-        const nextCameraId = videoDevices?.[nextIndex]?.deviceId;
         
+        const nextIndex = currentIndex === -1 ? 0 : 
+          (currentIndex + 1) % (videoDevices?.length ?? 1);
+        const nextCameraId = videoDevices?.[nextIndex]?.deviceId;
+
         if (nextCameraId) {
+          state.__controlsFunctions.toggleEnabled();
+          
           state.__controlsFunctions.requestMediaDeviceId(
             nextCameraId as any,
             "videoinput"
           );
+          
+          state.__controlsFunctions.toggleEnabled();
         }
       }} 
-      className="p-1"
+      className="w-6 h-6 hover:scale-110 transition flex-shrink-0"
     >
-      <SwitchCamera className="w-5 h-5 text-white/50" />
+      <SwitchCamera className="w-full h-full text-white/50" />
     </button>
   );
 };
