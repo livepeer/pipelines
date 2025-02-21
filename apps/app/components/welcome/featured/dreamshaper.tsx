@@ -14,7 +14,7 @@ import {
 } from "framer-motion";
 import { useState, useEffect, useRef } from "react";
 import { BroadcastWithControls } from "@/components/playground/broadcast";
-import { Loader2, Maximize, Minimize } from "lucide-react";
+import { Loader2, Maximize, Minimize, Send } from "lucide-react";
 import { LPPLayer } from "@/components/playground/player";
 import { useIsMobile } from "@repo/design-system/hooks/use-mobile";
 import { usePrivy } from "@privy-io/react-auth";
@@ -537,36 +537,17 @@ export default function Dreamshaper({
                 submitPrompt();
               }}
               className={cn(
-                "border-none w-36 items-center justify-center font-semibold text-xs bg-[#00EB88]",
+                "border-none w-36 items-center justify-center font-semibold text-xs bg-[#00EB88] flex",
                 updating && "bg-muted text-muted-foreground",
                 isMobile 
-                  ? "text-xs w-24 rounded-xl"
-                  : "rounded-[100px]"
+                  ? "w-12 rounded-lg"
+                  : "w-12 rounded-lg"
               )}
             >
               {updating ? (
-                <span>
-                  Applying
-                  <div className="inline-flex ml-1">
-                    {[0, 1, 2].map((i) => (
-                      <motion.span
-                        key={i}
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{
-                          repeat: Infinity,
-                          duration: 0.6,
-                          delay: i * 0.2,
-                          repeatDelay: 0.6,
-                        }}
-                      >
-                        .
-                      </motion.span>
-                    ))}
-                  </div>
-                </span>
+                <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
-                <span>Dream</span>
+                <Send className="h-4 w-4 stroke-[3]" />
               )}
             </Button>
           </TooltipTrigger>
