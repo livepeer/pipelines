@@ -110,6 +110,8 @@ export default function Dreamshaper({
 
   const toastShownRef = useRef(false);
 
+  const [isRecording, setIsRecording] = useState(false);
+
   useEffect(() => {
     setIsCollapsed(isMobile);
   }, [isMobile]);
@@ -274,6 +276,65 @@ export default function Dreamshaper({
       document.removeEventListener("fullscreenchange", handleFullscreenChange);
   }, []);
 
+  const recordVideo = async () => {
+    try {
+      setIsRecording(true);
+      // Request screen capture
+      const screenStream = await navigator.mediaDevices.getDisplayMedia({
+        video: {
+          displaySurface: 'browser',
+          width: { ideal: 540 }, // 9:16 aspect ratio for mobile
+          height: { ideal: 960 },
+        }
+      });
+
+      // Set up recording
+      const recorder = new MediaRecorder(screenStream, {
+        mimeType: 'video/webm;codecs=vp9'
+      });
+
+      const chunks: BlobPart[] = [];
+      recorder.ondataavailable = (e) => chunks.push(e.data);
+      
+      recorder.onstop = async () => {
+        // Stop all tracks
+        screenStream.getTracks().forEach(track => track.stop());
+        setIsRecording(false);
+        
+        const blob = new Blob(chunks, { type: 'video/webm' });
+        const url = URL.createObjectURL(blob);
+        
+        // Create download link
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'daydream-recording.webm';
+        a.click();
+        
+        URL.revokeObjectURL(url);
+      };
+
+      // Start recording
+      recorder.start();
+      toast.success("Recording started - select the video area");
+
+      // Stop after 10 seconds
+      setTimeout(() => {
+        recorder.stop();
+        toast.success("Recording saved");
+      }, 10000);
+
+    } catch (error) {
+      console.error('Recording failed:', error);
+      toast.error("Recording failed");
+      setIsRecording(false);
+    }
+  };
+
+  // Add this className to the main content and broadcast control divs
+  const recordingClassName = cn(
+    isRecording && "outline outline-2 outline-primary animate-pulse"
+  );
+
   return (
     <div className="relative flex flex-col min-h-screen overflow-y-auto">
       {/* Header section */}
@@ -327,7 +388,8 @@ export default function Dreamshaper({
           ref={outputPlayerRef}
           className={cn(
             "w-full max-w-[calc(min(100%,calc((100vh-16rem)*16/9)))] mx-auto md:aspect-video aspect-square bg-sidebar rounded-2xl overflow-hidden relative",
-            isFullscreen && "w-full h-full max-w-none rounded-none"
+            isFullscreen && "w-full h-full max-w-none rounded-none",
+            recordingClassName
           )}
         >
           {/* Hide controls for mobile (TODO: when it's a react component,
@@ -388,7 +450,8 @@ export default function Dreamshaper({
                 <div
                   className={cn(
                     "absolute bottom-16 right-4 z-50 transition-all duration-300",
-                    isCollapsed ? "w-12 h-12" : "w-[25%] aspect-video"
+                    isCollapsed ? "w-12 h-12" : "w-[25%] aspect-video",
+                    recordingClassName
                   )}
                 >
                   <BroadcastWithControls
@@ -429,7 +492,8 @@ export default function Dreamshaper({
             <div
               className={cn(
                 "flex-shrink-0 transition-all duration-300 [&>div]:!pb-0 [&>div]:h-full",
-                isCollapsed ? "h-8" : "h-64"
+                isCollapsed ? "h-8" : "h-64",
+                recordingClassName
               )}
             >
               <BroadcastWithControls
@@ -440,6 +504,18 @@ export default function Dreamshaper({
               />
             </div>
           )}
+        </div>
+      )}
+
+      {isMobile && (
+        <div className="mx-4 mb-4">
+          <Button
+            onClick={recordVideo}
+            disabled={isRecording}
+            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
+          >
+            {isRecording ? "Recording..." : "Record 10s Video"}
+          </Button>
         </div>
       )}
 
