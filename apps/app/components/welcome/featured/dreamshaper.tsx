@@ -309,7 +309,7 @@ export default function Dreamshaper({
               </span>
             </div>
           </h1>
-          <p className="text-xs md:text-sm text-muted-foreground">
+          <p className="text-xs md:text-sm text-muted-foreground max-w-[280px] md:max-w-none">
             Transform your video in real-time with AI - and build your own
             workflow with ComfyUI
           </p>
@@ -452,7 +452,7 @@ export default function Dreamshaper({
               ? "fixed left-1/2 bottom-[calc(env(safe-area-inset-bottom)+16px)] -translate-x-1/2 z-[10000] w-[600px] max-w-[calc(100%-2rem)] max-h-16 rounded-2xl"
               : "fixed left-1/2 bottom-0 -translate-x-1/2 z-[10000] w-[600px] max-w-[calc(100%-2rem)] max-h-16 rounded-[100px]"
             : isMobile 
-              ? "rounded-2xl"
+              ? "rounded-2xl shadow-[4px_12px_16px_0px_#37373F80]"
               : "rounded-[100px]",
           profanity && "dark:border-red-700 border-red-600"
         )}
@@ -540,7 +540,7 @@ export default function Dreamshaper({
                 "border-none w-36 items-center justify-center font-semibold text-xs bg-[#00EB88]",
                 updating && "bg-muted text-muted-foreground",
                 isMobile 
-                  ? "text-xs w-24 rounded-2xl"
+                  ? "text-xs w-24 rounded-xl"
                   : "rounded-[100px]"
               )}
             >

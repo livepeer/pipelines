@@ -127,8 +127,9 @@ export function BroadcastWithControls({
               <div
                 className={cn(
                   "flex items-center justify-center border border-white/10 rounded-full",
-                  isMobile ? "px-4 py-2" : "p-2",
-                  "bg-transparent"
+                  isMobile 
+                    ? "px-4 py-2 bg-[linear-gradient(120.63deg,rgba(232,232,232,0.05)_31.4%,rgba(130,130,130,0.05)_85.12%)]" 
+                    : "p-2 bg-transparent",
                 )}
               >
                 <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse mr-1.5" />
