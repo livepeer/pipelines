@@ -19,7 +19,7 @@ import { UpdateOptions } from "./useDreamshaper";
 import Link from "next/link";
 import { Separator } from "@repo/design-system/components/ui/separator";
 import TextareaAutosize from "react-textarea-autosize";
-import { useProfanity } from "./useProfanity";
+import { MAX_PROMPT_LENGTH, useValidateInput } from "./useValidateInput";
 import { toast } from "sonner";
 import track from "@/lib/track";
 import Image from "next/image";
@@ -83,7 +83,7 @@ export default function Dreamshaper({
   const { currentPromptIndex, lastSubmittedPrompt, setLastSubmittedPrompt } =
     usePrompts();
   const [inputValue, setInputValue] = useState("");
-  const profanity = useProfanity(inputValue);
+  const { profanity, exceedsMaxLength } = useValidateInput(inputValue);
   const isMobile = useIsMobile();
   const outputPlayerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -317,7 +317,7 @@ export default function Dreamshaper({
       {/* Main content area */}
       <div
         className={cn(
-          "px-4 my-4 flex items-center justify-center md:mb-0 mb-5",
+          "px-4 my-4 flex items-center justify-center md:mb-0 md:my-2 mb-5",
           isFullscreen && "fixed inset-0 z-[9999] p-0 m-0"
         )}
       >
@@ -452,7 +452,8 @@ export default function Dreamshaper({
             : isMobile
               ? "rounded-2xl shadow-[4px_12px_16px_0px_#37373F40]"
               : "rounded-[100px]",
-          profanity && "dark:border-red-700 border-red-600"
+          (profanity || exceedsMaxLength) &&
+            "dark:border-red-700 border-red-600"
         )}
       >
         <div className="relative flex items-center flex-1">
@@ -484,7 +485,12 @@ export default function Dreamshaper({
                 });
               }}
               onKeyDown={(e) => {
-                if (!updating && !profanity && e.key === "Enter") {
+                if (
+                  !updating &&
+                  !profanity &&
+                  !exceedsMaxLength &&
+                  e.key === "Enter"
+                ) {
                   e.preventDefault();
                   submitPrompt();
                 }
@@ -495,13 +501,14 @@ export default function Dreamshaper({
               ref={inputRef}
               minRows={1}
               maxRows={5}
-              className="w-full shadow-none border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-sm outline-none bg-transparent h-14"
+              className="w-full shadow-none border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-sm outline-none bg-transparent h-14 break-all"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={(e) => {
                 if (
                   !updating &&
                   !profanity &&
+                  !exceedsMaxLength &&
                   e.key === "Enter" &&
                   !(e.metaKey || e.ctrlKey || e.shiftKey)
                 ) {
@@ -529,7 +536,9 @@ export default function Dreamshaper({
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
-              disabled={updating || !inputValue || profanity}
+              disabled={
+                updating || !inputValue || profanity || exceedsMaxLength
+              }
               onClick={(e) => {
                 e.preventDefault();
                 submitPrompt();
@@ -550,16 +559,22 @@ export default function Dreamshaper({
           <TooltipContent>Press Enter</TooltipContent>
         </Tooltip>
 
-        {profanity && (
+        {(profanity || exceedsMaxLength) && (
           <div
             className={cn(
               "absolute -top-10 left-0 mx-auto flex items-center justify-center gap-4 text-xs text-muted-foreground mt-4",
               isMobile && "-top-8 text-[9px] left-auto"
             )}
           >
-            <span className="text-red-600">
-              Please fix your prompt as it may contain harmful words
-            </span>
+            {exceedsMaxLength ? (
+              <span className="text-red-600">
+                {`Please fix your prompt as it exceeds the maximum length of ${MAX_PROMPT_LENGTH} characters`}
+              </span>
+            ) : (
+              <span className="text-red-600">
+                Please fix your prompt as it may contain harmful words
+              </span>
+            )}
           </div>
         )}
       </div>
