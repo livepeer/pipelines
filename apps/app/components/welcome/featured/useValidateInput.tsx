@@ -1,8 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
 import { PROFANITY_WORD_LIST } from "./utils";
 
-export const useProfanity = (prompt: string) => {
+export const MAX_PROMPT_LENGTH = 490;
+
+export const useValidateInput = (prompt: string) => {
   const [profanity, setProfanity] = useState(false);
+  const [exceedsMaxLength, setExceedsMaxLength] = useState(false);
 
   const checkProfanity = useCallback((prompt: string) => {
     const promptWords = prompt.toLowerCase().split(/\s+/);
@@ -12,9 +15,17 @@ export const useProfanity = (prompt: string) => {
     setProfanity(hasProfanity);
   }, []);
 
+  const checkMaxLength = useCallback((prompt: string) => {
+    setExceedsMaxLength(prompt.length > MAX_PROMPT_LENGTH);
+  }, []);
+
   useEffect(() => {
     checkProfanity(prompt);
+    checkMaxLength(prompt);
   }, [prompt]);
 
-  return profanity;
+  return {
+    profanity,
+    exceedsMaxLength,
+  };
 };
