@@ -452,7 +452,7 @@ export default function Dreamshaper({
               ? "fixed left-1/2 bottom-[calc(env(safe-area-inset-bottom)+16px)] -translate-x-1/2 z-[10000] w-[600px] max-w-[calc(100%-2rem)] max-h-16 rounded-2xl"
               : "fixed left-1/2 bottom-0 -translate-x-1/2 z-[10000] w-[600px] max-w-[calc(100%-2rem)] max-h-16 rounded-[100px]"
             : isMobile 
-              ? "rounded-2xl shadow-[4px_12px_16px_0px_#37373F80]"
+              ? "rounded-2xl shadow-[4px_12px_16px_0px_#37373F40]"
               : "rounded-[100px]",
           profanity && "dark:border-red-700 border-red-600"
         )}
