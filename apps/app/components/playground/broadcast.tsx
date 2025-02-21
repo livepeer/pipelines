@@ -316,8 +316,8 @@ const FlipCamera = () => {
 const CameraSwitchButton = () => {
   const context = Broadcast.useBroadcastContext("CurrentSource", undefined);
   const state = Broadcast.useStore(context.store, (state) => state);
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
   
-  // Run this exclusivel yafter the permissions are granted - since it's failing to fetch devices otherwise
   useEffect(() => {
     if (state.video) {
       state.__controlsFunctions.requestDeviceListInfo();
@@ -328,34 +328,56 @@ const CameraSwitchButton = () => {
     (device) => device.kind === "videoinput"
   );
 
-  if (!state.video || !videoDevices?.length) {
+  console.log('Device type:', isMobile ? 'mobile' : 'desktop');
+  console.log('Available video devices:', videoDevices);
+
+  if (!videoDevices?.length) {
+    console.log('No video devices found');
     return null;
   }
 
   const currentCameraId = state.mediaDeviceIds.videoinput;
-  const currentIndex = videoDevices.findIndex(
-    device => device.deviceId === currentCameraId
-  );
   
   return (
     <button 
-      onClick={(e) => {
+      onClick={async (e) => {
         e.preventDefault();
         e.stopPropagation();
-        console.log('Attempting to switch camera');
-        console.log('Current device index:', currentIndex);
         
-        const nextIndex = (currentIndex + 1) % videoDevices.length;
-        console.log('Switching to device index:', nextIndex);
+        console.log('Attempting camera switch');
+        console.log('Current camera ID:', currentCameraId);
         
-        const nextCameraId = videoDevices[nextIndex]?.deviceId;
-        console.log('Next camera ID:', nextCameraId);
-        
-        if (nextCameraId) {
-          state.__controlsFunctions.requestMediaDeviceId(
-            nextCameraId as any,
-            "videoinput"
+        if (isMobile) {
+          console.log('Using mobile camera switch method');
+          try {
+            const stream = await navigator.mediaDevices.getUserMedia({
+              video: {
+                facingMode: currentCameraId === videoDevices[0]?.deviceId ? 
+                  'environment' : 'user'
+              }
+            });
+            console.log('New stream obtained, updating media stream');
+            state.__controlsFunctions.updateMediaStream(stream);
+          } catch (err) {
+            console.error('Error switching camera:', err);
+          }
+        } else {
+          console.log('Using desktop camera switch method');
+          const currentIndex = videoDevices.findIndex(
+            device => device.deviceId === currentCameraId
           );
+          const nextIndex = (currentIndex + 1) % videoDevices.length;
+          const nextCameraId = videoDevices[nextIndex]?.deviceId;
+          
+          console.log('Switching from index', currentIndex, 'to', nextIndex);
+          console.log('Next camera ID:', nextCameraId);
+          
+          if (nextCameraId) {
+            state.__controlsFunctions.requestMediaDeviceId(
+              nextCameraId as any,
+              "videoinput"
+            );
+          }
         }
       }} 
       className="w-6 h-6 hover:scale-110 transition flex-shrink-0"
