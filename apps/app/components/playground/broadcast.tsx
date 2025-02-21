@@ -332,6 +332,7 @@ const CameraSwitchButton = () => {
   }
 
   const currentCameraId = state.mediaDeviceIds.videoinput;
+  const isFrontCamera = videoDevices.find(d => d.deviceId === currentCameraId)?.label?.toLowerCase().includes('front');
   
   return (
     <button 
@@ -341,31 +342,13 @@ const CameraSwitchButton = () => {
         
         try {
           console.log('Attempting camera switch');
-          console.log('Current camera ID:', currentCameraId);
+          console.log('Current camera type:', isFrontCamera ? 'front' : 'back');
           
-          const frontCamera = videoDevices.find(d => 
-            d.label?.toLowerCase().includes('front') ||
-            d.label?.toLowerCase().includes('user')
+          // Try using facingMode instead of deviceId
+          state.__controlsFunctions.requestMediaDeviceId(
+            { facingMode: isFrontCamera ? 'environment' : 'user' } as any,
+            "videoinput"
           );
-          const backCamera = videoDevices.find(d => 
-            (d.label?.toLowerCase().includes('back') || 
-            d.label?.toLowerCase().includes('environment')) ?? false
-          );
-          
-          console.log('Front camera:', frontCamera?.label);
-          console.log('Back camera:', backCamera?.label);
-          
-          const nextCamera = currentCameraId === frontCamera?.deviceId ? 
-            backCamera : frontCamera;
-            
-          console.log('Switching to:', nextCamera?.label);
-          
-          if (nextCamera?.deviceId) {
-            state.__controlsFunctions.requestMediaDeviceId(
-              nextCamera.deviceId as any,
-              "videoinput"
-            );
-          }
         } catch (err) {
           console.error('Error during camera switch:', err);
         }
