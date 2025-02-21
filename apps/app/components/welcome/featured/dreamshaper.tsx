@@ -6,12 +6,7 @@ import { examplePrompts } from "./interstitial";
 import { TooltipTrigger } from "@repo/design-system/components/ui/tooltip";
 import { TooltipContent } from "@repo/design-system/components/ui/tooltip";
 import { Tooltip } from "@repo/design-system/components/ui/tooltip";
-import {
-  motion,
-  AnimatePresence,
-  useMotionValue,
-  animate,
-} from "framer-motion";
+import { motion, AnimatePresence, useMotionValue } from "framer-motion";
 import { useState, useEffect, useRef } from "react";
 import { BroadcastWithControls } from "@/components/playground/broadcast";
 import { Loader2, Maximize, Minimize, Send } from "lucide-react";
@@ -127,7 +122,7 @@ export default function Dreamshaper({
 
   useEffect(() => {
     track("daydream_page_view", {
-      is_authenticated: authenticated
+      is_authenticated: authenticated,
     });
   }, []);
 
@@ -135,7 +130,7 @@ export default function Dreamshaper({
     if (live) {
       track("daydream_stream_started", {
         is_authenticated: authenticated,
-        playback_id: outputPlaybackId
+        playback_id: outputPlaybackId,
       });
     }
   }, [live]);
@@ -174,20 +169,23 @@ export default function Dreamshaper({
   }, [live]);
 
   useEffect(() => {
-    if ((capacityReached || (timeoutReached && !live)) && !toastShownRef.current) {
-      const reason = capacityReached 
-        ? "capacity_reached" 
+    if (
+      (capacityReached || (timeoutReached && !live)) &&
+      !toastShownRef.current
+    ) {
+      const reason = capacityReached
+        ? "capacity_reached"
         : "timeout_reached_not_live";
-      
+
       console.error("Capacity reached, reason:", reason, {
         capacityReached,
         timeoutReached,
-        live
+        live,
       });
 
       track("daydream_capacity_reached", {
         is_authenticated: authenticated,
-        reason
+        reason,
       });
       showCapacityToast();
       toastShownRef.current = true;
@@ -232,7 +230,7 @@ export default function Dreamshaper({
 
       track("daydream_prompt_submitted", {
         is_authenticated: authenticated,
-        prompt: inputValue
+        prompt: inputValue,
       });
 
       handleUpdate(inputValue, { silent: true });
@@ -446,12 +444,12 @@ export default function Dreamshaper({
       {/* Input prompt */}
       <div
         className={cn(
-          "relative mx-auto flex justify-center items-center gap-2 h-14 md:h-14 md:gap-2 mt-4 mb-2 dark:bg-[#1A1A1A] md:rounded-xl py-2.5 px-3 md:py-1.5 md:px-3 w-[calc(100%-2rem)] md:w-[calc(min(100%,800px))] border-2 border-muted-foreground/10",
+          "relative mx-auto flex justify-center items-center gap-2 h-14 md:h-auto md:min-h-14 md:gap-2 mt-4 mb-2 dark:bg-[#1A1A1A] md:rounded-xl py-2.5 px-3 md:py-1.5 md:px-3 w-[calc(100%-2rem)] md:w-[calc(min(100%,800px))] border-2 border-muted-foreground/10",
           isFullscreen
             ? isMobile
               ? "fixed left-1/2 bottom-[calc(env(safe-area-inset-bottom)+16px)] -translate-x-1/2 z-[10000] w-[600px] max-w-[calc(100%-2rem)] max-h-16 rounded-2xl"
               : "fixed left-1/2 bottom-0 -translate-x-1/2 z-[10000] w-[600px] max-w-[calc(100%-2rem)] max-h-16 rounded-[100px]"
-            : isMobile 
+            : isMobile
               ? "rounded-2xl shadow-[4px_12px_16px_0px_#37373F40]"
               : "rounded-[100px]",
           profanity && "dark:border-red-700 border-red-600"
@@ -539,9 +537,7 @@ export default function Dreamshaper({
               className={cn(
                 "border-none w-36 items-center justify-center font-semibold text-xs bg-[#00EB88] flex",
                 updating && "bg-muted text-muted-foreground",
-                isMobile 
-                  ? "w-12 rounded-lg"
-                  : "w-12 rounded-lg"
+                isMobile ? "w-12 rounded-lg" : "w-12 rounded-lg"
               )}
             >
               {updating ? (

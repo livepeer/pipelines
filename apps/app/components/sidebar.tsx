@@ -15,15 +15,7 @@ import {
   useSidebar,
 } from "@repo/design-system/components/ui/sidebar";
 import { useIsMobile } from "@repo/design-system/hooks/use-mobile";
-import {
-  DoorOpenIcon,
-  Map,
-  SendIcon,
-  SquareTerminalIcon,
-  VideoIcon,
-  BookIcon,
-  ListIcon,
-} from "lucide-react";
+import { BookIcon, LightbulbIcon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
@@ -157,7 +149,7 @@ export const GlobalSidebar = ({ children }: GlobalSidebarProperties) => {
         title: "Feedback",
         url: "https://livepeer.notion.site/15f0a348568781aab037c863d91b05e2",
         external: true,
-        icon: SendIcon,
+        icon: LightbulbIcon,
       },
     ],
   };
@@ -279,7 +271,10 @@ export const GlobalSidebar = ({ children }: GlobalSidebarProperties) => {
                     <SidebarMenuButton
                       className={cn(
                         "hover:bg-muted cursor-pointer",
-                        key === "footer" && isMobile && _sidebar.openMobile && "ml-4"
+                        key === "footer" &&
+                          isMobile &&
+                          _sidebar.openMobile &&
+                          "ml-4"
                       )}
                       onClick={() => {
                         if (item.external) {
