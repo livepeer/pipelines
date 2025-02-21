@@ -367,6 +367,12 @@ const CameraSwitchButton = () => {
               nextCameraId as any,
               "videoinput"
             );
+            
+            setTimeout(() => {
+              console.log('Forcing renegotiation...');
+              state.__controlsFunctions.requestForceRenegotiate();
+            }, 100);
+            
             console.log('Media device switch requested');
           } else {
             console.error('No next camera ID found');
