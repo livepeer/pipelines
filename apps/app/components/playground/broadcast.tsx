@@ -319,35 +319,27 @@ const CameraSwitchButton = () => {
   const videoDevices = state.mediaDevices?.filter(
     (device) => device.kind === "videoinput"
   );
-  const currentCameraId = state.mediaDeviceIds.videoinput;
 
-  if (!state.mediaDevices) {
+  console.log('All media devices:', state.mediaDevices);
+  console.log('Video devices:', videoDevices);
+  console.log('Current device IDs:', state.mediaDeviceIds);
+
+  if (!videoDevices?.length) {
+    console.log('No video devices found');
     return null;
   }
 
   return (
     <button 
-      onClick={async (e) => {
+      onClick={(e) => {
         e.preventDefault();
         e.stopPropagation();
-        
-        const currentIndex = videoDevices?.findIndex(
-          device => device.deviceId === currentCameraId
-        ) ?? -1;
-        
-        const nextIndex = currentIndex === -1 ? 0 : 
-          (currentIndex + 1) % (videoDevices?.length ?? 1);
-        const nextCameraId = videoDevices?.[nextIndex]?.deviceId;
-
-        if (nextCameraId) {
-          state.__controlsFunctions.toggleEnabled();
-          
-          state.__controlsFunctions.requestMediaDeviceId(
-            nextCameraId as any,
-            "videoinput"
-          );
-          
-          state.__controlsFunctions.toggleEnabled();
+        console.log('Attempting to rotate between', videoDevices.length, 'cameras');
+        if (videoDevices.length > 1) {
+          console.log('Rotating video source...');
+          state.__controlsFunctions.rotateVideoSource();
+        } else {
+          console.log('Not enough cameras to rotate');
         }
       }} 
       className="w-6 h-6 hover:scale-110 transition flex-shrink-0"
