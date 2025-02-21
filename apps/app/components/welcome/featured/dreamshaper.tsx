@@ -279,16 +279,19 @@ export default function Dreamshaper({
   const recordVideo = async () => {
     try {
       setIsRecording(true);
-      // Request screen capture
       const screenStream = await navigator.mediaDevices.getDisplayMedia({
         video: {
-          displaySurface: 'browser',
-          width: { ideal: 540 }, // 9:16 aspect ratio for mobile
+          displaySurface: 'window',
+          width: { ideal: 540 },
           height: { ideal: 960 },
+          frameRate: { ideal: 30 },
+        },
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
         }
       });
 
-      // Set up recording
       const recorder = new MediaRecorder(screenStream, {
         mimeType: 'video/webm;codecs=vp9'
       });
@@ -297,14 +300,12 @@ export default function Dreamshaper({
       recorder.ondataavailable = (e) => chunks.push(e.data);
       
       recorder.onstop = async () => {
-        // Stop all tracks
         screenStream.getTracks().forEach(track => track.stop());
         setIsRecording(false);
         
         const blob = new Blob(chunks, { type: 'video/webm' });
         const url = URL.createObjectURL(blob);
         
-        // Create download link
         const a = document.createElement('a');
         a.href = url;
         a.download = 'daydream-recording.webm';
@@ -313,11 +314,9 @@ export default function Dreamshaper({
         URL.revokeObjectURL(url);
       };
 
-      // Start recording
       recorder.start();
       toast.success("Recording started - select the video area");
 
-      // Stop after 10 seconds
       setTimeout(() => {
         recorder.stop();
         toast.success("Recording saved");
@@ -330,7 +329,6 @@ export default function Dreamshaper({
     }
   };
 
-  // Add this className to the main content and broadcast control divs
   const recordingClassName = cn(
     isRecording && "outline outline-2 outline-primary animate-pulse"
   );
