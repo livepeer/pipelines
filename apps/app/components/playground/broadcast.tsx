@@ -316,30 +316,46 @@ const FlipCamera = () => {
 const CameraSwitchButton = () => {
   const context = Broadcast.useBroadcastContext("CurrentSource", undefined);
   const state = Broadcast.useStore(context.store, (state) => state);
+  
+  // Run this exclusivel yafter the permissions are granted - since it's failing to fetch devices otherwise
+  useEffect(() => {
+    if (state.video) {
+      state.__controlsFunctions.requestDeviceListInfo();
+    }
+  }, [state.video]);
+
   const videoDevices = state.mediaDevices?.filter(
     (device) => device.kind === "videoinput"
   );
 
-  console.log('All media devices:', state.mediaDevices);
-  console.log('Video devices:', videoDevices);
-  console.log('Current device IDs:', state.mediaDeviceIds);
-
-  if (!videoDevices?.length) {
-    console.log('No video devices found');
+  if (!state.video || !videoDevices?.length) {
     return null;
   }
 
+  const currentCameraId = state.mediaDeviceIds.videoinput;
+  const currentIndex = videoDevices.findIndex(
+    device => device.deviceId === currentCameraId
+  );
+  
   return (
     <button 
       onClick={(e) => {
         e.preventDefault();
         e.stopPropagation();
-        console.log('Attempting to rotate between', videoDevices.length, 'cameras');
-        if (videoDevices.length > 1) {
-          console.log('Rotating video source...');
-          state.__controlsFunctions.rotateVideoSource();
-        } else {
-          console.log('Not enough cameras to rotate');
+        console.log('Attempting to switch camera');
+        console.log('Current device index:', currentIndex);
+        
+        const nextIndex = (currentIndex + 1) % videoDevices.length;
+        console.log('Switching to device index:', nextIndex);
+        
+        const nextCameraId = videoDevices[nextIndex]?.deviceId;
+        console.log('Next camera ID:', nextCameraId);
+        
+        if (nextCameraId) {
+          state.__controlsFunctions.requestMediaDeviceId(
+            nextCameraId as any,
+            "videoinput"
+          );
         }
       }} 
       className="w-6 h-6 hover:scale-110 transition flex-shrink-0"
