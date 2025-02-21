@@ -277,7 +277,7 @@ export default function Dreamshaper({
       {/* Header section */}
       <div
         className={cn(
-          "flex justify-center items-center p-3 mt-4 md:mt-0",
+          "flex justify-center items-center p-3 mt-4",
           isFullscreen && "hidden"
         )}
       >
@@ -444,7 +444,7 @@ export default function Dreamshaper({
       {/* Input prompt */}
       <div
         className={cn(
-          "relative mx-auto flex justify-center items-center gap-2 h-14 md:h-14 md:gap-2 mt-4 mb-2 dark:bg-[#1A1A1A] md:rounded-xl py-2.5 px-3 md:py-1.5 md:px-3 w-[calc(100%-2rem)] md:w-[calc(min(100%,800px))] border-2 border-muted-foreground/10",
+          "relative mx-auto flex justify-center items-center gap-2 h-14 md:h-auto md:min-h-14 md:gap-2 mt-4 mb-2 dark:bg-[#1A1A1A] md:rounded-xl py-2.5 px-3 md:py-1.5 md:px-3 w-[calc(100%-2rem)] md:w-[calc(min(100%,800px))] border-2 border-muted-foreground/10",
           isFullscreen
             ? isMobile
               ? "fixed left-1/2 bottom-[calc(env(safe-area-inset-bottom)+16px)] -translate-x-1/2 z-[10000] w-[600px] max-w-[calc(100%-2rem)] max-h-16 rounded-2xl"
