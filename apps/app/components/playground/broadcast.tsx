@@ -343,51 +343,34 @@ const CameraSwitchButton = () => {
         
         try {
           if (isMobile) {
-            console.log('Mobile: Attempting camera switch via track replacement');
+            console.log('Mobile: Attempting camera switch');
             console.log('Current camera type:', videoDevices[currentIndex]?.label?.toLowerCase().includes('front') ? 'front' : 'back');
             
+            // Stop current tracks
+            state.mediaStream?.getTracks().forEach(track => track.stop());
+            
+            // Get new stream with opposite camera
             const newStream = await navigator.mediaDevices.getUserMedia({
               video: { facingMode: { exact: videoDevices[currentIndex]?.label?.toLowerCase().includes('front') ? 'environment' : 'user' } }
             });
             
-            const newTrack = newStream.getVideoTracks()[0];
-            const oldTrack = state.mediaStream?.getVideoTracks()[0];
-            
-            console.log('New track:', newTrack?.label);
-            console.log('Old track:', oldTrack?.label);
-            
-            if (oldTrack && newTrack) {
-              oldTrack.onended = () => {
-                console.log('Old track ended');
-                state.__controlsFunctions.updateMediaStream(newStream);
-              };
-              oldTrack.stop();
-            }
+            console.log('New stream obtained, updating');
+            state.__controlsFunctions.updateMediaStream(newStream);
           } else {
             console.log('Desktop: Current state', {
               devices: videoDevices.map(d => ({ id: d.deviceId, label: d.label })),
               currentId: currentCameraId,
               currentIndex,
-              mediaDeviceIds: state.mediaDeviceIds,
             });
-            
-            state.__controlsFunctions.requestDeviceListInfo();
             
             const nextIndex = currentIndex === -1 ? 0 : (currentIndex + 1) % videoDevices.length;
             const nextCameraId = videoDevices[nextIndex]?.deviceId;
-            
-            console.log('Desktop: Switching camera', {
-              nextIndex,
-              nextCameraId,
-              nextLabel: videoDevices[nextIndex]?.label
-            });
             
             if (nextCameraId) {
               state.__controlsFunctions.requestMediaDeviceId(
                 nextCameraId as any,
                 "videoinput"
               );
-              console.log('Desktop: Switch requested');
             }
           }
         } catch (err) {
