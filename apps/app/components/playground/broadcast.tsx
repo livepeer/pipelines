@@ -316,6 +316,7 @@ const FlipCamera = () => {
 const CameraSwitchButton = () => {
   const context = Broadcast.useBroadcastContext("CurrentSource", undefined);
   const state = Broadcast.useStore(context.store, (state) => state);
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
   
   useEffect(() => {
     if (state.video) {
@@ -332,23 +333,63 @@ const CameraSwitchButton = () => {
   }
 
   const currentCameraId = state.mediaDeviceIds.videoinput;
-  const isFrontCamera = videoDevices.find(d => d.deviceId === currentCameraId)?.label?.toLowerCase().includes('front');
+  const currentIndex = videoDevices.findIndex(d => d.deviceId === currentCameraId);
   
   return (
     <button 
-      onClick={(e) => {
+      onClick={async (e) => {
         e.preventDefault();
         e.stopPropagation();
         
         try {
-          console.log('Attempting camera switch');
-          console.log('Current camera type:', isFrontCamera ? 'front' : 'back');
-          
-          // Try using facingMode instead of deviceId
-          state.__controlsFunctions.requestMediaDeviceId(
-            { facingMode: isFrontCamera ? 'environment' : 'user' } as any,
-            "videoinput"
-          );
+          if (isMobile) {
+            console.log('Mobile: Attempting camera switch via track replacement');
+            console.log('Current camera type:', videoDevices[currentIndex]?.label?.toLowerCase().includes('front') ? 'front' : 'back');
+            
+            const newStream = await navigator.mediaDevices.getUserMedia({
+              video: { facingMode: { exact: videoDevices[currentIndex]?.label?.toLowerCase().includes('front') ? 'environment' : 'user' } }
+            });
+            
+            const newTrack = newStream.getVideoTracks()[0];
+            const oldTrack = state.mediaStream?.getVideoTracks()[0];
+            
+            console.log('New track:', newTrack?.label);
+            console.log('Old track:', oldTrack?.label);
+            
+            if (oldTrack && newTrack) {
+              oldTrack.onended = () => {
+                console.log('Old track ended');
+                state.__controlsFunctions.updateMediaStream(newStream);
+              };
+              oldTrack.stop();
+            }
+          } else {
+            console.log('Desktop: Current state', {
+              devices: videoDevices.map(d => ({ id: d.deviceId, label: d.label })),
+              currentId: currentCameraId,
+              currentIndex,
+              mediaDeviceIds: state.mediaDeviceIds,
+            });
+            
+            state.__controlsFunctions.requestDeviceListInfo();
+            
+            const nextIndex = currentIndex === -1 ? 0 : (currentIndex + 1) % videoDevices.length;
+            const nextCameraId = videoDevices[nextIndex]?.deviceId;
+            
+            console.log('Desktop: Switching camera', {
+              nextIndex,
+              nextCameraId,
+              nextLabel: videoDevices[nextIndex]?.label
+            });
+            
+            if (nextCameraId) {
+              state.__controlsFunctions.requestMediaDeviceId(
+                nextCameraId as any,
+                "videoinput"
+              );
+              console.log('Desktop: Switch requested');
+            }
+          }
         } catch (err) {
           console.error('Error during camera switch:', err);
         }
