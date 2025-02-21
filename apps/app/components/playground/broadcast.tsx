@@ -347,11 +347,6 @@ const CameraSwitchButton = () => {
             const isFrontCamera = currentTrack?.getSettings()?.facingMode === 'user' || 
                                 currentTrack?.label?.toLowerCase().includes('front');
             
-            console.log('Mobile: Current camera', {
-              label: currentTrack?.label,
-              settings: currentTrack?.getSettings(),
-              isFrontCamera
-            });
             
             state.mediaStream?.getTracks().forEach(track => track.stop());
             
@@ -364,18 +359,9 @@ const CameraSwitchButton = () => {
             });
             
             const newTrack = newStream.getVideoTracks()[0];
-            console.log('Mobile: New camera', {
-              label: newTrack?.label,
-              settings: newTrack?.getSettings()
-            });
             
             state.__controlsFunctions.updateMediaStream(newStream);
           } else {
-            console.log('Desktop: Current state', {
-              devices: videoDevices.map(d => ({ id: d.deviceId, label: d.label })),
-              currentId: currentCameraId,
-              currentIndex,
-            });
             
             const nextIndex = currentIndex === -1 ? 0 : (currentIndex + 1) % videoDevices.length;
             const nextCameraId = videoDevices[nextIndex]?.deviceId;
