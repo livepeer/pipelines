@@ -320,6 +320,7 @@ const CameraSwitchButton = () => {
   
   useEffect(() => {
     if (state.video) {
+      console.log('Video enabled, requesting device list');
       state.__controlsFunctions.requestDeviceListInfo();
     }
   }, [state.video]);
@@ -330,6 +331,7 @@ const CameraSwitchButton = () => {
 
   console.log('Device type:', isMobile ? 'mobile' : 'desktop');
   console.log('Available video devices:', videoDevices);
+  console.log('Current media device IDs:', state.mediaDeviceIds);
 
   if (!videoDevices?.length) {
     console.log('No video devices found');
@@ -340,44 +342,42 @@ const CameraSwitchButton = () => {
   
   return (
     <button 
-      onClick={async (e) => {
+      onClick={(e) => {
         e.preventDefault();
         e.stopPropagation();
         
-        console.log('Attempting camera switch');
-        console.log('Current camera ID:', currentCameraId);
-        
-        if (isMobile) {
-          console.log('Using mobile camera switch method');
-          try {
-            const stream = await navigator.mediaDevices.getUserMedia({
-              video: {
-                facingMode: currentCameraId === videoDevices[0]?.deviceId ? 
-                  'environment' : 'user'
-              }
-            });
-            console.log('New stream obtained, updating media stream');
-            state.__controlsFunctions.updateMediaStream(stream);
-          } catch (err) {
-            console.error('Error switching camera:', err);
-          }
-        } else {
-          console.log('Using desktop camera switch method');
+        try {
+          console.log('Attempting camera switch');
+          console.log('Current camera ID:', currentCameraId);
+          
           const currentIndex = videoDevices.findIndex(
             device => device.deviceId === currentCameraId
           );
-          const nextIndex = (currentIndex + 1) % videoDevices.length;
-          const nextCameraId = videoDevices[nextIndex]?.deviceId;
+          console.log('Current device index:', currentIndex);
           
-          console.log('Switching from index', currentIndex, 'to', nextIndex);
+          const nextIndex = (currentIndex + 1) % videoDevices.length;
+          console.log('Switching to device index:', nextIndex);
+          
+          const nextCameraId = videoDevices[nextIndex]?.deviceId;
           console.log('Next camera ID:', nextCameraId);
           
           if (nextCameraId) {
+            console.log('Requesting media device switch...');
             state.__controlsFunctions.requestMediaDeviceId(
               nextCameraId as any,
               "videoinput"
             );
+            console.log('Media device switch requested');
+          } else {
+            console.error('No next camera ID found');
           }
+        } catch (err) {
+          console.error('Error during camera switch:', err);
+          console.error('Error details:', {
+            currentId: currentCameraId,
+            availableDevices: videoDevices,
+            state: state
+          });
         }
       }} 
       className="w-6 h-6 hover:scale-110 transition flex-shrink-0"
