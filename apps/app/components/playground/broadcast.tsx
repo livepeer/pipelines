@@ -127,8 +127,9 @@ export function BroadcastWithControls({
               <div
                 className={cn(
                   "flex items-center justify-center border border-white/10 rounded-full",
-                  isMobile ? "px-4 py-2" : "p-2",
-                  "bg-transparent"
+                  isMobile 
+                    ? "px-4 py-2 bg-[linear-gradient(120.63deg,rgba(232,232,232,0.05)_31.4%,rgba(130,130,130,0.05)_85.12%)]" 
+                    : "p-2 bg-transparent",
                 )}
               >
                 <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse mr-1.5" />
@@ -140,7 +141,22 @@ export function BroadcastWithControls({
                 </span>
               )}
             </div>
-            {isMobile && <Maximize className="w-4 h-4 text-white/50" />}
+            {isMobile && (
+              <div className="flex items-center gap-3">
+                <CameraSwitchButton />
+                <div className="w-[1px] h-4 bg-white/10" />
+                <button 
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onCollapse?.(!collapsed) ?? setLocalCollapsed(!collapsed);
+                  }}
+                  className="p-1"
+                >
+                  <Maximize className="w-5 h-5 text-white/50" />
+                </button>
+              </div>
+            )}
           </button>
         ) : (
           <>
@@ -209,7 +225,7 @@ export function BroadcastWithControls({
                   </Broadcast.AudioEnabledTrigger>
                 </div>
                 <div className="flex sm:flex-1 md:flex-[1.5] justify-end items-center gap-2.5">
-                  {isMobile && <FlipCamera />}
+                  <CameraSwitchButton />
 
                   <Broadcast.ScreenshareTrigger className="w-6 h-6 hover:scale-110 transition flex-shrink-0">
                     <Broadcast.ScreenshareIndicator asChild>
@@ -267,30 +283,70 @@ export function BroadcastWithControls({
   );
 }
 
-const FlipCamera = () => {
+const CameraSwitchButton = () => {
   const context = Broadcast.useBroadcastContext("CurrentSource", undefined);
-
   const state = Broadcast.useStore(context.store, (state) => state);
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  
+  useEffect(() => {
+    if (state.video) {
+      state.__controlsFunctions.requestDeviceListInfo();
+    }
+  }, [state.video]);
+
   const videoDevices = state.mediaDevices?.filter(
     (device) => device.kind === "videoinput"
   );
 
+  if (!videoDevices?.length) {
+    return null;
+  }
+
   const currentCameraId = state.mediaDeviceIds.videoinput;
-  const frontCameraId = videoDevices?.[0]?.deviceId;
-  const backCameraId = videoDevices?.[1]?.deviceId;
-
-  if (!frontCameraId || !backCameraId) return null;
-
+  const currentIndex = videoDevices.findIndex(d => d.deviceId === currentCameraId);
+  
   return (
-    <button
-      onClick={() =>
-        state.__controlsFunctions.requestMediaDeviceId(
-          (currentCameraId === frontCameraId
-            ? backCameraId
-            : frontCameraId) as any,
-          "videoinput"
-        )
-      }
+    <button 
+      onClick={async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        try {
+          if (isMobile) {
+            const currentTrack = state.mediaStream?.getVideoTracks()[0];
+            const isFrontCamera = currentTrack?.getSettings()?.facingMode === 'user' || 
+                                currentTrack?.label?.toLowerCase().includes('front');
+            
+            
+            state.mediaStream?.getTracks().forEach(track => track.stop());
+            
+            const newStream = await navigator.mediaDevices.getUserMedia({
+              video: { 
+                facingMode: { 
+                  exact: isFrontCamera ? 'environment' : 'user' 
+                } 
+              }
+            });
+            
+            const newTrack = newStream.getVideoTracks()[0];
+            
+            state.__controlsFunctions.updateMediaStream(newStream);
+          } else {
+            
+            const nextIndex = currentIndex === -1 ? 0 : (currentIndex + 1) % videoDevices.length;
+            const nextCameraId = videoDevices[nextIndex]?.deviceId;
+            
+            if (nextCameraId) {
+              state.__controlsFunctions.requestMediaDeviceId(
+                nextCameraId as any,
+                "videoinput"
+              );
+            }
+          }
+        } catch (err) {
+          console.error('Error during camera switch:', err);
+        }
+      }} 
       className="w-6 h-6 hover:scale-110 transition flex-shrink-0"
     >
       <SwitchCamera className="w-full h-full text-white/50" />
