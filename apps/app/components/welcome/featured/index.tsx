@@ -36,25 +36,25 @@ export const pipelines = [
     docs: "https://docs.livepeer.org/api-reference/generate/video-to-video",
     isComfyUI: false,
     isFeatured: true,
-  }
+  },
 ];
 
 const dummyPlaybackIds = [
   {
     playbackId: "d671awpd12894xbl",
     socialHandle: "@cult_leader_en",
-    socialUrl: "https://x.com/cult_leader_en"
+    socialUrl: "https://x.com/cult_leader_en",
   },
   {
     playbackId: "f7e3yqwbx82y3hrq",
     socialHandle: "@Anonymous",
-    socialUrl: null
-  },  
+    socialUrl: null,
+  },
   {
     playbackId: "4d38e0sni4esvlkd",
     socialHandle: "@gioele_eth",
-    socialUrl: "https://x.com/gioele_eth"
-  }
+    socialUrl: "https://x.com/gioele_eth",
+  },
 ];
 
 export default function Winners() {
@@ -79,7 +79,7 @@ export default function Winners() {
         </div>
       </div>
       <div className="grid md:grid-cols-3 gap-6 mt-3">
-        {dummyPlaybackIds.map((item) => (
+        {dummyPlaybackIds.map(item => (
           <div className="aspect-video relative">
             <iframe
               src={`https://lvpr.tv/?v=${item.playbackId}`}

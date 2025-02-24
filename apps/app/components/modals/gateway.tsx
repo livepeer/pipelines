@@ -63,7 +63,10 @@ export default function Gateway() {
             Gateway Provider
           </AlertDialogTitle>
           <AlertDialogDescription>
-            Livepeer Pipelines are run on the distributed Livepeer Network. Gateway providers simplify the process of using the network. In a future release, you will be able to change your gateway provider at any time. 
+            Livepeer Pipelines are run on the distributed Livepeer Network.
+            Gateway providers simplify the process of using the network. In a
+            future release, you will be able to change your gateway provider at
+            any time.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <Select defaultValue="livepeer">
@@ -148,7 +151,7 @@ const _CreditSelection = ({
                 type="number"
                 placeholder="Enter amount"
                 value={customValue}
-                onChange={(e) => {
+                onChange={e => {
                   setCustomValue(e.target.value);
                   onSelect(Number(e.target.value));
                 }}

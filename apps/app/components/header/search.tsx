@@ -13,52 +13,66 @@ import React, { useState, useEffect } from "react";
 import track from "@/lib/track";
 import { fetchPipelines, fetchFeaturedPipelines } from "./fetchPipelines";
 import { LoaderCircleIcon } from "lucide-react";
-import {Badge} from "@repo/design-system/components/ui/badge";
+import { Badge } from "@repo/design-system/components/ui/badge";
 
-
-const PipelineCommand = ({ pipeline, onSelect, uniqueModifier = "unique" }: { pipeline: any; onSelect: (value: string) => void; uniqueModifier?: string }) => {
+const PipelineCommand = ({
+  pipeline,
+  onSelect,
+  uniqueModifier = "unique",
+}: {
+  pipeline: any;
+  onSelect: (value: string) => void;
+  uniqueModifier?: string;
+}) => {
   return (
-      <CommandItem value={`${pipeline.name}-${pipeline.id}-${uniqueModifier}`}
-                   key={`${pipeline.id}-${uniqueModifier}`}
-                   onSelect={() => onSelect(pipeline)}
-      >
-        <div className="flex items-center gap-2">
-          <div className="h-8 w-8 flex-shrink-0">
-            {pipeline.cover_image ? (
-                <img
-                    className="h-8 w-8 object-cover rounded"
-                    src={pipeline.cover_image}
-                    alt="pipeline"
-                    onError={(e) => {
-                      e.currentTarget.src = "";
-                      e.currentTarget.classList.add("hidden");
-                    }}
-                />
-            ) : (
-                <div className="h-full w-full bg-gray-200 rounded" aria-hidden="true"></div>
-            )}
-          </div>
-          <div className="flex justify-between items-center w-full">
-            <span>{pipeline.name}</span>
-            {pipeline.type == "comfyui" && (
-                <Badge className="bg-green-500/90 text-white font-medium text-xs ml-4">
-                  Comfy UI
-                </Badge>
-            )}
-          </div>
+    <CommandItem
+      value={`${pipeline.name}-${pipeline.id}-${uniqueModifier}`}
+      key={`${pipeline.id}-${uniqueModifier}`}
+      onSelect={() => onSelect(pipeline)}
+    >
+      <div className="flex items-center gap-2">
+        <div className="h-8 w-8 flex-shrink-0">
+          {pipeline.cover_image ? (
+            <img
+              className="h-8 w-8 object-cover rounded"
+              src={pipeline.cover_image}
+              alt="pipeline"
+              onError={e => {
+                e.currentTarget.src = "";
+                e.currentTarget.classList.add("hidden");
+              }}
+            />
+          ) : (
+            <div
+              className="h-full w-full bg-gray-200 rounded"
+              aria-hidden="true"
+            ></div>
+          )}
         </div>
-      </CommandItem>
+        <div className="flex justify-between items-center w-full">
+          <span>{pipeline.name}</span>
+          {pipeline.type == "comfyui" && (
+            <Badge className="bg-green-500/90 text-white font-medium text-xs ml-4">
+              Comfy UI
+            </Badge>
+          )}
+        </div>
+      </div>
+    </CommandItem>
   );
 };
 
 export default function Search({
-                                 pipeline, onPipelineSelect
-                               }: {
+  pipeline,
+  onPipelineSelect,
+}: {
   pipeline?: any;
-  onPipelineSelect?: (pipeline: any) => void
+  onPipelineSelect?: (pipeline: any) => void;
 }) {
   const [open, setOpen] = useState(false);
-  const [selectedPipeline, setSelectedPipeline] = useState<any | null>(pipeline);
+  const [selectedPipeline, setSelectedPipeline] = useState<any | null>(
+    pipeline,
+  );
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<any>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -113,51 +127,59 @@ export default function Search({
   }, [query]);
 
   return (
-      <div>
-        <Input
-            placeholder="Search Pipelines"
-            value={selectedPipeline?.name || ""}
-            readOnly={true}
-            onClick={() => {
-              track("search_clicked");
-              setOpen(true);
-            }}
+    <div>
+      <Input
+        placeholder="Search Pipelines"
+        value={selectedPipeline?.name || ""}
+        readOnly={true}
+        onClick={() => {
+          track("search_clicked");
+          setOpen(true);
+        }}
+      />
+      <CommandDialog open={open} onOpenChange={setOpen}>
+        <CommandInput
+          value={query}
+          onValueChange={value => setQuery(value)}
+          placeholder="Search Pipelines..."
         />
-        <CommandDialog open={open} onOpenChange={setOpen}>
-          <CommandInput
-              value={query}
-              onValueChange={(value) => setQuery(value)}
-              placeholder="Search Pipelines..."
-          />
-          <CommandList>
-            {isSearching ? (
-              <CommandEmpty>
-                <div className="flex justify-center items-center py-4">
-                  <LoaderCircleIcon className="w-8 h-8 animate-spin" />
-                </div>
-              </CommandEmpty>
-            ) : query.length === 0 ? (
-                <CommandGroup heading="Featured Pipelines">
-                  {featuredPipelines.map((pipeline: any) => (
-                      <PipelineCommand key={`${pipeline.id}-command`} pipeline={pipeline} uniqueModifier={"featured"}
-                                       onSelect={() => selectPipeline(pipeline)}/>
-                  ))}
-                </CommandGroup>
-            ) : query.length < 3 ? (
-                <CommandEmpty>Enter at least three characters to begin searching.</CommandEmpty>
-            ) : results.length === 0 ? (
-                <CommandEmpty>No results found.</CommandEmpty>
-            ) : (
-                <CommandGroup heading="Search Results">
-                  {results.map((pipeline: any) => (
-                      <PipelineCommand key={`${pipeline.id}-command`} pipeline={pipeline}
-                                       onSelect={() => selectPipeline(pipeline)}/>
-                  ))}
-                </CommandGroup>
-            )}
-          </CommandList>
-
-        </CommandDialog>
-      </div>
+        <CommandList>
+          {isSearching ? (
+            <CommandEmpty>
+              <div className="flex justify-center items-center py-4">
+                <LoaderCircleIcon className="w-8 h-8 animate-spin" />
+              </div>
+            </CommandEmpty>
+          ) : query.length === 0 ? (
+            <CommandGroup heading="Featured Pipelines">
+              {featuredPipelines.map((pipeline: any) => (
+                <PipelineCommand
+                  key={`${pipeline.id}-command`}
+                  pipeline={pipeline}
+                  uniqueModifier={"featured"}
+                  onSelect={() => selectPipeline(pipeline)}
+                />
+              ))}
+            </CommandGroup>
+          ) : query.length < 3 ? (
+            <CommandEmpty>
+              Enter at least three characters to begin searching.
+            </CommandEmpty>
+          ) : results.length === 0 ? (
+            <CommandEmpty>No results found.</CommandEmpty>
+          ) : (
+            <CommandGroup heading="Search Results">
+              {results.map((pipeline: any) => (
+                <PipelineCommand
+                  key={`${pipeline.id}-command`}
+                  pipeline={pipeline}
+                  onSelect={() => selectPipeline(pipeline)}
+                />
+              ))}
+            </CommandGroup>
+          )}
+        </CommandList>
+      </CommandDialog>
+    </div>
   );
 }

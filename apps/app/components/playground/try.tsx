@@ -50,12 +50,12 @@ type BaseParam = {
 
 type TextWidget = {
   widget: "text";
-  widgetConfig?: {}; 
+  widgetConfig?: {};
 };
 
 type TextAreaWidget = {
   widget: "textarea";
-  widgetConfig?: {}; 
+  widgetConfig?: {};
 };
 
 type NumberWidget = {
@@ -89,7 +89,14 @@ type SwitchWidget = {
 };
 
 export type PrioritizedParam = BaseParam &
-  (TextWidget | TextAreaWidget | NumberWidget | SliderWidget | SelectWidget | SwitchWidget);
+  (
+    | TextWidget
+    | TextAreaWidget
+    | NumberWidget
+    | SliderWidget
+    | SelectWidget
+    | SwitchWidget
+  );
 
 export default function Try({
   setStreamInfo,
@@ -125,7 +132,12 @@ export default function Try({
 
   const isAdmin = user?.email?.address?.endsWith("@livepeer.org");
 
-  const { status, fullResponse, loading: statusLoading, error: statusError } = useStreamStatus(streamId || "", false);
+  const {
+    status,
+    fullResponse,
+    loading: statusLoading,
+    error: statusError,
+  } = useStreamStatus(streamId || "", false);
 
   const [errorHistory, setErrorHistory] = useState<
     { source: string; error: string; time: number }[]
@@ -134,7 +146,10 @@ export default function Try({
   useEffect(() => {
     if (fullResponse) {
       const newErrors: { source: string; error: string; time: number }[] = [];
-      if (fullResponse.inference_status && fullResponse.inference_status.last_error) {
+      if (
+        fullResponse.inference_status &&
+        fullResponse.inference_status.last_error
+      ) {
         newErrors.push({
           source: "inference_status",
           error: fullResponse.inference_status.last_error,
@@ -149,10 +164,10 @@ export default function Try({
         });
       }
       if (newErrors.length > 0) {
-        setErrorHistory((prev) => {
+        setErrorHistory(prev => {
           const updated = [...prev];
-          newErrors.forEach((ne) => {
-            if (!prev.some((e) => e.error === ne.error && e.time === ne.time)) {
+          newErrors.forEach(ne => {
+            if (!prev.some(e => e.error === ne.error && e.time === ne.time)) {
               updated.push(ne);
             }
           });
@@ -185,7 +200,7 @@ export default function Try({
     setInputValues(newValues);
 
     const hasAnyChange = Object.keys(newValues).some(
-      (key) => newValues[key] !== initialValues[key]
+      key => newValues[key] !== initialValues[key],
     );
     setHasChanges(hasAnyChange);
     // Track parameter change
@@ -194,7 +209,7 @@ export default function Try({
       {
         parameter_id: id,
       },
-      user || undefined
+      user || undefined,
     );
   };
 
@@ -234,7 +249,7 @@ export default function Try({
         } catch {
           return [key, value];
         }
-      })
+      }),
     );
 
     const { data: stream, error } = await upsertStream(
@@ -242,7 +257,7 @@ export default function Try({
         pipeline_id: pipeline.id,
         pipeline_params: processedInputValues,
       },
-      user?.id ?? "did:privy:cm4x2cuiw007lh8fcj34919fu" // Dummy user id for non-authenticated users
+      user?.id ?? "did:privy:cm4x2cuiw007lh8fcj34919fu", // Dummy user id for non-authenticated users
     );
 
     if (error) {
@@ -289,7 +304,7 @@ export default function Try({
             type="text"
             placeholder={input.placeholder}
             value={inputValues[input.id] || ""}
-            onChange={(e) => handleInputChange(input.id, e.target.value)}
+            onChange={e => handleInputChange(input.id, e.target.value)}
           />
         );
       case "textarea":
@@ -307,7 +322,7 @@ export default function Try({
                 ? inputValues[input.id]
                 : JSON.stringify(inputValues[input.id], null, 2) || ""
             }
-            onChange={(e) => handleInputChange(input.id, e.target.value)}
+            onChange={e => handleInputChange(input.id, e.target.value)}
           />
         );
       case "number":
@@ -318,7 +333,7 @@ export default function Try({
             max={input.max}
             step={input.step}
             value={inputValues[input.id]}
-            onChange={(e) =>
+            onChange={e =>
               handleInputChange(input.id, parseFloat(e.target.value))
             }
           />
@@ -346,7 +361,7 @@ export default function Try({
         return (
           <Select
             value={inputValues[input.id]}
-            onValueChange={(value) => handleInputChange(input.id, value)}
+            onValueChange={value => handleInputChange(input.id, value)}
           >
             <SelectTrigger>
               <SelectValue placeholder={input.placeholder} />
@@ -376,7 +391,7 @@ export default function Try({
             type="text"
             placeholder={input.placeholder}
             value={inputValues[input.id] || ""}
-            onChange={(e) => handleInputChange(input.id, e.target.value)}
+            onChange={e => handleInputChange(input.id, e.target.value)}
           />
         );
     }
@@ -411,7 +426,7 @@ export default function Try({
               </>
             )}
           </div>
-          
+
           <div className="flex flex-col gap-4 mt-2">
             <div className="flex flex-col gap-2">
               <Label className="text-muted-foreground">Source</Label>
@@ -437,14 +452,15 @@ export default function Try({
                     <Label className="text-muted-foreground">
                       ComfyUI Parameters
                     </Label>
-                    
+
                     {pipeline.prioritized_params && (
                       <div className="space-y-4 border rounded-lg p-4 mb-4">
-                        <Label className="text-muted-foreground">Quick Settings</Label>
-                        {(
-                          typeof pipeline.prioritized_params === "string"
-                            ? JSON.parse(pipeline.prioritized_params)
-                            : pipeline.prioritized_params
+                        <Label className="text-muted-foreground">
+                          Quick Settings
+                        </Label>
+                        {(typeof pipeline.prioritized_params === "string"
+                          ? JSON.parse(pipeline.prioritized_params)
+                          : pipeline.prioritized_params
                         ).map((param: PrioritizedParam) => {
                           const currentJson =
                             typeof inputValues["prompt"] === "string"
@@ -453,17 +469,22 @@ export default function Try({
                           const currentValue =
                             currentJson?.[param.nodeId]?.inputs?.[param.field];
 
-                          const handlePrioritizedParamChange = (newValue: any) => {
-                            const updatedJson = JSON.parse(JSON.stringify(inputValues["prompt"]));
-                            
+                          const handlePrioritizedParamChange = (
+                            newValue: any,
+                          ) => {
+                            const updatedJson = JSON.parse(
+                              JSON.stringify(inputValues["prompt"]),
+                            );
+
                             if (!updatedJson[param.nodeId]) {
                               updatedJson[param.nodeId] = { inputs: {} };
                             }
                             if (!updatedJson[param.nodeId].inputs) {
                               updatedJson[param.nodeId].inputs = {};
                             }
-                            
-                            updatedJson[param.nodeId].inputs[param.field] = newValue;
+
+                            updatedJson[param.nodeId].inputs[param.field] =
+                              newValue;
                             handleInputChange("prompt", updatedJson);
                           };
 
@@ -504,9 +525,9 @@ export default function Try({
                                 <Input
                                   type="number"
                                   value={currentValue}
-                                  onChange={(e) =>
+                                  onChange={e =>
                                     handlePrioritizedParamChange(
-                                      Number(e.target.value)
+                                      Number(e.target.value),
                                     )
                                   }
                                   min={param.widgetConfig!.min}
@@ -522,7 +543,7 @@ export default function Try({
                                     <SelectValue />
                                   </SelectTrigger>
                                   <SelectContent>
-                                    {param.widgetConfig.options?.map((option) => (
+                                    {param.widgetConfig.options?.map(option => (
                                       <SelectItem
                                         key={option.value}
                                         value={option.value}
@@ -542,7 +563,9 @@ export default function Try({
                                   onCheckedChange={(checked: boolean) => {
                                     const newVal =
                                       typeof currentValue === "number"
-                                        ? (checked ? 1 : 0)
+                                        ? checked
+                                          ? 1
+                                          : 0
                                         : checked;
                                     handlePrioritizedParamChange(newVal);
                                   }}
@@ -551,7 +574,7 @@ export default function Try({
                                 <Input
                                   type="text"
                                   value={currentValue}
-                                  onChange={(e) =>
+                                  onChange={e =>
                                     handlePrioritizedParamChange(e.target.value)
                                   }
                                 />
@@ -564,7 +587,7 @@ export default function Try({
 
                     <ComfyUIParamsEditor
                       value={inputValues["prompt"]}
-                      onChange={(value) => handleInputChange("prompt", value)}
+                      onChange={value => handleInputChange("prompt", value)}
                     />
                   </div>
                 ) : (
@@ -646,13 +669,13 @@ export default function Try({
       </div>
 
       {streamKilled && (
-        <TrialExpiredModal 
-          open={true} 
-          onOpenChange={(open) => {
+        <TrialExpiredModal
+          open={true}
+          onOpenChange={open => {
             if (!open) {
-              router.push('/explore');
+              router.push("/explore");
             }
-          }} 
+          }}
         />
       )}
 
@@ -664,7 +687,11 @@ export default function Try({
               <Button variant="outline" size="sm" onClick={handleCopyLogs}>
                 <Copy className="mr-2" /> Copy Logs
               </Button>
-              <Button variant="outline" size="sm" onClick={() => setDebugOpen(false)}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setDebugOpen(false)}
+              >
                 Close
               </Button>
             </div>
@@ -674,18 +701,25 @@ export default function Try({
           </p>
           <div className="mb-2">
             <span className="mr-2 font-semibold">State:</span>
-            <span className={`inline-block rounded px-2 py-1 text-xs font-bold ${getStatusClass(
-              status
-            )}`}>
+            <span
+              className={`inline-block rounded px-2 py-1 text-xs font-bold ${getStatusClass(
+                status,
+              )}`}
+            >
               {status || "Unknown"}
             </span>
           </div>
           <div className="mt-2 flex-1">
             <div className="h-full flex flex-col">
-              <div style={{ height: "50vh" }} className="h-1/2 overflow-y-auto border-b border-gray-600 pr-2">
+              <div
+                style={{ height: "50vh" }}
+                className="h-1/2 overflow-y-auto border-b border-gray-600 pr-2"
+              >
                 <h3 className="text-sm font-semibold mb-1">Full Status</h3>
                 <pre className="text-xs whitespace-pre-wrap">
-                  {fullResponse ? JSON.stringify(fullResponse, null, 2) : "Loading..."}
+                  {fullResponse
+                    ? JSON.stringify(fullResponse, null, 2)
+                    : "Loading..."}
                 </pre>
               </div>
               <div className="h-1/2 overflow-y-auto pt-2 pr-2">

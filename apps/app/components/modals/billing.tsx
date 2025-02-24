@@ -192,7 +192,7 @@ const CreditSelection = ({
                 type="number"
                 placeholder="Enter amount"
                 value={customValue}
-                onChange={(e) => {
+                onChange={e => {
                   setCustomValue(e.target.value);
                   onSelect(Number(e.target.value));
                 }}

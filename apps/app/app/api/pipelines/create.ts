@@ -11,7 +11,7 @@ import { createSmokeTestStream, triggerSmokeTest } from "./validation";
 export async function createPipeline(
   body: any,
   userId: string,
-  pipelineId?: string
+  pipelineId?: string,
 ) {
   const supabase = await createServerClient();
 
@@ -42,7 +42,7 @@ export async function createPipeline(
 
 export async function createPipelineFromFormData(
   formData: FormData,
-  userId: string
+  userId: string,
 ) {
   const formDataObject = Object.fromEntries(formData.entries());
   const pipelineId = newId("pipeline");
@@ -60,7 +60,7 @@ export async function createPipelineFromFormData(
   const comfyUiFile = formDataObject.comfy_json as File;
   const comfyUiJson = JSON.parse(await comfyUiFile.text());
 
-  const prioritizedParams = formDataObject.prioritized_params 
+  const prioritizedParams = formDataObject.prioritized_params
     ? Array.isArray(formDataObject.prioritized_params)
       ? formDataObject.prioritized_params
       : JSON.parse(formDataObject.prioritized_params as string)
@@ -69,7 +69,7 @@ export async function createPipelineFromFormData(
   const comfyUiConfig = await generateComfyConfig(
     comfyUiJson,
     formDataObject.version as string,
-    formDataObject.description as string
+    formDataObject.description as string,
   );
 
   const pipelineData = {
@@ -83,7 +83,7 @@ export async function createPipelineFromFormData(
 
   const { pipeline, smokeTestStream } = await createPipeline(
     pipelineData,
-    userId
+    userId,
   );
   return { pipeline, smokeTestStream };
 }
@@ -91,7 +91,7 @@ export async function createPipelineFromFormData(
 export async function generateComfyConfig(
   config: any,
   version?: string,
-  description?: string
+  description?: string,
 ) {
   return {
     inputs: {

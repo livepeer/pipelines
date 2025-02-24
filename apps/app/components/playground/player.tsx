@@ -29,10 +29,14 @@ export function LPPLayer({
   stream_key: string | null;
 }) {
   // default to direct playback but allow us to disable this and go back to studio playback with an env variable or queryparam
-  let playerUrl = `https://ai.livepeer.${isProduction() ? "com" : "monster"}/aiWebrtc/${stream_key}-out`
+  let playerUrl = `https://ai.livepeer.${isProduction() ? "com" : "monster"}/aiWebrtc/${stream_key}-out`;
   const searchParams = useSearchParams();
-  if ((searchParams.get("directPlayback") !== "true" && process.env.NEXT_PUBLIC_LIVEPEER_DIRECT_PLAYBACK === "false") || searchParams.get("directPlayback") === "false") {
-    playerUrl = `https://${isProduction() ? "lvpr.tv" : "monster.lvpr.tv"}/?v=${output_playback_id}&lowLatency=force&backoffMax=1000&ingestPlayback=true`
+  if (
+    (searchParams.get("directPlayback") !== "true" &&
+      process.env.NEXT_PUBLIC_LIVEPEER_DIRECT_PLAYBACK === "false") ||
+    searchParams.get("directPlayback") === "false"
+  ) {
+    playerUrl = `https://${isProduction() ? "lvpr.tv" : "monster.lvpr.tv"}/?v=${output_playback_id}&lowLatency=force&backoffMax=1000&ingestPlayback=true`;
   }
   return (
     <div className={isMobile ? "w-full h-full" : "aspect-video"}>

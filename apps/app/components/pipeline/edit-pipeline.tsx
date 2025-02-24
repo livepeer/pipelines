@@ -50,9 +50,9 @@ export default function EditPipeline({
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-    id: string
+    id: string,
   ) => {
-    setFormData((prev) => ({ ...prev, [id]: e.target.value }));
+    setFormData(prev => ({ ...prev, [id]: e.target.value }));
   };
 
   const handleSubmit = async (updatedData?: Record<string, unknown>) => {
@@ -77,7 +77,7 @@ export default function EditPipeline({
       toast.dismiss(toastId);
       toast.success("Pipeline saved successfully");
       router.push(
-        `/pipelines/${updatedPipeline.id}?streamId=${smokeTestStream.id}&validation=true`
+        `/pipelines/${updatedPipeline.id}?streamId=${smokeTestStream.id}&validation=true`,
       );
     } catch (error) {
       toast.dismiss(toastId);
@@ -108,7 +108,7 @@ export default function EditPipeline({
           const response = await fetch(formData.coverImage as string);
           const blob = await response.blob();
           const file = new File([blob], "cover_image");
-          setFormData((prev) => ({ ...prev, coverImage: file }));
+          setFormData(prev => ({ ...prev, coverImage: file }));
         } catch (error) {
           console.error("Error fetching cover image:", error);
         }
@@ -153,7 +153,7 @@ export default function EditPipeline({
                 value={formData.name as string}
                 placeholder="e.g., Live Portrait Generator"
                 id="name"
-                onChange={(e) => handleChange(e, "name")}
+                onChange={e => handleChange(e, "name")}
               />
             </div>
 
@@ -163,7 +163,7 @@ export default function EditPipeline({
                 value={formData.version as string}
                 placeholder="e.g., 1.0.0 in format major.minor.patch"
                 id="version"
-                onChange={(e) => handleChange(e, "version")}
+                onChange={e => handleChange(e, "version")}
               />
             </div>
 
@@ -174,7 +174,7 @@ export default function EditPipeline({
                 placeholder="Describe your pipeline"
                 id="description"
                 className="h-24 resize-y"
-                onChange={(e) => handleChange(e, "description")}
+                onChange={e => handleChange(e, "description")}
               />
             </div>
 
@@ -204,7 +204,7 @@ export default function EditPipeline({
                 placeholder="ComfyUI JSON"
                 id="comfyJson"
                 className="h-48 resize-y"
-                onChange={(e) => handleChange(e, "comfyJson")}
+                onChange={e => handleChange(e, "comfyJson")}
                 rows={10}
               />
             </div>

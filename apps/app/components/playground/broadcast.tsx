@@ -76,10 +76,10 @@ export function BroadcastWithControls({
 
   return (
     <Broadcast.Root
-      onError={(error) =>
+      onError={error =>
         error?.type === "permissions"
           ? toast.error(
-              "You must accept permissions to broadcast. Please try again."
+              "You must accept permissions to broadcast. Please try again.",
             )
           : null
       }
@@ -99,10 +99,10 @@ export function BroadcastWithControls({
             ? "w-full h-full"
             : isMobile
               ? "!w-full !h-12 bg-[#161616] rounded-2xl"
-              : "!w-12 !h-12 rounded-full"
+              : "!w-12 !h-12 rounded-full",
         )}
         style={collapsed && !isMobile ? { width: "3rem", height: "3rem" } : {}}
-        onClick={(e) => collapsed && e.stopPropagation()}
+        onClick={e => collapsed && e.stopPropagation()}
       >
         <Broadcast.Video
           title="Live stream"
@@ -111,7 +111,7 @@ export function BroadcastWithControls({
 
         {collapsed ? (
           <button
-            onClick={(e) => {
+            onClick={e => {
               e.preventDefault();
               e.stopPropagation();
               onCollapse?.(!collapsed) ?? setLocalCollapsed(!collapsed);
@@ -120,15 +120,15 @@ export function BroadcastWithControls({
               "flex items-center cursor-pointer absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 z-50",
               isMobile
                 ? "w-full h-12 pl-2 pr-4 bg-[#161616] rounded-2xl justify-between"
-                : "w-full h-full"
+                : "w-full h-full",
             )}
           >
             <div className="flex items-center gap-3">
               <div
                 className={cn(
                   "flex items-center justify-center border border-white/10 rounded-full",
-                  isMobile 
-                    ? "px-4 py-2 bg-[linear-gradient(120.63deg,rgba(232,232,232,0.05)_31.4%,rgba(130,130,130,0.05)_85.12%)]" 
+                  isMobile
+                    ? "px-4 py-2 bg-[linear-gradient(120.63deg,rgba(232,232,232,0.05)_31.4%,rgba(130,130,130,0.05)_85.12%)]"
                     : "p-2 bg-transparent",
                 )}
               >
@@ -145,8 +145,8 @@ export function BroadcastWithControls({
               <div className="flex items-center gap-3">
                 <CameraSwitchButton />
                 <div className="w-[1px] h-4 bg-white/10" />
-                <button 
-                  onClick={(e) => {
+                <button
+                  onClick={e => {
                     e.preventDefault();
                     e.stopPropagation();
                     onCollapse?.(!collapsed) ?? setLocalCollapsed(!collapsed);
@@ -165,7 +165,7 @@ export function BroadcastWithControls({
               style={{ pointerEvents: "auto" }}
             >
               <button
-                onClick={(e) => {
+                onClick={e => {
                   e.preventDefault();
                   e.stopPropagation();
                   onCollapse?.(true) ?? setLocalCollapsed(true);
@@ -187,7 +187,7 @@ export function BroadcastWithControls({
               matcher="not-permissions"
               className={cn(
                 "absolute select-none inset-0 text-center bg-gray-950 flex flex-col items-center justify-center gap-4 duration-1000 data-[visible=true]:animate-in data-[visible=false]:animate-out data-[visible=false]:fade-out-0 data-[visible=true]:fade-in-0",
-                collapsed && "opacity-0"
+                collapsed && "opacity-0",
               )}
             >
               <OfflineErrorIcon className="h-[120px] w-full sm:flex hidden" />
@@ -202,7 +202,7 @@ export function BroadcastWithControls({
             <Broadcast.Controls
               className={cn(
                 "bg-gradient-to-b gap-1 px-3 md:px-3 py-1.5 flex-col-reverse flex from-black/20 via-80% via-black/30 to-black/60",
-                collapsed && "opacity-0"
+                collapsed && "opacity-0",
               )}
             >
               <div className="flex justify-between gap-4">
@@ -248,7 +248,7 @@ export function BroadcastWithControls({
               <div
                 className={cn(
                   "absolute overflow-hidden py-1 px-2 rounded-full top-1 left-1 bg-black/50 flex items-center backdrop-blur",
-                  collapsed && "opacity-0"
+                  collapsed && "opacity-0",
                 )}
               >
                 <Broadcast.StatusIndicator
@@ -285,9 +285,9 @@ export function BroadcastWithControls({
 
 const CameraSwitchButton = () => {
   const context = Broadcast.useBroadcastContext("CurrentSource", undefined);
-  const state = Broadcast.useStore(context.store, (state) => state);
+  const state = Broadcast.useStore(context.store, state => state);
   const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-  
+
   useEffect(() => {
     if (state.video) {
       state.__controlsFunctions.requestDeviceListInfo();
@@ -295,7 +295,7 @@ const CameraSwitchButton = () => {
   }, [state.video]);
 
   const videoDevices = state.mediaDevices?.filter(
-    (device) => device.kind === "videoinput"
+    device => device.kind === "videoinput",
   );
 
   if (!videoDevices?.length) {
@@ -303,50 +303,54 @@ const CameraSwitchButton = () => {
   }
 
   const currentCameraId = state.mediaDeviceIds.videoinput;
-  const currentIndex = videoDevices.findIndex(d => d.deviceId === currentCameraId);
-  
+  const currentIndex = videoDevices.findIndex(
+    d => d.deviceId === currentCameraId,
+  );
+
   return (
-    <button 
-      onClick={async (e) => {
+    <button
+      onClick={async e => {
         e.preventDefault();
         e.stopPropagation();
-        
+
         try {
           if (isMobile) {
             const currentTrack = state.mediaStream?.getVideoTracks()[0];
-            const isFrontCamera = currentTrack?.getSettings()?.facingMode === 'user' || 
-                                currentTrack?.label?.toLowerCase().includes('front');
-            
-            
+            const isFrontCamera =
+              currentTrack?.getSettings()?.facingMode === "user" ||
+              currentTrack?.label?.toLowerCase().includes("front");
+
             state.mediaStream?.getTracks().forEach(track => track.stop());
-            
+
             const newStream = await navigator.mediaDevices.getUserMedia({
-              video: { 
-                facingMode: { 
-                  exact: isFrontCamera ? 'environment' : 'user' 
-                } 
-              }
+              video: {
+                facingMode: {
+                  exact: isFrontCamera ? "environment" : "user",
+                },
+              },
             });
-            
+
             const newTrack = newStream.getVideoTracks()[0];
-            
+
             state.__controlsFunctions.updateMediaStream(newStream);
           } else {
-            
-            const nextIndex = currentIndex === -1 ? 0 : (currentIndex + 1) % videoDevices.length;
+            const nextIndex =
+              currentIndex === -1
+                ? 0
+                : (currentIndex + 1) % videoDevices.length;
             const nextCameraId = videoDevices[nextIndex]?.deviceId;
-            
+
             if (nextCameraId) {
               state.__controlsFunctions.requestMediaDeviceId(
                 nextCameraId as any,
-                "videoinput"
+                "videoinput",
               );
             }
           }
         } catch (err) {
-          console.error('Error during camera switch:', err);
+          console.error("Error during camera switch:", err);
         }
-      }} 
+      }}
       className="w-6 h-6 hover:scale-110 transition flex-shrink-0"
     >
       <SwitchCamera className="w-full h-full text-white/50" />
@@ -389,7 +393,7 @@ export const BroadcastLoading = ({
 export const Settings = React.forwardRef(
   (
     { className }: { className?: string },
-    ref: React.Ref<HTMLButtonElement> | undefined
+    ref: React.Ref<HTMLButtonElement> | undefined,
   ) => {
     return (
       <Popover.Root>
@@ -398,7 +402,7 @@ export const Settings = React.forwardRef(
             type="button"
             className={className}
             aria-label="Stream settings"
-            onClick={(e) => e.stopPropagation()}
+            onClick={e => e.stopPropagation()}
           >
             <SettingsIcon />
           </button>
@@ -409,7 +413,7 @@ export const Settings = React.forwardRef(
             side="top"
             alignOffset={-70}
             align="end"
-            onClick={(e) => e.stopPropagation()}
+            onClick={e => e.stopPropagation()}
           >
             <div className="flex flex-col gap-2">
               <p className="text-white/90 font-medium text-sm mb-1">
@@ -437,7 +441,7 @@ export const Settings = React.forwardRef(
         </Popover.Portal>
       </Popover.Root>
     );
-  }
+  },
 );
 
 export const SourceSelectComposed = React.forwardRef(
@@ -447,17 +451,17 @@ export const SourceSelectComposed = React.forwardRef(
       type,
       className,
     }: { name: string; type: "audioinput" | "videoinput"; className?: string },
-    ref: React.Ref<HTMLButtonElement> | undefined
+    ref: React.Ref<HTMLButtonElement> | undefined,
   ) => (
     <Broadcast.SourceSelect name={name} type={type}>
-      {(devices) =>
+      {devices =>
         devices ? (
           <>
             <Broadcast.SelectTrigger
               ref={ref}
               className={cn(
                 "flex w-full items-center overflow-hidden justify-between rounded-sm px-1 outline-1 outline-white/50 text-xs leading-none h-7 gap-1 outline-none disabled:opacity-70 disabled:cursor-not-allowed",
-                className
+                className,
               )}
               aria-label={type === "audioinput" ? "Audio input" : "Video input"}
             >
@@ -476,7 +480,7 @@ export const SourceSelectComposed = React.forwardRef(
               <Broadcast.SelectContent className="overflow-hidden bg-black rounded-sm">
                 <Broadcast.SelectViewport className="p-1">
                   <Broadcast.SelectGroup>
-                    {devices?.map((device) => (
+                    {devices?.map(device => (
                       <RateSelectItem
                         key={device.deviceId}
                         value={device.deviceId}
@@ -494,7 +498,7 @@ export const SourceSelectComposed = React.forwardRef(
         )
       }
     </Broadcast.SourceSelect>
-  )
+  ),
 );
 
 const RateSelectItem = React.forwardRef<
@@ -505,7 +509,7 @@ const RateSelectItem = React.forwardRef<
     <Broadcast.SelectItem
       className={cn(
         "text-xs leading-none rounded-sm flex items-center h-7 pr-[35px] pl-[25px] relative select-none data-[disabled]:pointer-events-none data-[highlighted]:outline-none data-[highlighted]:bg-white/20",
-        className
+        className,
       )}
       {...props}
       ref={forwardedRef}

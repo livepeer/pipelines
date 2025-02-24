@@ -37,7 +37,9 @@ export const pipelineSchema = z.object({
   name: z.string().min(1),
   description: z.string().optional(),
   is_private: z.boolean().default(true),
-  validation_status: z.enum(['valid', 'invalid', 'processing', 'pending']).default('pending'),
+  validation_status: z
+    .enum(["valid", "invalid", "processing", "pending"])
+    .default("pending"),
   cover_image: z.string().url().nullable().optional(),
   type: z.string().default("comfyui"),
   comfy_ui_json: z.unknown().nullable().optional(),
@@ -52,7 +54,7 @@ export const pipelineSchema = z.object({
   version: z
     .string()
     .default("1.0.0")
-    .refine((version) => {
+    .refine(version => {
       const matches = version.match(/^(\d+)\.(\d+)\.(\d+)$/);
       if (!matches) return false;
       const [_, major, minor, patch] = matches;

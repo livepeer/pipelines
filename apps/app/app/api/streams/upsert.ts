@@ -25,7 +25,7 @@ const streamSchema = z
     from_playground: z.boolean().optional(),
     is_smoke_test: z.boolean().default(false),
   })
-  .refine((data) => data.pipeline_id || data.pipelines, {
+  .refine(data => data.pipeline_id || data.pipelines, {
     message:
       "Either pipeline_id or a nested pipelines object with an id must be provided",
     path: ["pipeline_id", "pipelines.id"],
@@ -62,7 +62,7 @@ export async function upsertStream(body: any, userId: string) {
     if (result.error) {
       console.error(
         "Error creating livepeer stream. Perhaps the Livepeer Studio API Key is not configured?",
-        result.error
+        result.error,
       );
     } else {
       livepeerStream = result.stream;

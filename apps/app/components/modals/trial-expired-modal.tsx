@@ -13,7 +13,10 @@ interface TrialExpiredModalProps {
   onOpenChange: (open: boolean) => void;
 }
 
-export function TrialExpiredModal({ open, onOpenChange }: TrialExpiredModalProps) {
+export function TrialExpiredModal({
+  open,
+  onOpenChange,
+}: TrialExpiredModalProps) {
   const { login } = usePrivy();
 
   return (
@@ -38,7 +41,11 @@ export function TrialExpiredModal({ open, onOpenChange }: TrialExpiredModalProps
           >
             Join the Community
           </Button>
-          <Button onClick={login} size="lg" className="rounded-full h-12 flex-1">
+          <Button
+            onClick={login}
+            size="lg"
+            className="rounded-full h-12 flex-1"
+          >
             Sign Up
           </Button>
         </div>

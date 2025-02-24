@@ -32,7 +32,7 @@ const processInputValues = (inputValues: any) => {
       } catch {
         return [key, value];
       }
-    })
+    }),
   );
 };
 
@@ -66,7 +66,7 @@ export function useDreamshaper() {
             pipeline_id: pipeline.id,
             pipeline_params: processedInputValues,
           },
-          user?.id ?? DUMMY_USER_ID_FOR_NON_AUTHENTICATED_USERS
+          user?.id ?? DUMMY_USER_ID_FOR_NON_AUTHENTICATED_USERS,
         );
 
         if (error) {
@@ -156,7 +156,7 @@ export function useDreamshaper() {
         setUpdating(false);
       }
     },
-    [stream, inputValues]
+    [stream, inputValues],
   );
 
   return {

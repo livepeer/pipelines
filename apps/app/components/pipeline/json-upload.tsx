@@ -42,7 +42,7 @@ const FileUploadDropzone = ({
   const [files, setFiles] = useState<File[] | null>(initialFiles || []);
   const onValueChange = (files: File[] | null) => {
     setFiles(files);
-    setFormData((prev) => ({ ...prev, [id]: files?.[0] }));
+    setFormData(prev => ({ ...prev, [id]: files?.[0] }));
   };
   const fileConfig = ALLOWED_FILE_CONFIGS[fileType];
   const dropzone = {

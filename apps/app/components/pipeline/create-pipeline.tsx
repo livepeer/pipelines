@@ -25,9 +25,9 @@ export default function CreatePipeline() {
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-    id: string
+    id: string,
   ) => {
-    setFormData((prev) => ({ ...prev, [id]: e.target.value }));
+    setFormData(prev => ({ ...prev, [id]: e.target.value }));
   };
 
   const handleNext = async () => {
@@ -49,7 +49,7 @@ export default function CreatePipeline() {
       const jsonContent = await jsonFile.text();
       const parsedJson = JSON.parse(jsonContent);
 
-      setFormData((prev) => ({
+      setFormData(prev => ({
         ...prev,
         comfyJson: parsedJson,
       }));
@@ -89,10 +89,10 @@ export default function CreatePipeline() {
 
       const { pipeline, smokeTestStream } = await createPipelineFromFormData(
         formDataToSend,
-        user.id
+        user.id,
       );
       router.push(
-        `/pipelines/${pipeline.id}?streamId=${smokeTestStream.id}&validation=true`
+        `/pipelines/${pipeline.id}?streamId=${smokeTestStream.id}&validation=true`,
       );
       toast.dismiss(toastId);
       toast.success("Pipeline created successfully");
@@ -148,7 +148,7 @@ export default function CreatePipeline() {
               <Input
                 placeholder="e.g., Live Portrait Generator"
                 id="name"
-                onChange={(e) => handleChange(e, "name")}
+                onChange={e => handleChange(e, "name")}
               />
             </div>
 
@@ -158,7 +158,7 @@ export default function CreatePipeline() {
                 value={(formData.version as string) || "1.0.0"}
                 placeholder="e.g., 1.0.0 in format major.minor.patch"
                 id="version"
-                onChange={(e) => handleChange(e, "version")}
+                onChange={e => handleChange(e, "version")}
               />
             </div>
 
@@ -168,7 +168,7 @@ export default function CreatePipeline() {
                 placeholder="Describe what your pipeline does and its use cases"
                 id="description"
                 className="h-24"
-                onChange={(e) => handleChange(e, "description")}
+                onChange={e => handleChange(e, "description")}
               />
             </div>
 

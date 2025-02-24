@@ -2,7 +2,7 @@ import { customAlphabet } from "nanoid";
 
 const nanoid = customAlphabet(
   "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz",
-  16
+  16,
 );
 
 const prefixes = {

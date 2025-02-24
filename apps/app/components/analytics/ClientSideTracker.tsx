@@ -1,4 +1,4 @@
-'use client';
+"use client";
 import { useEffect } from "react";
 import { usePrivy } from "@privy-io/react-auth";
 import track from "@/lib/track";
