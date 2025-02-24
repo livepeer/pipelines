@@ -1,6 +1,8 @@
 "use server";
 
 import { createServerClient } from "@repo/supabase";
+import { Livepeer } from "livepeer";
+import { livepeer as livePeerEnv } from "@/lib/env";
 
 export async function getStream(streamId: string) {
   const supabase = await createServerClient();
@@ -88,4 +90,19 @@ export async function getStreams(
     data,
     totalPages,
   };
+}
+
+export async function getStreamPlaybackInfo(playbackId: string) {
+  const livepeer = new Livepeer({
+    serverURL: livePeerEnv.apiUrl,
+    apiKey: livePeerEnv.apiKey,
+  });
+
+  try {
+    const playbackInfo = await livepeer.playback.get(playbackId);
+    return { data: playbackInfo, error: null };
+  } catch (error) {
+    console.error("Error fetching playback info:", error);
+    return { data: null, error: error };
+  }
 }

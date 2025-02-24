@@ -57,6 +57,8 @@ export function useDreamshaper() {
         const pipeline = await getPipeline(SHOWCASE_PIPELINE_ID);
         setPipeline(pipeline);
 
+        console.log("useDreamshaper:: Fetching pipeline", pipeline);
+
         // Create a stream with pipeline inputs
         const inputValues = createDefaultValues(pipeline);
         const processedInputValues = processInputValues(inputValues);
@@ -69,14 +71,19 @@ export function useDreamshaper() {
           user?.id ?? DUMMY_USER_ID_FOR_NON_AUTHENTICATED_USERS,
         );
 
+        console.log("useDreamshaper:: Upserting stream", stream);
+
         if (error) {
           toast.error(`Error creating stream for playback ${error}`);
+          console.log("useDreamshaper:: Error creating stream", error);
           return;
         }
         setStream(stream);
       } catch (error) {
+        console.log("useDreamshaper:: Error fetching pipeline", error);
         console.error(error);
       } finally {
+        console.log("useDreamshaper:: Setting loading to false");
         setLoading(false);
       }
     };

@@ -1,23 +1,11 @@
-import {
-  ClipIcon,
-  EnterFullscreenIcon,
-  ExitFullscreenIcon,
-  LoadingIcon,
-  MuteIcon,
-  PauseIcon,
-  PictureInPictureIcon,
-  PlayIcon,
-  UnmuteIcon,
-} from "@livepeer/react/assets";
 import * as Player from "@livepeer/react/player";
-import { CheckIcon, ChevronDownIcon, XIcon } from "lucide-react";
-import React, { useCallback, useTransition } from "react";
-import { toast } from "sonner";
+import { getSrc } from "@livepeer/react/external";
+import React, { useEffect, useState } from "react";
 
-import { Src } from "@livepeer/react";
-import { cn } from "@repo/design-system/lib/utils";
 import { isProduction } from "@/lib/env";
 import { useSearchParams } from "next/navigation";
+import { getStreamPlaybackInfo } from "@/app/api/streams/get";
+import { Loader2 } from "lucide-react";
 
 export function LPPLayer({
   output_playback_id,
@@ -38,14 +26,51 @@ export function LPPLayer({
   ) {
     playerUrl = `https://${isProduction() ? "lvpr.tv" : "monster.lvpr.tv"}/?v=${output_playback_id}&lowLatency=force&backoffMax=1000&ingestPlayback=true`;
   }
+
+  console.log("LPPLayer:: PlaybackId", output_playback_id);
+  const [playbackInfo, setPlaybackInfo] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchPlaybackInfo = async () => {
+      const { data, error } = await getStreamPlaybackInfo(output_playback_id);
+      setPlaybackInfo(data);
+    };
+    fetchPlaybackInfo();
+  }, [output_playback_id]);
+
+  const src = getSrc(playbackInfo as any);
+
+  if (!src) {
+    console.log("LPPLayer:: No playback info found");
+    return (
+      <div className="w-full h-full flex items-center justify-center">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  console.log("LPPLayer:: Playback info found", playbackInfo);
   return (
     <div className={isMobile ? "w-full h-full" : "aspect-video"}>
-      <iframe
+      {/* <iframe
         src={playerUrl}
         className="w-full h-full"
         allow="fullscreen"
         allowFullScreen
-      />
+      /> */}
+      <Player.Root
+        src={src}
+        lowLatency="force"
+        ingestPlayback={true}
+        backoffMax={1000}
+      >
+        <Player.Container className="flex-1 h-full w-full overflow-hidden bg-black outline-none transition-all">
+          <Player.Video
+            title="Live stream"
+            className="h-full w-full transition-all"
+          />
+        </Player.Container>
+      </Player.Root>
     </div>
   );
 }
