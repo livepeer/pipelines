@@ -91,6 +91,37 @@ export function BroadcastWithControls({
     >
       <Broadcast.Container
         id={videoId}
+        onLoadedMetadata={(e: any) => {
+          // Mirror the video  
+          const stream = e.target?.srcObject;
+          if (stream) {
+            const videoTrack = stream.getVideoTracks()[0];
+            if (videoTrack) {
+              const canvas = document.createElement('canvas');
+              const ctx = canvas.getContext('2d');
+              const video = document.createElement('video');
+              
+              canvas.width = videoTrack.getSettings().width || 1280;
+              canvas.height = videoTrack.getSettings().height || 720;
+              
+              ctx?.scale(-1, 1);
+              ctx?.translate(-canvas.width, 0);
+              
+              const drawFrame = () => {
+                ctx?.drawImage(video, 0, 0);
+                requestAnimationFrame(drawFrame);
+              };
+
+              video.srcObject = new MediaStream([videoTrack]);
+              video.play().then(() => {
+                drawFrame();
+                const mirroredTrack = canvas.captureStream(30).getVideoTracks()[0];
+                stream.removeTrack(videoTrack);
+                stream.addTrack(mirroredTrack);
+              });
+            }
+          }
+        }}
         className={cn(
           "text-white/50 overflow-visible rounded-sm bg-transparent border-0 relative",
           className,
@@ -107,7 +138,7 @@ export function BroadcastWithControls({
         <Broadcast.Video
           title="Live stream"
           className={cn(
-            "w-full h-full object-cover [transform:scaleX(-1)]",
+            "w-full h-full object-cover",
             collapsed && "opacity-0"
           )}
         />
