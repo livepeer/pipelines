@@ -56,7 +56,7 @@ export async function updatePipeline(body: any, userId: string) {
 
 export async function editPipelineFromFormData(
   formData: FormData,
-  userId: string
+  userId: string,
 ) {
   const formDataObject = Object.fromEntries(formData.entries());
   const pipelineId = formDataObject.id as string;
@@ -75,7 +75,7 @@ export async function editPipelineFromFormData(
   // Parse the comfy_ui_json text data as JSON
   const comfyUiJson = JSON.parse(formDataObject.comfy_json as string);
 
-  const prioritizedParams = formDataObject.prioritized_params 
+  const prioritizedParams = formDataObject.prioritized_params
     ? Array.isArray(formDataObject.prioritized_params)
       ? formDataObject.prioritized_params
       : JSON.parse(formDataObject.prioritized_params as string)
@@ -84,7 +84,7 @@ export async function editPipelineFromFormData(
   const comfyUiConfig = await generateComfyConfig(
     comfyUiJson,
     formDataObject.version as string,
-    formDataObject.description as string
+    formDataObject.description as string,
   );
 
   const pipelineData = {
@@ -98,7 +98,7 @@ export async function editPipelineFromFormData(
 
   const { pipeline, smokeTestStream } = await updatePipeline(
     pipelineData,
-    userId
+    userId,
   );
   return { pipeline, smokeTestStream };
 }

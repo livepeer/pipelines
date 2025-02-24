@@ -6,7 +6,7 @@ export const maxDuration = 300;
 
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const encoder = new TextEncoder();
   const streamId = (await params).id;
@@ -14,7 +14,7 @@ export async function GET(
   const customReadable = new ReadableStream({
     async start(controller) {
       controller.enqueue(
-        encoder.encode(`data: {"message": "Connected to SSE stream"}\n\n`)
+        encoder.encode(`data: {"message": "Connected to SSE stream"}\n\n`),
       );
 
       let intervalId: NodeJS.Timeout;
@@ -23,13 +23,13 @@ export async function GET(
 
         if (status) {
           controller.enqueue(
-            encoder.encode(`data: ${JSON.stringify(status)}\n\n`)
+            encoder.encode(`data: ${JSON.stringify(status)}\n\n`),
           );
         } else {
           controller.enqueue(
             encoder.encode(
-              `data: {"message": "Stream status data not available yet or Stream not found"}\n\n`
-            )
+              `data: {"message": "Stream status data not available yet or Stream not found"}\n\n`,
+            ),
           );
         }
       }, 5000);

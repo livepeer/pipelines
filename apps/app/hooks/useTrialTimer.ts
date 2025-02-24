@@ -25,13 +25,16 @@ export function useTrialTimer() {
   }, [authenticated, ready]);
 
   useEffect(() => {
-    if (!ready) return; 
+    if (!ready) return;
     if (!authenticated && timeRemaining !== null) {
       const intervalId = setInterval(() => {
         setTimeRemaining(prev => {
           if (prev === null) return prev;
           const newTime = prev > 0 ? prev - 1 : 0;
-          localStorage.setItem("unregistered_time_remaining", newTime.toString());
+          localStorage.setItem(
+            "unregistered_time_remaining",
+            newTime.toString(),
+          );
           return newTime;
         });
       }, 1000);
@@ -40,7 +43,7 @@ export function useTrialTimer() {
   }, [authenticated, timeRemaining, ready]);
 
   useEffect(() => {
-    if (!ready) return; 
+    if (!ready) return;
     if (!authenticated && timeRemaining === 0) {
       console.log("Trial expired - triggering expiration event");
       window.dispatchEvent(new CustomEvent("trialExpired"));
@@ -48,8 +51,8 @@ export function useTrialTimer() {
   }, [timeRemaining, authenticated, ready]);
 
   const formatTime = (minutes: number, seconds: number) => {
-    const paddedMinutes = minutes.toString().padStart(2, '0');
-    const paddedSeconds = seconds.toString().padStart(2, '0');
+    const paddedMinutes = minutes.toString().padStart(2, "0");
+    const paddedSeconds = seconds.toString().padStart(2, "0");
     return `${paddedMinutes}:${paddedSeconds}`;
   };
 
@@ -61,4 +64,4 @@ export function useTrialTimer() {
   }, [timeRemaining]);
 
   return { timeRemaining, formattedTime };
-} 
+}

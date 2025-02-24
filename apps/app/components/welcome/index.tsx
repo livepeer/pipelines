@@ -53,7 +53,7 @@ const Intro = () => {
       <h2 className="font-medium text-lg">
         {name ? `Welcome back, ${name}` : "Build Real-time Video AI Pipelines"}
       </h2>
-        <p>Transform live video streams using AI models.</p>
+      <p>Transform live video streams using AI models.</p>
       <div
         onClick={() => {
           router.replace("?tab=create");
@@ -78,7 +78,7 @@ const Intro = () => {
         </Button>
         <Button
           onClick={() => {
-            window.location.href ="https://pipelines.livepeer.org/explore"
+            window.location.href = "https://pipelines.livepeer.org/explore";
           }}
           variant="ghost"
           className="mt-3  w-auto"
@@ -110,7 +110,7 @@ const Leaderboard = () => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {data.map((row) => (
+          {data.map(row => (
             <TableRow key={row.name}>
               <TableCell>{row.name}</TableCell>
               <TableCell className="flex items-center gap-2">
@@ -157,7 +157,7 @@ const MyStats = () => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {data.map((row) => (
+          {data.map(row => (
             <TableRow key={row.name}>
               <TableCell>{row.name}</TableCell>
               <TableCell className="flex items-center gap-2">
@@ -195,7 +195,10 @@ const CTA = () => {
       <h3 className="font-medium text-5xl uppercase text-white">
         Daily Challenge
       </h3>
-      <p className="text-md my-4 text-white">Join our community to create unique video AI streams. <br/>Each day is a new challenge.</p>
+      <p className="text-md my-4 text-white">
+        Join our community to create unique video AI streams. <br />
+        Each day is a new challenge.
+      </p>
       <p className="text-md uppercase my-4 text-white">Join Community</p>
       <img
         src="https://cdn.prod.website-files.com/66b1e1cb750c24d738b2c64b/66b23b09ed2da9e4696256ad_Logo%20(6).svg"

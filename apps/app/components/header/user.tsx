@@ -99,7 +99,7 @@ export default function User({ className }: { className?: string }) {
       size="icon"
       className={cn(
         "flex items-center justify-start w-full gap-2 px-2",
-        isMobile && "ml-4"
+        isMobile && "ml-4",
       )}
     >
       <UserIcon />

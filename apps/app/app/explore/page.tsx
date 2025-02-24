@@ -82,9 +82,7 @@ const Filter = () => {
 };
 
 const FeaturedPipelines = ({ pipelines }: { pipelines: any[] }) => {
-  const featuredPipelines = pipelines.filter(
-    (pipeline) => pipeline.is_featured
-  );
+  const featuredPipelines = pipelines.filter(pipeline => pipeline.is_featured);
 
   return (
     <div className="border p-4 ">

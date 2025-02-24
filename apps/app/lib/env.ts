@@ -64,7 +64,7 @@ export const validateEnv = () => {
   } catch (error) {
     if (error instanceof z.ZodError) {
       console.error("Invalid environment configuration:");
-      error.errors.forEach((err) => {
+      error.errors.forEach(err => {
         console.error(`- ${err.path.join(".")}: ${err.message}`);
       });
     }

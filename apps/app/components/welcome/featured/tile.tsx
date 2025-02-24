@@ -16,7 +16,7 @@ export default function PipelineTile({
       href={`/playground/${pipeline.id}`}
       className={cn(
         "relative min-w-[20rem] cursor-pointer  border-2",
-        isFeatured ? "h-48" : "h-52"
+        isFeatured ? "h-48" : "h-52",
       )}
     >
       <div className="relative z-10 flex h-full flex-col justify-between overflow-visible p-4">

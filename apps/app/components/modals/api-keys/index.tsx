@@ -71,7 +71,7 @@ export const APIKeys = ({ open }: { open: boolean }) => {
         className="mt-2"
         placeholder="API Key Name"
         value={apiKeyName}
-        onChange={(e) => setApiKeyName(e.target.value)}
+        onChange={e => setApiKeyName(e.target.value)}
       />
       <div className="flex gap-2">
         <Button
@@ -104,7 +104,7 @@ export const APIKeys = ({ open }: { open: boolean }) => {
 
   const RenderAPIKeys = () => (
     <div className="mt-2">
-      {apiKeys.map((apiKey) => (
+      {apiKeys.map(apiKey => (
         <div className="flex items-center justify-between">
           <div>{apiKey.name}</div>
           <div className="text-sm text-muted-foreground">********</div>

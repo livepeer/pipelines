@@ -11,7 +11,7 @@ export const useValidateInput = (prompt: string) => {
     const promptWords = prompt.toLowerCase().split(/\s+/);
     const hasProfanity = Object.values(PROFANITY_WORD_LIST)
       .flat()
-      .some((harmfulWord) => promptWords.includes(harmfulWord.toLowerCase()));
+      .some(harmfulWord => promptWords.includes(harmfulWord.toLowerCase()));
     setProfanity(hasProfanity);
   }, []);
 

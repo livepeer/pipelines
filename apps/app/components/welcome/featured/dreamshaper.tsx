@@ -27,7 +27,7 @@ import { SidebarTrigger } from "@repo/design-system/components/ui/sidebar";
 import { Inter } from "next/font/google";
 
 const PROMPT_INTERVAL = 4000;
-const samplePrompts = examplePrompts.map((prompt) => prompt.prompt);
+const samplePrompts = examplePrompts.map(prompt => prompt.prompt);
 
 const MAX_STREAM_TIMEOUT_MS = 90000; // 90 seconds
 
@@ -35,14 +35,14 @@ const MAX_STREAM_TIMEOUT_MS = 90000; // 90 seconds
 function usePrompts() {
   const [currentPromptIndex, setCurrentPromptIndex] = useState(0);
   const [lastSubmittedPrompt, setLastSubmittedPrompt] = useState<string | null>(
-    null
+    null,
   );
 
   useEffect(() => {
     if (lastSubmittedPrompt) return;
 
     const interval = setInterval(() => {
-      setCurrentPromptIndex((prev) => (prev + 1) % samplePrompts.length);
+      setCurrentPromptIndex(prev => (prev + 1) % samplePrompts.length);
     }, PROMPT_INTERVAL);
 
     return () => clearInterval(interval);
@@ -257,7 +257,7 @@ export default function Dreamshaper({
         }
       }
     }
-    setIsFullscreen((prev) => !prev);
+    setIsFullscreen(prev => !prev);
   };
 
   useEffect(() => {
@@ -278,7 +278,7 @@ export default function Dreamshaper({
       <div
         className={cn(
           "flex justify-center items-center p-3 mt-4",
-          isFullscreen && "hidden"
+          isFullscreen && "hidden",
         )}
       >
         {isMobile && (
@@ -291,7 +291,7 @@ export default function Dreamshaper({
           <h1
             className={cn(
               inter.className,
-              "text-lg md:text-xl flex flex-col items-center uppercase font-light"
+              "text-lg md:text-xl flex flex-col items-center uppercase font-light",
             )}
           >
             Daydream
@@ -318,14 +318,14 @@ export default function Dreamshaper({
       <div
         className={cn(
           "px-4 my-4 flex items-center justify-center md:mb-0 md:my-2 mb-5",
-          isFullscreen && "fixed inset-0 z-[9999] p-0 m-0"
+          isFullscreen && "fixed inset-0 z-[9999] p-0 m-0",
         )}
       >
         <div
           ref={outputPlayerRef}
           className={cn(
             "w-full max-w-[calc(min(100%,calc((100vh-16rem)*16/9)))] mx-auto md:aspect-video aspect-square bg-sidebar rounded-2xl overflow-hidden relative",
-            isFullscreen && "w-full h-full max-w-none rounded-none"
+            isFullscreen && "w-full h-full max-w-none rounded-none",
           )}
         >
           {/* Hide controls for mobile (TODO: when it's a react component,
@@ -386,7 +386,7 @@ export default function Dreamshaper({
                 <div
                   className={cn(
                     "absolute bottom-16 right-4 z-50 transition-all duration-300",
-                    isCollapsed ? "w-12 h-12" : "w-[25%] aspect-video"
+                    isCollapsed ? "w-12 h-12" : "w-[25%] aspect-video",
                   )}
                 >
                   <BroadcastWithControls
@@ -427,7 +427,7 @@ export default function Dreamshaper({
             <div
               className={cn(
                 "flex-shrink-0 transition-all duration-300 [&>div]:!pb-0 [&>div]:h-full",
-                isCollapsed ? "h-8" : "h-64"
+                isCollapsed ? "h-8" : "h-64",
               )}
             >
               <BroadcastWithControls
@@ -453,7 +453,7 @@ export default function Dreamshaper({
               ? "rounded-2xl shadow-[4px_12px_16px_0px_#37373F40]"
               : "rounded-[100px]",
           (profanity || exceedsMaxLength) &&
-            "dark:border-red-700 border-red-600"
+            "dark:border-red-700 border-red-600",
         )}
       >
         <div className="relative flex items-center flex-1">
@@ -466,7 +466,7 @@ export default function Dreamshaper({
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.3 }}
                 className={cn(
-                  "absolute inset-y-0 left-3 md:left-1 flex items-center text-muted-foreground pointer-events-none text-xs"
+                  "absolute inset-y-0 left-3 md:left-1 flex items-center text-muted-foreground pointer-events-none text-xs",
                 )}
               >
                 {lastSubmittedPrompt || samplePrompts[currentPromptIndex]}
@@ -477,14 +477,14 @@ export default function Dreamshaper({
             <Input
               className="w-full shadow-none border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-sm outline-none bg-transparent h-14"
               value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
+              onChange={e => setInputValue(e.target.value)}
               onFocus={() => {
                 window.scrollTo({
                   top: document.body.scrollHeight,
                   behavior: "smooth",
                 });
               }}
-              onKeyDown={(e) => {
+              onKeyDown={e => {
                 if (
                   !updating &&
                   !profanity &&
@@ -503,8 +503,8 @@ export default function Dreamshaper({
               maxRows={5}
               className="w-full shadow-none border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-sm outline-none bg-transparent h-14 break-all"
               value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onKeyDown={(e) => {
+              onChange={e => setInputValue(e.target.value)}
+              onKeyDown={e => {
                 if (
                   !updating &&
                   !profanity &&
@@ -525,7 +525,7 @@ export default function Dreamshaper({
             variant="ghost"
             size="icon"
             className="h-8 w-8 rounded-full"
-            onClick={(e) => {
+            onClick={e => {
               e.preventDefault();
               setInputValue("");
             }}
@@ -539,14 +539,14 @@ export default function Dreamshaper({
               disabled={
                 updating || !inputValue || profanity || exceedsMaxLength
               }
-              onClick={(e) => {
+              onClick={e => {
                 e.preventDefault();
                 submitPrompt();
               }}
               className={cn(
                 "border-none w-36 items-center justify-center font-semibold text-xs bg-[#00EB88] flex",
                 updating && "bg-muted text-muted-foreground",
-                isMobile ? "w-12 rounded-lg" : "w-12 rounded-lg"
+                isMobile ? "w-12 rounded-lg" : "w-12 rounded-lg",
               )}
             >
               {updating ? (
@@ -563,7 +563,7 @@ export default function Dreamshaper({
           <div
             className={cn(
               "absolute -top-10 left-0 mx-auto flex items-center justify-center gap-4 text-xs text-muted-foreground mt-4",
-              isMobile && "-top-8 text-[9px] left-auto"
+              isMobile && "-top-8 text-[9px] left-auto",
             )}
           >
             {exceedsMaxLength ? (
@@ -582,7 +582,7 @@ export default function Dreamshaper({
       <div
         className={cn(
           "mx-auto flex items-center justify-center gap-4 text-xs capitalize text-muted-foreground mt-2 mb-4",
-          isFullscreen && "hidden"
+          isFullscreen && "hidden",
         )}
       >
         <Link

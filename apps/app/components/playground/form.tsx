@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { Button } from "@repo/design-system/components/ui/button";
-import { Heart,  } from "lucide-react";
+import { Heart } from "lucide-react";
 
 import Try from "./try";
 import { motion, AnimatePresence } from "framer-motion";
@@ -14,23 +14,18 @@ export default function Form({
   setStreamInfo: (streamInfo: any) => void;
   pipeline: any;
 }) {
-  return (
-      <Try
-        pipeline={pipeline}
-        setStreamInfo={setStreamInfo}
-      />
-  );
+  return <Try pipeline={pipeline} setStreamInfo={setStreamInfo} />;
 }
 
 const HeartButton = () => {
   const [isLiked, setIsLiked] = useState(false);
 
   const particles = Array.from({ length: 12 }).map(() => ({
-    x: Math.random() * 100 - 50, 
-    y: Math.random() * -80 - 20, 
-    rotation: Math.random() * 720 - 360, 
+    x: Math.random() * 100 - 50,
+    y: Math.random() * -80 - 20,
+    rotation: Math.random() * 720 - 360,
     scale: Math.random() * 0.6 + 0.4,
-    shape: Math.random() > 0.5 ? "circle" : "heart", 
+    shape: Math.random() > 0.5 ? "circle" : "heart",
   }));
 
   return (

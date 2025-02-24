@@ -325,7 +325,7 @@ export default function ValidatePipeline({
                     }
                     const pipeline = await publishPipeline(
                       pipelineId,
-                      user?.id
+                      user?.id,
                     );
                     toast.success("Pipeline published successfully", {
                       id: toastId,

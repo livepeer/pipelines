@@ -81,7 +81,7 @@ export default function MyStreams({ searchParams }: { searchParams: any }) {
             track(
               "my_streams_create_stream_clicked",
               undefined,
-              user || undefined
+              user || undefined,
             );
             router.replace(`/stream/create`);
           }}
@@ -135,13 +135,13 @@ export default function MyStreams({ searchParams }: { searchParams: any }) {
 
   const handleNextPage = () => {
     if (page < totalPages) {
-      setPage((prevPage) => prevPage + 1);
+      setPage(prevPage => prevPage + 1);
     }
   };
 
   const handlePreviousPage = () => {
     if (page > 1) {
-      setPage((prevPage) => prevPage - 1);
+      setPage(prevPage => prevPage - 1);
     }
   };
 
@@ -193,7 +193,7 @@ export default function MyStreams({ searchParams }: { searchParams: any }) {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {streams.map((stream) => (
+                {streams.map(stream => (
                   <TableRow key={stream.stream_key}>
                     <TableCell>
                       <StreamStatusIndicator streamId={stream?.id} />
@@ -218,7 +218,7 @@ export default function MyStreams({ searchParams }: { searchParams: any }) {
                           className="mr-2 cursor-pointer flex-shrink-0"
                           onClick={() =>
                             copy(
-                              `${appEnv.rtmpUrl}${appEnv?.rtmpUrl?.endsWith("/") ? "" : "/"}${stream.stream_key}`
+                              `${appEnv.rtmpUrl}${appEnv?.rtmpUrl?.endsWith("/") ? "" : "/"}${stream.stream_key}`,
                             )
                           }
                         />
@@ -322,7 +322,7 @@ export default function MyStreams({ searchParams }: { searchParams: any }) {
                                   className="mr-2 cursor-pointer"
                                   onClick={() =>
                                     copy(
-                                      `${appEnv?.rtmpUrl}${appEnv?.rtmpUrl?.endsWith("/") ? "" : "/"}${stream.stream_key}`
+                                      `${appEnv?.rtmpUrl}${appEnv?.rtmpUrl?.endsWith("/") ? "" : "/"}${stream.stream_key}`,
                                     )
                                   }
                                 />
@@ -339,7 +339,7 @@ export default function MyStreams({ searchParams }: { searchParams: any }) {
                                   className="mr-2 cursor-pointer"
                                   onClick={() =>
                                     copy(
-                                      `${appEnv?.whipUrl}${appEnv?.whipUrl?.endsWith("/") ? "" : "/"}${stream.stream_key}/whip`
+                                      `${appEnv?.whipUrl}${appEnv?.whipUrl?.endsWith("/") ? "" : "/"}${stream.stream_key}/whip`,
                                     )
                                   }
                                 />
@@ -381,9 +381,9 @@ export default function MyStreams({ searchParams }: { searchParams: any }) {
                                         ? JSON.stringify(
                                             stream.pipeline_params,
                                             undefined,
-                                            4
+                                            4,
                                           )
-                                        : stream.pipeline_params
+                                        : stream.pipeline_params,
                                     )
                                   }
                                 />
@@ -401,7 +401,7 @@ export default function MyStreams({ searchParams }: { searchParams: any }) {
                                 ? JSON.stringify(
                                     stream.pipeline_params,
                                     undefined,
-                                    4
+                                    4,
                                   )
                                 : stream.pipeline_params}
                             </pre>

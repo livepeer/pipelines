@@ -7,9 +7,9 @@ const SupabaseConfig = z.object({
 });
 
 const GatewayConfig = z.object({
-    url: z.string().url().optional(),
-    userId: z.string().min(1).optional(),
-    password: z.string().min(1).optional(),
+  url: z.string().url().optional(),
+  userId: z.string().min(1).optional(),
+  password: z.string().min(1).optional(),
 });
 
 const ServerEnvironmentConfig = z.object({
@@ -31,7 +31,7 @@ const serverOnlyEnvConfig = {
     url: process.env.STREAM_STATUS_ENDPOINT_URL,
     userId: process.env.STREAM_STATUS_ENDPOINT_USER,
     password: process.env.STREAM_STATUS_ENDPOINT_PASSWORD,
-  }
+  },
 } as const;
 
 const serverOnlyConfig = ServerEnvironmentConfig.parse(serverOnlyEnvConfig);
@@ -45,7 +45,7 @@ export const validateServerEnv = async () => {
   } catch (error) {
     if (error instanceof z.ZodError) {
       console.error("Invalid server environment configuration:");
-      error.errors.forEach((err) => {
+      error.errors.forEach(err => {
         console.error(`- ${err.path.join(".")}: ${err.message}`);
       });
     }

@@ -7,22 +7,22 @@ let lastTrackedEvents: { [key: string]: number } = {};
 const DEBOUNCE_TIME = 1000; // 1000ms debounce
 
 function getStoredIds() {
-  if (typeof window === 'undefined') return {};
-  
+  if (typeof window === "undefined") return {};
+
   return {
-    distinctId: localStorage.getItem('mixpanel_distinct_id'),
-    sessionId: localStorage.getItem('mixpanel_session_id'),
-    userId: localStorage.getItem('mixpanel_user_id'),
+    distinctId: localStorage.getItem("mixpanel_distinct_id"),
+    sessionId: localStorage.getItem("mixpanel_session_id"),
+    userId: localStorage.getItem("mixpanel_user_id"),
   };
 }
 
 function getBrowserInfo() {
-  if (typeof window === 'undefined') return {};
+  if (typeof window === "undefined") return {};
 
   return {
     $os: navigator.platform,
-    $browser: navigator.userAgent.split('(')[0].trim(),
-    $device: /mobile/i.test(navigator.userAgent) ? 'Mobile' : 'Desktop',
+    $browser: navigator.userAgent.split("(")[0].trim(),
+    $device: /mobile/i.test(navigator.userAgent) ? "Mobile" : "Desktop",
     $current_url: window.location.href,
     $referrer: document.referrer,
     user_agent: navigator.userAgent,
@@ -32,14 +32,16 @@ function getBrowserInfo() {
 const track = async (
   eventName: string,
   eventProperties?: TrackProperties,
-  user?: User
+  user?: User,
 ) => {
   const now = Date.now();
   const lastTracked = lastTrackedEvents[eventName] || 0;
 
   // Skip if event was tracked less than DEBOUNCE_TIME ago
   if (now - lastTracked < DEBOUNCE_TIME) {
-    console.log(`Debouncing ${eventName}, last tracked ${now - lastTracked}ms ago`);
+    console.log(
+      `Debouncing ${eventName}, last tracked ${now - lastTracked}ms ago`,
+    );
     return false;
   }
 
@@ -76,7 +78,7 @@ const track = async (
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-    
+
     // Update last tracked time after successful tracking
     lastTrackedEvents[eventName] = now;
     return true;

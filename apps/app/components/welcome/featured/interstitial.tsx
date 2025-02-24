@@ -33,11 +33,11 @@ interface Step {
 export const examplePrompts: ExamplePrompt[] = [
   {
     prompt: "Van Gogh's Starry Night",
-    image: "/images/vangogh.png"
+    image: "/images/vangogh.png",
   },
   {
     prompt: "Cyberpunk neon city",
-    image: "/images/cyberpunk.png"
+    image: "/images/cyberpunk.png",
   },
 ];
 
@@ -95,18 +95,28 @@ const Interstitial: React.FC<InterstitialProps> = ({
   showLoginPrompt = false,
 }) => {
   const { authenticated, login } = usePrivy();
-  const [cameraPermission, setCameraPermission] = useState<PermissionState>("prompt");
+  const [cameraPermission, setCameraPermission] =
+    useState<PermissionState>("prompt");
   const [micPermission, setMicPermission] = useState<PermissionState>("prompt");
   const [permissionsChecked, setPermissionsChecked] = useState<boolean>(false);
   const [autoProceeded, setAutoProceeded] = useState<boolean>(false);
-  const [initialCameraGranted, setInitialCameraGranted] = useState<boolean | null>(null);
-  const [currentScreen, setCurrentScreen] = useState<"camera" | "prompts">("camera");
+  const [initialCameraGranted, setInitialCameraGranted] = useState<
+    boolean | null
+  >(null);
+  const [currentScreen, setCurrentScreen] = useState<"camera" | "prompts">(
+    "camera",
+  );
   const [selectedPrompt, setSelectedPrompt] = useState<string | null>(null);
   const [isPermissionLoading, setIsPermissionLoading] = useState(false);
   const [isPromptLoading, setIsPromptLoading] = useState(false);
 
   const effectiveStreamId = streamId || "";
-  const { status: streamStatus, loading: statusLoading, error: statusError, fullResponse } = useStreamStatus(effectiveStreamId, false);
+  const {
+    status: streamStatus,
+    loading: statusLoading,
+    error: statusError,
+    fullResponse,
+  } = useStreamStatus(effectiveStreamId, false);
 
   useEffect(() => {
     const checkCamera = async () => {
@@ -148,16 +158,18 @@ const Interstitial: React.FC<InterstitialProps> = ({
           setMicPermission(permissionStatus.state as PermissionState);
           if (permissionStatus.state === "denied") {
             track("daydream_microphone_permission_denied", {
-              is_authenticated: authenticated
+              is_authenticated: authenticated,
             });
           }
         }
         if (micPermission !== "granted") {
-          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-          stream.getTracks().forEach((track) => track.stop());
+          const stream = await navigator.mediaDevices.getUserMedia({
+            audio: true,
+          });
+          stream.getTracks().forEach(track => track.stop());
           setMicPermission("granted");
           track("daydream_microphone_permission_granted", {
-            is_authenticated: authenticated
+            is_authenticated: authenticated,
           });
         }
       } catch (err) {
@@ -169,11 +181,22 @@ const Interstitial: React.FC<InterstitialProps> = ({
   }, []);
 
   useEffect(() => {
-    if (permissionsChecked && cameraPermission === "granted" && initialCameraGranted && !autoProceeded) {
+    if (
+      permissionsChecked &&
+      cameraPermission === "granted" &&
+      initialCameraGranted &&
+      !autoProceeded
+    ) {
       setAutoProceeded(true);
       onReady();
     }
-  }, [permissionsChecked, cameraPermission, autoProceeded, onReady, initialCameraGranted]);
+  }, [
+    permissionsChecked,
+    cameraPermission,
+    autoProceeded,
+    onReady,
+    initialCameraGranted,
+  ]);
 
   const requestCamera = async () => {
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
@@ -189,11 +212,11 @@ const Interstitial: React.FC<InterstitialProps> = ({
 
     try {
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
-      stream.getTracks().forEach((track) => track.stop());
+      stream.getTracks().forEach(track => track.stop());
 
       setCameraPermission("granted");
       track("daydream_camera_permission_granted", {
-        is_authenticated: authenticated
+        is_authenticated: authenticated,
       });
       onCameraPermissionGranted();
       setCurrentScreen("prompts");
@@ -201,11 +224,13 @@ const Interstitial: React.FC<InterstitialProps> = ({
       console.error("Camera permission denied:", err);
       setCameraPermission("denied");
       track("daydream_camera_permission_denied", {
-        is_authenticated: authenticated
+        is_authenticated: authenticated,
       });
 
       if (isMobile) {
-        alert("Please ensure camera permissions are enabled in your browser settings.");
+        alert(
+          "Please ensure camera permissions are enabled in your browser settings.",
+        );
       }
     }
   };
@@ -232,9 +257,19 @@ const Interstitial: React.FC<InterstitialProps> = ({
   const TermsNotice = () => (
     <p className="text-xs text-muted-foreground text-center mt-4">
       By using this service, you accept the{" "}
-      <a href="https://www.livepeer.org/terms-of-service-p" className="underline hover:text-primary">Terms of Service</a>{" "}
+      <a
+        href="https://www.livepeer.org/terms-of-service-p"
+        className="underline hover:text-primary"
+      >
+        Terms of Service
+      </a>{" "}
       and{" "}
-      <a href="https://www.livepeer.org/privacy-policy-p" className="underline hover:text-primary">Privacy Policy</a>
+      <a
+        href="https://www.livepeer.org/privacy-policy-p"
+        className="underline hover:text-primary"
+      >
+        Privacy Policy
+      </a>
     </p>
   );
 
@@ -243,9 +278,9 @@ const Interstitial: React.FC<InterstitialProps> = ({
     track("daydream_interstitial_continue_clicked", {
       is_authenticated: authenticated,
       camera_permission: cameraPermission,
-      mic_permission: micPermission
+      mic_permission: micPermission,
     });
-    
+
     // Add 2s delay
     await new Promise(resolve => setTimeout(resolve, 2000));
     await requestCamera();
@@ -257,7 +292,7 @@ const Interstitial: React.FC<InterstitialProps> = ({
     if (selectedPrompt && onPromptApply) {
       track("daydream_prompt_selected_continue", {
         is_authenticated: authenticated,
-        selected_prompt: selectedPrompt
+        selected_prompt: selectedPrompt,
       });
       onPromptApply(selectedPrompt);
     }
@@ -269,16 +304,16 @@ const Interstitial: React.FC<InterstitialProps> = ({
 
   if (showLoginPrompt) {
     track("daydream_trial_expired_modal_shown", {
-      is_authenticated: authenticated
+      is_authenticated: authenticated,
     });
     return (
-      <TrialExpiredModal 
-        open={true} 
-        onOpenChange={(open) => {
+      <TrialExpiredModal
+        open={true}
+        onOpenChange={open => {
           if (!open) {
-            window.location.href = '/explore';
+            window.location.href = "/explore";
           }
-        }} 
+        }}
       />
     );
   }
@@ -291,7 +326,11 @@ const Interstitial: React.FC<InterstitialProps> = ({
     );
   }
 
-  if (permissionsChecked && cameraPermission === "granted" && initialCameraGranted) {
+  if (
+    permissionsChecked &&
+    cameraPermission === "granted" &&
+    initialCameraGranted
+  ) {
     return null;
   }
 
@@ -302,21 +341,27 @@ const Interstitial: React.FC<InterstitialProps> = ({
           <Slide keyName="camera" slideVariants={slideVariants}>
             <div className="bg-[#161616] border border-[#232323] rounded-xl p-3 sm:p-4 md:p-8 max-w-2xl w-full mx-auto shadow-lg">
               <div className="space-y-1 sm:space-y-2 md:space-y-3 mb-3 sm:mb-4 md:mb-8">
-                <h1 className="text-lg sm:text-xl md:text-2xl font-semibold">Enable camera access to start creating</h1>
+                <h1 className="text-lg sm:text-xl md:text-2xl font-semibold">
+                  Enable camera access to start creating
+                </h1>
                 <p className="text-xs sm:text-sm md:text-base text-muted-foreground">
                   Grant access to begin exploring pipelines
                 </p>
               </div>
               <div className="flex flex-col gap-2 sm:gap-3 md:gap-4">
                 {steps.map((step, i) => (
-                  <div 
-                    key={i} 
+                  <div
+                    key={i}
                     className="flex items-center gap-3 sm:gap-4 md:gap-6 py-4 sm:py-6 md:py-12 px-3 sm:px-4 md:px-6 rounded-lg border border-[#2e2e2e] bg-[#1c1c1c] relative overflow-hidden"
                   >
                     <step.icon className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 text-[#00eb88] shrink-0" />
                     <div className="flex flex-col relative z-10">
-                      <h3 className="text-sm sm:text-base md:text-lg font-bold">{step.title}</h3>
-                      <p className="text-xs sm:text-sm text-muted-foreground">{step.description}</p>
+                      <h3 className="text-sm sm:text-base md:text-lg font-bold">
+                        {step.title}
+                      </h3>
+                      <p className="text-xs sm:text-sm text-muted-foreground">
+                        {step.description}
+                      </p>
                     </div>
                     <div className="hidden md:block">
                       <InterstitialDecor flip={i === 1} opacity={0.2} />
@@ -325,10 +370,11 @@ const Interstitial: React.FC<InterstitialProps> = ({
                 ))}
               </div>
               <div className="flex flex-col items-center gap-4 mt-8">
-                {(cameraPermission === "prompt" || cameraPermission === "granted") && (
-                  <Button 
+                {(cameraPermission === "prompt" ||
+                  cameraPermission === "granted") && (
+                  <Button
                     onClick={handlePermissionContinue}
-                    size="lg" 
+                    size="lg"
                     className="w-full rounded-full h-12 text-base active:opacity-70"
                     disabled={isPermissionLoading}
                   >
@@ -355,16 +401,21 @@ const Interstitial: React.FC<InterstitialProps> = ({
           <Slide keyName="prompts" slideVariants={slideVariants} flipDirection>
             <div className="bg-[#161616] border border-[#232323] rounded-xl p-3 sm:p-4 md:p-8 max-w-2xl w-full mx-auto shadow-lg">
               <div className="space-y-1 sm:space-y-2 md:space-y-3 mb-3 sm:mb-4 md:mb-8">
-                <h1 className="text-lg sm:text-xl md:text-2xl font-semibold">Select Your First Prompt</h1>
+                <h1 className="text-lg sm:text-xl md:text-2xl font-semibold">
+                  Select Your First Prompt
+                </h1>
                 <p className="text-xs sm:text-sm md:text-base text-muted-foreground">
-                  Start tranforming your live video with AI. Select a preset prompt to continue.
-                  <br /><br />
+                  Start tranforming your live video with AI. Select a preset
+                  prompt to continue.
+                  <br />
+                  <br />
                   <span className="hidden md:inline">
-                    Pro tip: Ensure good lightning and a steady background for best results.
+                    Pro tip: Ensure good lightning and a steady background for
+                    best results.
                   </span>
                 </p>
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-3 md:gap-4">
                 {examplePrompts.map((example, i) => (
                   <div
@@ -372,17 +423,19 @@ const Interstitial: React.FC<InterstitialProps> = ({
                     onClick={() => setSelectedPrompt(example.prompt)}
                     className={`
                       relative h-32 sm:h-36 md:h-64 rounded-xl overflow-hidden cursor-pointer
-                      ${selectedPrompt === example.prompt ? 'ring-2 ring-[#00eb88]' : 'border border-[#2e2e2e]'}
-                      ${selectedPrompt && selectedPrompt !== example.prompt ? 'opacity-25' : ''}
+                      ${selectedPrompt === example.prompt ? "ring-2 ring-[#00eb88]" : "border border-[#2e2e2e]"}
+                      ${selectedPrompt && selectedPrompt !== example.prompt ? "opacity-25" : ""}
                     `}
                     style={{
                       backgroundImage: `url(${example.image})`,
-                      backgroundSize: 'cover',
-                      backgroundPosition: 'center'
+                      backgroundSize: "cover",
+                      backgroundPosition: "center",
                     }}
                   >
                     <div className="absolute bottom-0 w-full p-2 sm:p-3 md:p-4 bg-black/50 backdrop-blur-md rounded-t-xl">
-                      <p className="text-white font-bold text-xs sm:text-sm md:text-base text-center">{example.prompt}</p>
+                      <p className="text-white font-bold text-xs sm:text-sm md:text-base text-center">
+                        {example.prompt}
+                      </p>
                     </div>
                   </div>
                 ))}

@@ -40,7 +40,7 @@ export default function Playground({
           is_authenticated: authenticated,
           referrer: document.referrer,
         },
-        user || undefined
+        user || undefined,
       );
     }
   }, [pipelineData]);

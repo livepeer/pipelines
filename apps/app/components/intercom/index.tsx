@@ -8,7 +8,7 @@ export default function Intercom() {
 
   useEffect(() => {
     if (!isMobile) {
-      import("@intercom/messenger-js-sdk").then((IntercomClient) => {
+      import("@intercom/messenger-js-sdk").then(IntercomClient => {
         IntercomClient.default({
           app_id: process.env.NEXT_PUBLIC_INTERCOM_APP_ID || "",
         });
