@@ -30,17 +30,17 @@ export function LPPLayer({
   }
 
   console.log("LPPLayer:: PlaybackId", output_playback_id);
-  const [playbackInfo, setPlaybackInfo] = useState<any>(null);
+  // const [playbackInfo, setPlaybackInfo] = useState<any>(null);
 
-  useEffect(() => {
-    const fetchPlaybackInfo = async () => {
-      const { data, error } = await getStreamPlaybackInfo(output_playback_id);
-      setPlaybackInfo(data);
-    };
-    fetchPlaybackInfo();
-  }, [output_playback_id]);
+  // useEffect(() => {
+  //   const fetchPlaybackInfo = async () => {
+  //     const { data, error } = await getStreamPlaybackInfo(output_playback_id);
+  //     setPlaybackInfo(data);
+  //   };
+  //   fetchPlaybackInfo();
+  // }, []);
 
-  const src = getSrc(playbackInfo as any);
+  const src = getSrc(playerUrl as any);
 
   if (!src) {
     console.log("LPPLayer:: No playback info found");
@@ -51,7 +51,7 @@ export function LPPLayer({
     );
   }
 
-  console.log("LPPLayer:: Playback info found", playbackInfo);
+  console.log("LPPLayer:: Playing stream", src);
   return (
     <div className={isMobile ? "w-full h-full" : "aspect-video"}>
       {/* <iframe

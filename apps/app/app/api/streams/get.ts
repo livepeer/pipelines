@@ -93,6 +93,7 @@ export async function getStreams(
 }
 
 export async function getStreamPlaybackInfo(playbackId: string) {
+  console.log("getStreamPlaybackInfo:: PlaybackId", playbackId);
   const livepeer = new Livepeer({
     serverURL: livePeerEnv.apiUrl,
     apiKey: livePeerEnv.apiKey,
