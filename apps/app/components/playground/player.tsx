@@ -1,3 +1,5 @@
+"use client";
+
 import * as Player from "@livepeer/react/player";
 import { getSrc } from "@livepeer/react/external";
 import React, { useEffect, useState } from "react";
