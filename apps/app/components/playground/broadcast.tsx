@@ -106,7 +106,10 @@ export function BroadcastWithControls({
       >
         <Broadcast.Video
           title="Live stream"
-          className={cn("w-full h-full object-cover", collapsed && "opacity-0")}
+          className={cn(
+            "w-full h-full object-cover [transform:scaleX(-1)]",
+            collapsed && "opacity-0"
+          )}
         />
 
         {collapsed ? (
