@@ -25,18 +25,6 @@ export default function DayDreamContent(): ReactElement {
     stream?.id || "",
     false,
   );
-  
-  const setShowInterstitialWithLog = (value: boolean) => {
-    setShowInterstitial(value);
-  };
-  
-  const setCameraPermissionGrantedWithLog = (value: boolean) => {
-    setCameraPermissionGranted(value);
-  };
-  
-  const setShowPromptSelectionWithLog = (value: boolean) => {
-    setShowPromptSelection(value);
-  };
 
   useEffect(() => {
     const checkPermissions = async () => {
@@ -96,9 +84,9 @@ export default function DayDreamContent(): ReactElement {
   }, []);
 
   const handleReady = () => {
-    setShowInterstitialWithLog(false);
+    setShowInterstitial(false);
     setStreamKilled(false);
-    setShowPromptSelectionWithLog(false);
+    setShowPromptSelection(false);
   };
 
   const handlePromptApply = (prompt: string) => {

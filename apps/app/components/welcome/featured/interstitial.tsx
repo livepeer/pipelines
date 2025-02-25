@@ -113,26 +113,6 @@ const Interstitial: React.FC<InterstitialProps> = ({
   const [isPermissionLoading, setIsPermissionLoading] = useState(false);
   const [isPromptLoading, setIsPromptLoading] = useState(false);
 
-  const setCameraPermissionWithLog = (value: PermissionState) => {
-    setCameraPermission(value);
-  };
-  
-  const setCurrentScreenWithLog = (value: "camera" | "prompts") => {
-    setCurrentScreen(value);
-  };
-  
-  const setInitialCameraGrantedWithLog = (value: boolean) => {
-    setInitialCameraGranted(value);
-  };
-
-  const setAutoProceededWithLog = (value: boolean) => {
-    setAutoProceeded(value);
-  };
-  
-  const setPermissionsCheckedWithLog = (value: boolean) => {
-    setPermissionsChecked(value);
-  };
-
   const effectiveStreamId = streamId || "";
   const {
     status: streamStatus,
@@ -150,19 +130,19 @@ const Interstitial: React.FC<InterstitialProps> = ({
           });
           const state = permissionStatus.state as PermissionState;
           
-          setCameraPermissionWithLog(state);
+          setCameraPermission(state);
           if (state === "granted") {
-            setInitialCameraGrantedWithLog(true);
+            setInitialCameraGranted(true);
             onCameraPermissionGranted();
           } else {
-            setInitialCameraGrantedWithLog(false);
+            setInitialCameraGranted(false);
           }
         } else {
-          setCameraPermissionWithLog("prompt");
-          setInitialCameraGrantedWithLog(false);
+          setCameraPermission("prompt");
+          setInitialCameraGranted(false);
         }
       } finally {
-        setPermissionsCheckedWithLog(true);
+        setPermissionsChecked(true);
       }
     };
 
@@ -206,10 +186,10 @@ const Interstitial: React.FC<InterstitialProps> = ({
       const hasVisited = localStorage.getItem("hasSeenLandingPage");
       
       if (hasVisited) {
-        setAutoProceededWithLog(true);
+        setAutoProceeded(true);
         onReady();
       } else {
-        setCurrentScreenWithLog("prompts");
+        setCurrentScreen("prompts");
       }
     }
   }, [
@@ -222,7 +202,7 @@ const Interstitial: React.FC<InterstitialProps> = ({
 
   useEffect(() => {
     if (showPromptSelection) {
-      setCurrentScreenWithLog("prompts");
+      setCurrentScreen("prompts");
     }
   }, [showPromptSelection]);
 
@@ -242,16 +222,16 @@ const Interstitial: React.FC<InterstitialProps> = ({
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
       stream.getTracks().forEach(track => track.stop());
       
-      setCameraPermissionWithLog("granted");
+      setCameraPermission("granted");
       track("daydream_camera_permission_granted", {
         is_authenticated: authenticated,
       });
       onCameraPermissionGranted();
       
-      setCurrentScreenWithLog("prompts");
+      setCurrentScreen("prompts");
       return true;
     } catch (err) {
-      setCameraPermissionWithLog("denied");
+      setCameraPermission("denied");
       track("daydream_camera_permission_denied", {
         is_authenticated: authenticated,
       });
@@ -266,7 +246,7 @@ const Interstitial: React.FC<InterstitialProps> = ({
   };
 
   const handleBack = () => {
-    setCurrentScreenWithLog("camera");
+    setCurrentScreen("camera");
   };
 
   const slideVariants = {
@@ -332,11 +312,11 @@ const Interstitial: React.FC<InterstitialProps> = ({
     if (cameraPermission !== "granted") {
       const cameraGranted = await requestCamera();
       if (cameraGranted) {
-        setCurrentScreenWithLog("prompts");
+        setCurrentScreen("prompts");
       }
     } else {
       onCameraPermissionGranted();
-      setCurrentScreenWithLog("prompts");
+      setCurrentScreen("prompts");
     }
     
     setIsPermissionLoading(false);
