@@ -41,7 +41,7 @@ export function LPPLayer({
     fetchPlaybackInfo();
   }, []);
 
-  const src = getSrc(playbackInfo as any);
+  const src = getSrc(playbackInfo as any)?.filter(s => s.type !== "hls");
 
   if (!src) {
     console.log("LPPLayer:: No playback info found");
@@ -63,7 +63,7 @@ export function LPPLayer({
         allowFullScreen
       /> */}
       <Player.Root
-        src={src.filter(s => s.type !== "hls")}
+        src={src}
         lowLatency="force"
         ingestPlayback={true}
         backoffMax={1000}
