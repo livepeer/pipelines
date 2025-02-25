@@ -8,6 +8,8 @@ import { isProduction } from "@/lib/env";
 import { useSearchParams } from "next/navigation";
 import { getStreamPlaybackInfo } from "@/app/api/streams/get";
 import { Loader2 } from "lucide-react";
+import { LoadingIcon } from "@livepeer/react/assets";
+import { useMediaContext, useStore } from "@livepeer/react/player";
 
 export const LPPLayer = React.memo(function LPPLayer({
   output_playback_id,
@@ -41,7 +43,7 @@ export const LPPLayer = React.memo(function LPPLayer({
     fetchPlaybackInfo();
   }, []);
 
-  const src = getSrc(playbackInfo as any)?.filter(s => s.type !== "hls");
+  const src = getSrc(playbackInfo as any);
 
   if (!src) {
     console.log("LPPLayer:: No playback info found");
@@ -68,6 +70,7 @@ export const LPPLayer = React.memo(function LPPLayer({
         ingestPlayback={true}
         backoffMax={1000}
       >
+        <StateRenderer />
         <Player.Container className="flex-1 h-full w-full overflow-hidden bg-black outline-none transition-all">
           <Player.Video
             title="Live stream"
@@ -86,8 +89,82 @@ export const LPPLayer = React.memo(function LPPLayer({
           >
             Loading...
           </Player.LoadingIndicator>
+
+          <Player.ErrorIndicator
+            matcher="offline"
+            className="absolute select-none animate-in fade-in-0 inset-0 text-center bg-black/40 backdrop-blur-lg flex flex-col items-center justify-center gap-4 duration-1000 data-[visible=true]:animate-in data-[visible=false]:animate-out data-[visible=false]:fade-out-0 data-[visible=true]:fade-in-0"
+          >
+            <div className="flex flex-col gap-5">
+              <div className="flex flex-col gap-1">
+                <div className="text-lg sm:text-2xl font-bold">
+                  Stream is offline
+                </div>
+                <div className="text-xs sm:text-sm text-gray-100">
+                  Playback will start automatically once the stream has started
+                </div>
+              </div>
+              <LoadingIcon className="w-6 h-6 md:w-8 md:h-8 mx-auto animate-spin" />
+            </div>
+          </Player.ErrorIndicator>
+
+          <Player.ErrorIndicator
+            matcher="access-control"
+            className="absolute select-none inset-0 text-center bg-black/40 backdrop-blur-lg flex flex-col items-center justify-center gap-4 duration-1000 data-[visible=true]:animate-in data-[visible=false]:animate-out data-[visible=false]:fade-out-0 data-[visible=true]:fade-in-0"
+          >
+            <div className="flex flex-col gap-5">
+              <div className="flex flex-col gap-1">
+                <div className="text-lg sm:text-2xl font-bold">
+                  Stream is private
+                </div>
+                <div className="text-xs sm:text-sm text-gray-100">
+                  It looks like you don't have permission to view this content
+                </div>
+              </div>
+              <LoadingIcon className="w-6 h-6 md:w-8 md:h-8 mx-auto animate-spin" />
+            </div>
+          </Player.ErrorIndicator>
         </Player.Container>
       </Player.Root>
     </div>
   );
 });
+
+const StateRenderer = ({ __scopeMedia }: Player.MediaScopedProps) => {
+  const context = useMediaContext("CustomComponent", __scopeMedia);
+
+  const state = useStore(context.store);
+  console.log("StateRenderer:: State", state);
+  return null;
+};
+
+export const PlayerLoading = ({
+  title,
+  description,
+}: {
+  title?: React.ReactNode;
+  description?: React.ReactNode;
+}) => (
+  <div className="relative w-full px-3 py-2 gap-3 flex-col-reverse flex aspect-video bg-white/10 overflow-hidden rounded-sm">
+    <div className="flex justify-between">
+      <div className="flex items-center gap-2">
+        <div className="w-6 h-6 animate-pulse bg-white/5 overflow-hidden rounded-lg" />
+        <div className="w-16 h-6 md:w-20 md:h-7 animate-pulse bg-white/5 overflow-hidden rounded-lg" />
+      </div>
+
+      <div className="flex items-center gap-2">
+        <div className="w-6 h-6 animate-pulse bg-white/5 overflow-hidden rounded-lg" />
+        <div className="w-6 h-6 animate-pulse bg-white/5 overflow-hidden rounded-lg" />
+      </div>
+    </div>
+    <div className="w-full h-2 animate-pulse bg-white/5 overflow-hidden rounded-lg" />
+
+    {title && (
+      <div className="absolute flex flex-col gap-1 inset-10 text-center justify-center items-center">
+        <span className="text-white text-lg font-medium">{title}</span>
+        {description && (
+          <span className="text-sm text-white/80">{description}</span>
+        )}
+      </div>
+    )}
+  </div>
+);
