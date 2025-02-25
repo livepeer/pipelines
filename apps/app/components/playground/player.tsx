@@ -9,7 +9,7 @@ import { useSearchParams } from "next/navigation";
 import { getStreamPlaybackInfo } from "@/app/api/streams/get";
 import { Loader2 } from "lucide-react";
 
-export function LPPLayer({
+export const LPPLayer = React.memo(function LPPLayer({
   output_playback_id,
   isMobile,
   stream_key,
@@ -90,4 +90,4 @@ export function LPPLayer({
       </Player.Root>
     </div>
   );
-}
+});
