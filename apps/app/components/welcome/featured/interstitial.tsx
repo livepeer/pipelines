@@ -82,6 +82,7 @@ interface InterstitialProps {
   streamId?: string;
   onPromptApply?: (prompt: string) => void;
   showLoginPrompt?: boolean;
+  showPromptSelection?: boolean;
 }
 
 type PermissionState = "prompt" | "granted" | "denied";
@@ -93,6 +94,7 @@ const Interstitial: React.FC<InterstitialProps> = ({
   streamId,
   onPromptApply,
   showLoginPrompt = false,
+  showPromptSelection = false,
 }) => {
   const { authenticated, login } = usePrivy();
   const [cameraPermission, setCameraPermission] =
@@ -126,6 +128,7 @@ const Interstitial: React.FC<InterstitialProps> = ({
             name: "camera" as PermissionName,
           });
           const state = permissionStatus.state as PermissionState;
+
           setCameraPermission(state);
           if (state === "granted") {
             setInitialCameraGranted(true);
@@ -137,48 +140,40 @@ const Interstitial: React.FC<InterstitialProps> = ({
           setCameraPermission("prompt");
           setInitialCameraGranted(false);
         }
-      } catch (err) {
-        console.error("Error checking camera permission:", err);
-        setInitialCameraGranted(false);
       } finally {
         setPermissionsChecked(true);
       }
     };
 
     checkCamera();
-  }, [onCameraPermissionGranted]);
 
-  useEffect(() => {
-    const checkMic = async () => {
-      try {
-        if ("permissions" in navigator) {
-          const permissionStatus = await navigator.permissions.query({
-            name: "microphone" as PermissionName,
-          });
-          setMicPermission(permissionStatus.state as PermissionState);
-          if (permissionStatus.state === "denied") {
-            track("daydream_microphone_permission_denied", {
-              is_authenticated: authenticated,
+    if (cameraPermission === "granted") {
+      const checkMic = async () => {
+        try {
+          if ("permissions" in navigator) {
+            const permissionStatus = await navigator.permissions.query({
+              name: "microphone" as PermissionName,
             });
+            setMicPermission(permissionStatus.state as PermissionState);
+            if (permissionStatus.state === "denied") {
+              track("daydream_microphone_permission_denied", {
+                is_authenticated: authenticated,
+              });
+            } else if (permissionStatus.state === "granted") {
+              track("daydream_microphone_permission_granted", {
+                is_authenticated: authenticated,
+              });
+            }
+          } else {
+            setMicPermission("prompt");
           }
+        } catch (err) {
+          setMicPermission("prompt");
         }
-        if (micPermission !== "granted") {
-          const stream = await navigator.mediaDevices.getUserMedia({
-            audio: true,
-          });
-          stream.getTracks().forEach(track => track.stop());
-          setMicPermission("granted");
-          track("daydream_microphone_permission_granted", {
-            is_authenticated: authenticated,
-          });
-        }
-      } catch (err) {
-        setMicPermission("prompt");
-      }
-    };
-
-    checkMic();
-  }, []);
+      };
+      checkMic();
+    }
+  }, [cameraPermission]);
 
   useEffect(() => {
     if (
@@ -187,8 +182,14 @@ const Interstitial: React.FC<InterstitialProps> = ({
       initialCameraGranted &&
       !autoProceeded
     ) {
-      setAutoProceeded(true);
-      onReady();
+      const hasVisited = localStorage.getItem("hasSeenLandingPage");
+
+      if (hasVisited) {
+        setAutoProceeded(true);
+        onReady();
+      } else {
+        setCurrentScreen("prompts");
+      }
     }
   }, [
     permissionsChecked,
@@ -197,6 +198,12 @@ const Interstitial: React.FC<InterstitialProps> = ({
     onReady,
     initialCameraGranted,
   ]);
+
+  useEffect(() => {
+    if (showPromptSelection) {
+      setCurrentScreen("prompts");
+    }
+  }, [showPromptSelection]);
 
   const requestCamera = async () => {
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
@@ -219,9 +226,10 @@ const Interstitial: React.FC<InterstitialProps> = ({
         is_authenticated: authenticated,
       });
       onCameraPermissionGranted();
+
       setCurrentScreen("prompts");
+      return true;
     } catch (err) {
-      console.error("Camera permission denied:", err);
       setCameraPermission("denied");
       track("daydream_camera_permission_denied", {
         is_authenticated: authenticated,
@@ -232,10 +240,13 @@ const Interstitial: React.FC<InterstitialProps> = ({
           "Please ensure camera permissions are enabled in your browser settings.",
         );
       }
+      return false;
     }
   };
 
-  const handleBack = () => setCurrentScreen("camera");
+  const handleBack = () => {
+    setCurrentScreen("camera");
+  };
 
   const slideVariants = {
     enter: (direction: number) => ({
@@ -281,24 +292,46 @@ const Interstitial: React.FC<InterstitialProps> = ({
       mic_permission: micPermission,
     });
 
-    // Add 2s delay
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    await requestCamera();
+    if (micPermission !== "granted") {
+      try {
+        const audioStream = await navigator.mediaDevices.getUserMedia({
+          audio: true,
+        });
+        audioStream.getTracks().forEach(track => track.stop());
+        setMicPermission("granted");
+        track("daydream_microphone_permission_granted", {
+          is_authenticated: authenticated,
+        });
+      } catch (err) {
+        setMicPermission("denied");
+        track("daydream_microphone_permission_denied", {
+          is_authenticated: authenticated,
+        });
+      }
+    }
+
+    if (cameraPermission !== "granted") {
+      const cameraGranted = await requestCamera();
+      if (cameraGranted) {
+        setCurrentScreen("prompts");
+      }
+    } else {
+      onCameraPermissionGranted();
+      setCurrentScreen("prompts");
+    }
+
     setIsPermissionLoading(false);
   };
 
   const handlePromptContinue = async () => {
     setIsPromptLoading(true);
     if (selectedPrompt && onPromptApply) {
-      track("daydream_prompt_selected_continue", {
-        is_authenticated: authenticated,
-        selected_prompt: selectedPrompt,
-      });
       onPromptApply(selectedPrompt);
+
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      onReady();
     }
-    // Add 3s delay
-    await new Promise(resolve => setTimeout(resolve, 3000));
-    onReady();
     setIsPromptLoading(false);
   };
 
@@ -329,7 +362,8 @@ const Interstitial: React.FC<InterstitialProps> = ({
   if (
     permissionsChecked &&
     cameraPermission === "granted" &&
-    initialCameraGranted
+    initialCameraGranted &&
+    !showPromptSelection
   ) {
     return null;
   }
@@ -339,7 +373,10 @@ const Interstitial: React.FC<InterstitialProps> = ({
       <AnimatePresence mode="wait" initial={false}>
         {currentScreen === "camera" ? (
           <Slide keyName="camera" slideVariants={slideVariants}>
-            <div className="bg-[#161616] border border-[#232323] rounded-xl p-3 sm:p-4 md:p-8 max-w-2xl w-full mx-auto shadow-lg">
+            <div
+              className="bg-[#161616] border border-[#232323] rounded-xl p-3 sm:p-4 md:p-8 max-w-2xl w-full mx-auto shadow-lg cursor-pointer"
+              onClick={handlePermissionContinue}
+            >
               <div className="space-y-1 sm:space-y-2 md:space-y-3 mb-3 sm:mb-4 md:mb-8">
                 <h1 className="text-lg sm:text-xl md:text-2xl font-semibold">
                   Enable camera access to start creating
@@ -369,7 +406,10 @@ const Interstitial: React.FC<InterstitialProps> = ({
                   </div>
                 ))}
               </div>
-              <div className="flex flex-col items-center gap-4 mt-8">
+              <div
+                className="flex flex-col items-center gap-4 mt-8"
+                onClick={e => e.stopPropagation()}
+              >
                 {(cameraPermission === "prompt" ||
                   cameraPermission === "granted") && (
                   <Button
