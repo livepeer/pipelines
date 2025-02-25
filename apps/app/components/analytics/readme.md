@@ -128,3 +128,20 @@ function TrackedCustomComponent() {
 }
 ```
 
+```tsx
+import { SomeCustomComponent } from "some-library";
+
+function TrackedThirdPartyComponent() {
+  const { onClick, onChange } = useTrackEvent(
+    "event_name_interaction_or_whatever",
+    { whatevr_data: whatever_data }
+  );
+
+  return (
+    <SomeCustomComponent
+      onClick={onClick}
+      onChange={onChange}
+    />
+  );
+}
+```
