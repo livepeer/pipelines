@@ -30,17 +30,18 @@ export function LPPLayer({
   }
 
   console.log("LPPLayer:: PlaybackId", output_playback_id);
-  // const [playbackInfo, setPlaybackInfo] = useState<any>(null);
+  const [playbackInfo, setPlaybackInfo] = useState<any>(null);
 
-  // useEffect(() => {
-  //   const fetchPlaybackInfo = async () => {
-  //     const { data, error } = await getStreamPlaybackInfo(output_playback_id);
-  //     setPlaybackInfo(data);
-  //   };
-  //   fetchPlaybackInfo();
-  // }, []);
+  useEffect(() => {
+    const fetchPlaybackInfo = async () => {
+      const { data, error } = await getStreamPlaybackInfo(output_playback_id);
+      console.log("PLAYBACK INFO", data);
+      setPlaybackInfo(data);
+    };
+    fetchPlaybackInfo();
+  }, []);
 
-  const src = getSrc(playerUrl as any);
+  const src = getSrc(playbackInfo as any);
 
   if (!src) {
     console.log("LPPLayer:: No playback info found");

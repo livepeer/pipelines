@@ -100,8 +100,8 @@ export async function getStreamPlaybackInfo(playbackId: string) {
   });
 
   try {
-    const playbackInfo = await livepeer.playback.get(playbackId);
-    return { data: playbackInfo, error: null };
+    const response = await livepeer.playback.get(playbackId);
+    return { data: response.playbackInfo, error: null };
   } catch (error) {
     console.error("Error fetching playback info:", error);
     return { data: null, error: error };
