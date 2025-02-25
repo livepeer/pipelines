@@ -21,10 +21,8 @@ export default function DayDreamContent(): ReactElement {
 
   const [pendingPrompt, setPendingPrompt] = useState<string | null>(null);
 
-  const { status, isLive, statusMessage, capacityReached, fullResponse } = useStreamStatus(
-    stream?.id || "",
-    false,
-  );
+  const { status, isLive, statusMessage, capacityReached, fullResponse } =
+    useStreamStatus(stream?.id || "", false);
 
   useEffect(() => {
     const checkPermissions = async () => {

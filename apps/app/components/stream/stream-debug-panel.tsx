@@ -16,18 +16,21 @@ interface ErrorHistoryItem {
   time: number;
 }
 
-export function StreamDebugPanel({ 
-  streamId, 
-  status, 
-  fullResponse, 
-  onClose 
+export function StreamDebugPanel({
+  streamId,
+  status,
+  fullResponse,
+  onClose,
 }: StreamDebugPanelProps) {
   const [errorHistory, setErrorHistory] = useState<ErrorHistoryItem[]>([]);
 
   useEffect(() => {
     if (fullResponse) {
       const newErrors: ErrorHistoryItem[] = [];
-      if (fullResponse.inference_status && fullResponse.inference_status.last_error) {
+      if (
+        fullResponse.inference_status &&
+        fullResponse.inference_status.last_error
+      ) {
         newErrors.push({
           source: "inference_status",
           error: fullResponse.inference_status.last_error,
@@ -42,10 +45,10 @@ export function StreamDebugPanel({
         });
       }
       if (newErrors.length > 0) {
-        setErrorHistory((prev) => {
+        setErrorHistory(prev => {
           const updated = [...prev];
-          newErrors.forEach((ne) => {
-            if (!prev.some((e) => e.error === ne.error && e.time === ne.time)) {
+          newErrors.forEach(ne => {
+            if (!prev.some(e => e.error === ne.error && e.time === ne.time)) {
               updated.push(ne);
             }
           });
@@ -93,17 +96,22 @@ export function StreamDebugPanel({
       </p>
       <div className="mb-2">
         <span className="mr-2 font-semibold">State:</span>
-        <span className={`inline-block rounded px-2 py-1 text-xs font-bold ${getStatusClass(status)}`}>
+        <span
+          className={`inline-block rounded px-2 py-1 text-xs font-bold ${getStatusClass(status)}`}
+        >
           {status || "Unknown"}
         </span>
       </div>
       <div className="mt-2 flex-1">
         <div className="h-full flex flex-col">
-          <div style={{ height: "50vh" }} className="h-1/2 overflow-y-auto border-b border-gray-600 pr-2">
+          <div
+            style={{ height: "50vh" }}
+            className="h-1/2 overflow-y-auto border-b border-gray-600 pr-2"
+          >
             <h3 className="text-sm font-semibold mb-1">Full Status</h3>
             <pre className="text-xs whitespace-pre-wrap">
-              {fullResponse && Object.keys(fullResponse).length > 0 
-                ? JSON.stringify(fullResponse, null, 2) 
+              {fullResponse && Object.keys(fullResponse).length > 0
+                ? JSON.stringify(fullResponse, null, 2)
                 : "Loading..."}
             </pre>
           </div>
@@ -126,4 +134,4 @@ export function StreamDebugPanel({
       </div>
     </div>
   );
-} 
+}
