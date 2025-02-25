@@ -27,6 +27,7 @@ import { SidebarTrigger } from "@repo/design-system/components/ui/sidebar";
 import { Inter } from "next/font/google";
 import { StreamDebugPanel } from "@/components/stream/stream-debug-panel";
 import { StreamStatus } from "@/hooks/useStreamStatus";
+import { TrackedButton } from "@/components/analytics/TrackedButton";
 
 const PROMPT_INTERVAL = 4000;
 const samplePrompts = examplePrompts.map(prompt => prompt.prompt);
@@ -329,7 +330,11 @@ export default function Dreamshaper({
           )}
 
           {/* Go full screen */}
-          <Button
+          <TrackedButton
+            trackingEvent="daydream_fullscreen_button_clicked"
+            trackingProperties={{
+              is_authenticated: authenticated,
+            }}
             variant="ghost"
             size="icon"
             className="absolute top-4 right-4 z-50 bg-transparent hover:bg-transparent focus:outline-none focus-visible:ring-0 active:bg-transparent"
@@ -340,7 +345,7 @@ export default function Dreamshaper({
             ) : (
               <Maximize className="h-4 w-4" />
             )}
-          </Button>
+          </TrackedButton>
 
           {/* Live indicator*/}
           {live && (
