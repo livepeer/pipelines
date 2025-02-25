@@ -127,6 +127,7 @@ export default function DayDreamContent(): ReactElement {
             statusMessage={statusMessage}
             streamKey={stream?.stream_key}
             capacityReached={capacityReached}
+            status={status}
           />
           <ClientSideTracker eventName="home_page_view" />
         </div>
