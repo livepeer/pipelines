@@ -16,6 +16,8 @@ export default function DayDreamContent(): ReactElement {
   const [streamKilled, setStreamKilled] = useState(false);
   const dreamshaperState = useDreamshaper();
   const { stream, outputPlaybackId, handleUpdate, loading } = dreamshaperState;
+  const [cameraPermissionGranted, setCameraPermissionGranted] = useState(false);
+  const [showPromptSelection, setShowPromptSelection] = useState(false);
 
   const [pendingPrompt, setPendingPrompt] = useState<string | null>(null);
 
@@ -23,6 +25,18 @@ export default function DayDreamContent(): ReactElement {
     stream?.id || "",
     false,
   );
+  
+  const setShowInterstitialWithLog = (value: boolean) => {
+    setShowInterstitial(value);
+  };
+  
+  const setCameraPermissionGrantedWithLog = (value: boolean) => {
+    setCameraPermissionGranted(value);
+  };
+  
+  const setShowPromptSelectionWithLog = (value: boolean) => {
+    setShowPromptSelection(value);
+  };
 
   useEffect(() => {
     const checkPermissions = async () => {
@@ -31,15 +45,20 @@ export default function DayDreamContent(): ReactElement {
           const cameraPermission = await navigator.permissions.query({
             name: "camera" as PermissionName,
           });
+          
           if (cameraPermission.state === "granted") {
+            setCameraPermissionGranted(true);
             const hasVisited = localStorage.getItem("hasSeenLandingPage");
+            
             if (hasVisited) {
               setShowInterstitial(false);
             }
+          } else {
+            localStorage.removeItem("hasSelectedPrompt");
           }
         }
       } catch (err) {
-        console.error("Error checking camera permission:", err);
+        // Silent error handling
       }
     };
 
@@ -77,12 +96,27 @@ export default function DayDreamContent(): ReactElement {
   }, []);
 
   const handleReady = () => {
-    setShowInterstitial(false);
+    setShowInterstitialWithLog(false);
     setStreamKilled(false);
+    setShowPromptSelectionWithLog(false);
   };
 
   const handlePromptApply = (prompt: string) => {
     setPendingPrompt(prompt);
+    localStorage.setItem("hasSelectedPrompt", "true");
+  };
+
+  const handleCameraPermissionGranted = () => {
+    setCameraPermissionGranted(true);
+    
+    const hasSelectedPrompt = localStorage.getItem("hasSelectedPrompt");
+    if (!hasSelectedPrompt) {
+      setShowPromptSelection(true);
+    } else {
+      handleReady();
+    }
+    
+    localStorage.removeItem("hasSeenLandingPage");
   };
 
   useEffect(() => {
@@ -96,15 +130,20 @@ export default function DayDreamContent(): ReactElement {
 
   return (
     <div className="relative">
-      <Dreamshaper
-        {...dreamshaperState}
-        streamKilled={streamKilled}
-        live={isLive}
-        statusMessage={statusMessage}
-        streamKey={stream?.stream_key}
-        capacityReached={capacityReached}
-      />
-      <ClientSideTracker eventName="home_page_view" />
+      {cameraPermissionGranted && (
+        <div className={showInterstitial ? "hidden" : ""}>
+          <Dreamshaper
+            {...dreamshaperState}
+            streamKilled={streamKilled}
+            live={isLive}
+            statusMessage={statusMessage}
+            streamKey={stream?.stream_key}
+            capacityReached={capacityReached}
+          />
+          <ClientSideTracker eventName="home_page_view" />
+        </div>
+      )}
+      
       {showInterstitial && (
         <Interstitial
           streamId={stream?.id}
@@ -112,6 +151,8 @@ export default function DayDreamContent(): ReactElement {
           onReady={handleReady}
           onPromptApply={handlePromptApply}
           showLoginPrompt={streamKilled}
+          onCameraPermissionGranted={handleCameraPermissionGranted}
+          showPromptSelection={showPromptSelection}
         />
       )}
     </div>
