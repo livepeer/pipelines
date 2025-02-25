@@ -25,6 +25,8 @@ import track from "@/lib/track";
 import Image from "next/image";
 import { SidebarTrigger } from "@repo/design-system/components/ui/sidebar";
 import { Inter } from "next/font/google";
+import { StreamDebugPanel } from "@/components/stream/stream-debug-panel";
+import { StreamStatus } from "@/hooks/useStreamStatus";
 
 const PROMPT_INTERVAL = 4000;
 const samplePrompts = examplePrompts.map(prompt => prompt.prompt);
@@ -56,6 +58,7 @@ const inter = Inter({ subsets: ["latin"] });
 interface DreamshaperProps {
   outputPlaybackId: string | null;
   streamKey: string | null;
+  streamId: string | null;
   streamUrl: string | null;
   handleUpdate: (prompt: string, options?: UpdateOptions) => void;
   loading: boolean;
@@ -65,11 +68,13 @@ interface DreamshaperProps {
   live: boolean;
   statusMessage: string;
   capacityReached: boolean;
+  status: StreamStatus | null;
 }
 
 export default function Dreamshaper({
   outputPlaybackId,
   streamKey,
+  streamId,
   streamUrl,
   handleUpdate,
   loading,
@@ -79,6 +84,7 @@ export default function Dreamshaper({
   live,
   statusMessage,
   capacityReached,
+  status,
 }: DreamshaperProps) {
   const { currentPromptIndex, lastSubmittedPrompt, setLastSubmittedPrompt } =
     usePrompts();
@@ -91,13 +97,14 @@ export default function Dreamshaper({
   const x = useMotionValue(0);
   const y = useMotionValue(0);
 
-  const { authenticated, login } = usePrivy();
+  const { authenticated, login, user } = usePrivy();
   const { timeRemaining, formattedTime } = useTrialTimer();
 
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [timeoutReached, setTimeoutReached] = useState(false);
   const [showOverlay, setShowOverlay] = useState(true);
+  const [debugOpen, setDebugOpen] = useState(false);
 
   const isFullscreenAPISupported =
     typeof document !== "undefined" &&
@@ -191,19 +198,6 @@ export default function Dreamshaper({
       toastShownRef.current = true;
     }
   }, [capacityReached, timeoutReached, live]);
-
-  // Debug keyboard shortcut - Alt + T
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.altKey && e.key === "t") {
-        console.log("Debug: Triggering capacity reached toast");
-        showCapacityToast();
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
 
   useEffect(() => {
     if (live) {
@@ -588,7 +582,7 @@ export default function Dreamshaper({
         <Link
           target="_blank"
           href="https://www.livepeer.org/learn-about-pipelines"
-          className=" hover:text-muted-foreground/80"
+          className="hover:text-muted-foreground/80"
         >
           Build a pipeline
         </Link>
@@ -596,11 +590,36 @@ export default function Dreamshaper({
         <Link
           target="_blank"
           href="https://discord.gg/livepeer"
-          className=" hover:text-muted-foreground/80"
+          className="hover:text-muted-foreground/80"
         >
           Join our community
         </Link>
+        {user?.email?.address?.endsWith("@livepeer.org") && (
+          <>
+            <Separator orientation="vertical" />
+            <button
+              onClick={() => setDebugOpen(!debugOpen)}
+              className="hover:text-muted-foreground/80"
+            >
+              Debug Panel
+            </button>
+          </>
+        )}
       </div>
+
+      {user?.email?.address?.endsWith("@livepeer.org") && (
+        <>
+          {debugOpen && (
+            <StreamDebugPanel
+              streamId={streamId}
+              streamKey={streamKey}
+              status={status}
+              fullResponse={fullResponse}
+              onClose={() => setDebugOpen(false)}
+            />
+          )}
+        </>
+      )}
     </div>
   );
 }
