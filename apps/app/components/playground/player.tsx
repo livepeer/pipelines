@@ -71,7 +71,7 @@ export const LPPLayer = React.memo(function LPPLayer({
         <Player.Container className="flex-1 h-full w-full overflow-hidden bg-black outline-none transition-all">
           <Player.Video
             title="Live stream"
-            className="h-full w-full transition-all object-"
+            className="h-full w-full transition-all object-cover"
           />
 
           <Player.LoadingIndicator
