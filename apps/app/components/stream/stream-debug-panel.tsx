@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 
 interface StreamDebugPanelProps {
   streamId: string | null;
+  streamKey: string | null;
   status: StreamStatus | null;
   fullResponse: any;
   onClose: () => void;
@@ -18,6 +19,7 @@ interface ErrorHistoryItem {
 
 export function StreamDebugPanel({
   streamId,
+  streamKey,
   status,
   fullResponse,
   onClose,
@@ -79,25 +81,37 @@ export function StreamDebugPanel({
   };
 
   return (
-    <div className="fixed top-0 right-0 h-full w-96 bg-gray-800/80 text-white p-4 shadow-lg z-50 flex flex-col">
+    <div
+      className="fixed top-0 right-0 h-full w-96 bg-gray-800/80 text-white p-4 shadow-lg z-50 flex flex-col"
+      style={{ fontFamily: "Courier, monospace" }}
+    >
       <div className="flex justify-between items-center mb-2">
-        <h2 className="text-lg font-semibold">Debug Status</h2>
+        <h2 className="text-lg font-semibold font-mono">Debug Status</h2>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={handleCopyLogs}>
-            <Copy className="mr-2" /> Copy Logs
+            <Copy className="mr-2" />{" "}
+            <span className="font-mono">Copy Logs</span>
           </Button>
           <Button variant="outline" size="sm" onClick={onClose}>
-            Close
+            <span className="font-mono">Close</span>
           </Button>
         </div>
       </div>
-      <p>
-        <strong>Stream ID:</strong> {streamId || "N/A"}
+      <p className="mb-4 mt-2 text-xs font-mono">
+        <strong>Stream ID :</strong>{" "}
+        <code className="text-xs bg-gray-700 p-1 rounded-md font-mono">
+          {streamId || "N/A"}
+        </code>{" "}
+        <br />
+        <strong>Stream Key:</strong>{" "}
+        <code className="text-xs bg-gray-700 p-1 rounded-md font-mono">
+          {streamKey || "N/A"}
+        </code>
       </p>
-      <div className="mb-2">
+      <div className="mb-2 font-mono">
         <span className="mr-2 font-semibold">State:</span>
         <span
-          className={`inline-block rounded px-2 py-1 text-xs font-bold ${getStatusClass(status)}`}
+          className={`inline-block rounded px-2 py-1 text-xs font-bold font-mono ${getStatusClass(status)}`}
         >
           {status || "Unknown"}
         </span>
@@ -108,18 +122,22 @@ export function StreamDebugPanel({
             style={{ height: "50vh" }}
             className="h-1/2 overflow-y-auto border-b border-gray-600 pr-2"
           >
-            <h3 className="text-sm font-semibold mb-1">Full Status</h3>
-            <pre className="text-xs whitespace-pre-wrap">
+            <h3 className="text-sm font-semibold mb-1 font-mono">
+              Full Status
+            </h3>
+            <pre className="text-xs whitespace-pre-wrap font-mono bg-gray-700 p-2 rounded-md">
               {fullResponse && Object.keys(fullResponse).length > 0
                 ? JSON.stringify(fullResponse, null, 2)
                 : "Loading..."}
             </pre>
           </div>
           <div className="h-1/2 overflow-y-auto pt-2 pr-2">
-            <h3 className="text-sm font-semibold mb-1">Error History</h3>
+            <h3 className="text-sm font-semibold mb-1 font-mono">
+              Error History
+            </h3>
             {errorHistory.length > 0 ? (
               errorHistory.map((err, index) => (
-                <div key={index} className="mb-2">
+                <div key={index} className="mb-2 font-mono">
                   <div className="text-xs font-bold">
                     {new Date(err.time).toLocaleString()}
                   </div>
@@ -127,7 +145,7 @@ export function StreamDebugPanel({
                 </div>
               ))
             ) : (
-              <p className="text-xs">No errors recorded</p>
+              <p className="text-xs font-mono">No errors recorded</p>
             )}
           </div>
         </div>

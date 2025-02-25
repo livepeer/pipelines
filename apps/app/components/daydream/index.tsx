@@ -124,6 +124,7 @@ export default function DayDreamContent(): ReactElement {
             live={isLive}
             statusMessage={statusMessage}
             streamKey={stream?.stream_key}
+            streamId={stream?.id}
             capacityReached={capacityReached}
             status={status}
             fullResponse={fullResponse}

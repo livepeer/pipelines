@@ -58,6 +58,7 @@ const inter = Inter({ subsets: ["latin"] });
 interface DreamshaperProps {
   outputPlaybackId: string | null;
   streamKey: string | null;
+  streamId: string | null;
   streamUrl: string | null;
   handleUpdate: (prompt: string, options?: UpdateOptions) => void;
   loading: boolean;
@@ -73,6 +74,7 @@ interface DreamshaperProps {
 export default function Dreamshaper({
   outputPlaybackId,
   streamKey,
+  streamId,
   streamUrl,
   handleUpdate,
   loading,
@@ -609,7 +611,8 @@ export default function Dreamshaper({
         <>
           {debugOpen && (
             <StreamDebugPanel
-              streamId={outputPlaybackId}
+              streamId={streamId}
+              streamKey={streamKey}
               status={status}
               fullResponse={fullResponse}
               onClose={() => setDebugOpen(false)}
