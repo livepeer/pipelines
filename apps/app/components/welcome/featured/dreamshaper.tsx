@@ -605,13 +605,17 @@ export default function Dreamshaper({
         )}
       </div>
 
-      {user?.email?.address?.endsWith("@livepeer.org") && debugOpen && (
-        <StreamDebugPanel
-          streamId={outputPlaybackId}
-          status={status}
-          fullResponse={fullResponse}
-          onClose={() => setDebugOpen(false)}
-        />
+      {user?.email?.address?.endsWith("@livepeer.org") && (
+        <>
+          {debugOpen && (
+            <StreamDebugPanel
+              streamId={outputPlaybackId}
+              status={status}
+              fullResponse={fullResponse}
+              onClose={() => setDebugOpen(false)}
+            />
+          )}
+        </>
       )}
     </div>
   );

@@ -21,7 +21,7 @@ export default function DayDreamContent(): ReactElement {
 
   const [pendingPrompt, setPendingPrompt] = useState<string | null>(null);
 
-  const { status, isLive, statusMessage, capacityReached } = useStreamStatus(
+  const { status, isLive, statusMessage, capacityReached, fullResponse } = useStreamStatus(
     stream?.id || "",
     false,
   );
@@ -128,6 +128,7 @@ export default function DayDreamContent(): ReactElement {
             streamKey={stream?.stream_key}
             capacityReached={capacityReached}
             status={status}
+            fullResponse={fullResponse}
           />
           <ClientSideTracker eventName="home_page_view" />
         </div>
