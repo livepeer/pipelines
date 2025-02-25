@@ -27,6 +27,7 @@ import { SidebarTrigger } from "@repo/design-system/components/ui/sidebar";
 import { Inter } from "next/font/google";
 import { StreamDebugPanel } from "@/components/stream/stream-debug-panel";
 import { StreamStatus } from "@/hooks/useStreamStatus";
+import { TrackedButton } from "@/components/analytics/TrackedButton";
 
 const PROMPT_INTERVAL = 4000;
 const samplePrompts = examplePrompts.map(prompt => prompt.prompt);
@@ -138,12 +139,16 @@ export default function Dreamshaper({
       track("daydream_stream_started", {
         is_authenticated: authenticated,
         playback_id: outputPlaybackId,
+        stream_id: streamId,
       });
     }
   }, [live]);
 
   const showCapacityToast = () => {
-    track("capacity_reached");
+    track("capacity_reached", {
+      is_authenticated: authenticated,
+      stream_id: streamId,
+    });
     toast("Platform at full capacity", {
       description: (
         <div className="flex flex-col gap-2">
@@ -193,6 +198,7 @@ export default function Dreamshaper({
       track("daydream_capacity_reached", {
         is_authenticated: authenticated,
         reason,
+        stream_id: streamId,
       });
       showCapacityToast();
       toastShownRef.current = true;
@@ -225,6 +231,7 @@ export default function Dreamshaper({
       track("daydream_prompt_submitted", {
         is_authenticated: authenticated,
         prompt: inputValue,
+        stream_id: streamId,
       });
 
       handleUpdate(inputValue, { silent: true });
@@ -329,7 +336,11 @@ export default function Dreamshaper({
           )}
 
           {/* Go full screen */}
-          <Button
+          <TrackedButton
+            trackingEvent="daydream_fullscreen_button_clicked"
+            trackingProperties={{
+              is_authenticated: authenticated,
+            }}
             variant="ghost"
             size="icon"
             className="absolute top-4 right-4 z-50 bg-transparent hover:bg-transparent focus:outline-none focus-visible:ring-0 active:bg-transparent"
@@ -340,7 +351,7 @@ export default function Dreamshaper({
             ) : (
               <Maximize className="h-4 w-4" />
             )}
-          </Button>
+          </TrackedButton>
 
           {/* Live indicator*/}
           {live && (
