@@ -139,12 +139,16 @@ export default function Dreamshaper({
       track("daydream_stream_started", {
         is_authenticated: authenticated,
         playback_id: outputPlaybackId,
+        stream_id: streamId,
       });
     }
   }, [live]);
 
   const showCapacityToast = () => {
-    track("capacity_reached");
+    track("capacity_reached", {
+      is_authenticated: authenticated,
+      stream_id: streamId,
+    });
     toast("Platform at full capacity", {
       description: (
         <div className="flex flex-col gap-2">
@@ -194,6 +198,7 @@ export default function Dreamshaper({
       track("daydream_capacity_reached", {
         is_authenticated: authenticated,
         reason,
+        stream_id: streamId,
       });
       showCapacityToast();
       toastShownRef.current = true;
@@ -226,6 +231,7 @@ export default function Dreamshaper({
       track("daydream_prompt_submitted", {
         is_authenticated: authenticated,
         prompt: inputValue,
+        stream_id: streamId,
       });
 
       handleUpdate(inputValue, { silent: true });
