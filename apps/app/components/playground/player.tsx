@@ -48,6 +48,7 @@ export function LPPLayer({
     return (
       <div className="w-full h-full flex items-center justify-center">
         <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        <p>Src is loading...</p>
       </div>
     );
   }
@@ -62,7 +63,7 @@ export function LPPLayer({
         allowFullScreen
       /> */}
       <Player.Root
-        src={src}
+        src={src.filter(s => s.type !== "hls")}
         lowLatency="force"
         ingestPlayback={true}
         backoffMax={1000}
@@ -70,8 +71,21 @@ export function LPPLayer({
         <Player.Container className="flex-1 h-full w-full overflow-hidden bg-black outline-none transition-all">
           <Player.Video
             title="Live stream"
-            className="h-full w-full transition-all"
+            className="h-full w-full transition-all object-"
           />
+
+          <Player.LoadingIndicator
+            style={{
+              height: "100%",
+              width: "100%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              backgroundColor: "black",
+            }}
+          >
+            Loading...
+          </Player.LoadingIndicator>
         </Player.Container>
       </Player.Root>
     </div>
