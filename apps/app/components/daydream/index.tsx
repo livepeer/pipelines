@@ -46,7 +46,7 @@ export default function DayDreamContent(): ReactElement {
           }
         }
       } catch (err) {
-        // Silent error handling
+        console.error("Error checking camera permission:", err);
       }
     };
 
