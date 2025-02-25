@@ -33,11 +33,11 @@ export default function DayDreamContent(): ReactElement {
           const cameraPermission = await navigator.permissions.query({
             name: "camera" as PermissionName,
           });
-          
+
           if (cameraPermission.state === "granted") {
             setCameraPermissionGranted(true);
             const hasVisited = localStorage.getItem("hasSeenLandingPage");
-            
+
             if (hasVisited) {
               setShowInterstitial(false);
             }
@@ -96,14 +96,14 @@ export default function DayDreamContent(): ReactElement {
 
   const handleCameraPermissionGranted = () => {
     setCameraPermissionGranted(true);
-    
+
     const hasSelectedPrompt = localStorage.getItem("hasSelectedPrompt");
     if (!hasSelectedPrompt) {
       setShowPromptSelection(true);
     } else {
       handleReady();
     }
-    
+
     localStorage.removeItem("hasSeenLandingPage");
   };
 
@@ -131,7 +131,7 @@ export default function DayDreamContent(): ReactElement {
           <ClientSideTracker eventName="home_page_view" />
         </div>
       )}
-      
+
       {showInterstitial && (
         <Interstitial
           streamId={stream?.id}
