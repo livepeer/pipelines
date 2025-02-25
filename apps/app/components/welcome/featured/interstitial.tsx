@@ -249,6 +249,7 @@ const Interstitial: React.FC<InterstitialProps> = ({
       onCameraPermissionGranted();
       
       setCurrentScreenWithLog("prompts");
+      return true;
     } catch (err) {
       setCameraPermissionWithLog("denied");
       track("daydream_camera_permission_denied", {
@@ -260,6 +261,7 @@ const Interstitial: React.FC<InterstitialProps> = ({
           "Please ensure camera permissions are enabled in your browser settings.",
         );
       }
+      return false;
     }
   };
 
@@ -328,13 +330,16 @@ const Interstitial: React.FC<InterstitialProps> = ({
     }
     
     if (cameraPermission !== "granted") {
-      await requestCamera();
+      const cameraGranted = await requestCamera();
+      if (cameraGranted) {
+        setCurrentScreenWithLog("prompts");
+      }
     } else {
       onCameraPermissionGranted();
       setCurrentScreenWithLog("prompts");
     }
     
-    setCurrentScreenWithLog("prompts");
+    setIsPermissionLoading(false);
   };
 
   const handlePromptContinue = async () => {
@@ -387,7 +392,10 @@ const Interstitial: React.FC<InterstitialProps> = ({
       <AnimatePresence mode="wait" initial={false}>
         {currentScreen === "camera" ? (
           <Slide keyName="camera" slideVariants={slideVariants}>
-            <div className="bg-[#161616] border border-[#232323] rounded-xl p-3 sm:p-4 md:p-8 max-w-2xl w-full mx-auto shadow-lg">
+            <div 
+              className="bg-[#161616] border border-[#232323] rounded-xl p-3 sm:p-4 md:p-8 max-w-2xl w-full mx-auto shadow-lg cursor-pointer"
+              onClick={handlePermissionContinue}
+            >
               <div className="space-y-1 sm:space-y-2 md:space-y-3 mb-3 sm:mb-4 md:mb-8">
                 <h1 className="text-lg sm:text-xl md:text-2xl font-semibold">
                   Enable camera access to start creating
@@ -417,7 +425,9 @@ const Interstitial: React.FC<InterstitialProps> = ({
                   </div>
                 ))}
               </div>
-              <div className="flex flex-col items-center gap-4 mt-8">
+              <div className="flex flex-col items-center gap-4 mt-8"
+                onClick={(e) => e.stopPropagation()}
+              >
                 {(cameraPermission === "prompt" ||
                   cameraPermission === "granted") && (
                   <Button
