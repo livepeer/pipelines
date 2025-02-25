@@ -308,12 +308,19 @@ export function useDreamshaper() {
         if (updatedInputValues?.prompt?.["5"]?.inputs?.text) {
           updatedInputValues.prompt["5"].inputs.text = cleanedPrompt;
         } else {
-          console.error("Could not find expected prompt structure:", {
-            hasPrompt: !!updatedInputValues?.prompt,
-            hasNode5: !!updatedInputValues?.prompt?.["5"],
-            hasInputs: !!updatedInputValues?.prompt?.["5"]?.inputs,
-            hasText: !!updatedInputValues?.prompt?.["5"]?.inputs?.text,
-          });
+          // Create the structure if it doesn't exist
+          if (!updatedInputValues.prompt) {
+            updatedInputValues.prompt = {};
+          }
+          if (!updatedInputValues.prompt["5"]) {
+            updatedInputValues.prompt["5"] = { inputs: {} };
+          }
+          if (!updatedInputValues.prompt["5"].inputs) {
+            updatedInputValues.prompt["5"].inputs = {};
+          }
+          updatedInputValues.prompt["5"].inputs.text = cleanedPrompt;
+          
+          console.log("Created missing prompt structure and set text:", cleanedPrompt);
         }
         
         if (pipeline?.prioritized_params && Object.keys(commands).length > 0) {
