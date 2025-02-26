@@ -28,6 +28,7 @@ import { Inter } from "next/font/google";
 import { StreamDebugPanel } from "@/components/stream/stream-debug-panel";
 import { StreamStatus } from "@/hooks/useStreamStatus";
 import { TrackedButton } from "@/components/analytics/TrackedButton";
+import { StreamInfo } from "@/components/footer/stream-info";
 
 const PROMPT_INTERVAL = 4000;
 const samplePrompts = examplePrompts.map(prompt => prompt.prompt);
@@ -630,6 +631,13 @@ export default function Dreamshaper({
             />
           )}
         </>
+      )}
+
+      {streamId && (
+        <StreamInfo 
+          streamId={streamId} 
+          isFullscreen={isFullscreen}
+        />
       )}
     </div>
   );

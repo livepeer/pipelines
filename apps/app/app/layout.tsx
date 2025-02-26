@@ -39,12 +39,12 @@ const RootLayout = ({ children }: RootLayoutProperties) => (
                   {children}
                 </div>
                 <footer className="fixed bottom-0 right-0 p-4">
-                  <VersionInfo />
+                  {/* <VersionInfo /> */}
                 </footer>
               </div>
             </GlobalSidebar>
           </SidebarProvider>
-          <Intercom />
+          {<Intercom />}
           {/* TODO: REENABLE WHEN SHIH-YU IS READY FOR IT <Intercom /> */}
         </DesignSystemProvider>
       </MixpanelProvider>
