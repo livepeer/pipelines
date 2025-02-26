@@ -37,7 +37,7 @@ export function StreamInfo({
   return (
     <div 
       className={cn(
-        "fixed bottom-4 right-8 flex items-center gap-2 text-xs text-gray-500 z-10",
+        "fixed bottom-4 right-16 flex items-center gap-2 text-xs text-gray-500 z-10",
         isFullscreen && "hidden",
         className
       )}
