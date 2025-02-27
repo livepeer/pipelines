@@ -6,12 +6,17 @@ import { toast } from "sonner";
 import { updateParams } from "@/app/api/streams/update-params";
 import { getStream } from "@/app/api/streams/get";
 import { app } from "@/lib/env";
+import { createSharedParams, getSharedParams } from "@/app/api/streams/share-params";
+import { useSearchParams } from "next/navigation";
 
 const DEFAULT_PIPELINE_ID = "pip_DRQREDnSei4HQyC8"; // Staging Dreamshaper ID
 const DUMMY_USER_ID_FOR_NON_AUTHENTICATED_USERS =
   "did:privy:cm4x2cuiw007lh8fcj34919fu"; // Infra Email User ID
 const SHOWCASE_PIPELINE_ID =
   process.env.NEXT_PUBLIC_SHOWCASE_PIPELINE_ID || DEFAULT_PIPELINE_ID;
+
+const DREAMSHAPER_PARAMS_STORAGE_KEY = "dreamshaper_latest_params";
+const SHARED_PARAMS_DELAY_MS = 10000; // 10 seconds delay
 
 const createDefaultValues = (pipeline: any) => {
   const inputs = pipeline.config.inputs;
@@ -42,22 +47,100 @@ export interface UpdateOptions {
 
 export function useDreamshaper() {
   const { user } = usePrivy();
-
+  const searchParams = useSearchParams();
+  
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const [stream, setStream] = useState<any>(null);
   const [pipeline, setPipeline] = useState<any>(null);
   const [inputValues, setInputValues] = useState<any>(null);
   const [fullResponse, setFullResponse] = useState<any>(null);
+  const [sharedParamsApplied, setSharedParamsApplied] = useState(false);
+
+  const storeParamsInLocalStorage = useCallback((params: any) => {
+    try {
+      localStorage.setItem(DREAMSHAPER_PARAMS_STORAGE_KEY, JSON.stringify(params));
+    } catch (error) {
+      console.error("Error storing parameters in localStorage:", error);
+    }
+  }, []);
+
+  const getParamsFromLocalStorage = useCallback(() => {
+    try {
+      const storedParams = localStorage.getItem(DREAMSHAPER_PARAMS_STORAGE_KEY);
+      return storedParams ? JSON.parse(storedParams) : null;
+    } catch (error) {
+      console.error("Error retrieving parameters from localStorage:", error);
+      return null;
+    }
+  }, []);
+
+  useEffect(() => {
+    const applySharedParams = async () => {
+      const sharedId = searchParams.get('shared');
+      
+      if (sharedId && stream && !sharedParamsApplied) {
+        try {
+          toast.info("Loading shared configuration...");
+          
+          const { data, error } = await getSharedParams(sharedId);
+          
+          if (error || !data) {
+            console.error("Error fetching shared parameters:", error);
+            toast.error("Could not load shared configuration");
+            return;
+          }
+          
+          toast.info(`Applying shared configuration in ${SHARED_PARAMS_DELAY_MS/1000} seconds...`);
+          
+          setTimeout(async () => {
+            try {
+              const { data: streamData, error: streamError } = await getStream(stream.id);
+              
+              if (streamError || !streamData?.gateway_host) {
+                console.error("Error fetching stream for shared params:", streamError);
+                toast.error("Error applying shared configuration");
+                return;
+              }
+              
+              const sharedParams = data.params;
+              
+              const response = await updateParams({
+                body: sharedParams,
+                host: streamData.gateway_host as string,
+                streamKey: stream.stream_key as string,
+              });
+              
+              if (response.status == 200 || response.status == 201) {
+                storeParamsInLocalStorage(sharedParams);
+                setInputValues(sharedParams);
+                toast.success("Shared configuration applied successfully");
+              } else {
+                toast.error("Failed to apply shared configuration");
+              }
+              
+              setSharedParamsApplied(true);
+            } catch (error) {
+              console.error("Error applying shared parameters:", error);
+              toast.error("An unexpected error occurred applying shared configuration");
+            }
+          }, SHARED_PARAMS_DELAY_MS);
+        } catch (error) {
+          console.error("Error in shared parameters process:", error);
+          toast.error("Failed to process shared configuration");
+        }
+      }
+    };
+    
+    applySharedParams();
+  }, [searchParams, stream, sharedParamsApplied, storeParamsInLocalStorage]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Fetch the pipeline from DB
         const pipeline = await getPipeline(SHOWCASE_PIPELINE_ID);
         setPipeline(pipeline);
 
-        // Create a stream with pipeline inputs
         const inputValues = createDefaultValues(pipeline);
         const processedInputValues = processInputValues(inputValues);
         setInputValues(processedInputValues);
@@ -120,7 +203,6 @@ export function useDreamshaper() {
           return;
         }
 
-        // Update the prompt in the input values
         const updatedInputValues = { ...inputValues };
 
         if (updatedInputValues?.prompt?.["5"]?.inputs?.text) {
@@ -140,10 +222,14 @@ export function useDreamshaper() {
           streamKey: streamKey as string,
         });
 
-        if (!options?.silent) {
-          if (response.status == 200 || response.status == 201) {
+        if (response.status == 200 || response.status == 201) {
+          storeParamsInLocalStorage(updatedInputValues);
+          
+          if (!options?.silent) {
             toast.success("Stream updated successfully", { id: toastId });
-          } else {
+          }
+        } else {
+          if (!options?.silent) {
             toast.error("Error updating stream with prompt", { id: toastId });
           }
         }
@@ -156,8 +242,47 @@ export function useDreamshaper() {
         setUpdating(false);
       }
     },
-    [stream, inputValues],
+    [stream, inputValues, storeParamsInLocalStorage],
   );
+
+  const createShareLink = useCallback(async () => {
+    if (!stream) {
+      console.error("No stream found, cannot create share link");
+      return { error: "No stream found", url: null };
+    }
+
+    try {
+      const storedParams = getParamsFromLocalStorage();
+      const paramsToShare = storedParams || inputValues;
+      
+      if (!paramsToShare) {
+        return { error: "No parameters found to share", url: null };
+      }
+
+      const { data, error } = await createSharedParams(
+        paramsToShare,
+        user?.id ?? DUMMY_USER_ID_FOR_NON_AUTHENTICATED_USERS,
+        pipeline.id
+      );
+
+      if (error) {
+        toast.error(`Error creating share link: ${error}`);
+        return { error, url: null };
+      }
+
+      const shareUrl = new URL(window.location.href);
+      shareUrl.searchParams.set("shared", data.id);
+      
+      await navigator.clipboard.writeText(shareUrl.toString());
+      toast.success("Share link copied to clipboard!");
+      
+      return { error: null, url: shareUrl.toString() };
+    } catch (error) {
+      console.error("Error in createShareLink:", error);
+      toast.error("An unexpected error occurred creating the share link");
+      return { error: String(error), url: null };
+    }
+  }, [stream, inputValues, user, pipeline, getParamsFromLocalStorage]);
 
   return {
     stream,
@@ -168,5 +293,6 @@ export function useDreamshaper() {
     loading,
     fullResponse,
     updating,
+    createShareLink,
   };
 }

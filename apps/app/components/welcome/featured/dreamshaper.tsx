@@ -71,6 +71,7 @@ interface DreamshaperProps {
   statusMessage: string;
   capacityReached: boolean;
   status: StreamStatus | null;
+  createShareLink?: () => Promise<{ error: string | null; url: string | null }>;
 }
 
 export default function Dreamshaper({
@@ -87,6 +88,7 @@ export default function Dreamshaper({
   statusMessage,
   capacityReached,
   status,
+  createShareLink,
 }: DreamshaperProps) {
   const { currentPromptIndex, lastSubmittedPrompt, setLastSubmittedPrompt } =
     usePrompts();
@@ -276,6 +278,32 @@ export default function Dreamshaper({
 
   return (
     <div className="relative flex flex-col min-h-screen overflow-y-auto">
+      {/* Share button */}
+      {createShareLink && !isFullscreen && (
+        <TrackedButton
+          trackingEvent="daydream_share_button_clicked"
+          trackingProperties={{
+            is_authenticated: authenticated,
+          }}
+          variant="ghost"
+          size="sm"
+          className="absolute top-4 right-4 z-50 bg-neutral-800/80 hover:bg-neutral-700/80 text-white px-3 py-1 text-xs rounded-full border border-gray-500"
+          onClick={async () => {
+            const result = await createShareLink();
+            if (result.error) {
+              toast.error(`Error creating share link: ${result.error}`);
+            } else if (result.url) {
+              track("daydream_share_link_created", {
+                is_authenticated: authenticated,
+                stream_id: streamId,
+              });
+            }
+          }}
+        >
+          Share
+        </TrackedButton>
+      )}
+
       {/* Header section */}
       <div
         className={cn(
@@ -591,6 +619,28 @@ export default function Dreamshaper({
           isFullscreen && "hidden",
         )}
       >
+        {createShareLink && (
+          <>
+            <button
+              onClick={async () => {
+                const result = await createShareLink();
+                if (result.error) {
+                  toast.error(`Error creating share link: ${result.error}`);
+                } else if (result.url) {
+                  toast.success("Share link copied to clipboard!");
+                  track("daydream_share_link_copied", {
+                    is_authenticated: authenticated,
+                    stream_id: streamId,
+                  });
+                }
+              }}
+              className="hover:text-muted-foreground/80"
+            >
+              Share
+            </button>
+            <Separator orientation="vertical" />
+          </>
+        )}
         <Link
           target="_blank"
           href="https://www.livepeer.org/learn-about-pipelines"
