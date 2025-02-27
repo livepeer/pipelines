@@ -26,7 +26,7 @@ export default function Header() {
     {
       label: "Community",
       external: true,
-      href: "https://discord.gg/livepeer",
+      href: "https://discord.com/invite/hxyNHeSzCK",
     },
   ];
 
