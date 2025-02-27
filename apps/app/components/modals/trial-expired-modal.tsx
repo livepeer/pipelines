@@ -35,7 +35,7 @@ export function TrialExpiredModal({
         </div>
         <div className="flex gap-4 mt-8">
           <Button
-            onClick={() => window.open("https://discord.gg/livepeer", "_blank")}
+            onClick={() => window.open("https://discord.com/invite/hxyNHeSzCK", "_blank")}
             size="lg"
             className="rounded-full h-12 flex-1 bg-black text-white hover:bg-black/90"
           >
