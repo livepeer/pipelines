@@ -636,7 +636,7 @@ export default function Dreamshaper({
       )}
 
       {streamId && (
-        <StreamInfo streamId={streamId} isFullscreen={isFullscreen} />
+        <StreamInfo streamId={streamId} streamKey={streamKey} isFullscreen={isFullscreen} />
       )}
     </div>
   );

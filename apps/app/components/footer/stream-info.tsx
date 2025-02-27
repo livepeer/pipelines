@@ -6,12 +6,14 @@ import { cn } from "@repo/design-system/lib/utils";
 
 interface StreamInfoProps {
   streamId: string | null;
+  streamKey: string | null;
   className?: string;
   isFullscreen?: boolean;
 }
 
 export function StreamInfo({ 
-  streamId, 
+  streamId,
+  streamKey,
   className,
   isFullscreen = false 
 }: StreamInfoProps) {
@@ -25,6 +27,7 @@ export function StreamInfo({
       browser: navigator.userAgent,
       path: window.location.pathname,
       streamId: streamId || "not-available",
+      streamKey: streamKey || "not-available",
     };
 
     await navigator.clipboard.writeText(JSON.stringify(fullInfo, null, 2));
