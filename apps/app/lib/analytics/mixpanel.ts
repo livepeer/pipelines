@@ -1,7 +1,7 @@
 import mixpanel from "mixpanel-browser";
 import { mixpanel as mixpanelConfig } from "@/lib/env";
 
-export async function identifyUser(userId: string, anonymousId?: string, user: any) {
+export async function identifyUser(userId: string, anonymousId: string, user: any) {
   try {
     const payload = {
       userId,
