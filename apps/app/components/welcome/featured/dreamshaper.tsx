@@ -603,7 +603,7 @@ export default function Dreamshaper({
         <Separator orientation="vertical" />
         <Link
           target="_blank"
-          href="https://discord.gg/livepeer"
+          href="https://discord.com/invite/hxyNHeSzCK"
           className="hover:text-muted-foreground/80"
         >
           Join our community
