@@ -34,10 +34,12 @@ export const LivepeerPlayer = React.memo(
 
     if (!src) {
       return (
-        <PlayerLoading
-          title="Stream is not available"
-          description="Please try refreshing the page in a few seconds."
-        />
+        <div className="w-full relative h-full bg-black/50 backdrop-blur data-[visible=true]:animate-in data-[visible=false]:animate-out data-[visible=false]:fade-out-0 data-[visible=true]:fade-in-0">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+            <LoadingIcon className="w-8 h-8 animate-spin" />
+          </div>
+          <PlayerLoading />
+        </div>
       );
     }
 
@@ -49,7 +51,7 @@ export const LivepeerPlayer = React.memo(
           clipLength={30}
           src={src}
           jwt={null}
-          backoffMax={10000}
+          backoffMax={1000}
           timeout={90000}
           lowLatency="force"
         >
@@ -79,13 +81,10 @@ export const LivepeerPlayer = React.memo(
             matcher="offline"
             className="absolute select-none animate-in fade-in-0 inset-0 text-center bg-black/80 backdrop-blur-lg flex flex-col items-center justify-center gap-4 duration-1000 data-[visible=true]:animate-in data-[visible=false]:animate-out data-[visible=false]:fade-out-0 data-[visible=true]:fade-in-0"
           >
-            <OfflineErrorIcon className="h-[120px] w-full sm:flex hidden" />
-            <div className="flex flex-col gap-1">
-              <div className="text-2xl font-bold">Stream is offline</div>
-              <div className="text-sm text-gray-100">
-                Playback will start automatically once the stream has started
-              </div>
-            </div>
+            <PlayerLoading
+              title="ALMOST THERE"
+              description="Please wait while we are rendering your stream"
+            />
           </Player.ErrorIndicator>
 
           <Player.ErrorIndicator
