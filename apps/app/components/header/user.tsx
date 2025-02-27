@@ -42,7 +42,7 @@ export default function User({ className }: { className?: string }) {
         await checkUser(user);
         const distinctId = localStorage.getItem("mixpanel_distinct_id");
         localStorage.setItem("mixpanel_user_id", user.id);
-        await identifyUser(user.id, distinctId || undefined, user, true);
+        await identifyUser(user.id, distinctId || undefined, user);
         track("user_logged_in", {
           user_id: user.id,
           distinct_id: distinctId,
