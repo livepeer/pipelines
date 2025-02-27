@@ -1,8 +1,7 @@
 "use server";
 
 import { createServerClient } from "@repo/supabase";
-import { Livepeer } from "livepeer";
-import { livepeer as livePeerEnv } from "@/lib/env";
+import { livepeerSDK } from "@/lib/core";
 
 export async function deleteStream(streamId: string) {
   const supabase = await createServerClient();
@@ -18,11 +17,6 @@ export async function deleteStream(streamId: string) {
 
 export const deleteLivepeerStream = async (name: string) => {
   try {
-    const livepeerSDK = new Livepeer({
-      serverURL: livePeerEnv.apiUrl,
-      apiKey: livePeerEnv.apiKey,
-    });
-
     const { error } = await livepeerSDK.stream.delete(name);
 
     return { error };
