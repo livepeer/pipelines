@@ -53,8 +53,14 @@ export function useDreamshaper() {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        const startTime = Date.now();
         // Fetch the pipeline from DB
         const pipeline = await getPipeline(SHOWCASE_PIPELINE_ID);
+        console.log(
+          "useDreamshaper:: Pipeline fetched in",
+          Date.now() - startTime,
+          "ms",
+        );
         setPipeline(pipeline);
 
         console.log("useDreamshaper:: Fetching pipeline", pipeline);
