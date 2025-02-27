@@ -8,9 +8,7 @@ const DEFAULT_LOGIN_METHODS = ["discord", "github", "wallet", "email"] as any;
 export const PrivyProvider = ({ children }: { children: React.ReactNode }) => {
   const isMobile = useIsMobile();
 
-  const loginMethods = isMobile
-    ? DEFAULT_LOGIN_METHODS.filter((method: string) => method !== "email")
-    : DEFAULT_LOGIN_METHODS;
+  const loginMethods = DEFAULT_LOGIN_METHODS;
 
   return (
     <PrivyProviderRaw
