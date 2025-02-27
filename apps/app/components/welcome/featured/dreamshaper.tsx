@@ -72,6 +72,7 @@ interface DreamshaperProps {
   capacityReached: boolean;
   status: StreamStatus | null;
   createShareLink?: () => Promise<{ error: string | null; url: string | null }>;
+  sharedPrompt?: string | null;
 }
 
 export default function Dreamshaper({
@@ -89,6 +90,7 @@ export default function Dreamshaper({
   capacityReached,
   status,
   createShareLink,
+  sharedPrompt = null,
 }: DreamshaperProps) {
   const { currentPromptIndex, lastSubmittedPrompt, setLastSubmittedPrompt } =
     usePrompts();
@@ -278,6 +280,13 @@ export default function Dreamshaper({
     return () =>
       document.removeEventListener("fullscreenchange", handleFullscreenChange);
   }, []);
+
+  useEffect(() => {
+    if (sharedPrompt) {
+      setLastSubmittedPrompt(sharedPrompt);
+      setHasSubmittedPrompt(true);
+    }
+  }, [sharedPrompt, setLastSubmittedPrompt]);
 
   return (
     <div className="relative flex flex-col min-h-screen overflow-y-auto">

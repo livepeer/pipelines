@@ -56,6 +56,7 @@ export function useDreamshaper() {
   const [inputValues, setInputValues] = useState<any>(null);
   const [fullResponse, setFullResponse] = useState<any>(null);
   const [sharedParamsApplied, setSharedParamsApplied] = useState(false);
+  const [sharedPrompt, setSharedPrompt] = useState<string | null>(null);
 
   const storeParamsInLocalStorage = useCallback((params: any) => {
     try {
@@ -98,6 +99,10 @@ export function useDreamshaper() {
               }
               
               const sharedParams = data.params;
+              
+              if (sharedParams?.prompt?.["5"]?.inputs?.text) {
+                setSharedPrompt(sharedParams.prompt["5"].inputs.text);
+              }
               
               const response = await updateParams({
                 body: sharedParams,
@@ -282,5 +287,6 @@ export function useDreamshaper() {
     fullResponse,
     updating,
     createShareLink,
+    sharedPrompt,
   };
 }
