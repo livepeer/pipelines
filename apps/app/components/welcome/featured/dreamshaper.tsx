@@ -400,7 +400,7 @@ export default function Dreamshaper({
                     isCollapsed={isCollapsed}
                     onCollapse={setIsCollapsed}
                     className="rounded-xl overflow-hidden"
-                    audio={false}
+                    audio={true}
                   />
                 </div>
               )}
