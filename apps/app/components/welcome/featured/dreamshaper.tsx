@@ -275,6 +275,7 @@ export default function Dreamshaper({
   return (
     <div className="relative flex flex-col min-h-screen overflow-y-auto">
       {/* Header section */}
+      <TimeComponent />
       <div
         className={cn(
           "flex justify-center items-center p-3 mt-4",
@@ -394,19 +395,10 @@ export default function Dreamshaper({
                     isCollapsed={isCollapsed}
                     onCollapse={setIsCollapsed}
                     className="rounded-xl overflow-hidden"
+                    muted={false}
                   />
                 </div>
               )}
-              {!live || showOverlay ? (
-                <div className="absolute inset-0 bg-black flex flex-col items-center justify-center rounded-2xl">
-                  <Loader2 className="h-8 w-8 animate-spin text-white" />
-                  {statusMessage && (
-                    <span className="mt-4 text-white text-sm">
-                      {statusMessage}
-                    </span>
-                  )}
-                </div>
-              ) : null}
             </>
           ) : (
             <div className="w-full h-full flex items-center justify-center text-muted-foreground">
@@ -604,3 +596,23 @@ export default function Dreamshaper({
     </div>
   );
 }
+
+// Write a time component that starts from 0:00 and keeps running
+// when the stream is live
+
+const TimeComponent = () => {
+  const [time, setTime] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTime(prev => prev + 1);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="text-xs bg-red-500 text-black font-bold">
+      {`${Math.floor(time / 60)}:${(time % 60).toString().padStart(2, "0")}`}
+    </div>
+  );
+};

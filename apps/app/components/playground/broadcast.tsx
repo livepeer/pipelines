@@ -32,11 +32,13 @@ export function BroadcastWithControls({
   className,
   onCollapse,
   isCollapsed,
+  muted = true,
 }: {
   ingestUrl: string | null;
   className?: string;
   onCollapse?: (collapsed: boolean) => void;
   isCollapsed?: boolean;
+  muted?: boolean;
 }) {
   const [isPiP, setIsPiP] = useState(false);
   const videoId = "live-video";
@@ -85,7 +87,7 @@ export function BroadcastWithControls({
       }
       forceEnabled={true}
       noIceGathering={true}
-      audio={false}
+      audio={!muted}
       aspectRatio={16 / 9}
       ingestUrl={ingestUrl}
     >
@@ -286,6 +288,7 @@ export function BroadcastWithControls({
 const CameraSwitchButton = () => {
   const context = Broadcast.useBroadcastContext("CurrentSource", undefined);
   const state = Broadcast.useStore(context.store, state => state);
+  console.log("BROADCAST STATE::", state);
   const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
   useEffect(() => {

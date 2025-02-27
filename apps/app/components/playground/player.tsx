@@ -26,7 +26,6 @@ import {
 import { useMediaContext, useStore } from "@livepeer/react/player";
 import { CurrentSource } from "./current-source";
 import { ForceError } from "./force-error";
-import { type } from "os";
 
 export const LPPLayer = React.memo(function LPPLayer({
   output_playback_id,
@@ -38,7 +37,7 @@ export const LPPLayer = React.memo(function LPPLayer({
   stream_key: string | null;
 }) {
   // default to direct playback but allow us to disable this and go back to studio playback with an env variable or queryparam
-  let playerUrl = `https://ai.livepeer.${isProduction() ? "com" : "monster"}/aiWebrtc/${stream_key}-out`;
+  let playerUrl = `https://ai.livepeer.${isProduction() ? "com" : "monster"}/aiWebrtc/${stream_key}`;
   const searchParams = useSearchParams();
   if (
     (searchParams.get("directPlayback") !== "true" &&
@@ -48,22 +47,21 @@ export const LPPLayer = React.memo(function LPPLayer({
     playerUrl = `https://${isProduction() ? "lvpr.tv" : "monster.lvpr.tv"}/?v=${output_playback_id}&lowLatency=force&backoffMax=1000&ingestPlayback=true`;
   }
 
-  console.log("LPPLayer:: PlaybackId", output_playback_id);
   const [playbackInfo, setPlaybackInfo] = useState<any>(null);
 
   useEffect(() => {
     const fetchPlaybackInfo = async () => {
-      const { data, error } = await getStreamPlaybackInfo(output_playback_id);
-      console.log("PLAYBACK INFO", data);
+      console.log("PLAYBACK ID::", output_playback_id);
+      const { data } = await getStreamPlaybackInfo(output_playback_id);
       setPlaybackInfo(data);
+      console.log("PLAYBACK INFO::", data);
     };
     fetchPlaybackInfo();
-  }, []);
+  }, [output_playback_id]);
 
   const src = getSrc(playbackInfo as any);
 
   if (!src) {
-    console.log("LPPLayer:: No playback info found");
     return (
       <div className="w-full h-full flex items-center justify-center">
         <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -72,22 +70,15 @@ export const LPPLayer = React.memo(function LPPLayer({
     );
   }
 
-  console.log("LPPLayer:: Playing stream", src);
   return playbackInfo ? (
     <div className={isMobile ? "w-full h-full" : "aspect-video"}>
-      {/* <iframe
-        src={playerUrl}
-        className="w-full h-full"
-        allow="fullscreen"
-        allowFullScreen
-      /> */}
       <Player.Root
         autoPlay
         aspectRatio={16 / 9}
         clipLength={30}
         src={src}
         jwt={null}
-        backoffMax={10000}
+        backoffMax={1000}
         timeout={90000}
         lowLatency="force"
       >
