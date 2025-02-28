@@ -11,16 +11,24 @@ import { getSrc } from "@livepeer/react/external";
 import * as Player from "@livepeer/react/player";
 import { PlaybackInfo } from "livepeer/models/components";
 import { useEffect, useState } from "react";
+import { isProduction } from "@/lib/env";
+import { useSearchParams } from "next/navigation";
 
 export const LivepeerPlayer = React.memo(
   ({
     output_playback_id,
     isMobile,
+    stream_key,
   }: {
     output_playback_id: string;
     isMobile?: boolean;
+    stream_key?: string;
   }) => {
     const [playbackInfo, setPlaybackInfo] = useState<PlaybackInfo | null>(null);
+    const playerUrl = `https://ai.livepeer.${isProduction() ? "com" : "monster"}/aiWebrtc/${stream_key}-out`;
+
+    const searchParams = useSearchParams();
+    const useMediamtx = searchParams.get("useMediamtx") === "true";
 
     useEffect(() => {
       const fetchPlaybackInfo = async () => {
@@ -30,7 +38,7 @@ export const LivepeerPlayer = React.memo(
       fetchPlaybackInfo();
     }, [output_playback_id]);
 
-    const src = getSrc(playbackInfo);
+    const src = getSrc(useMediamtx ? playerUrl : playbackInfo);
 
     if (!src) {
       return (
@@ -99,11 +107,20 @@ export const LivepeerPlayer = React.memo(
               </div>
             </div>
           </Player.ErrorIndicator>
+          <StateRenderer />
         </Player.Root>
       </div>
     );
   },
 );
+
+const StateRenderer = ({ __scopeMedia }: Player.MediaScopedProps) => {
+  const context = Player.useMediaContext("CustomComponent", __scopeMedia);
+
+  const state = Player.useStore(context.store);
+  console.log("LivepeerPlayer:: State", state);
+  return null;
+};
 
 export const PlayerLoading = ({
   title,
