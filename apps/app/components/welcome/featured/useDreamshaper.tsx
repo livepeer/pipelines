@@ -8,6 +8,7 @@ import { getStream } from "@/app/api/streams/get";
 import { app } from "@/lib/env";
 import { createSharedParams, getSharedParams } from "@/app/api/streams/share-params";
 import { useSearchParams } from "next/navigation";
+import { useGatewayHost } from '@/hooks/useGatewayHost';
 
 const DEFAULT_PIPELINE_ID = "pip_DRQREDnSei4HQyC8"; // Staging Dreamshaper ID
 const DUMMY_USER_ID_FOR_NON_AUTHENTICATED_USERS =
@@ -16,7 +17,6 @@ const SHOWCASE_PIPELINE_ID =
   process.env.NEXT_PUBLIC_SHOWCASE_PIPELINE_ID || DEFAULT_PIPELINE_ID;
 
 const DREAMSHAPER_PARAMS_STORAGE_KEY = "dreamshaper_latest_params";
-const SHARED_PARAMS_DELAY_MS = 10000; // 10 seconds delay
 
 const createDefaultValues = (pipeline: any) => {
   const inputs = pipeline.config.inputs;
@@ -58,6 +58,8 @@ export function useDreamshaper() {
   const [sharedParamsApplied, setSharedParamsApplied] = useState(false);
   const [sharedPrompt, setSharedPrompt] = useState<string | null>(null);
 
+  const { gatewayHost, ready: gatewayHostReady } = useGatewayHost(stream?.id || null);
+  
   const storeParamsInLocalStorage = useCallback((params: any) => {
     try {
       localStorage.setItem(DREAMSHAPER_PARAMS_STORAGE_KEY, JSON.stringify(params));
@@ -80,57 +82,89 @@ export function useDreamshaper() {
     const applySharedParams = async () => {
       const sharedId = searchParams.get('shared');
       
-      if (sharedId && !sharedParamsApplied) {
-        try {          
-          const { data, error } = await getSharedParams(sharedId);
-          
-          if (error || !data) {
-            console.error("Error fetching shared parameters:", error);
-            return;
-          }
-          
-          const sharedParams = data.params;
-          if (sharedParams?.prompt?.["5"]?.inputs?.text) {
-            setSharedPrompt(sharedParams.prompt["5"].inputs.text);
-          }
-          
-          if (stream) {
-            setTimeout(async () => {
-              try {
-                const { data: streamData, error: streamError } = await getStream(stream.id);
-                
-                if (streamError || !streamData?.gateway_host) {
-                  console.error("Error fetching stream for shared params:", streamError);
-                  return;
-                }
-                
-                const response = await updateParams({
-                  body: sharedParams,
-                  host: streamData.gateway_host as string,
-                  streamKey: stream.stream_key as string,
-                });
-                
-                if (response.status == 200 || response.status == 201) {
-                  storeParamsInLocalStorage(sharedParams);
-                  setInputValues(sharedParams);
-                } else {
-                  console.error("Failed to apply parameters");
-                }
-                
-                setSharedParamsApplied(true);
-              } catch (error) {
-                console.error("Error applying shared parameters:", error);
-              }
-            }, SHARED_PARAMS_DELAY_MS);
-          }
-        } catch (error) {
-          console.error("Error in shared parameters process:", error);
+      if (!sharedId || sharedParamsApplied || !stream) {
+        return;
+      }
+
+      try {          
+        const { data, error } = await getSharedParams(sharedId);
+        
+        if (error || !data) {
+          return;
         }
+        
+        const sharedParams = data.params;
+        if (sharedParams?.prompt?.["5"]?.inputs?.text) {
+          setSharedPrompt(sharedParams.prompt["5"].inputs.text);
+        }
+        
+        if (!gatewayHostReady) {
+          return;
+        }
+        
+        try {
+          const response = await updateParams({
+            body: sharedParams,
+            host: gatewayHost as string,
+            streamKey: stream.stream_key as string,
+          });
+          
+          if (response.status == 200 || response.status == 201) {
+            storeParamsInLocalStorage(sharedParams);
+            setInputValues(sharedParams);
+          }
+          
+          setSharedParamsApplied(true);
+        } catch (error) {
+          console.error("Error applying shared parameters:", error);
+        }
+      } catch (error) {
+        console.error("Error in shared parameters process:", error);
       }
     };
     
     applySharedParams();
-  }, [searchParams, stream, sharedParamsApplied, storeParamsInLocalStorage]);
+  }, [searchParams, stream, sharedParamsApplied, storeParamsInLocalStorage, gatewayHostReady, gatewayHost]);
+
+  useEffect(() => {
+    if (searchParams.get('shared') || !stream || sharedParamsApplied) {
+      return;
+    }
+    
+    if (!gatewayHostReady) {
+      return;
+    }
+
+    const applyStoredParams = async () => {
+      const storedParams = getParamsFromLocalStorage();
+      
+      if (!storedParams) {
+        return;
+      }
+      
+      try {
+        const response = await updateParams({
+          body: storedParams,
+          host: gatewayHost as string,
+          streamKey: stream.stream_key as string,
+        });
+        
+        if (response.status == 200 || response.status == 201) {
+          setInputValues(storedParams);
+          
+          if (storedParams?.prompt?.["5"]?.inputs?.text) {
+            setSharedPrompt(storedParams.prompt["5"].inputs.text);
+          }
+        }
+        
+        setSharedParamsApplied(true);
+      } catch (error) {
+        console.error("Error applying stored parameters:", error);
+      }
+    };
+    
+    applyStoredParams();
+  }, [stream, searchParams, sharedParamsApplied, getParamsFromLocalStorage, gatewayHostReady, gatewayHost]);
 
   useEffect(() => {
     let isMounted = true;
