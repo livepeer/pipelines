@@ -603,6 +603,12 @@ export default function Dreamshaper({
                 });
               }}
               onKeyDown={e => {
+                if (e.key === "ArrowUp" && lastSubmittedPrompt) {
+                  e.preventDefault();
+                  restoreLastPrompt();
+                  return;
+                }
+                
                 if (
                   !updating &&
                   !profanity &&
@@ -623,6 +629,12 @@ export default function Dreamshaper({
               value={inputValue}
               onChange={e => setInputValue(e.target.value)}
               onKeyDown={e => {
+                if (e.key === "ArrowUp" && lastSubmittedPrompt) {
+                  e.preventDefault();
+                  restoreLastPrompt();
+                  return;
+                }
+                
                 if (
                   !updating &&
                   !profanity &&
