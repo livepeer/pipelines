@@ -281,9 +281,18 @@ export function BroadcastWithControls({
           </>
         )}
       </Broadcast.Container>
+      <StateRenderer />
     </Broadcast.Root>
   );
 }
+
+const StateRenderer = ({ __scopeMedia }: Broadcast.MediaScopedProps) => {
+  const context = Broadcast.useMediaContext("CustomComponent", __scopeMedia);
+
+  const state = Broadcast.useStore(context.store);
+  console.log("Broadcast:: State", state);
+  return null;
+};
 
 const CameraSwitchButton = () => {
   const context = Broadcast.useBroadcastContext("CurrentSource", undefined);
