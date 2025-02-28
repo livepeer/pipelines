@@ -80,26 +80,20 @@ export function useDreamshaper() {
       const sharedId = searchParams.get('shared');
       
       if (sharedId && stream && !sharedParamsApplied) {
-        try {
-          toast.info("Loading shared configuration...");
-          
+        try {          
           const { data, error } = await getSharedParams(sharedId);
           
           if (error || !data) {
             console.error("Error fetching shared parameters:", error);
-            toast.error("Could not load shared configuration");
             return;
           }
-          
-          toast.info(`Applying shared configuration in ${SHARED_PARAMS_DELAY_MS/1000} seconds...`);
-          
+                    
           setTimeout(async () => {
             try {
               const { data: streamData, error: streamError } = await getStream(stream.id);
               
               if (streamError || !streamData?.gateway_host) {
                 console.error("Error fetching stream for shared params:", streamError);
-                toast.error("Error applying shared configuration");
                 return;
               }
               
@@ -114,9 +108,8 @@ export function useDreamshaper() {
               if (response.status == 200 || response.status == 201) {
                 storeParamsInLocalStorage(sharedParams);
                 setInputValues(sharedParams);
-                toast.success("Shared configuration applied successfully");
               } else {
-                toast.error("Failed to apply shared configuration");
+                toast.error("Failed to apply shared params");
               }
               
               setSharedParamsApplied(true);
@@ -266,20 +259,15 @@ export function useDreamshaper() {
       );
 
       if (error) {
-        toast.error(`Error creating share link: ${error}`);
         return { error, url: null };
       }
 
       const shareUrl = new URL(window.location.href);
       shareUrl.searchParams.set("shared", data.id);
       
-      await navigator.clipboard.writeText(shareUrl.toString());
-      toast.success("Share link copied to clipboard!");
-      
       return { error: null, url: shareUrl.toString() };
     } catch (error) {
       console.error("Error in createShareLink:", error);
-      toast.error("An unexpected error occurred creating the share link");
       return { error: String(error), url: null };
     }
   }, [stream, inputValues, user, pipeline, getParamsFromLocalStorage]);

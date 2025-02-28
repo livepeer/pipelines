@@ -9,7 +9,7 @@ import { Tooltip } from "@repo/design-system/components/ui/tooltip";
 import { motion, AnimatePresence, useMotionValue } from "framer-motion";
 import { useState, useEffect, useRef } from "react";
 import { BroadcastWithControls } from "@/components/playground/broadcast";
-import { Loader2, Maximize, Minimize, Send } from "lucide-react";
+import { Loader2, Maximize, Minimize, Send, Copy, Share2 } from "lucide-react";
 import { LPPLayer } from "@/components/playground/player";
 import { useIsMobile } from "@repo/design-system/hooks/use-mobile";
 import { usePrivy } from "@privy-io/react-auth";
@@ -109,6 +109,8 @@ export default function Dreamshaper({
   const [timeoutReached, setTimeoutReached] = useState(false);
   const [showOverlay, setShowOverlay] = useState(true);
   const [debugOpen, setDebugOpen] = useState(false);
+  const [isSharing, setIsSharing] = useState(false);
+  const [hasSubmittedPrompt, setHasSubmittedPrompt] = useState(false);
 
   const isFullscreenAPISupported =
     typeof document !== "undefined" &&
@@ -239,6 +241,7 @@ export default function Dreamshaper({
 
       handleUpdate(inputValue, { silent: true });
       setLastSubmittedPrompt(inputValue); // Store the submitted prompt
+      setHasSubmittedPrompt(true); 
       setInputValue("");
     } else {
       console.error("No input value to submit");
@@ -278,37 +281,12 @@ export default function Dreamshaper({
 
   return (
     <div className="relative flex flex-col min-h-screen overflow-y-auto">
-      {/* Share button */}
-      {createShareLink && !isFullscreen && (
-        <TrackedButton
-          trackingEvent="daydream_share_button_clicked"
-          trackingProperties={{
-            is_authenticated: authenticated,
-          }}
-          variant="ghost"
-          size="sm"
-          className="absolute top-4 right-4 z-50 bg-neutral-800/80 hover:bg-neutral-700/80 text-white px-3 py-1 text-xs rounded-full border border-gray-500"
-          onClick={async () => {
-            const result = await createShareLink();
-            if (result.error) {
-              toast.error(`Error creating share link: ${result.error}`);
-            } else if (result.url) {
-              track("daydream_share_link_created", {
-                is_authenticated: authenticated,
-                stream_id: streamId,
-              });
-            }
-          }}
-        >
-          Share
-        </TrackedButton>
-      )}
-
       {/* Header section */}
       <div
         className={cn(
-          "flex justify-center items-center p-3 mt-4",
+          "flex items-start mt-4 w-full max-w-[calc(min(100%,calc((100vh-16rem)*16/9)))] mx-auto relative",
           isFullscreen && "hidden",
+          isMobile ? "justify-center px-3 py-3" : "justify-between py-3"
         )}
       >
         {isMobile && (
@@ -317,11 +295,15 @@ export default function Dreamshaper({
             <Separator orientation="vertical" className="mr-2 h-4" />
           </div>
         )}
-        <div className="mx-auto text-center flex flex-col items-center gap-2">
+        <div className={cn(
+          "flex flex-col gap-2",
+          isMobile ? "text-center items-center" : "text-left items-start"
+        )}>
           <h1
             className={cn(
               inter.className,
-              "text-lg md:text-xl flex flex-col items-center uppercase font-light",
+              "text-lg md:text-xl flex flex-col uppercase font-light",
+              isMobile ? "items-center" : "items-start"
             )}
           >
             Daydream
@@ -342,7 +324,86 @@ export default function Dreamshaper({
             workflow with ComfyUI
           </p>
         </div>
+        
+        {/* Header buttons */}
+        {!isMobile && !isFullscreen && (
+          <div className="absolute bottom-3 right-0 flex gap-2">
+            {createShareLink && hasSubmittedPrompt && (
+              <TrackedButton
+                trackingEvent="daydream_share_button_clicked"
+                trackingProperties={{
+                  is_authenticated: authenticated,
+                }}
+                variant="ghost"
+                size="sm"
+                className="bg-transparent hover:bg-black/10 border border-muted-foreground/30 text-foreground px-3 py-1 text-xs rounded-lg font-semibold h-[36px] flex items-center"
+                onClick={async () => {
+                  setIsSharing(true);
+                  const result = await createShareLink();
+                  setIsSharing(false);
+                  if (result.error) {
+                    toast.error(`Error creating share link: ${result.error}`);
+                  } else if (result.url) {
+                    navigator.clipboard.writeText(result.url);
+                    toast.success("Link copied to clipboard!");
+                    track("daydream_share_link_created_and_copied", {
+                      is_authenticated: authenticated,
+                      stream_id: streamId,
+                    });
+                  }
+                }}
+              >
+                {isSharing ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  "Share"
+                )}
+              </TrackedButton>
+            )}
+            
+            <Link
+              target="_blank"
+              href="https://discord.com/invite/hxyNHeSzCK"
+              className="bg-transparent hover:bg-black/10 border border-muted-foreground/30 text-foreground px-3 py-1 text-xs rounded-lg font-semibold h-[36px] flex items-center"
+            >
+              Join Community
+            </Link>
+          </div>
+        )}
       </div>
+
+      {/* Mobile share button */}
+      {isMobile && createShareLink && hasSubmittedPrompt && (
+        <div className="absolute top-4 right-4 z-50">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="p-0 m-0 bg-transparent border-none hover:bg-transparent focus:outline-none"
+            onClick={async () => {
+              setIsSharing(true);
+              const result = await createShareLink();
+              setIsSharing(false);
+              if (result.error) {
+                toast.error(`Error creating share link: ${result.error}`);
+              } else if (result.url) {
+                navigator.clipboard.writeText(result.url);
+                toast.success("Link copied to clipboard!");
+                track("daydream_share_link_created_and_copied", {
+                  is_authenticated: authenticated,
+                  stream_id: streamId,
+                  is_mobile: true,
+                });
+              }
+            }}
+          >
+            {isSharing ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Share2 className="h-4 w-4" />
+            )}
+          </Button>
+        </div>
+      )}
 
       {/* Main content area */}
       <div
@@ -619,28 +680,6 @@ export default function Dreamshaper({
           isFullscreen && "hidden",
         )}
       >
-        {createShareLink && (
-          <>
-            <button
-              onClick={async () => {
-                const result = await createShareLink();
-                if (result.error) {
-                  toast.error(`Error creating share link: ${result.error}`);
-                } else if (result.url) {
-                  toast.success("Share link copied to clipboard!");
-                  track("daydream_share_link_copied", {
-                    is_authenticated: authenticated,
-                    stream_id: streamId,
-                  });
-                }
-              }}
-              className="hover:text-muted-foreground/80"
-            >
-              Share
-            </button>
-            <Separator orientation="vertical" />
-          </>
-        )}
         <Link
           target="_blank"
           href="https://www.livepeer.org/learn-about-pipelines"
@@ -649,13 +688,6 @@ export default function Dreamshaper({
           Build a pipeline
         </Link>
         <Separator orientation="vertical" />
-        <Link
-          target="_blank"
-          href="https://discord.com/invite/hxyNHeSzCK"
-          className="hover:text-muted-foreground/80"
-        >
-          Join our community
-        </Link>
         {user?.email?.address?.endsWith("@livepeer.org") && (
           <>
             <Separator orientation="vertical" />

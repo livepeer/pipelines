@@ -8,7 +8,7 @@ export async function createSharedParams(params: any, userId: string, pipelineId
   
   const crypto = require('crypto');
   const paramsString = JSON.stringify(params);
-  const combinedString = `${paramsString}${userId}${pipelineId}`;
+  const combinedString = `${paramsString}${pipelineId}`;
   const hash = crypto.createHash('sha256').update(combinedString).digest('hex');
   
   // Check if params with this hash already exist
