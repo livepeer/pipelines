@@ -7,7 +7,7 @@ import { updateParams } from "@/app/api/streams/update-params";
 import { getStream } from "@/app/api/streams/get";
 import { app } from "@/lib/env";
 import { createSharedParams, getSharedParams } from "@/app/api/streams/share-params";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, usePathname } from "next/navigation";
 import { useGatewayHost } from '@/hooks/useGatewayHost';
 
 const DEFAULT_PIPELINE_ID = "pip_DRQREDnSei4HQyC8"; // Staging Dreamshaper ID
@@ -48,6 +48,7 @@ export interface UpdateOptions {
 export function useDreamshaper() {
   const { user } = usePrivy();
   const searchParams = useSearchParams();
+  const pathname = usePathname();
   
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
@@ -210,7 +211,7 @@ export function useDreamshaper() {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [pathname, user]);
 
   const handleUpdate = useCallback(
     async (prompt: string, options?: UpdateOptions) => {
