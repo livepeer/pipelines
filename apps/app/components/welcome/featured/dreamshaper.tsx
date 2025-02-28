@@ -7,7 +7,7 @@ import { TooltipTrigger } from "@repo/design-system/components/ui/tooltip";
 import { TooltipContent } from "@repo/design-system/components/ui/tooltip";
 import { Tooltip } from "@repo/design-system/components/ui/tooltip";
 import { motion, AnimatePresence, useMotionValue } from "framer-motion";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { BroadcastWithControls } from "@/components/playground/broadcast";
 import { Loader2, Maximize, Minimize, Send, Copy, Share2 } from "lucide-react";
 import { LPPLayer } from "@/components/playground/player";
@@ -29,6 +29,7 @@ import { StreamDebugPanel } from "@/components/stream/stream-debug-panel";
 import { StreamStatus } from "@/hooks/useStreamStatus";
 import { TrackedButton } from "@/components/analytics/TrackedButton";
 import { StreamInfo } from "@/components/footer/stream-info";
+import { ShareModal } from "./ShareModal";
 
 const PROMPT_INTERVAL = 4000;
 const samplePrompts = examplePrompts.map(prompt => prompt.prompt);
@@ -111,14 +112,17 @@ export default function Dreamshaper({
   const [timeoutReached, setTimeoutReached] = useState(false);
   const [showOverlay, setShowOverlay] = useState(true);
   const [debugOpen, setDebugOpen] = useState(false);
-  const [isSharing, setIsSharing] = useState(false);
   const [hasSubmittedPrompt, setHasSubmittedPrompt] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [promptVersion, setPromptVersion] = useState(0);
 
   const isFullscreenAPISupported =
     typeof document !== "undefined" &&
     (document.fullscreenEnabled || (document as any).webkitFullscreenEnabled);
 
   const toastShownRef = useRef(false);
+
+  const [isInputHovered, setIsInputHovered] = useState(false);
 
   useEffect(() => {
     setIsCollapsed(isMobile);
@@ -245,6 +249,7 @@ export default function Dreamshaper({
       setLastSubmittedPrompt(inputValue); // Store the submitted prompt
       setHasSubmittedPrompt(true); 
       setInputValue("");
+      setPromptVersion(prev => prev + 1);
     } else {
       console.error("No input value to submit");
     }
@@ -287,6 +292,15 @@ export default function Dreamshaper({
       setHasSubmittedPrompt(true);
     }
   }, [sharedPrompt, setLastSubmittedPrompt]);
+
+  const restoreLastPrompt = () => {
+    if (lastSubmittedPrompt) {
+      setInputValue(lastSubmittedPrompt);
+      if (inputRef.current) {
+        inputRef.current.focus();
+      }
+    }
+  };
 
   return (
     <div className="relative flex flex-col min-h-screen overflow-y-auto">
@@ -346,27 +360,9 @@ export default function Dreamshaper({
                 variant="ghost"
                 size="sm"
                 className="bg-transparent hover:bg-black/10 border border-muted-foreground/30 text-foreground px-3 py-1 text-xs rounded-lg font-semibold h-[36px] flex items-center"
-                onClick={async () => {
-                  setIsSharing(true);
-                  const result = await createShareLink();
-                  setIsSharing(false);
-                  if (result.error) {
-                    toast.error(`Error creating share link: ${result.error}`);
-                  } else if (result.url) {
-                    navigator.clipboard.writeText(result.url);
-                    toast.success("Link copied to clipboard!");
-                    track("daydream_share_link_created_and_copied", {
-                      is_authenticated: authenticated,
-                      stream_id: streamId,
-                    });
-                  }
-                }}
+                onClick={() => setIsShareModalOpen(true)}
               >
-                {isSharing ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  "Share"
-                )}
+                Share
               </TrackedButton>
             )}
             
@@ -388,28 +384,9 @@ export default function Dreamshaper({
             variant="ghost"
             size="icon"
             className="p-0 m-0 bg-transparent border-none hover:bg-transparent focus:outline-none"
-            onClick={async () => {
-              setIsSharing(true);
-              const result = await createShareLink();
-              setIsSharing(false);
-              if (result.error) {
-                toast.error(`Error creating share link: ${result.error}`);
-              } else if (result.url) {
-                navigator.clipboard.writeText(result.url);
-                toast.success("Link copied to clipboard!");
-                track("daydream_share_link_created_and_copied", {
-                  is_authenticated: authenticated,
-                  stream_id: streamId,
-                  is_mobile: true,
-                });
-              }
-            }}
+            onClick={() => setIsShareModalOpen(true)}
           >
-            {isSharing ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Share2 className="h-4 w-4" />
-            )}
+            <Share2 className="h-4 w-4" />
           </Button>
         </div>
       )}
@@ -560,26 +537,63 @@ export default function Dreamshaper({
             "dark:border-red-700 border-red-600",
         )}
       >
-        <div className="relative flex items-center flex-1">
+        <div 
+          className="flex-1 relative flex items-center"
+          onMouseEnter={() => setIsInputHovered(true)}
+          onMouseLeave={() => setIsInputHovered(false)}
+        >
           <AnimatePresence mode="wait">
             {!inputValue && (
-              <motion.span
-                key={lastSubmittedPrompt || currentPromptIndex}
+              <motion.div
+                key={lastSubmittedPrompt || `prompt-${currentPromptIndex}`}
                 initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 0.25, y: 0 }}
+                animate={{ opacity: 0.5, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.3 }}
                 className={cn(
-                  "absolute inset-y-0 left-3 md:left-1 flex items-center text-muted-foreground pointer-events-none text-xs",
+                  "absolute inset-y-0 left-3 md:left-1 flex items-center text-muted-foreground text-xs w-full",
+                  isInputHovered ? "pointer-events-auto" : "pointer-events-none",
                 )}
+                onClick={(e) => {
+                  if ((e.target as HTMLElement).closest('button')) {
+                    return;
+                  }
+                  if (inputRef.current) {
+                    inputRef.current.focus();
+                  }
+                }}
               >
-                {lastSubmittedPrompt || samplePrompts[currentPromptIndex]}
-              </motion.span>
+                <span>{lastSubmittedPrompt || samplePrompts[currentPromptIndex]}</span>
+                {isInputHovered && lastSubmittedPrompt && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      restoreLastPrompt();
+                    }}
+                    className="ml-2 text-muted-foreground hover:text-foreground transition-colors"
+                    aria-label="Restore last prompt"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="h-3.5 w-3.5"
+                    >
+                      <path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                      <path d="m15 5 4 4" />
+                    </svg>
+                  </button>
+                )}
+              </motion.div>
             )}
           </AnimatePresence>
           {isMobile ? (
             <Input
-              className="w-full shadow-none border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-sm outline-none bg-transparent h-14"
+              className="w-full shadow-none border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-sm outline-none bg-transparent h-14 flex items-center"
               value={inputValue}
               onChange={e => setInputValue(e.target.value)}
               onFocus={() => {
@@ -605,7 +619,7 @@ export default function Dreamshaper({
               ref={inputRef}
               minRows={1}
               maxRows={5}
-              className="w-full shadow-none border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-sm outline-none bg-transparent h-14 break-all"
+              className="w-full shadow-none border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-sm outline-none bg-transparent h-14 break-all py-3.5"
               value={inputValue}
               onChange={e => setInputValue(e.target.value)}
               onKeyDown={e => {
@@ -729,6 +743,17 @@ export default function Dreamshaper({
           streamId={streamId}
           streamKey={streamKey}
           isFullscreen={isFullscreen}
+        />
+      )}
+
+      {createShareLink && (
+        <ShareModal
+          isOpen={isShareModalOpen}
+          onClose={() => setIsShareModalOpen(false)}
+          createShareLink={createShareLink}
+          streamId={streamId}
+          isAuthenticated={authenticated}
+          promptVersion={promptVersion}
         />
       )}
     </div>
