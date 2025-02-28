@@ -134,6 +134,13 @@ export function useDreamshaper() {
 
   useEffect(() => {
     const fetchData = async () => {
+      if (stream && (
+        (user?.id && stream.user_id === user.id) ||
+        (!user?.id && stream.user_id === DUMMY_USER_ID_FOR_NON_AUTHENTICATED_USERS)
+      )) {
+        return;
+      }
+      
       try {
         const pipeline = await getPipeline(SHOWCASE_PIPELINE_ID);
         setPipeline(pipeline);
@@ -162,7 +169,7 @@ export function useDreamshaper() {
       }
     };
     fetchData();
-  }, [user]);
+  }, [user, stream]);
 
   const handleUpdate = useCallback(
     async (prompt: string, options?: UpdateOptions) => {
