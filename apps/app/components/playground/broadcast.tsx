@@ -32,13 +32,11 @@ export function BroadcastWithControls({
   className,
   onCollapse,
   isCollapsed,
-  audio = false,
 }: {
   ingestUrl: string | null;
   className?: string;
   onCollapse?: (collapsed: boolean) => void;
   isCollapsed?: boolean;
-  audio?: boolean;
 }) {
   const [isPiP, setIsPiP] = useState(false);
   const videoId = "live-video";
@@ -87,7 +85,7 @@ export function BroadcastWithControls({
       }
       forceEnabled={true}
       noIceGathering={true}
-      audio={audio}
+      audio={false}
       aspectRatio={16 / 9}
       ingestUrl={ingestUrl}
     >

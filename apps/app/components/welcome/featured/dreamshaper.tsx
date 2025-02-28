@@ -400,7 +400,6 @@ export default function Dreamshaper({
                     isCollapsed={isCollapsed}
                     onCollapse={setIsCollapsed}
                     className="rounded-xl overflow-hidden"
-                    audio={true}
                   />
                 </div>
               )}
@@ -442,7 +441,6 @@ export default function Dreamshaper({
                 isCollapsed={isCollapsed}
                 onCollapse={setIsCollapsed}
                 className="rounded-xl overflow-hidden w-full h-full"
-                audio={true}
               />
             </div>
           )}
@@ -636,7 +634,10 @@ export default function Dreamshaper({
       )}
 
       {streamId && (
-        <StreamInfo streamId={streamId} isFullscreen={isFullscreen} />
+        <StreamInfo 
+          streamId={streamId} 
+          isFullscreen={isFullscreen}
+        />
       )}
     </div>
   );
