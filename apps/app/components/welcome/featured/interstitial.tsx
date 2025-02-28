@@ -9,6 +9,7 @@ import { TrialExpiredModal } from "@/components/modals/trial-expired-modal";
 import InterstitialDecor from "./interstitial-decor";
 import Slide from "./slide";
 import track from "@/lib/track";
+import { TrackedButton } from "@/components/analytics/TrackedButton";
 import { sleep } from "@/lib/utils";
 
 interface ExamplePrompt {
@@ -423,7 +424,11 @@ const Interstitial: React.FC<InterstitialProps> = ({
               </div>
 
               <div className="flex gap-4 mt-8">
-                <Button
+                <TrackedButton
+                  trackingEvent="daydream_prompt_selected_continue"
+                  trackingProperties={{
+                    prompt: selectedPrompt,
+                  }}
                   onClick={handlePromptContinue}
                   disabled={!selectedPrompt || isPromptLoading}
                   size="lg"
@@ -436,7 +441,7 @@ const Interstitial: React.FC<InterstitialProps> = ({
                   ) : (
                     "Continue"
                   )}
-                </Button>
+                </TrackedButton>
               </div>
               <TermsNotice />
             </div>
