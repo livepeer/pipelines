@@ -1,6 +1,7 @@
 {
   "name": "livepeer-pipelines",
   "version": "0.0.1",
+  "main": "electron/main.js",
   "scripts": {
     "build": "turbo build",
     "dev": "turbo dev",
@@ -8,7 +9,10 @@
     "analyze": "turbo analyze",
     "bump-deps": "npx npm-check-updates --deep -u -x react-day-picker && pnpm install",
     "migrate": "cd packages/database && npx prisma format && npx prisma generate && npx prisma db push",
-    "format": "prettier --write \"**/*.{js,jsx,ts,tsx}\" --ignore-path .gitignore --ignore-pattern \"node_modules/**\" --ignore-pattern \".turbo/**\" --ignore-pattern \".github/**\""
+    "format": "prettier --write \"**/*.{js,jsx,ts,tsx}\" --ignore-path .gitignore --ignore-pattern \"node_modules/**\" --ignore-pattern \".turbo/**\" --ignore-pattern \".github/**\"",
+    "electron-dev": "concurrently \"pnpm dev\" \"wait-on tcp:3000 && electron .\"",
+    "electron-build": "electron-builder",
+    "electron-pack": "pnpm build && electron-builder -c.extraMetadata.main=electron/main.js"
   },
   "devDependencies": {
     "@auto-it/all-contributors": "^11.3.0",
@@ -19,7 +23,11 @@
     "typescript": "^5.6.3",
     "ultracite": "^4.1.6",
     "mixpanel": "^0.18.0",
-    "next": "^14.1.0"
+    "next": "^14.1.0",
+    "concurrently": "^8.2.2",
+    "electron": "^29.1.0",
+    "electron-builder": "^24.12.0",
+    "wait-on": "^7.2.0"
   },
   "overrides": {
     "@headlessui/react": "^2.2.0"
@@ -31,5 +39,26 @@
   "dependencies": {
     "@headlessui/react": "^2.2.0",
     "mixpanel-browser": "^2.56.0"
+  },
+  "build": {
+    "appId": "com.livepeer.pipelines",
+    "productName": "Livepeer Pipelines",
+    "files": [
+      "electron/**/*",
+      "apps/app/out/**/*"
+    ],
+    "directories": {
+      "buildResources": "assets",
+      "output": "dist"
+    },
+    "mac": {
+      "category": "public.app-category.developer-tools"
+    },
+    "win": {
+      "target": ["nsis"]
+    },
+    "linux": {
+      "target": ["AppImage", "deb"]
+    }
   }
 }
