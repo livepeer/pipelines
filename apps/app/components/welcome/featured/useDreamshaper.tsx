@@ -133,43 +133,50 @@ export function useDreamshaper() {
   }, [searchParams, stream, sharedParamsApplied, storeParamsInLocalStorage]);
 
   useEffect(() => {
+    let isMounted = true;
+    
     const fetchData = async () => {
-      if (stream && (
-        (user?.id && stream.user_id === user.id) ||
-        (!user?.id && stream.user_id === DUMMY_USER_ID_FOR_NON_AUTHENTICATED_USERS)
-      )) {
-        return;
-      }
-      
       try {
         const pipeline = await getPipeline(SHOWCASE_PIPELINE_ID);
+        if (!isMounted) return;
         setPipeline(pipeline);
 
         const inputValues = createDefaultValues(pipeline);
         const processedInputValues = processInputValues(inputValues);
         setInputValues(processedInputValues);
         
+        const currentUserId = user?.id ?? DUMMY_USER_ID_FOR_NON_AUTHENTICATED_USERS;
+        
         const { data: stream, error } = await upsertStream(
           {
             pipeline_id: pipeline.id,
             pipeline_params: processedInputValues,
           },
-          user?.id ?? DUMMY_USER_ID_FOR_NON_AUTHENTICATED_USERS,
+          currentUserId,
         );
 
         if (error) {
           toast.error(`Error creating stream for playback ${error}`);
           return;
         }
+        
+        if (!isMounted) return;
         setStream(stream);
       } catch (error) {
         console.error(error);
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
+    
     fetchData();
-  }, [user, stream]);
+    
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const handleUpdate = useCallback(
     async (prompt: string, options?: UpdateOptions) => {
