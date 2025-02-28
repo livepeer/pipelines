@@ -384,6 +384,7 @@ export default function Dreamshaper({
                 <LivepeerPlayer
                   output_playback_id={outputPlaybackId}
                   isMobile={isMobile}
+                  stream_key={streamKey}
                 />
                 {/* Overlay */}
                 <div className="absolute inset-x-0 top-0 h-[85%] bg-transparent" />

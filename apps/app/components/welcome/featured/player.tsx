@@ -22,7 +22,7 @@ export const LivepeerPlayer = React.memo(
   }: {
     output_playback_id: string;
     isMobile?: boolean;
-    stream_key?: string;
+    stream_key?: string | null;
   }) => {
     const [playbackInfo, setPlaybackInfo] = useState<PlaybackInfo | null>(null);
     const playerUrl = `https://ai.livepeer.${isProduction() ? "com" : "monster"}/aiWebrtc/${stream_key}-out`;
