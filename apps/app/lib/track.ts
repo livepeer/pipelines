@@ -22,18 +22,28 @@ async function getStoredIds(user?: User) {
   };
 }
 
-function getBrowserInfo() {
+const getBrowserInfo = () => {
   if (typeof window === "undefined") return {};
 
-  return {
+  const urlParams = new URLSearchParams(window.location.search);
+  const browserInfo = {
     $os: navigator.platform,
-    $browser: navigator.userAgent.split("(")[0].trim(),
-    $device: /mobile/i.test(navigator.userAgent) ? "Mobile" : "Desktop",
+    $browser: navigator.userAgent,
+    $device: navigator.userAgent.includes("Mobile") ? "Mobile" : "Desktop",
     $current_url: window.location.href,
+    $pathname: window.location.pathname,
     $referrer: document.referrer,
-    user_agent: navigator.userAgent,
+    utm_source: urlParams.get("utm_source"),
+    utm_medium: urlParams.get("utm_medium"),
+    utm_campaign: urlParams.get("utm_campaign"),
+    utm_term: urlParams.get("utm_term"),
+    utm_content: urlParams.get("utm_content"),
   };
-}
+
+  console.log("browserInfo", browserInfo);
+
+  return browserInfo;
+};
 
 const track = async (
   eventName: string,
@@ -65,6 +75,7 @@ const track = async (
       distinct_id: distinctId,
       $user_id: userId,
       $session_id: sessionId,
+      referrer: typeof document !== "undefined" ? document.referrer : null,
       ...browserInfo,
       ...eventProperties,
     },
