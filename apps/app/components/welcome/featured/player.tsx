@@ -4,10 +4,7 @@ import * as React from "react";
 import { getStreamPlaybackInfo } from "@/app/api/streams/get";
 import {
   PrivateErrorIcon,
-  OfflineErrorIcon,
   LoadingIcon,
-  EnterFullscreenIcon,
-  ExitFullscreenIcon,
   PictureInPictureIcon,
   UnmuteIcon,
   MuteIcon,
@@ -18,7 +15,9 @@ import { PlaybackInfo } from "livepeer/models/components";
 import { useEffect, useRef, useState } from "react";
 import { isProduction } from "@/lib/env";
 import { useSearchParams } from "next/navigation";
-import { PauseIcon, PlayIcon, Settings } from "lucide-react";
+import { PauseIcon, PlayIcon } from "lucide-react";
+import track from "@/lib/track";
+import { usePrivy } from "@privy-io/react-auth";
 
 export const LivepeerPlayer = React.memo(
   ({
@@ -119,7 +118,6 @@ export const LivepeerPlayer = React.memo(
               </div>
             </div>
           </Player.ErrorIndicator>
-          {debugMode && <DebugTimer />}
 
           <Player.Controls
             autoHide={1000}
@@ -158,6 +156,8 @@ export const LivepeerPlayer = React.memo(
               </div>
             </div>
           </Player.Controls>
+
+          <DebugTimer debugMode={debugMode} />
         </Player.Root>
       </div>
     );
@@ -196,28 +196,47 @@ export const PlayerLoading = ({
   </div>
 );
 
-const DebugTimer = ({ __scopeMedia }: Player.MediaScopedProps) => {
+const useFirstFrameLoaded = ({ __scopeMedia }: Player.MediaScopedProps) => {
   const startTime = useRef(Date.now());
-
+  const [firstFrameTime, setFirstFrameTime] = useState<string | null>(null);
   const context = Player.useMediaContext("CustomComponent", __scopeMedia);
   const state = Player.useStore(context.store);
 
-  // When the player state.hasPlayed changes from false to true for the first time, display the time difference from startTime else null
-  const [firstFrameTime, setFirstFrameTime] = useState<number | null>(null);
-
   useEffect(() => {
     if (state.hasPlayed && !firstFrameTime) {
-      setFirstFrameTime(Date.now());
+      const frameTime = ((Date.now() - startTime.current) / 1000).toFixed(2);
+      setFirstFrameTime(frameTime);
     }
   }, [state.hasPlayed]);
 
-  return firstFrameTime ? (
+  return firstFrameTime;
+};
+
+const DebugTimer = ({
+  __scopeMedia,
+  debugMode,
+}: Player.MediaScopedProps & { debugMode: boolean }) => {
+  const { authenticated } = usePrivy();
+  const firstFrameTime = useFirstFrameLoaded({ __scopeMedia });
+
+  useEffect(() => {
+    if (firstFrameTime) {
+      track("stream_first_frame_loaded", {
+        duration: firstFrameTime,
+        is_authenticated: authenticated,
+      });
+    }
+  }, [firstFrameTime]);
+
+  if (!firstFrameTime || !debugMode) {
+    return null;
+  }
+
+  return (
     <div className="absolute bottom-12 left-4 flex items-center gap-1">
       <p className="text-xs text-white/50">First Frame Loaded in:</p>
       <div className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
-      <span className="text-xs text-blue-400">
-        {((firstFrameTime - startTime.current) / 1000).toFixed(2)}s
-      </span>
+      <span className="text-xs text-blue-400">{firstFrameTime}s</span>
     </div>
-  ) : null;
+  );
 };
