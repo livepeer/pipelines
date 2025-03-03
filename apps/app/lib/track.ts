@@ -75,7 +75,6 @@ const track = async (
       distinct_id: distinctId,
       $user_id: userId,
       $session_id: sessionId,
-      referrer: typeof document !== "undefined" ? document.referrer : null,
       ...browserInfo,
       ...eventProperties,
     },
