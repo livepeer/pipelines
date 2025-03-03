@@ -6,6 +6,11 @@ import {
   PrivateErrorIcon,
   OfflineErrorIcon,
   LoadingIcon,
+  EnterFullscreenIcon,
+  ExitFullscreenIcon,
+  PictureInPictureIcon,
+  UnmuteIcon,
+  MuteIcon,
 } from "@livepeer/react/assets";
 import { getSrc } from "@livepeer/react/external";
 import * as Player from "@livepeer/react/player";
@@ -13,6 +18,7 @@ import { PlaybackInfo } from "livepeer/models/components";
 import { useEffect, useRef, useState } from "react";
 import { isProduction } from "@/lib/env";
 import { useSearchParams } from "next/navigation";
+import { PauseIcon, PlayIcon, Settings } from "lucide-react";
 
 export const LivepeerPlayer = React.memo(
   ({
@@ -114,6 +120,44 @@ export const LivepeerPlayer = React.memo(
             </div>
           </Player.ErrorIndicator>
           {debugMode && <DebugTimer />}
+
+          <Player.Controls
+            autoHide={1000}
+            className="bg-gradient-to-b gap-1 px-3 md:px-3 py-2 flex-col-reverse flex from-black/20 via-80% via-black/30 duration-1000 to-black/60 data-[visible=true]:animate-in data-[visible=false]:animate-out data-[visible=false]:fade-out-0 data-[visible=true]:fade-in-0"
+          >
+            <div className="flex justify-between gap-4">
+              <div className="flex flex-1 items-center gap-3">
+                <Player.PlayPauseTrigger className="w-6 h-6 hover:scale-110 transition-all flex-shrink-0">
+                  <Player.PlayingIndicator asChild matcher={false}>
+                    <PlayIcon className="w-full h-full" />
+                  </Player.PlayingIndicator>
+                  <Player.PlayingIndicator asChild>
+                    <PauseIcon className="w-full h-full" />
+                  </Player.PlayingIndicator>
+                </Player.PlayPauseTrigger>
+
+                <Player.MuteTrigger className="w-6 h-6 hover:scale-110 transition-all flex-shrink-0">
+                  <Player.VolumeIndicator asChild matcher={false}>
+                    <MuteIcon className="w-full h-full" />
+                  </Player.VolumeIndicator>
+                  <Player.VolumeIndicator asChild matcher={true}>
+                    <UnmuteIcon className="w-full h-full" />
+                  </Player.VolumeIndicator>
+                </Player.MuteTrigger>
+                <Player.Volume className="relative mr-1 flex-1 group flex cursor-pointer items-center select-none touch-none max-w-[120px] h-5">
+                  <Player.Track className="bg-white/30 relative grow rounded-full transition-all h-[2px] md:h-[3px] group-hover:h-[3px] group-hover:md:h-[4px]">
+                    <Player.Range className="absolute bg-white rounded-full h-full" />
+                  </Player.Track>
+                  <Player.Thumb className="block transition-all group-hover:scale-110 w-3 h-3 bg-white rounded-full" />
+                </Player.Volume>
+              </div>
+              <div className="flex sm:flex-1 md:flex-[1.5] justify-end items-center gap-2.5">
+                <Player.PictureInPictureTrigger className="w-6 h-6 hover:scale-110 transition-all flex-shrink-0">
+                  <PictureInPictureIcon className="w-full h-full" />
+                </Player.PictureInPictureTrigger>
+              </div>
+            </div>
+          </Player.Controls>
         </Player.Root>
       </div>
     );
@@ -168,7 +212,7 @@ const DebugTimer = ({ __scopeMedia }: Player.MediaScopedProps) => {
   }, [state.hasPlayed]);
 
   return firstFrameTime ? (
-    <div className="absolute bottom-4 left-2 flex items-center gap-1">
+    <div className="absolute bottom-12 left-4 flex items-center gap-1">
       <p className="text-xs text-white/50">First Frame Loaded in:</p>
       <div className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
       <span className="text-xs text-blue-400">
