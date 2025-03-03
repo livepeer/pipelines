@@ -9,7 +9,7 @@ import { Tooltip } from "@repo/design-system/components/ui/tooltip";
 import { motion, AnimatePresence, useMotionValue } from "framer-motion";
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { BroadcastWithControls } from "@/components/playground/broadcast";
-import { Loader2, Maximize, Minimize, Send, Copy, Share2 } from "lucide-react";
+import { Loader2, Maximize, Minimize, Send, SlidersHorizontal, Copy, Share2 } from "lucide-react";
 import { LPPLayer } from "@/components/playground/player";
 import { useIsMobile } from "@repo/design-system/hooks/use-mobile";
 import { usePrivy } from "@privy-io/react-auth";
@@ -31,6 +31,8 @@ import { TrackedButton } from "@/components/analytics/TrackedButton";
 import { StreamInfo } from "@/components/footer/stream-info";
 import { ShareModal } from "./ShareModal";
 import { useCommandSuggestions } from "@/hooks/useCommandSuggestions";
+import { Label } from "@repo/design-system/components/ui/label";
+import SettingsMenu from "./prompt-settings";
 
 const PROMPT_INTERVAL = 4000;
 const samplePrompts = examplePrompts.map(prompt => prompt.prompt);
@@ -134,6 +136,7 @@ export default function Dreamshaper({
   const [hasSubmittedPrompt, setHasSubmittedPrompt] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [promptVersion, setPromptVersion] = useState(0);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   const isFullscreenAPISupported =
     typeof document !== "undefined" &&
@@ -802,6 +805,37 @@ export default function Dreamshaper({
             <span className="text-muted-foreground text-lg">×</span>
           </Button>
         )}
+        
+        {/* Settings button */}
+        {!isMobile && (
+          <div className="relative">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 rounded-full hidden md:flex"
+              onClick={e => {
+                e.preventDefault();
+                setSettingsOpen(!settingsOpen);
+              }}
+            >
+              <SlidersHorizontal className="h-4 w-4 text-muted-foreground" />
+            </Button>
+            
+            {settingsOpen && (
+              <SettingsMenu
+                pipeline={pipeline}
+                inputValue={inputValue}
+                setInputValue={setInputValue}
+                onClose={() => setSettingsOpen(false)}
+              />
+            )}
+          </div>
+        )}
+        
+        {!isMobile && (
+          <Separator orientation="vertical" className="h-6 mr-2" />
+        )}
+        
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
