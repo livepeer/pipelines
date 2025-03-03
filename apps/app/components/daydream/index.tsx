@@ -15,7 +15,8 @@ export default function DayDreamContent(): ReactElement {
   const [showInterstitial, setShowInterstitial] = useState(true);
   const [streamKilled, setStreamKilled] = useState(false);
   const dreamshaperState = useDreamshaper();
-  const { stream, outputPlaybackId, handleUpdate, loading } = dreamshaperState;
+  const { stream, outputPlaybackId, handleUpdate, loading, pipeline } =
+    dreamshaperState;
   const [cameraPermissionGranted, setCameraPermissionGranted] = useState(false);
   const [showPromptSelection, setShowPromptSelection] = useState(false);
 
@@ -147,6 +148,7 @@ export default function DayDreamContent(): ReactElement {
             capacityReached={capacityReached}
             status={status}
             fullResponse={fullResponse}
+            pipeline={pipeline}
           />
           <ClientSideTracker eventName="home_page_view" />
         </div>

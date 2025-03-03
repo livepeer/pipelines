@@ -48,6 +48,44 @@ export interface UpdateOptions {
   silent?: boolean;
 }
 
+const extractCommands = (promptText: string) => {
+  // First, collect all commands and their values
+  const commandRegex = /--([a-zA-Z0-9_-]+)(?:\s+(?:"([^"]*)"|([\S]*)))/g;
+  const commands: Record<string, string> = {};
+  let match;
+
+  // Store all matches with their positions for later removal
+  const matches = [];
+  while ((match = commandRegex.exec(promptText)) !== null) {
+    const commandName = match[1];
+    // If there's a quoted value (match[2]) use that, otherwise use the single word value (match[3])
+    const commandValue = match[2] !== undefined ? match[2] : match[3] || "true";
+    commands[commandName] = commandValue;
+
+    // Store the full match and its position
+    matches.push({
+      start: match.index,
+      end: match.index + match[0].length,
+      text: match[0],
+    });
+  }
+
+  // Now build the cleaned prompt by removing the command portions
+  let cleanedPrompt = promptText;
+
+  // We need to remove matches from end to start to not mess up the indices
+  for (let i = matches.length - 1; i >= 0; i--) {
+    const { start, end } = matches[i];
+    cleanedPrompt =
+      cleanedPrompt.substring(0, start) + " " + cleanedPrompt.substring(end);
+  }
+
+  // Clean up any extra spaces and trim
+  cleanedPrompt = cleanedPrompt.replace(/\s+/g, " ").trim();
+
+  return { cleanedPrompt, commands };
+};
+
 export function useDreamshaper() {
   const { user } = usePrivy();
   const searchParams = useSearchParams();
@@ -265,28 +303,88 @@ export function useDreamshaper() {
           return;
         }
 
-        const updatedInputValues = { ...inputValues };
+        const updatedInputValues = JSON.parse(JSON.stringify(inputValues));
+        
+        const { cleanedPrompt, commands } = extractCommands(prompt);
 
-        if (updatedInputValues?.prompt?.["5"]?.inputs?.text) {
-          updatedInputValues.prompt["5"].inputs.text = prompt;
+        if (updatedInputValues?.prompt?.["5"]?.inputs) {
+          updatedInputValues.prompt["5"].inputs.text = cleanedPrompt;
         } else {
-          console.error("Could not find expected prompt structure");
+          // Create the structure if it doesn't exist
+          if (!updatedInputValues.prompt) {
+            updatedInputValues.prompt = {};
+          }
+          if (!updatedInputValues.prompt["5"]) {
+            updatedInputValues.prompt["5"] = { inputs: {} };
+          }
+          if (!updatedInputValues.prompt["5"].inputs) {
+            updatedInputValues.prompt["5"].inputs = {};
+          }
+          updatedInputValues.prompt["5"].inputs.text = cleanedPrompt;
+        }
+
+        if (pipeline?.prioritized_params && Object.keys(commands).length > 0) {
+          const prioritizedParams =
+            typeof pipeline.prioritized_params === "string"
+              ? JSON.parse(pipeline.prioritized_params)
+              : pipeline.prioritized_params;
+
+          prioritizedParams.forEach((param: any) => {
+            const commandId = param.name.toLowerCase().replace(/\s+/g, "-");
+
+            if (commands[commandId]) {
+              const pathParts = param.path.split("/");
+              const actualField = pathParts[pathParts.length - 1];
+
+              if (!updatedInputValues.prompt[param.nodeId]) {
+                updatedInputValues.prompt[param.nodeId] = { inputs: {} };
+              }
+              if (!updatedInputValues.prompt[param.nodeId].inputs) {
+                updatedInputValues.prompt[param.nodeId].inputs = {};
+              }
+
+              let value = commands[commandId];
+
+              if (param.widget === "number" || param.widget === "slider") {
+                let numValue = parseFloat(value);
+                if (
+                  param.widgetConfig?.min !== undefined &&
+                  numValue < param.widgetConfig.min
+                ) {
+                  numValue = param.widgetConfig.min;
+                }
+                if (
+                  param.widgetConfig?.max !== undefined &&
+                  numValue > param.widgetConfig.max
+                ) {
+                  numValue = param.widgetConfig.max;
+                }
+
+                updatedInputValues.prompt[param.nodeId].inputs[actualField] = numValue;
+              } else if (param.widget === "checkbox") {
+                updatedInputValues.prompt[param.nodeId].inputs[actualField] =
+                  value.toLowerCase() === "true" || value === "1";
+              } else {
+                updatedInputValues.prompt[param.nodeId].inputs[actualField] = value;
+              }
+            }
+          });
         }
 
         storeParamsInLocalStorage(updatedInputValues);
         setInputValues(updatedInputValues);
 
         if (!data?.gateway_host) {
-          console.error("No gateway host found in stream data:", data);
+          console.error("No gateway host found in stream data");
           if (!options?.silent) {
-            toast.error("No gateway host found", { id: toastId });
+            toast.error("No gateway host found in stream data");
           }
           return;
         }
 
         const response = await updateParams({
           body: updatedInputValues,
-          host: data.gateway_host as string,
+          host: data?.gateway_host as string,
           streamKey: streamKey as string,
         });
 
@@ -308,7 +406,7 @@ export function useDreamshaper() {
         setUpdating(false);
       }
     },
-    [stream, inputValues, storeParamsInLocalStorage],
+    [stream, inputValues, pipeline, storeParamsInLocalStorage],
   );
 
   const createShareLink = useCallback(async () => {
