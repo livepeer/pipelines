@@ -65,10 +65,6 @@ export function BroadcastWithControls({
     };
   }, []);
 
-  useEffect(() => {
-    localStorage.removeItem('livepeer.livepeer-broadcast-controller');
-  }, []);
-
   if (!ingestUrl) {
     return (
       <BroadcastLoading
@@ -92,6 +88,7 @@ export function BroadcastWithControls({
       audio={true}
       aspectRatio={16 / 9}
       ingestUrl={ingestUrl}
+      storage={null}
     >
       <Broadcast.Container
         id={videoId}
