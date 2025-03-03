@@ -4,14 +4,14 @@ import { ReactNode, useEffect } from "react";
 import mixpanel from "mixpanel-browser";
 import { mixpanel as mixpanelConfig } from "@/lib/env";
 import { usePrivy } from "@privy-io/react-auth";
-import { 
-  handleDistinctId, 
-  handleSessionId, 
-  setCookies, 
-  handleSessionEnd
+import {
+  handleDistinctId,
+  handleSessionId,
+  setCookies,
+  handleSessionEnd,
 } from "@/lib/analytics/mixpanel";
 
-export function MixpanelProvider({ children}: { children: ReactNode }) {
+export function MixpanelProvider({ children }: { children: ReactNode }) {
   const { user, ready } = usePrivy();
   useEffect(() => {
     if (mixpanelConfig.projectToken) {
@@ -20,9 +20,7 @@ export function MixpanelProvider({ children}: { children: ReactNode }) {
         mixpanel.init(mixpanelConfig.projectToken, { debug: true });
 
         const initSession = async () => {
-          const distinctId = await handleDistinctId(
-            user,
-          );
+          const distinctId = await handleDistinctId(user);
           const sessionId = await handleSessionId();
           if (ready) {
             setCookies(distinctId || "", sessionId || "", user?.id || "");

@@ -43,7 +43,7 @@ export function ShareModal({
     setIsCreating(true);
     try {
       const result = await createShareLink();
-      
+
       if (result.error) {
         toast.error(`Error creating share link: ${result.error}`);
       } else if (result.url) {
@@ -79,8 +79,10 @@ export function ShareModal({
           <DialogTitle className="text-xl">Share your experience</DialogTitle>
           <DialogDescription className="pt-2 text-sm text-muted-foreground">
             Your personalization, prompt, and parameters will be shared.
-            <br /><br />
-            Anyone with this link will see the exact same experience you've created.
+            <br />
+            <br />
+            Anyone with this link will see the exact same experience you've
+            created.
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-4 mb-2 mt-3">
@@ -92,8 +94,8 @@ export function ShareModal({
                 readOnly
                 className="flex-1 rounded-md border-muted-foreground/20 focus-visible:ring-offset-1 text-sm"
               />
-              <Button 
-                size="icon" 
+              <Button
+                size="icon"
                 onClick={handleCopyLink}
                 className="rounded-md hover:bg-primary/90"
               >
@@ -120,4 +122,4 @@ export function ShareModal({
       </DialogContent>
     </Dialog>
   );
-} 
+}

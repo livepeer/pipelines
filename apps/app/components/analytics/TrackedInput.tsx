@@ -22,7 +22,11 @@ export const TrackedInput: React.FC<TrackedInputProps> = ({
   ...props
 }) => {
   const [inputValue, setInputValue] = useState("");
-  const tracking = useTrackInput(trackingEvent, trackingProperties, trackingOptions);
+  const tracking = useTrackInput(
+    trackingEvent,
+    trackingProperties,
+    trackingOptions,
+  );
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputValue(e.target.value);
@@ -54,13 +58,13 @@ export const TrackedInput: React.FC<TrackedInputProps> = ({
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     // Track submits on Enter press
-    if (e.key === 'Enter' && tracking.onSubmit) {
+    if (e.key === "Enter" && tracking.onSubmit) {
       tracking.onSubmit(inputValue);
       if (onTrackSubmit) {
         onTrackSubmit(inputValue);
       }
     }
-    
+
     if (onKeyDown) {
       onKeyDown(e);
     }
@@ -76,4 +80,4 @@ export const TrackedInput: React.FC<TrackedInputProps> = ({
       {...props}
     />
   );
-}; 
+};

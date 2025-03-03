@@ -247,7 +247,7 @@ export default function Dreamshaper({
 
       handleUpdate(inputValue, { silent: true });
       setLastSubmittedPrompt(inputValue); // Store the submitted prompt
-      setHasSubmittedPrompt(true); 
+      setHasSubmittedPrompt(true);
       setInputValue("");
       setPromptVersion(prev => prev + 1);
     } else {
@@ -309,7 +309,7 @@ export default function Dreamshaper({
         className={cn(
           "flex items-start mt-4 w-full max-w-[calc(min(100%,calc((100vh-16rem)*16/9)))] mx-auto relative",
           isFullscreen && "hidden",
-          isMobile ? "justify-center px-3 py-3" : "justify-between py-3"
+          isMobile ? "justify-center px-3 py-3" : "justify-between py-3",
         )}
       >
         {isMobile && (
@@ -318,15 +318,17 @@ export default function Dreamshaper({
             <Separator orientation="vertical" className="mr-2 h-4" />
           </div>
         )}
-        <div className={cn(
-          "flex flex-col gap-2",
-          isMobile ? "text-center items-center" : "text-left items-start"
-        )}>
+        <div
+          className={cn(
+            "flex flex-col gap-2",
+            isMobile ? "text-center items-center" : "text-left items-start",
+          )}
+        >
           <h1
             className={cn(
               inter.className,
               "text-lg md:text-xl flex flex-col uppercase font-light",
-              isMobile ? "items-center" : "items-start"
+              isMobile ? "items-center" : "items-start",
             )}
           >
             Daydream
@@ -347,7 +349,7 @@ export default function Dreamshaper({
             workflow with ComfyUI
           </p>
         </div>
-        
+
         {/* Header buttons */}
         {!isMobile && !isFullscreen && (
           <div className="absolute bottom-3 right-0 flex gap-2">
@@ -365,7 +367,7 @@ export default function Dreamshaper({
                 Share
               </TrackedButton>
             )}
-            
+
             <Link
               target="_blank"
               href="https://discord.com/invite/hxyNHeSzCK"
@@ -537,7 +539,7 @@ export default function Dreamshaper({
             "dark:border-red-700 border-red-600",
         )}
       >
-        <div 
+        <div
           className="flex-1 relative flex items-center"
           onMouseEnter={() => setIsInputHovered(true)}
           onMouseLeave={() => setIsInputHovered(false)}
@@ -552,10 +554,12 @@ export default function Dreamshaper({
                 transition={{ duration: 0.3 }}
                 className={cn(
                   "absolute inset-y-0 left-3 md:left-1 flex items-center text-muted-foreground text-xs w-full",
-                  isInputHovered ? "pointer-events-auto" : "pointer-events-none",
+                  isInputHovered
+                    ? "pointer-events-auto"
+                    : "pointer-events-none",
                 )}
-                onClick={(e) => {
-                  if ((e.target as HTMLElement).closest('button')) {
+                onClick={e => {
+                  if ((e.target as HTMLElement).closest("button")) {
                     return;
                   }
                   if (inputRef.current) {
@@ -563,10 +567,12 @@ export default function Dreamshaper({
                   }
                 }}
               >
-                <span>{lastSubmittedPrompt || samplePrompts[currentPromptIndex]}</span>
+                <span>
+                  {lastSubmittedPrompt || samplePrompts[currentPromptIndex]}
+                </span>
                 {isInputHovered && lastSubmittedPrompt && (
                   <button
-                    onClick={(e) => {
+                    onClick={e => {
                       e.stopPropagation();
                       restoreLastPrompt();
                     }}
@@ -608,7 +614,7 @@ export default function Dreamshaper({
                   restoreLastPrompt();
                   return;
                 }
-                
+
                 if (
                   !updating &&
                   !profanity &&
@@ -634,7 +640,7 @@ export default function Dreamshaper({
                   restoreLastPrompt();
                   return;
                 }
-                
+
                 if (
                   !updating &&
                   !profanity &&
@@ -751,7 +757,7 @@ export default function Dreamshaper({
       )}
 
       {streamId && (
-        <StreamInfo 
+        <StreamInfo
           streamId={streamId}
           streamKey={streamKey}
           isFullscreen={isFullscreen}

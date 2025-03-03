@@ -1,8 +1,11 @@
 // hooks/useGatewayHost.ts
-import { useState, useEffect, useCallback } from 'react';
-import { getStream } from '@/app/api/streams/get';
+import { useState, useEffect, useCallback } from "react";
+import { getStream } from "@/app/api/streams/get";
 
-export function useGatewayHost(streamId: string | null, delayAfterReady = 3000) {
+export function useGatewayHost(
+  streamId: string | null,
+  delayAfterReady = 3000,
+) {
   const [gatewayHost, setGatewayHost] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -21,41 +24,41 @@ export function useGatewayHost(streamId: string | null, delayAfterReady = 3000) 
 
     const checkGatewayHost = async () => {
       if (!mounted) return;
-      
+
       setLoading(true);
-      
+
       try {
         const { data, error } = await getStream(streamId);
-        
+
         if (error) {
           throw new Error(`Error fetching stream: ${error}`);
         }
-        
+
         if (data?.gateway_host) {
           setGatewayHost(data.gateway_host);
           setLoading(false);
           setError(null);
-          
+
           // Add delay before setting ready to true to make sure the gateway is ready
           setTimeout(() => {
             if (mounted) {
               setReady(true);
             }
           }, delayAfterReady);
-          
+
           return;
         }
-        
+
         if (retryCount < MAX_RETRIES) {
           timeoutId = setTimeout(() => {
             setRetryCount(prev => prev + 1);
           }, RETRY_DELAY);
         } else {
-          throw new Error('Timeout waiting for gateway host');
+          throw new Error("Timeout waiting for gateway host");
         }
       } catch (err) {
         if (mounted) {
-          setError(err instanceof Error ? err.message : 'Unknown error');
+          setError(err instanceof Error ? err.message : "Unknown error");
           setLoading(false);
         }
       }
@@ -71,12 +74,15 @@ export function useGatewayHost(streamId: string | null, delayAfterReady = 3000) 
     };
   }, [streamId, retryCount, delayAfterReady]);
 
-  const executeWhenReady = useCallback(async (callback: (host: string) => Promise<void> | void) => {
-    if (ready && gatewayHost) {
-      return callback(gatewayHost);
-    }
-    return Promise.reject(new Error('Gateway host not available'));
-  }, [ready, gatewayHost]);
+  const executeWhenReady = useCallback(
+    async (callback: (host: string) => Promise<void> | void) => {
+      if (ready && gatewayHost) {
+        return callback(gatewayHost);
+      }
+      return Promise.reject(new Error("Gateway host not available"));
+    },
+    [ready, gatewayHost],
+  );
 
   const whenReady = useCallback(() => {
     return new Promise<string>((resolve, reject) => {
@@ -97,18 +103,18 @@ export function useGatewayHost(streamId: string | null, delayAfterReady = 3000) 
 
         setTimeout(() => {
           clearInterval(checkInterval);
-          reject(new Error('Timeout waiting for gateway host'));
+          reject(new Error("Timeout waiting for gateway host"));
         }, 30000); // 30-second max wait
       }
     });
   }, [ready, gatewayHost, error]);
 
-  return { 
-    gatewayHost, 
-    loading, 
-    error, 
-    ready, 
+  return {
+    gatewayHost,
+    loading,
+    error,
+    ready,
     executeWhenReady,
-    whenReady
+    whenReady,
   };
 }

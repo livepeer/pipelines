@@ -3,8 +3,8 @@ import Link from "next/link";
 import { useTrackEvent } from "@/hooks/useTrackEvent";
 import { TrackEventName, TrackProperties } from "@/lib/analytics/event-types";
 
-interface TrackedLinkProps 
-  extends Omit<React.AnchorHTMLAttributes<HTMLAnchorElement>, 'href'> {
+interface TrackedLinkProps
+  extends Omit<React.AnchorHTMLAttributes<HTMLAnchorElement>, "href"> {
   href: string;
   trackingEvent: TrackEventName;
   trackingProperties?: TrackProperties;
@@ -24,12 +24,12 @@ export const TrackedLink: React.FC<TrackedLinkProps> = ({
   ...props
 }) => {
   const { onClick: trackClick, onMouseEnter: trackHover } = useTrackEvent(
-    trackingEvent, 
+    trackingEvent,
     {
       href,
       ...trackingProperties,
     },
-    { component: "link" }
+    { component: "link" },
   );
 
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
@@ -46,9 +46,14 @@ export const TrackedLink: React.FC<TrackedLinkProps> = ({
     }
   };
 
-  if (isExternal || href.startsWith('http') || href.startsWith('mailto:') || href.startsWith('tel:')) {
+  if (
+    isExternal ||
+    href.startsWith("http") ||
+    href.startsWith("mailto:") ||
+    href.startsWith("tel:")
+  ) {
     return (
-      <a 
+      <a
         href={href}
         onClick={handleClick}
         onMouseEnter={handleMouseEnter}
@@ -73,4 +78,4 @@ export const TrackedLink: React.FC<TrackedLinkProps> = ({
       {children}
     </Link>
   );
-}; 
+};
