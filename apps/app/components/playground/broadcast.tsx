@@ -65,6 +65,20 @@ export function BroadcastWithControls({
     };
   }, []);
 
+  useEffect(() => {
+    // Ensure audio is muted after initialization but an audio track is present
+    const broadcastContext = document.getElementById(videoId);
+    if (broadcastContext) {
+      const video = broadcastContext.querySelector("video");
+      if (video && video.srcObject) {
+        const audioTracks = (video.srcObject as MediaStream).getAudioTracks();
+        audioTracks.forEach(track => {
+          track.enabled = false;
+        });
+      }
+    }
+  }, []);
+
   if (!ingestUrl) {
     return (
       <BroadcastLoading
@@ -85,7 +99,7 @@ export function BroadcastWithControls({
       }
       forceEnabled={true}
       noIceGathering={true}
-      audio={false}
+      audio={true}
       aspectRatio={16 / 9}
       ingestUrl={ingestUrl}
     >
