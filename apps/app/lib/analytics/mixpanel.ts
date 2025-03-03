@@ -75,15 +75,11 @@ export async function handleSessionId() {
   return sessionId;
 }
 
-<<<<<<< HEAD
-export function setCookies(distinctId: string, sessionId: string, userId?: string) {
-=======
 export function setCookies(
   distinctId: string,
   sessionId: string,
   userId?: string,
 ) {
->>>>>>> main
   document.cookie = `mixpanel_distinct_id=${distinctId}; path=/`;
   document.cookie = `mixpanel_session_id=${sessionId}; path=/`;
   if (userId) {

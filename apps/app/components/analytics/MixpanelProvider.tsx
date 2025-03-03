@@ -20,13 +20,7 @@ export function MixpanelProvider({ children }: { children: ReactNode }) {
         mixpanel.init(mixpanelConfig.projectToken, { debug: true });
 
         const initSession = async () => {
-<<<<<<< HEAD
-          const distinctId = await handleDistinctId(
-            user,
-          );
-=======
           const distinctId = await handleDistinctId(user);
->>>>>>> main
           const sessionId = await handleSessionId();
           if (ready) {
             setCookies(distinctId || "", sessionId || "", user?.id || "");
