@@ -303,28 +303,11 @@ export function useDreamshaper() {
           return;
         }
 
-        const updatedInputValues = { ...inputValues };
-
-        if (updatedInputValues?.prompt?.["5"]?.inputs?.text) {
-          updatedInputValues.prompt["5"].inputs.text = prompt;
-        } else {
-          console.error("Could not find expected prompt structure");
-        }
-
-        storeParamsInLocalStorage(updatedInputValues);
-        setInputValues(updatedInputValues);
-
-        if (!data?.gateway_host) {
-          console.error("No gateway host found in stream data");
-          if (!options?.silent) {
-            toast.error("No gateway host found in stream data");
-          }
-          return;
-        }
-
+        const updatedInputValues = JSON.parse(JSON.stringify(inputValues));
+        
         const { cleanedPrompt, commands } = extractCommands(prompt);
 
-        if (updatedInputValues?.prompt?.["5"]?.inputs?.text) {
+        if (updatedInputValues?.prompt?.["5"]?.inputs) {
           updatedInputValues.prompt["5"].inputs.text = cleanedPrompt;
         } else {
           // Create the structure if it doesn't exist
@@ -338,11 +321,6 @@ export function useDreamshaper() {
             updatedInputValues.prompt["5"].inputs = {};
           }
           updatedInputValues.prompt["5"].inputs.text = cleanedPrompt;
-
-          console.log(
-            "Created missing prompt structure and set text:",
-            cleanedPrompt,
-          );
         }
 
         if (pipeline?.prioritized_params && Object.keys(commands).length > 0) {
@@ -382,17 +360,26 @@ export function useDreamshaper() {
                   numValue = param.widgetConfig.max;
                 }
 
-                updatedInputValues.prompt[param.nodeId].inputs[actualField] =
-                  numValue;
+                updatedInputValues.prompt[param.nodeId].inputs[actualField] = numValue;
               } else if (param.widget === "checkbox") {
                 updatedInputValues.prompt[param.nodeId].inputs[actualField] =
                   value.toLowerCase() === "true" || value === "1";
               } else {
-                updatedInputValues.prompt[param.nodeId].inputs[actualField] =
-                  value;
+                updatedInputValues.prompt[param.nodeId].inputs[actualField] = value;
               }
             }
           });
+        }
+
+        storeParamsInLocalStorage(updatedInputValues);
+        setInputValues(updatedInputValues);
+
+        if (!data?.gateway_host) {
+          console.error("No gateway host found in stream data");
+          if (!options?.silent) {
+            toast.error("No gateway host found in stream data");
+          }
+          return;
         }
 
         const response = await updateParams({
