@@ -10,6 +10,7 @@ interface SettingsMenuProps {
   inputValue: string;
   setInputValue: (value: string) => void;
   onClose: () => void;
+  className?: string;
 }
 
 function SettingsMenu({
@@ -17,6 +18,7 @@ function SettingsMenu({
   inputValue,
   setInputValue,
   onClose,
+  className,
 }: SettingsMenuProps) {
   const sliderParams =
     pipeline?.prioritized_params?.filter(
@@ -34,7 +36,10 @@ function SettingsMenu({
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 10 }}
         transition={{ duration: 0.2 }}
-        className="absolute bottom-full right-0 mb-2 w-64 bg-popover rounded-md border shadow-md z-50 p-3 space-y-3"
+        className={cn(
+          "absolute bottom-full right-0 mb-2 w-64 bg-popover rounded-md border shadow-md z-50 p-3 pt-0 space-y-3",
+          className
+        )}
       >
         {/* Triangle pointer */}
         <div className="absolute bottom-[-6px] right-3 w-3 h-3 bg-popover border-r border-b transform rotate-45 border-inherit"></div>
@@ -43,13 +48,13 @@ function SettingsMenu({
         <Button
           variant="ghost"
           size="icon"
-          className="absolute top-2 right-2 h-6 w-6 rounded-full p-0"
+          className="absolute -top-2 -right-0 h-6 w-6 rounded-full p-0 bg-popover"
           onClick={onClose}
         >
           <X className="h-3 w-3" />
         </Button>
 
-        <div className="pt-1 pb-2">
+        <div className="pb-2">
           <h4 className="text-sm font-medium">Parameter Settings</h4>
         </div>
 
