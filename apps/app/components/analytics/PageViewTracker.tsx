@@ -7,18 +7,18 @@ interface PageViewTrackerProps {
   properties?: TrackProperties;
 }
 
-export const PageViewTracker: React.FC<PageViewTrackerProps> = ({ 
-  eventName, 
-  properties 
+export const PageViewTracker: React.FC<PageViewTrackerProps> = ({
+  eventName,
+  properties,
 }) => {
   const { trackEvent } = useTrack();
 
   useEffect(() => {
     trackEvent(eventName, {
       path: window.location.pathname,
-      ...properties
+      ...properties,
     });
   }, [eventName, properties, trackEvent]);
 
   return null;
-}; 
+};

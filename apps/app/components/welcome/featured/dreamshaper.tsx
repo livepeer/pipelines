@@ -7,9 +7,17 @@ import { TooltipTrigger } from "@repo/design-system/components/ui/tooltip";
 import { TooltipContent } from "@repo/design-system/components/ui/tooltip";
 import { Tooltip } from "@repo/design-system/components/ui/tooltip";
 import { motion, AnimatePresence, useMotionValue } from "framer-motion";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { BroadcastWithControls } from "@/components/playground/broadcast";
-import { Loader2, Maximize, Minimize, Send } from "lucide-react";
+import {
+  Loader2,
+  Maximize,
+  Minimize,
+  Send,
+  SlidersHorizontal,
+  Copy,
+  Share2,
+} from "lucide-react";
 import { LPPLayer } from "@/components/playground/player";
 import { useIsMobile } from "@repo/design-system/hooks/use-mobile";
 import { usePrivy } from "@privy-io/react-auth";
@@ -29,6 +37,11 @@ import { StreamDebugPanel } from "@/components/stream/stream-debug-panel";
 import { StreamStatus } from "@/hooks/useStreamStatus";
 import { TrackedButton } from "@/components/analytics/TrackedButton";
 import { StreamInfo } from "@/components/footer/stream-info";
+import { LivepeerPlayer } from "./player";
+import { ShareModal } from "./ShareModal";
+import { useCommandSuggestions } from "@/hooks/useCommandSuggestions";
+import { Label } from "@repo/design-system/components/ui/label";
+import SettingsMenu from "./prompt-settings";
 
 const PROMPT_INTERVAL = 4000;
 const samplePrompts = examplePrompts.map(prompt => prompt.prompt);
@@ -71,7 +84,26 @@ interface DreamshaperProps {
   statusMessage: string;
   capacityReached: boolean;
   status: StreamStatus | null;
+  createShareLink?: () => Promise<{ error: string | null; url: string | null }>;
+  sharedPrompt?: string | null;
+  pipeline: any | null;
 }
+
+// Define type for command options
+type CommandOption = {
+  id: string;
+  label: string;
+  type: string;
+  description: string;
+};
+
+// Define type for pipeline parameters
+type PipelineParam = {
+  name: string;
+  description?: string;
+  widget?: string;
+  // Add other fields if needed
+};
 
 export default function Dreamshaper({
   outputPlaybackId,
@@ -87,6 +119,9 @@ export default function Dreamshaper({
   statusMessage,
   capacityReached,
   status,
+  createShareLink,
+  sharedPrompt = null,
+  pipeline,
 }: DreamshaperProps) {
   const { currentPromptIndex, lastSubmittedPrompt, setLastSubmittedPrompt } =
     usePrompts();
@@ -94,7 +129,7 @@ export default function Dreamshaper({
   const { profanity, exceedsMaxLength } = useValidateInput(inputValue);
   const isMobile = useIsMobile();
   const outputPlayerRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
 
   const x = useMotionValue(0);
   const y = useMotionValue(0);
@@ -107,12 +142,68 @@ export default function Dreamshaper({
   const [timeoutReached, setTimeoutReached] = useState(false);
   const [showOverlay, setShowOverlay] = useState(true);
   const [debugOpen, setDebugOpen] = useState(false);
+  const [hasSubmittedPrompt, setHasSubmittedPrompt] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [promptVersion, setPromptVersion] = useState(0);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   const isFullscreenAPISupported =
     typeof document !== "undefined" &&
     (document.fullscreenEnabled || (document as any).webkitFullscreenEnabled);
 
   const toastShownRef = useRef(false);
+
+  const [isInputHovered, setIsInputHovered] = useState(false);
+  const commandOptions = useMemo<CommandOption[]>(() => {
+    if (!pipeline?.prioritized_params) return [];
+
+    return pipeline.prioritized_params.map((param: PipelineParam) => ({
+      id: param.name.toLowerCase().replace(/\s+/g, "-"),
+      label: param.name,
+      type: param.widget || "string",
+      description: param.description || param.name,
+    }));
+  }, [pipeline?.prioritized_params]);
+
+  const {
+    commandMenuOpen,
+    filteredOptions,
+    handleSelectOption,
+    handleKeyDown: handleCommandKeyDown,
+    caretRef,
+    referenceElement,
+    setReferenceElement,
+    selectedOptionIndex,
+  } = useCommandSuggestions({
+    options: commandOptions,
+    inputValue,
+    setInputValue,
+    inputRef,
+  });
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (commandMenuOpen) {
+      handleCommandKeyDown(e);
+      return;
+    }
+
+    if (e.key === "ArrowUp" && !inputValue && lastSubmittedPrompt) {
+      e.preventDefault();
+      restoreLastPrompt();
+      return;
+    }
+
+    if (
+      !updating &&
+      !profanity &&
+      !exceedsMaxLength &&
+      e.key === "Enter" &&
+      !(e.metaKey || e.ctrlKey || e.shiftKey)
+    ) {
+      e.preventDefault();
+      submitPrompt();
+    }
+  };
 
   useEffect(() => {
     setIsCollapsed(isMobile);
@@ -237,7 +328,9 @@ export default function Dreamshaper({
 
       handleUpdate(inputValue, { silent: true });
       setLastSubmittedPrompt(inputValue); // Store the submitted prompt
+      setHasSubmittedPrompt(true);
       setInputValue("");
+      setPromptVersion(prev => prev + 1);
     } else {
       console.error("No input value to submit");
     }
@@ -274,13 +367,123 @@ export default function Dreamshaper({
       document.removeEventListener("fullscreenchange", handleFullscreenChange);
   }, []);
 
+  useEffect(() => {
+    if (sharedPrompt) {
+      setLastSubmittedPrompt(sharedPrompt);
+      setHasSubmittedPrompt(true);
+    }
+  }, [sharedPrompt, setLastSubmittedPrompt]);
+
+  const restoreLastPrompt = () => {
+    if (lastSubmittedPrompt) {
+      setInputValue(lastSubmittedPrompt);
+      setTimeout(() => {
+        if (inputRef.current) {
+          inputRef.current.focus();
+
+          if ("setSelectionRange" in inputRef.current) {
+            const length = lastSubmittedPrompt.length;
+            inputRef.current.setSelectionRange(length, length);
+          }
+        }
+      }, 0);
+    }
+  };
+
+  const formatInputWithHighlights = () => {
+    if (!inputValue) return null;
+
+    const commandRegex = /--([a-zA-Z0-9_-]+)(?:\s+(?:"([^"]*)"|([\S]*)))/g;
+
+    const parts = [];
+    let lastIndex = 0;
+    let match: RegExpExecArray | null;
+
+    while ((match = commandRegex.exec(inputValue)) !== null) {
+      if (match.index > lastIndex) {
+        parts.push({
+          text: inputValue.substring(lastIndex, match.index),
+          isCommand: false,
+          isValue: false,
+        });
+      }
+
+      const commandName = `--${match![1]}`;
+      const isValidCommand = commandOptions.some(
+        option => option.id === match![1],
+      );
+
+      parts.push({
+        text: commandName,
+        isCommand: true,
+        isValid: isValidCommand,
+        isValue: false,
+      });
+
+      parts.push({
+        text: " ",
+        isCommand: false,
+        isValue: false,
+      });
+
+      const value =
+        match![2] !== undefined ? `"${match![2]}"` : match![3] || "";
+      parts.push({
+        text: value,
+        isCommand: false,
+        isValue: true,
+        isValidCommand: isValidCommand,
+      });
+
+      lastIndex = match.index + match[0].length;
+    }
+
+    if (lastIndex < inputValue.length) {
+      parts.push({
+        text: inputValue.substring(lastIndex),
+        isCommand: false,
+        isValue: false,
+      });
+    }
+
+    return (
+      <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+        <pre className="text-sm font-sans whitespace-pre-wrap overflow-hidden w-full m-0 p-0 pl-3">
+          {parts.map((part, i) => (
+            <span
+              key={i}
+              className={
+                part.isCommand && part.isValid
+                  ? "text-[#00EB88] font-medium"
+                  : part.isValue && part.isValidCommand
+                    ? "text-white font-bold"
+                    : ""
+              }
+            >
+              {part.text}
+            </span>
+          ))}
+        </pre>
+      </div>
+    );
+  };
+
+  useEffect(() => {
+    if (pipeline?.prioritized_params) {
+      console.log("Pipeline prioritized params:", pipeline.prioritized_params);
+    } else {
+      console.log("No pipeline prioritized params");
+    }
+  }, [pipeline]);
+
   return (
     <div className="relative flex flex-col min-h-screen overflow-y-auto">
       {/* Header section */}
       <div
         className={cn(
-          "flex justify-center items-center p-3 mt-4",
+          "flex items-start mt-4 w-full max-w-[calc(min(100%,calc((100vh-16rem)*16/9)))] mx-auto relative",
           isFullscreen && "hidden",
+          isMobile ? "justify-center px-3 py-3" : "justify-between py-3",
         )}
       >
         {isMobile && (
@@ -289,11 +492,17 @@ export default function Dreamshaper({
             <Separator orientation="vertical" className="mr-2 h-4" />
           </div>
         )}
-        <div className="mx-auto text-center flex flex-col items-center gap-2">
+        <div
+          className={cn(
+            "flex flex-col gap-2",
+            isMobile ? "text-center items-center" : "text-left items-start",
+          )}
+        >
           <h1
             className={cn(
               inter.className,
-              "text-lg md:text-xl flex flex-col items-center uppercase font-light",
+              "text-lg md:text-xl flex flex-col uppercase font-light",
+              isMobile ? "items-center" : "items-start",
             )}
           >
             Daydream
@@ -314,7 +523,49 @@ export default function Dreamshaper({
             workflow with ComfyUI
           </p>
         </div>
+
+        {/* Header buttons */}
+        {!isMobile && !isFullscreen && (
+          <div className="absolute bottom-3 right-0 flex gap-2">
+            {createShareLink && hasSubmittedPrompt && (
+              <TrackedButton
+                trackingEvent="daydream_share_button_clicked"
+                trackingProperties={{
+                  is_authenticated: authenticated,
+                }}
+                variant="ghost"
+                size="sm"
+                className="bg-transparent hover:bg-black/10 border border-muted-foreground/30 text-foreground px-3 py-1 text-xs rounded-lg font-semibold h-[36px] flex items-center"
+                onClick={() => setIsShareModalOpen(true)}
+              >
+                Share
+              </TrackedButton>
+            )}
+
+            <Link
+              target="_blank"
+              href="https://discord.com/invite/hxyNHeSzCK"
+              className="bg-transparent hover:bg-black/10 border border-muted-foreground/30 text-foreground px-3 py-1 text-xs rounded-lg font-semibold h-[36px] flex items-center"
+            >
+              Join Community
+            </Link>
+          </div>
+        )}
       </div>
+
+      {/* Mobile share button */}
+      {isMobile && createShareLink && hasSubmittedPrompt && (
+        <div className="absolute top-4 right-4 z-50">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="p-0 m-0 bg-transparent border-none hover:bg-transparent focus:outline-none"
+            onClick={() => setIsShareModalOpen(true)}
+          >
+            <Share2 className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
 
       {/* Main content area */}
       <div
@@ -380,10 +631,10 @@ export default function Dreamshaper({
           ) : outputPlaybackId ? (
             <>
               <div className="relative w-full h-full">
-                <LPPLayer
+                <LivepeerPlayer
                   output_playback_id={outputPlaybackId}
-                  stream_key={streamKey}
                   isMobile={isMobile}
+                  stream_key={streamKey}
                 />
                 {/* Overlay */}
                 <div className="absolute inset-x-0 top-0 h-[85%] bg-transparent" />
@@ -400,20 +651,9 @@ export default function Dreamshaper({
                     isCollapsed={isCollapsed}
                     onCollapse={setIsCollapsed}
                     className="rounded-xl overflow-hidden"
-                    audio={true}
                   />
                 </div>
               )}
-              {!live || showOverlay ? (
-                <div className="absolute inset-0 bg-black flex flex-col items-center justify-center rounded-2xl">
-                  <Loader2 className="h-8 w-8 animate-spin text-white" />
-                  {statusMessage && (
-                    <span className="mt-4 text-white text-sm">
-                      {statusMessage}
-                    </span>
-                  )}
-                </div>
-              ) : null}
             </>
           ) : (
             <div className="w-full h-full flex items-center justify-center text-muted-foreground">
@@ -442,7 +682,6 @@ export default function Dreamshaper({
                 isCollapsed={isCollapsed}
                 onCollapse={setIsCollapsed}
                 className="rounded-xl overflow-hidden w-full h-full"
-                audio={true}
               />
             </div>
           )}
@@ -464,68 +703,146 @@ export default function Dreamshaper({
             "dark:border-red-700 border-red-600",
         )}
       >
-        <div className="relative flex items-center flex-1">
+        <div
+          className="flex-1 relative flex items-center"
+          onMouseEnter={() => setIsInputHovered(true)}
+          onMouseLeave={() => setIsInputHovered(false)}
+        >
           <AnimatePresence mode="wait">
             {!inputValue && (
-              <motion.span
-                key={lastSubmittedPrompt || currentPromptIndex}
+              <motion.div
+                key={lastSubmittedPrompt || `prompt-${currentPromptIndex}`}
                 initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 0.25, y: 0 }}
+                animate={{ opacity: 0.5, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.3 }}
                 className={cn(
-                  "absolute inset-y-0 left-3 md:left-1 flex items-center text-muted-foreground pointer-events-none text-xs",
+                  "absolute inset-y-0 left-3 md:left-3 flex items-center text-muted-foreground text-xs w-full z-10",
+                  isInputHovered
+                    ? "pointer-events-auto"
+                    : "pointer-events-none",
                 )}
+                onClick={e => {
+                  if ((e.target as HTMLElement).closest("button")) {
+                    return;
+                  }
+                  if (inputRef.current) {
+                    inputRef.current.focus();
+                  }
+                }}
               >
-                {lastSubmittedPrompt || samplePrompts[currentPromptIndex]}
-              </motion.span>
+                <span>
+                  {lastSubmittedPrompt || samplePrompts[currentPromptIndex]}
+                </span>
+                {isInputHovered && lastSubmittedPrompt && (
+                  <button
+                    onClick={e => {
+                      e.stopPropagation();
+                      restoreLastPrompt();
+                    }}
+                    className="ml-2 text-muted-foreground hover:text-foreground transition-colors flex items-center justify-center relative z-20"
+                    aria-label="Restore last prompt"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="h-3.5 w-3.5"
+                    >
+                      <path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                      <path d="m15 5 4 4" />
+                    </svg>
+                  </button>
+                )}
+              </motion.div>
             )}
           </AnimatePresence>
-          {isMobile ? (
-            <Input
-              className="w-full shadow-none border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-sm outline-none bg-transparent h-14"
-              value={inputValue}
-              onChange={e => setInputValue(e.target.value)}
-              onFocus={() => {
-                window.scrollTo({
-                  top: document.body.scrollHeight,
-                  behavior: "smooth",
-                });
+
+          {/* Input wrapper with highlighting */}
+          <div
+            className="relative w-full flex items-center"
+            style={{ height: "auto" }}
+          >
+            {formatInputWithHighlights()}
+            {isMobile ? (
+              <Input
+                ref={inputRef as React.RefObject<HTMLInputElement>}
+                className="w-full shadow-none border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-sm outline-none bg-transparent py-3 font-sans"
+                value={inputValue}
+                onChange={e => setInputValue(e.target.value)}
+                onFocus={() => {
+                  window.scrollTo({
+                    top: document.body.scrollHeight,
+                    behavior: "smooth",
+                  });
+                }}
+                onKeyDown={handleKeyDown}
+                style={{
+                  color: "transparent",
+                  caretColor: "white",
+                  paddingLeft: "12px",
+                }}
+              />
+            ) : (
+              <TextareaAutosize
+                ref={inputRef as React.RefObject<HTMLTextAreaElement>}
+                minRows={1}
+                maxRows={5}
+                className="w-full shadow-none border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-sm outline-none bg-transparent py-3 break-all font-sans pl-3"
+                value={inputValue}
+                onChange={e => setInputValue(e.target.value)}
+                onKeyDown={handleKeyDown}
+                style={{
+                  resize: "none",
+                  color: "transparent",
+                  caretColor: "white",
+                }}
+              />
+            )}
+          </div>
+
+          {/* Command menu popover - Positioned ABOVE the input */}
+          {commandMenuOpen && filteredOptions.length > 0 && (
+            <div
+              className="absolute z-50 bottom-full mb-2 w-60 bg-popover rounded-md border shadow-md"
+              style={{
+                left: caretRef.current?.left ?? 0,
               }}
-              onKeyDown={e => {
-                if (
-                  !updating &&
-                  !profanity &&
-                  !exceedsMaxLength &&
-                  e.key === "Enter"
-                ) {
-                  e.preventDefault();
-                  submitPrompt();
-                }
-              }}
-            />
-          ) : (
-            <TextareaAutosize
-              ref={inputRef}
-              minRows={1}
-              maxRows={5}
-              className="w-full shadow-none border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-sm outline-none bg-transparent h-14 break-all"
-              value={inputValue}
-              onChange={e => setInputValue(e.target.value)}
-              onKeyDown={e => {
-                if (
-                  !updating &&
-                  !profanity &&
-                  !exceedsMaxLength &&
-                  e.key === "Enter" &&
-                  !(e.metaKey || e.ctrlKey || e.shiftKey)
-                ) {
-                  e.preventDefault();
-                  submitPrompt();
-                }
-              }}
-              style={{ resize: "none" }}
-            />
+            >
+              <div className="p-1">
+                {filteredOptions.map((option, index) => (
+                  <button
+                    key={option.id}
+                    className={`flex w-full items-start gap-2 rounded-sm px-2 py-1.5 text-left text-sm ${
+                      index === selectedOptionIndex
+                        ? "bg-accent"
+                        : "hover:bg-accent"
+                    } focus:outline-none`}
+                    onClick={() => handleSelectOption(option)}
+                  >
+                    <div className="flex flex-col">
+                      <div className="font-medium flex items-center">
+                        <span>--{option.id}</span>
+                        {option.type && (
+                          <span className="ml-1.5 text-muted-foreground opacity-70 text-xs">
+                            {option.type}
+                          </span>
+                        )}
+                      </div>
+                      {option.description && (
+                        <span className="text-xs text-muted-foreground">
+                          {option.description}
+                        </span>
+                      )}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
           )}
         </div>
         {inputValue && (
@@ -541,6 +858,35 @@ export default function Dreamshaper({
             <span className="text-muted-foreground text-lg">×</span>
           </Button>
         )}
+
+        {/* Settings button */}
+        {!isMobile && (
+          <div className="relative">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 rounded-full hidden md:flex"
+              onClick={e => {
+                e.preventDefault();
+                setSettingsOpen(!settingsOpen);
+              }}
+            >
+              <SlidersHorizontal className="h-4 w-4 text-muted-foreground" />
+            </Button>
+
+            {settingsOpen && (
+              <SettingsMenu
+                pipeline={pipeline}
+                inputValue={inputValue}
+                setInputValue={setInputValue}
+                onClose={() => setSettingsOpen(false)}
+              />
+            )}
+          </div>
+        )}
+
+        {!isMobile && <Separator orientation="vertical" className="h-6 mr-2" />}
+
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
@@ -601,13 +947,6 @@ export default function Dreamshaper({
           Build a pipeline
         </Link>
         <Separator orientation="vertical" />
-        <Link
-          target="_blank"
-          href="https://discord.gg/livepeer"
-          className="hover:text-muted-foreground/80"
-        >
-          Join our community
-        </Link>
         {user?.email?.address?.endsWith("@livepeer.org") && (
           <>
             <Separator orientation="vertical" />
@@ -636,7 +975,22 @@ export default function Dreamshaper({
       )}
 
       {streamId && (
-        <StreamInfo streamId={streamId} isFullscreen={isFullscreen} />
+        <StreamInfo
+          streamId={streamId}
+          streamKey={streamKey}
+          isFullscreen={isFullscreen}
+        />
+      )}
+
+      {createShareLink && (
+        <ShareModal
+          isOpen={isShareModalOpen}
+          onClose={() => setIsShareModalOpen(false)}
+          createShareLink={createShareLink}
+          streamId={streamId}
+          isAuthenticated={authenticated}
+          promptVersion={promptVersion}
+        />
       )}
     </div>
   );

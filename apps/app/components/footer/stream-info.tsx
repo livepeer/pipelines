@@ -6,14 +6,16 @@ import { cn } from "@repo/design-system/lib/utils";
 
 interface StreamInfoProps {
   streamId: string | null;
+  streamKey: string | null;
   className?: string;
   isFullscreen?: boolean;
 }
 
-export function StreamInfo({ 
-  streamId, 
+export function StreamInfo({
+  streamId,
+  streamKey,
   className,
-  isFullscreen = false 
+  isFullscreen = false,
 }: StreamInfoProps) {
   const [copied, setCopied] = useState(false);
   const appVersion =
@@ -25,6 +27,7 @@ export function StreamInfo({
       browser: navigator.userAgent,
       path: window.location.pathname,
       streamId: streamId || "not-available",
+      streamKey: streamKey || "not-available",
     };
 
     await navigator.clipboard.writeText(JSON.stringify(fullInfo, null, 2));
@@ -35,11 +38,11 @@ export function StreamInfo({
   if (!streamId) return null;
 
   return (
-    <div 
+    <div
       className={cn(
         "fixed bottom-4 right-16 flex items-center gap-2 text-xs text-gray-500 z-10",
         isFullscreen && "hidden",
-        className
+        className,
       )}
     >
       <span>v{appVersion}</span>
@@ -52,4 +55,4 @@ export function StreamInfo({
       </button>
     </div>
   );
-} 
+}

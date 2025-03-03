@@ -1,7 +1,11 @@
 import mixpanel from "mixpanel-browser";
 import { mixpanel as mixpanelConfig } from "@/lib/env";
 
-export async function identifyUser(userId: string, anonymousId: string, user: any) {
+export async function identifyUser(
+  userId: string,
+  anonymousId: string,
+  user: any,
+) {
   try {
     const payload = {
       userId,
@@ -48,7 +52,6 @@ export async function identifyUser(userId: string, anonymousId: string, user: an
 
 export async function handleDistinctId(user: any) {
   let distinctId = localStorage.getItem("mixpanel_distinct_id");
-  
   if (!distinctId) {
     distinctId = crypto.randomUUID();
     localStorage.setItem("mixpanel_distinct_id", distinctId);
@@ -72,7 +75,15 @@ export async function handleSessionId() {
   return sessionId;
 }
 
+<<<<<<< HEAD
 export function setCookies(distinctId: string, sessionId: string, userId?: string) {
+=======
+export function setCookies(
+  distinctId: string,
+  sessionId: string,
+  userId?: string,
+) {
+>>>>>>> main
   document.cookie = `mixpanel_distinct_id=${distinctId}; path=/`;
   document.cookie = `mixpanel_session_id=${sessionId}; path=/`;
   if (userId) {

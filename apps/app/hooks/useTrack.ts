@@ -9,15 +9,15 @@ export function useTrack() {
   const trackEvent = useCallback(
     (eventName: TrackEventName, properties?: TrackProperties) => {
       track(
-        eventName, 
+        eventName,
         {
           is_authenticated: authenticated,
-          ...properties
+          ...properties,
         },
-        user || undefined
+        user || undefined,
       );
-    }, 
-    [user, authenticated]
+    },
+    [user, authenticated],
   );
 
   const trackClick = useCallback(
@@ -28,21 +28,24 @@ export function useTrack() {
         return true;
       };
     },
-    [trackEvent]
+    [trackEvent],
   );
 
   const trackChange = useCallback(
     (eventName: TrackEventName, properties?: TrackProperties) => {
       return (value: any) => {
-        trackEvent(eventName, { 
-          ...properties, 
-          value: typeof value?.target?.value !== 'undefined' ? value.target.value : value 
+        trackEvent(eventName, {
+          ...properties,
+          value:
+            typeof value?.target?.value !== "undefined"
+              ? value.target.value
+              : value,
         });
         // Don't interfere with the original event
         return value;
       };
     },
-    [trackEvent]
+    [trackEvent],
   );
 
   const trackSubmit = useCallback(
@@ -53,7 +56,7 @@ export function useTrack() {
         trackEvent(eventName, properties);
       };
     },
-    [trackEvent]
+    [trackEvent],
   );
 
   return {
@@ -62,4 +65,4 @@ export function useTrack() {
     trackChange,
     trackSubmit,
   };
-} 
+}
