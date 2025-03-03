@@ -10,7 +10,7 @@ import {
 import { getSrc } from "@livepeer/react/external";
 import * as Player from "@livepeer/react/player";
 import { PlaybackInfo } from "livepeer/models/components";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { isProduction } from "@/lib/env";
 import { useSearchParams } from "next/navigation";
 
@@ -25,10 +25,13 @@ export const LivepeerPlayer = React.memo(
     stream_key?: string | null;
   }) => {
     const [playbackInfo, setPlaybackInfo] = useState<PlaybackInfo | null>(null);
-    const playerUrl = `https://ai.livepeer.${isProduction() ? "com" : "monster"}/aiWebrtc/${stream_key}-out`;
+    const playerUrl = `https://ai.livepeer.${isProduction() ? "com" : "monster"}/aiWebrtc/${stream_key}-out/whep`;
 
     const searchParams = useSearchParams();
-    const useMediamtx = searchParams.get("useMediamtx") === "true";
+    const useMediamtx =
+      process.env.NEXT_PUBLIC_LIVEPEER_DIRECT_PLAYBACK !== "true" ||
+      searchParams.get("useMediamtx") === "true";
+    const debugMode = searchParams.get("debugMode") === "true";
 
     useEffect(() => {
       const fetchPlaybackInfo = async () => {
@@ -107,20 +110,12 @@ export const LivepeerPlayer = React.memo(
               </div>
             </div>
           </Player.ErrorIndicator>
-          <StateRenderer />
+          {debugMode && <DebugTimer />}
         </Player.Root>
       </div>
     );
   },
 );
-
-const StateRenderer = ({ __scopeMedia }: Player.MediaScopedProps) => {
-  const context = Player.useMediaContext("CustomComponent", __scopeMedia);
-
-  const state = Player.useStore(context.store);
-  console.log("LivepeerPlayer:: State", state);
-  return null;
-};
 
 export const PlayerLoading = ({
   title,
@@ -153,3 +148,29 @@ export const PlayerLoading = ({
     )}
   </div>
 );
+
+const DebugTimer = ({ __scopeMedia }: Player.MediaScopedProps) => {
+  const startTime = useRef(Date.now());
+
+  const context = Player.useMediaContext("CustomComponent", __scopeMedia);
+  const state = Player.useStore(context.store);
+
+  // When the player state.hasPlayed changes from false to true for the first time, display the time difference from startTime else null
+  const [firstFrameTime, setFirstFrameTime] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (state.hasPlayed && !firstFrameTime) {
+      setFirstFrameTime(Date.now());
+    }
+  }, [state.hasPlayed]);
+
+  return firstFrameTime ? (
+    <div className="absolute bottom-4 left-2 flex items-center gap-1">
+      <p className="text-xs text-white/50">First Frame Loaded in:</p>
+      <div className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
+      <span className="text-xs text-blue-400">
+        {((firstFrameTime - startTime.current) / 1000).toFixed(2)}s
+      </span>
+    </div>
+  ) : null;
+};
