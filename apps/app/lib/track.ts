@@ -52,7 +52,6 @@ const track = async (
   }
 
   const { distinctId, sessionId, userId } = await getStoredIds(user);
-  console.log("getStoredIds", distinctId, sessionId, userId, user);
   const browserInfo = getBrowserInfo();
 
   if (!sessionId) {
