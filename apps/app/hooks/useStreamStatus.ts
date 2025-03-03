@@ -1,5 +1,6 @@
 import { usePrivy } from '@privy-io/react-auth';
 import { useEffect, useState, useRef } from 'react';
+import { sendStreamEvent } from '../lib/stream-events';
 
 const BASE_POLLING_INTERVAL = 5000;
 
@@ -20,6 +21,7 @@ export const useStreamStatus = (streamId: string, requireUser: boolean = true) =
     const [maxStatusLevel, setMaxStatusLevel] = useState(0);
     const failureCountRef = useRef(0);
     const intervalIdRef = useRef<NodeJS.Timeout | null>(null);
+    const isFirstLiveRef = useRef<boolean>(true);
 
     const capacityReached = fullResponse?.gateway_last_error?.startsWith("no orchestrators available within");
 
@@ -28,6 +30,23 @@ export const useStreamStatus = (streamId: string, requireUser: boolean = true) =
         StreamStatus.DegradedInference,
         StreamStatus.DegradedInput
     ].includes(status as StreamStatus) && fullResponse?.inference_status?.fps > 0;
+
+    useEffect(() => {
+        if (isLive && isFirstLiveRef.current) {
+            isFirstLiveRef.current = false;
+            // Send app_receive_first_segment event
+            if (streamId && fullResponse) {
+                sendStreamEvent(
+                    "app_receive_first_segment",
+                    streamId,
+                    fullResponse.playback_id,
+                    fullResponse.pipeline || "comfyui",
+                    fullResponse.pipeline_id || streamId,
+                    user || undefined
+                );
+            }
+        }
+    }, [isLive, streamId, fullResponse, user]);
 
     useEffect(() => {
         let currentLevel = 0;

@@ -135,7 +135,7 @@ export async function initKafkaProducer() {
     kafka.bootstrapServers,
     kafka.username,
     kafka.password,
-    "network_events",
+    "temp_testing_vb",
   );
 
   await kafkaProducer.connect();

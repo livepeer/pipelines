@@ -18,6 +18,7 @@ import LoggedOutComponent from "@/components/modals/logged-out";
 import { TrialExpiredModal } from "@/components/modals/trial-expired-modal";
 import InterstitialDecor from "./interstitial-decor";
 import track from "@/lib/track";
+import { sendStreamEvent } from '../../../lib/stream-events';
 
 interface ExamplePrompt {
   prompt: string;
@@ -94,7 +95,7 @@ const Interstitial: React.FC<InterstitialProps> = ({
   onPromptApply,
   showLoginPrompt = false,
 }) => {
-  const { authenticated, login } = usePrivy();
+  const { authenticated, login, user } = usePrivy();
   const [cameraPermission, setCameraPermission] = useState<PermissionState>("prompt");
   const [micPermission, setMicPermission] = useState<PermissionState>("prompt");
   const [permissionsChecked, setPermissionsChecked] = useState<boolean>(false);
@@ -195,6 +196,19 @@ const Interstitial: React.FC<InterstitialProps> = ({
       track("daydream_camera_permission_granted", {
         is_authenticated: authenticated
       });
+
+      // Send app_send_stream_request event when camera permission is granted
+      if (streamId) {
+        await sendStreamEvent(
+          "app_send_stream_request",
+          streamId,
+          outputPlaybackId,
+          "comfyui",
+          streamId,
+          user || undefined
+        );
+      }
+
       onCameraPermissionGranted();
       setCurrentScreen("prompts");
     } catch (err) {
