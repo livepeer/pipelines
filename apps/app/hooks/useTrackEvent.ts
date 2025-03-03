@@ -10,28 +10,30 @@ interface TrackEventOptions {
 export function useTrackEvent(
   eventName: TrackEventName,
   properties?: TrackProperties,
-  options?: TrackEventOptions
+  options?: TrackEventOptions,
 ) {
   const { trackEvent } = useTrack();
   const { component = "element", includeEventName = true } = options || {};
 
   const track = useCallback(
     (action: string, value?: any) => {
-      const eventToTrack = includeEventName ? `${eventName}_${action}` : eventName;
-      
+      const eventToTrack = includeEventName
+        ? `${eventName}_${action}`
+        : eventName;
+
       const eventProps: TrackProperties = {
         component,
         action,
         ...properties,
       };
-      
+
       if (value !== undefined) {
         eventProps.value = value;
       }
-      
+
       trackEvent(eventToTrack, eventProps);
     },
-    [trackEvent, eventName, properties, component, includeEventName]
+    [trackEvent, eventName, properties, component, includeEventName],
   );
 
   const onClick = useCallback(
@@ -39,7 +41,7 @@ export function useTrackEvent(
       track("click");
       return true;
     },
-    [track]
+    [track],
   );
 
   const onMouseEnter = useCallback(
@@ -47,7 +49,7 @@ export function useTrackEvent(
       track("hover");
       return true;
     },
-    [track]
+    [track],
   );
 
   const onFocus = useCallback(
@@ -55,7 +57,7 @@ export function useTrackEvent(
       track("focus");
       return true;
     },
-    [track]
+    [track],
   );
 
   const onChange = useCallback(
@@ -64,7 +66,7 @@ export function useTrackEvent(
       track("change", value);
       return true;
     },
-    [track]
+    [track],
   );
 
   const onSubmit = useCallback(
@@ -73,16 +75,16 @@ export function useTrackEvent(
         e.preventDefault();
       }
       track("submit", e && e.target ? e.target.value : undefined);
-      return false; 
+      return false;
     },
-    [track]
+    [track],
   );
 
   const trackAction = useCallback(
     (action: string, value?: any) => {
       track(action, value);
     },
-    [track]
+    [track],
   );
 
   return {
@@ -93,4 +95,4 @@ export function useTrackEvent(
     onSubmit,
     trackAction,
   };
-} 
+}

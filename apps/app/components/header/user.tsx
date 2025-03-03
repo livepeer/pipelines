@@ -20,7 +20,7 @@ import { LogOut, UserIcon } from "lucide-react";
 import { useEffect } from "react";
 import { cn } from "@repo/design-system/lib/utils";
 import { useIsMobile } from "@repo/design-system/hooks/use-mobile";
-
+import { identifyUser } from "@/lib/analytics/mixpanel";
 export default function User({ className }: { className?: string }) {
   const { ready, authenticated, user, login, logout } = usePrivy();
   const isMobile = useIsMobile();
@@ -37,9 +37,20 @@ export default function User({ className }: { className?: string }) {
   };
 
   useEffect(() => {
-    if (user?.id) {
-      checkUser(user);
-    }
+    const initUser = async () => {
+      if (user?.id) {
+        await checkUser(user);
+        const distinctId = localStorage.getItem("mixpanel_distinct_id");
+        localStorage.setItem("mixpanel_user_id", user.id);
+        await identifyUser(user.id, distinctId || "", user);
+        track("user_logged_in", {
+          user_id: user.id,
+          distinct_id: distinctId,
+        });
+      }
+    };
+
+    initUser().catch(console.error);
   }, [user]);
 
   return authenticated ? (

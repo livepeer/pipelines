@@ -6,12 +6,20 @@ import { toast } from "sonner";
 import { updateParams } from "@/app/api/streams/update-params";
 import { getStream } from "@/app/api/streams/get";
 import { app } from "@/lib/env";
+import {
+  createSharedParams,
+  getSharedParams,
+} from "@/app/api/streams/share-params";
+import { useSearchParams, usePathname } from "next/navigation";
+import { useGatewayHost } from "@/hooks/useGatewayHost";
 
 const DEFAULT_PIPELINE_ID = "pip_DRQREDnSei4HQyC8"; // Staging Dreamshaper ID
 const DUMMY_USER_ID_FOR_NON_AUTHENTICATED_USERS =
   "did:privy:cm4x2cuiw007lh8fcj34919fu"; // Infra Email User ID
 const SHOWCASE_PIPELINE_ID =
   process.env.NEXT_PUBLIC_SHOWCASE_PIPELINE_ID || DEFAULT_PIPELINE_ID;
+
+const DREAMSHAPER_PARAMS_STORAGE_KEY = "dreamshaper_latest_params";
 
 const createDefaultValues = (pipeline: any) => {
   const inputs = pipeline.config.inputs;
@@ -42,6 +50,8 @@ export interface UpdateOptions {
 
 export function useDreamshaper() {
   const { user } = usePrivy();
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
 
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
@@ -49,39 +59,182 @@ export function useDreamshaper() {
   const [pipeline, setPipeline] = useState<any>(null);
   const [inputValues, setInputValues] = useState<any>(null);
   const [fullResponse, setFullResponse] = useState<any>(null);
+  const [sharedParamsApplied, setSharedParamsApplied] = useState(false);
+  const [sharedPrompt, setSharedPrompt] = useState<string | null>(null);
+
+  const { gatewayHost, ready: gatewayHostReady } = useGatewayHost(
+    stream?.id || null,
+  );
+
+  const storeParamsInLocalStorage = useCallback((params: any) => {
+    try {
+      localStorage.setItem(
+        DREAMSHAPER_PARAMS_STORAGE_KEY,
+        JSON.stringify(params),
+      );
+    } catch (error) {
+      console.error("Error storing parameters in localStorage:", error);
+    }
+  }, []);
+
+  const getParamsFromLocalStorage = useCallback(() => {
+    try {
+      const storedParams = localStorage.getItem(DREAMSHAPER_PARAMS_STORAGE_KEY);
+      return storedParams ? JSON.parse(storedParams) : null;
+    } catch (error) {
+      console.error("Error retrieving parameters from localStorage:", error);
+      return null;
+    }
+  }, []);
 
   useEffect(() => {
+    const applySharedParams = async () => {
+      const sharedId = searchParams.get("shared");
+
+      if (!sharedId || sharedParamsApplied || !stream) {
+        return;
+      }
+
+      try {
+        const { data, error } = await getSharedParams(sharedId);
+
+        if (error || !data) {
+          return;
+        }
+
+        const sharedParams = data.params;
+        if (sharedParams?.prompt?.["5"]?.inputs?.text) {
+          setSharedPrompt(sharedParams.prompt["5"].inputs.text);
+        }
+
+        if (!gatewayHostReady) {
+          return;
+        }
+
+        try {
+          const response = await updateParams({
+            body: sharedParams,
+            host: gatewayHost as string,
+            streamKey: stream.stream_key as string,
+          });
+
+          if (response.status == 200 || response.status == 201) {
+            storeParamsInLocalStorage(sharedParams);
+            setInputValues(sharedParams);
+          }
+
+          setSharedParamsApplied(true);
+        } catch (error) {
+          console.error("Error applying shared parameters:", error);
+        }
+      } catch (error) {
+        console.error("Error in shared parameters process:", error);
+      }
+    };
+
+    applySharedParams();
+  }, [
+    searchParams,
+    stream,
+    sharedParamsApplied,
+    storeParamsInLocalStorage,
+    gatewayHostReady,
+    gatewayHost,
+  ]);
+
+  useEffect(() => {
+    if (searchParams.get("shared") || !stream || sharedParamsApplied) {
+      return;
+    }
+
+    if (!gatewayHostReady) {
+      return;
+    }
+
+    const applyStoredParams = async () => {
+      const storedParams = getParamsFromLocalStorage();
+
+      if (!storedParams) {
+        return;
+      }
+
+      try {
+        const response = await updateParams({
+          body: storedParams,
+          host: gatewayHost as string,
+          streamKey: stream.stream_key as string,
+        });
+
+        if (response.status == 200 || response.status == 201) {
+          setInputValues(storedParams);
+
+          if (storedParams?.prompt?.["5"]?.inputs?.text) {
+            setSharedPrompt(storedParams.prompt["5"].inputs.text);
+          }
+        }
+
+        setSharedParamsApplied(true);
+      } catch (error) {
+        console.error("Error applying stored parameters:", error);
+      }
+    };
+
+    applyStoredParams();
+  }, [
+    stream,
+    searchParams,
+    sharedParamsApplied,
+    getParamsFromLocalStorage,
+    gatewayHostReady,
+    gatewayHost,
+  ]);
+
+  useEffect(() => {
+    let isMounted = true;
+
     const fetchData = async () => {
       try {
-        // Fetch the pipeline from DB
         const pipeline = await getPipeline(SHOWCASE_PIPELINE_ID);
+        if (!isMounted) return;
         setPipeline(pipeline);
 
-        // Create a stream with pipeline inputs
         const inputValues = createDefaultValues(pipeline);
         const processedInputValues = processInputValues(inputValues);
         setInputValues(processedInputValues);
+
+        const currentUserId =
+          user?.id ?? DUMMY_USER_ID_FOR_NON_AUTHENTICATED_USERS;
+
         const { data: stream, error } = await upsertStream(
           {
             pipeline_id: pipeline.id,
             pipeline_params: processedInputValues,
           },
-          user?.id ?? DUMMY_USER_ID_FOR_NON_AUTHENTICATED_USERS,
+          currentUserId,
         );
 
         if (error) {
           toast.error(`Error creating stream for playback ${error}`);
           return;
         }
+
+        if (!isMounted) return;
         setStream(stream);
       } catch (error) {
         console.error(error);
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
+
     fetchData();
-  }, []);
+
+    return () => {
+      isMounted = false;
+    };
+  }, [pathname, user]);
 
   const handleUpdate = useCallback(
     async (prompt: string, options?: UpdateOptions) => {
@@ -112,6 +265,17 @@ export function useDreamshaper() {
           return;
         }
 
+        const updatedInputValues = { ...inputValues };
+
+        if (updatedInputValues?.prompt?.["5"]?.inputs?.text) {
+          updatedInputValues.prompt["5"].inputs.text = prompt;
+        } else {
+          console.error("Could not find expected prompt structure");
+        }
+
+        storeParamsInLocalStorage(updatedInputValues);
+        setInputValues(updatedInputValues);
+
         if (!data?.gateway_host) {
           console.error("No gateway host found in stream data:", data);
           if (!options?.silent) {
@@ -120,30 +284,18 @@ export function useDreamshaper() {
           return;
         }
 
-        // Update the prompt in the input values
-        const updatedInputValues = { ...inputValues };
-
-        if (updatedInputValues?.prompt?.["5"]?.inputs?.text) {
-          updatedInputValues.prompt["5"].inputs.text = prompt;
-        } else {
-          console.error("Could not find expected prompt structure:", {
-            hasPrompt: !!updatedInputValues?.prompt,
-            hasNode5: !!updatedInputValues?.prompt?.["5"],
-            hasInputs: !!updatedInputValues?.prompt?.["5"]?.inputs,
-            hasText: !!updatedInputValues?.prompt?.["5"]?.inputs?.text,
-          });
-        }
-
         const response = await updateParams({
           body: updatedInputValues,
           host: data.gateway_host as string,
           streamKey: streamKey as string,
         });
 
-        if (!options?.silent) {
-          if (response.status == 200 || response.status == 201) {
+        if (response.status == 200 || response.status == 201) {
+          if (!options?.silent) {
             toast.success("Stream updated successfully", { id: toastId });
-          } else {
+          }
+        } else {
+          if (!options?.silent) {
             toast.error("Error updating stream with prompt", { id: toastId });
           }
         }
@@ -156,8 +308,42 @@ export function useDreamshaper() {
         setUpdating(false);
       }
     },
-    [stream, inputValues],
+    [stream, inputValues, storeParamsInLocalStorage],
   );
+
+  const createShareLink = useCallback(async () => {
+    if (!stream) {
+      console.error("No stream found, cannot create share link");
+      return { error: "No stream found", url: null };
+    }
+
+    try {
+      const storedParams = getParamsFromLocalStorage();
+
+      if (!storedParams) {
+        console.error("No parameters found in localStorage");
+        return { error: "No parameters available to share", url: null };
+      }
+
+      const { data, error } = await createSharedParams(
+        storedParams,
+        user?.id ?? DUMMY_USER_ID_FOR_NON_AUTHENTICATED_USERS,
+        pipeline.id,
+      );
+
+      if (error) {
+        return { error, url: null };
+      }
+
+      const shareUrl = new URL(window.location.href);
+      shareUrl.searchParams.set("shared", data.id);
+
+      return { error: null, url: shareUrl.toString() };
+    } catch (error) {
+      console.error("Error in createShareLink:", error);
+      return { error: String(error), url: null };
+    }
+  }, [stream, user, pipeline, getParamsFromLocalStorage]);
 
   return {
     stream,
@@ -168,5 +354,7 @@ export function useDreamshaper() {
     loading,
     fullResponse,
     updating,
+    createShareLink,
+    sharedPrompt,
   };
 }

@@ -14,7 +14,10 @@ export const TrackedButton: React.FC<TrackedButtonProps> = ({
   onClick,
   ...props
 }) => {
-  const { onClick: trackClick } = useTrackButton(trackingEvent, trackingProperties);
+  const { onClick: trackClick } = useTrackButton(
+    trackingEvent,
+    trackingProperties,
+  );
 
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     trackClick(e);
@@ -24,4 +27,4 @@ export const TrackedButton: React.FC<TrackedButtonProps> = ({
   };
 
   return <Button onClick={handleClick} {...props} />;
-}; 
+};

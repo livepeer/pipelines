@@ -156,11 +156,11 @@ export default function Try({
           time: fullResponse.inference_status.last_error_time,
         });
       }
-      if (fullResponse.gateway_last_error) {
+      if (fullResponse.gateway_status?.last_error) {
         newErrors.push({
           source: "gateway",
-          error: fullResponse.gateway_last_error,
-          time: fullResponse.gateway_last_error_time,
+          error: fullResponse.gateway_status.last_error,
+          time: fullResponse.gateway_status.last_error_time,
         });
       }
       if (newErrors.length > 0) {

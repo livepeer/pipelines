@@ -11,6 +11,7 @@ const prefixes = {
   stream_key: "stk",
   webhook: "whk",
   api_key: "lp",
+  shared: "shp",
 } as const;
 
 type ResourceType = keyof typeof prefixes;

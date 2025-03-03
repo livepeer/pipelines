@@ -21,8 +21,21 @@ export default function DayDreamContent(): ReactElement {
 
   const [pendingPrompt, setPendingPrompt] = useState<string | null>(null);
 
+  // Get shared prompt from URL if available
+  const [sharedPrompt, setSharedPrompt] = useState<string | null>(null);
+
   const { status, isLive, statusMessage, capacityReached, fullResponse } =
     useStreamStatus(stream?.id || "", false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const urlParams = new URLSearchParams(window.location.search);
+      const sharedPromptParam = urlParams.get("shared");
+      if (sharedPromptParam) {
+        setSharedPrompt(sharedPromptParam);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     const checkPermissions = async () => {
@@ -95,11 +108,17 @@ export default function DayDreamContent(): ReactElement {
   const handleCameraPermissionGranted = () => {
     setCameraPermissionGranted(true);
 
-    const hasSelectedPrompt = localStorage.getItem("hasSelectedPrompt");
-    if (!hasSelectedPrompt) {
-      setShowPromptSelection(true);
-    } else {
+    // Skip prompt selection if we have a shared prompt
+    if (sharedPrompt) {
       handleReady();
+    } else {
+      // Original logic for non-shared link cases
+      const hasSelectedPrompt = localStorage.getItem("hasSelectedPrompt");
+      if (!hasSelectedPrompt) {
+        setShowPromptSelection(true);
+      } else {
+        handleReady();
+      }
     }
 
     localStorage.removeItem("hasSeenLandingPage");
@@ -141,7 +160,8 @@ export default function DayDreamContent(): ReactElement {
           onPromptApply={handlePromptApply}
           showLoginPrompt={streamKilled}
           onCameraPermissionGranted={handleCameraPermissionGranted}
-          showPromptSelection={showPromptSelection}
+          showPromptSelection={showPromptSelection && !sharedPrompt}
+          sharedPrompt={sharedPrompt}
         />
       )}
     </div>

@@ -1,4 +1,6 @@
 import { User } from "@privy-io/react-auth";
+import { handleDistinctId, handleSessionId } from "@/lib/analytics/mixpanel";
+
 interface TrackProperties {
   [key: string]: any;
 }
@@ -6,13 +8,17 @@ interface TrackProperties {
 let lastTrackedEvents: { [key: string]: number } = {};
 const DEBOUNCE_TIME = 1000; // 1000ms debounce
 
-function getStoredIds() {
+async function getStoredIds(user?: User) {
   if (typeof window === "undefined") return {};
 
+  const distinctId = await handleDistinctId(user);
+  const sessionId = await handleSessionId();
+  const userId = localStorage.getItem("mixpanel_user_id");
+
   return {
-    distinctId: localStorage.getItem("mixpanel_distinct_id"),
-    sessionId: localStorage.getItem("mixpanel_session_id"),
-    userId: localStorage.getItem("mixpanel_user_id"),
+    distinctId,
+    sessionId,
+    userId,
   };
 }
 
@@ -45,7 +51,8 @@ const track = async (
     return false;
   }
 
-  const { distinctId, sessionId, userId } = getStoredIds();
+  const { distinctId, sessionId, userId } = await getStoredIds(user);
+  console.log("getStoredIds", distinctId, sessionId, userId, user);
   const browserInfo = getBrowserInfo();
 
   if (!sessionId) {

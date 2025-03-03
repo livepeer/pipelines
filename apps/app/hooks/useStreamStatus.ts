@@ -112,7 +112,7 @@ export const useStreamStatus = (
         setError(null);
 
         if (
-          data?.gateway_last_error?.startsWith(
+          data?.gateway_status?.last_error?.startsWith(
             "no orchestrators available within",
           )
         ) {
