@@ -9,7 +9,15 @@ import { Tooltip } from "@repo/design-system/components/ui/tooltip";
 import { motion, AnimatePresence, useMotionValue } from "framer-motion";
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { BroadcastWithControls } from "@/components/playground/broadcast";
-import { Loader2, Maximize, Minimize, Send, SlidersHorizontal, Copy, Share2 } from "lucide-react";
+import {
+  Loader2,
+  Maximize,
+  Minimize,
+  Send,
+  SlidersHorizontal,
+  Copy,
+  Share2,
+} from "lucide-react";
 import { LPPLayer } from "@/components/playground/player";
 import { useIsMobile } from "@repo/design-system/hooks/use-mobile";
 import { usePrivy } from "@privy-io/react-auth";
@@ -147,16 +155,16 @@ export default function Dreamshaper({
   const [isInputHovered, setIsInputHovered] = useState(false);
   const commandOptions = useMemo<CommandOption[]>(() => {
     if (!pipeline?.prioritized_params) return [];
-    
+
     return pipeline.prioritized_params.map((param: PipelineParam) => ({
-      id: param.name.toLowerCase().replace(/\s+/g, '-'),
+      id: param.name.toLowerCase().replace(/\s+/g, "-"),
       label: param.name,
-      type: param.widget || 'string',
-      description: param.description || param.name
+      type: param.widget || "string",
+      description: param.description || param.name,
     }));
   }, [pipeline?.prioritized_params]);
-  
-  const { 
+
+  const {
     commandMenuOpen,
     filteredOptions,
     handleSelectOption,
@@ -164,20 +172,26 @@ export default function Dreamshaper({
     caretRef,
     referenceElement,
     setReferenceElement,
-    selectedOptionIndex
+    selectedOptionIndex,
   } = useCommandSuggestions({
     options: commandOptions,
     inputValue,
     setInputValue,
-    inputRef
+    inputRef,
   });
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (commandMenuOpen) {
       handleCommandKeyDown(e);
-      return; 
+      return;
     }
-    
+
+    if (e.key === "ArrowUp" && !inputValue && lastSubmittedPrompt) {
+      e.preventDefault();
+      restoreLastPrompt();
+      return;
+    }
+
     if (
       !updating &&
       !profanity &&
@@ -362,55 +376,88 @@ export default function Dreamshaper({
   const restoreLastPrompt = () => {
     if (lastSubmittedPrompt) {
       setInputValue(lastSubmittedPrompt);
-      if (inputRef.current) {
-        inputRef.current.focus();
-      }
+      setTimeout(() => {
+        if (inputRef.current) {
+          inputRef.current.focus();
+
+          if ("setSelectionRange" in inputRef.current) {
+            const length = lastSubmittedPrompt.length;
+            inputRef.current.setSelectionRange(length, length);
+          }
+        }
+      }, 0);
     }
   };
 
   const formatInputWithHighlights = () => {
     if (!inputValue) return null;
-    
-    const commandRegex = /--([a-zA-Z0-9_-]+)/g;
-    
+
+    const commandRegex = /--([a-zA-Z0-9_-]+)(?:\s+(?:"([^"]*)"|([\S]*)))/g;
+
     const parts = [];
     let lastIndex = 0;
-    let match;
-    
+    let match: RegExpExecArray | null;
+
     while ((match = commandRegex.exec(inputValue)) !== null) {
       if (match.index > lastIndex) {
         parts.push({
           text: inputValue.substring(lastIndex, match.index),
-          isCommand: false
+          isCommand: false,
+          isValue: false,
         });
       }
-      
-      const commandText = match[1];
-      const isValidCommand = commandOptions.some(option => option.id === commandText);
-      
+
+      const commandName = `--${match![1]}`;
+      const isValidCommand = commandOptions.some(
+        option => option.id === match![1],
+      );
+
       parts.push({
-        text: match[0], 
+        text: commandName,
         isCommand: true,
-        isValid: isValidCommand
+        isValid: isValidCommand,
+        isValue: false,
       });
-      
+
+      parts.push({
+        text: " ",
+        isCommand: false,
+        isValue: false,
+      });
+
+      const value =
+        match![2] !== undefined ? `"${match![2]}"` : match![3] || "";
+      parts.push({
+        text: value,
+        isCommand: false,
+        isValue: true,
+        isValidCommand: isValidCommand,
+      });
+
       lastIndex = match.index + match[0].length;
     }
-    
+
     if (lastIndex < inputValue.length) {
       parts.push({
         text: inputValue.substring(lastIndex),
-        isCommand: false
+        isCommand: false,
+        isValue: false,
       });
     }
-    
+
     return (
       <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-        <pre className="text-sm font-sans whitespace-pre-wrap overflow-hidden w-full m-0 p-0">
+        <pre className="text-sm font-sans whitespace-pre-wrap overflow-hidden w-full m-0 p-0 pl-3">
           {parts.map((part, i) => (
-            <span 
-              key={i} 
-              className={part.isCommand && part.isValid ? "text-[#00EB88] font-medium" : ""}
+            <span
+              key={i}
+              className={
+                part.isCommand && part.isValid
+                  ? "text-[#00EB88] font-medium"
+                  : part.isValue && part.isValidCommand
+                    ? "text-white font-bold"
+                    : ""
+              }
             >
               {part.text}
             </span>
@@ -679,7 +726,7 @@ export default function Dreamshaper({
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.3 }}
                 className={cn(
-                  "absolute inset-y-0 left-3 md:left-1 flex items-center text-muted-foreground text-xs w-full",
+                  "absolute inset-y-0 left-3 md:left-3 flex items-center text-muted-foreground text-xs w-full z-10",
                   isInputHovered
                     ? "pointer-events-auto"
                     : "pointer-events-none",
@@ -702,7 +749,7 @@ export default function Dreamshaper({
                       e.stopPropagation();
                       restoreLastPrompt();
                     }}
-                    className="ml-2 text-muted-foreground hover:text-foreground transition-colors"
+                    className="ml-2 text-muted-foreground hover:text-foreground transition-colors flex items-center justify-center relative z-20"
                     aria-label="Restore last prompt"
                   >
                     <svg
@@ -725,7 +772,10 @@ export default function Dreamshaper({
           </AnimatePresence>
 
           {/* Input wrapper with highlighting */}
-          <div className="relative w-full flex items-center" style={{ height: 'auto' }}>
+          <div
+            className="relative w-full flex items-center"
+            style={{ height: "auto" }}
+          >
             {formatInputWithHighlights()}
             {isMobile ? (
               <Input
@@ -740,28 +790,36 @@ export default function Dreamshaper({
                   });
                 }}
                 onKeyDown={handleKeyDown}
-                style={{ color: 'transparent', caretColor: 'white' }}
+                style={{
+                  color: "transparent",
+                  caretColor: "white",
+                  paddingLeft: "12px",
+                }}
               />
             ) : (
               <TextareaAutosize
                 ref={inputRef as React.RefObject<HTMLTextAreaElement>}
                 minRows={1}
                 maxRows={5}
-                className="w-full shadow-none border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-sm outline-none bg-transparent py-3 break-all font-sans"
+                className="w-full shadow-none border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-sm outline-none bg-transparent py-3 break-all font-sans pl-3"
                 value={inputValue}
                 onChange={e => setInputValue(e.target.value)}
                 onKeyDown={handleKeyDown}
-                style={{ resize: "none", color: 'transparent', caretColor: 'white' }}
+                style={{
+                  resize: "none",
+                  color: "transparent",
+                  caretColor: "white",
+                }}
               />
             )}
           </div>
 
           {/* Command menu popover - Positioned ABOVE the input */}
           {commandMenuOpen && filteredOptions.length > 0 && (
-            <div 
+            <div
               className="absolute z-50 bottom-full mb-2 w-60 bg-popover rounded-md border shadow-md"
-              style={{ 
-                left: caretRef.current?.left ?? 0
+              style={{
+                left: caretRef.current?.left ?? 0,
               }}
             >
               <div className="p-1">
@@ -769,7 +827,9 @@ export default function Dreamshaper({
                   <button
                     key={option.id}
                     className={`flex w-full items-start gap-2 rounded-sm px-2 py-1.5 text-left text-sm ${
-                      index === selectedOptionIndex ? "bg-accent" : "hover:bg-accent"
+                      index === selectedOptionIndex
+                        ? "bg-accent"
+                        : "hover:bg-accent"
                     } focus:outline-none`}
                     onClick={() => handleSelectOption(option)}
                   >
@@ -783,7 +843,9 @@ export default function Dreamshaper({
                         )}
                       </div>
                       {option.description && (
-                        <span className="text-xs text-muted-foreground">{option.description}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {option.description}
+                        </span>
                       )}
                     </div>
                   </button>
@@ -805,7 +867,7 @@ export default function Dreamshaper({
             <span className="text-muted-foreground text-lg">×</span>
           </Button>
         )}
-        
+
         {/* Settings button */}
         {!isMobile && (
           <div className="relative">
@@ -820,7 +882,7 @@ export default function Dreamshaper({
             >
               <SlidersHorizontal className="h-4 w-4 text-muted-foreground" />
             </Button>
-            
+
             {settingsOpen && (
               <SettingsMenu
                 pipeline={pipeline}
@@ -831,11 +893,9 @@ export default function Dreamshaper({
             )}
           </div>
         )}
-        
-        {!isMobile && (
-          <Separator orientation="vertical" className="h-6 mr-2" />
-        )}
-        
+
+        {!isMobile && <Separator orientation="vertical" className="h-6 mr-2" />}
+
         <Tooltip>
           <TooltipTrigger asChild>
             <Button

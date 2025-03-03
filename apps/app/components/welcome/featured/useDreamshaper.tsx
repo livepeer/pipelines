@@ -49,20 +49,40 @@ export interface UpdateOptions {
 }
 
 const extractCommands = (promptText: string) => {
-  const commandRegex = /--([a-zA-Z0-9_-]+)(?:\s+([^\s--][^--]*?))?(?=\s+--|$)/g;
-  const cleanedPrompt = promptText.replace(commandRegex, '').trim();
-  
+  // First, collect all commands and their values
+  const commandRegex = /--([a-zA-Z0-9_-]+)(?:\s+(?:"([^"]*)"|([\S]*)))/g;
   const commands: Record<string, string> = {};
   let match;
-  
-  commandRegex.lastIndex = 0;
-  
+
+  // Store all matches with their positions for later removal
+  const matches = [];
   while ((match = commandRegex.exec(promptText)) !== null) {
     const commandName = match[1];
-    const commandValue = match[2]?.trim() || "true";
+    // If there's a quoted value (match[2]) use that, otherwise use the single word value (match[3])
+    const commandValue = match[2] !== undefined ? match[2] : match[3] || "true";
     commands[commandName] = commandValue;
+
+    // Store the full match and its position
+    matches.push({
+      start: match.index,
+      end: match.index + match[0].length,
+      text: match[0],
+    });
   }
-  
+
+  // Now build the cleaned prompt by removing the command portions
+  let cleanedPrompt = promptText;
+
+  // We need to remove matches from end to start to not mess up the indices
+  for (let i = matches.length - 1; i >= 0; i--) {
+    const { start, end } = matches[i];
+    cleanedPrompt =
+      cleanedPrompt.substring(0, start) + " " + cleanedPrompt.substring(end);
+  }
+
+  // Clean up any extra spaces and trim
+  cleanedPrompt = cleanedPrompt.replace(/\s+/g, " ").trim();
+
   return { cleanedPrompt, commands };
 };
 
@@ -303,7 +323,6 @@ export function useDreamshaper() {
         }
 
         const { cleanedPrompt, commands } = extractCommands(prompt);
-        
 
         if (updatedInputValues?.prompt?.["5"]?.inputs?.text) {
           updatedInputValues.prompt["5"].inputs.text = cleanedPrompt;
@@ -319,46 +338,58 @@ export function useDreamshaper() {
             updatedInputValues.prompt["5"].inputs = {};
           }
           updatedInputValues.prompt["5"].inputs.text = cleanedPrompt;
-          
-          console.log("Created missing prompt structure and set text:", cleanedPrompt);
+
+          console.log(
+            "Created missing prompt structure and set text:",
+            cleanedPrompt,
+          );
         }
-        
+
         if (pipeline?.prioritized_params && Object.keys(commands).length > 0) {
-          const prioritizedParams = typeof pipeline.prioritized_params === 'string'
-            ? JSON.parse(pipeline.prioritized_params)
-            : pipeline.prioritized_params;
-          
+          const prioritizedParams =
+            typeof pipeline.prioritized_params === "string"
+              ? JSON.parse(pipeline.prioritized_params)
+              : pipeline.prioritized_params;
+
           prioritizedParams.forEach((param: any) => {
-            const commandId = param.name.toLowerCase().replace(/\s+/g, '-');
-            
+            const commandId = param.name.toLowerCase().replace(/\s+/g, "-");
+
             if (commands[commandId]) {
-              const pathParts = param.path.split('/');
+              const pathParts = param.path.split("/");
               const actualField = pathParts[pathParts.length - 1];
-              
+
               if (!updatedInputValues.prompt[param.nodeId]) {
                 updatedInputValues.prompt[param.nodeId] = { inputs: {} };
               }
               if (!updatedInputValues.prompt[param.nodeId].inputs) {
                 updatedInputValues.prompt[param.nodeId].inputs = {};
               }
-              
+
               let value = commands[commandId];
-              
-              if (param.widget === 'number' || param.widget === 'slider') {
+
+              if (param.widget === "number" || param.widget === "slider") {
                 let numValue = parseFloat(value);
-                if (param.widgetConfig?.min !== undefined && numValue < param.widgetConfig.min) {
+                if (
+                  param.widgetConfig?.min !== undefined &&
+                  numValue < param.widgetConfig.min
+                ) {
                   numValue = param.widgetConfig.min;
                 }
-                if (param.widgetConfig?.max !== undefined && numValue > param.widgetConfig.max) {
+                if (
+                  param.widgetConfig?.max !== undefined &&
+                  numValue > param.widgetConfig.max
+                ) {
                   numValue = param.widgetConfig.max;
                 }
-                
-                updatedInputValues.prompt[param.nodeId].inputs[actualField] = numValue;
-              } else if (param.widget === 'checkbox') {
-                updatedInputValues.prompt[param.nodeId].inputs[actualField] = 
-                  value.toLowerCase() === 'true' || value === '1';
+
+                updatedInputValues.prompt[param.nodeId].inputs[actualField] =
+                  numValue;
+              } else if (param.widget === "checkbox") {
+                updatedInputValues.prompt[param.nodeId].inputs[actualField] =
+                  value.toLowerCase() === "true" || value === "1";
               } else {
-                updatedInputValues.prompt[param.nodeId].inputs[actualField] = value;
+                updatedInputValues.prompt[param.nodeId].inputs[actualField] =
+                  value;
               }
             }
           });
