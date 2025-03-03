@@ -1,6 +1,5 @@
 "use server";
 
-import { livepeerSDK } from "@/lib/core";
 import { createServerClient } from "@repo/supabase";
 
 export async function getStream(streamId: string) {
@@ -89,14 +88,4 @@ export async function getStreams(
     data,
     totalPages,
   };
-}
-
-export async function getStreamPlaybackInfo(playbackId: string) {
-  try {
-    const response = await livepeerSDK.playback.get(playbackId);
-    return response.playbackInfo ?? null;
-  } catch (error) {
-    console.error("Error fetching playback info:", error);
-    throw new Error("Could not fetch playback info");
-  }
 }

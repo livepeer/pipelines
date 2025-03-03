@@ -37,7 +37,6 @@ import { StreamDebugPanel } from "@/components/stream/stream-debug-panel";
 import { StreamStatus } from "@/hooks/useStreamStatus";
 import { TrackedButton } from "@/components/analytics/TrackedButton";
 import { StreamInfo } from "@/components/footer/stream-info";
-import { LivepeerPlayer } from "./player";
 import { ShareModal } from "./ShareModal";
 import { useCommandSuggestions } from "@/hooks/useCommandSuggestions";
 import { Label } from "@repo/design-system/components/ui/label";
@@ -631,10 +630,10 @@ export default function Dreamshaper({
           ) : outputPlaybackId ? (
             <>
               <div className="relative w-full h-full">
-                <LivepeerPlayer
+                <LPPLayer
                   output_playback_id={outputPlaybackId}
-                  isMobile={isMobile}
                   stream_key={streamKey}
+                  isMobile={isMobile}
                 />
                 {/* Overlay */}
                 <div className="absolute inset-x-0 top-0 h-[85%] bg-transparent" />
@@ -654,6 +653,16 @@ export default function Dreamshaper({
                   />
                 </div>
               )}
+              {!live || showOverlay ? (
+                <div className="absolute inset-0 bg-black flex flex-col items-center justify-center rounded-2xl">
+                  <Loader2 className="h-8 w-8 animate-spin text-white" />
+                  {statusMessage && (
+                    <span className="mt-4 text-white text-sm">
+                      {statusMessage}
+                    </span>
+                  )}
+                </div>
+              ) : null}
             </>
           ) : (
             <div className="w-full h-full flex items-center justify-center text-muted-foreground">
