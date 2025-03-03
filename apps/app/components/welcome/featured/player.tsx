@@ -226,7 +226,7 @@ const DebugTimer = ({
         is_authenticated: authenticated,
       });
     }
-  }, [firstFrameTime]);
+  }, [firstFrameTime, authenticated]);
 
   if (!firstFrameTime || !debugMode) {
     return null;
