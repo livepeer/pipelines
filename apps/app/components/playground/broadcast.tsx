@@ -66,7 +66,7 @@ export function BroadcastWithControls({
   }, []);
 
   useEffect(() => {
-    localStorage.removeItem('livepeer-broadcast-controller');
+    localStorage.removeItem('livepeer.livepeer-broadcast-controller');
   }, []);
 
   if (!ingestUrl) {
