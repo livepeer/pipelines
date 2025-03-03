@@ -12,7 +12,7 @@ interface StreamInfoProps {
 }
 
 export function StreamInfo({ 
-  streamId,
+  streamId, 
   streamKey,
   className,
   isFullscreen = false 
