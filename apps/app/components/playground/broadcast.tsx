@@ -99,7 +99,10 @@ export function BroadcastWithControls({
       }
       forceEnabled={true}
       noIceGathering={true}
-      audio={true}
+      audio={{
+        noiseSuppression: true,
+        echoCancellation: true,
+      }}
       aspectRatio={16 / 9}
       ingestUrl={ingestUrl}
     >
