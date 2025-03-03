@@ -7,7 +7,7 @@ import { TooltipTrigger } from "@repo/design-system/components/ui/tooltip";
 import { TooltipContent } from "@repo/design-system/components/ui/tooltip";
 import { Tooltip } from "@repo/design-system/components/ui/tooltip";
 import { motion, AnimatePresence, useMotionValue } from "framer-motion";
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { BroadcastWithControls } from "@/components/playground/broadcast";
 import { Loader2, Maximize, Minimize, Send, Copy, Share2 } from "lucide-react";
 import { LPPLayer } from "@/components/playground/player";
@@ -30,6 +30,7 @@ import { StreamStatus } from "@/hooks/useStreamStatus";
 import { TrackedButton } from "@/components/analytics/TrackedButton";
 import { StreamInfo } from "@/components/footer/stream-info";
 import { ShareModal } from "./ShareModal";
+import { useCommandSuggestions } from "@/hooks/useCommandSuggestions";
 
 const PROMPT_INTERVAL = 4000;
 const samplePrompts = examplePrompts.map(prompt => prompt.prompt);
@@ -74,7 +75,24 @@ interface DreamshaperProps {
   status: StreamStatus | null;
   createShareLink?: () => Promise<{ error: string | null; url: string | null }>;
   sharedPrompt?: string | null;
+  pipeline: any | null;
 }
+
+// Define type for command options
+type CommandOption = {
+  id: string;
+  label: string;
+  type: string;
+  description: string;
+};
+
+// Define type for pipeline parameters
+type PipelineParam = {
+  name: string;
+  description?: string;
+  widget?: string;
+  // Add other fields if needed
+};
 
 export default function Dreamshaper({
   outputPlaybackId,
@@ -92,6 +110,7 @@ export default function Dreamshaper({
   status,
   createShareLink,
   sharedPrompt = null,
+  pipeline,
 }: DreamshaperProps) {
   const { currentPromptIndex, lastSubmittedPrompt, setLastSubmittedPrompt } =
     usePrompts();
@@ -99,7 +118,7 @@ export default function Dreamshaper({
   const { profanity, exceedsMaxLength } = useValidateInput(inputValue);
   const isMobile = useIsMobile();
   const outputPlayerRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
 
   const x = useMotionValue(0);
   const y = useMotionValue(0);
@@ -123,6 +142,50 @@ export default function Dreamshaper({
   const toastShownRef = useRef(false);
 
   const [isInputHovered, setIsInputHovered] = useState(false);
+  const commandOptions = useMemo<CommandOption[]>(() => {
+    if (!pipeline?.prioritized_params) return [];
+    
+    return pipeline.prioritized_params.map((param: PipelineParam) => ({
+      id: param.name.toLowerCase().replace(/\s+/g, '-'),
+      label: param.name,
+      type: param.widget || 'string',
+      description: param.description || param.name
+    }));
+  }, [pipeline?.prioritized_params]);
+  
+  const { 
+    commandMenuOpen,
+    filteredOptions,
+    handleSelectOption,
+    handleKeyDown: handleCommandKeyDown,
+    caretRef,
+    referenceElement,
+    setReferenceElement,
+    selectedOptionIndex
+  } = useCommandSuggestions({
+    options: commandOptions,
+    inputValue,
+    setInputValue,
+    inputRef
+  });
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (commandMenuOpen) {
+      handleCommandKeyDown(e);
+      return; 
+    }
+    
+    if (
+      !updating &&
+      !profanity &&
+      !exceedsMaxLength &&
+      e.key === "Enter" &&
+      !(e.metaKey || e.ctrlKey || e.shiftKey)
+    ) {
+      e.preventDefault();
+      submitPrompt();
+    }
+  };
 
   useEffect(() => {
     setIsCollapsed(isMobile);
@@ -301,6 +364,66 @@ export default function Dreamshaper({
       }
     }
   };
+
+  const formatInputWithHighlights = () => {
+    if (!inputValue) return null;
+    
+    const commandRegex = /--([a-zA-Z0-9_-]+)/g;
+    
+    const parts = [];
+    let lastIndex = 0;
+    let match;
+    
+    while ((match = commandRegex.exec(inputValue)) !== null) {
+      if (match.index > lastIndex) {
+        parts.push({
+          text: inputValue.substring(lastIndex, match.index),
+          isCommand: false
+        });
+      }
+      
+      const commandText = match[1];
+      const isValidCommand = commandOptions.some(option => option.id === commandText);
+      
+      parts.push({
+        text: match[0], 
+        isCommand: true,
+        isValid: isValidCommand
+      });
+      
+      lastIndex = match.index + match[0].length;
+    }
+    
+    if (lastIndex < inputValue.length) {
+      parts.push({
+        text: inputValue.substring(lastIndex),
+        isCommand: false
+      });
+    }
+    
+    return (
+      <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+        <pre className="text-sm font-sans whitespace-pre-wrap overflow-hidden w-full m-0 p-0">
+          {parts.map((part, i) => (
+            <span 
+              key={i} 
+              className={part.isCommand && part.isValid ? "text-[#00EB88] font-medium" : ""}
+            >
+              {part.text}
+            </span>
+          ))}
+        </pre>
+      </div>
+    );
+  };
+
+  useEffect(() => {
+    if (pipeline?.prioritized_params) {
+      console.log("Pipeline prioritized params:", pipeline.prioritized_params);
+    } else {
+      console.log("No pipeline prioritized params");
+    }
+  }, [pipeline]);
 
   return (
     <div className="relative flex flex-col min-h-screen overflow-y-auto">
@@ -597,63 +720,73 @@ export default function Dreamshaper({
               </motion.div>
             )}
           </AnimatePresence>
-          {isMobile ? (
-            <Input
-              className="w-full shadow-none border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-sm outline-none bg-transparent h-14 flex items-center"
-              value={inputValue}
-              onChange={e => setInputValue(e.target.value)}
-              onFocus={() => {
-                window.scrollTo({
-                  top: document.body.scrollHeight,
-                  behavior: "smooth",
-                });
-              }}
-              onKeyDown={e => {
-                if (e.key === "ArrowUp" && lastSubmittedPrompt) {
-                  e.preventDefault();
-                  restoreLastPrompt();
-                  return;
-                }
 
-                if (
-                  !updating &&
-                  !profanity &&
-                  !exceedsMaxLength &&
-                  e.key === "Enter"
-                ) {
-                  e.preventDefault();
-                  submitPrompt();
-                }
-              }}
-            />
-          ) : (
-            <TextareaAutosize
-              ref={inputRef}
-              minRows={1}
-              maxRows={5}
-              className="w-full shadow-none border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-sm outline-none bg-transparent h-14 break-all py-3.5"
-              value={inputValue}
-              onChange={e => setInputValue(e.target.value)}
-              onKeyDown={e => {
-                if (e.key === "ArrowUp" && lastSubmittedPrompt) {
-                  e.preventDefault();
-                  restoreLastPrompt();
-                  return;
-                }
+          {/* Input wrapper with highlighting */}
+          <div className="relative w-full flex items-center" style={{ height: 'auto' }}>
+            {formatInputWithHighlights()}
+            {isMobile ? (
+              <Input
+                ref={inputRef as React.RefObject<HTMLInputElement>}
+                className="w-full shadow-none border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-sm outline-none bg-transparent py-3 font-sans"
+                value={inputValue}
+                onChange={e => setInputValue(e.target.value)}
+                onFocus={() => {
+                  window.scrollTo({
+                    top: document.body.scrollHeight,
+                    behavior: "smooth",
+                  });
+                }}
+                onKeyDown={handleKeyDown}
+                style={{ color: 'transparent', caretColor: 'white' }}
+              />
+            ) : (
+              <TextareaAutosize
+                ref={inputRef as React.RefObject<HTMLTextAreaElement>}
+                minRows={1}
+                maxRows={5}
+                className="w-full shadow-none border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-sm outline-none bg-transparent py-3 break-all font-sans"
+                value={inputValue}
+                onChange={e => setInputValue(e.target.value)}
+                onKeyDown={handleKeyDown}
+                style={{ resize: "none", color: 'transparent', caretColor: 'white' }}
+              />
+            )}
+          </div>
 
-                if (
-                  !updating &&
-                  !profanity &&
-                  !exceedsMaxLength &&
-                  e.key === "Enter" &&
-                  !(e.metaKey || e.ctrlKey || e.shiftKey)
-                ) {
-                  e.preventDefault();
-                  submitPrompt();
-                }
+          {/* Command menu popover - Positioned ABOVE the input */}
+          {commandMenuOpen && filteredOptions.length > 0 && (
+            <div 
+              className="absolute z-50 bottom-full mb-2 w-60 bg-popover rounded-md border shadow-md"
+              style={{ 
+                left: caretRef.current?.left ?? 0
               }}
-              style={{ resize: "none" }}
-            />
+            >
+              <div className="p-1">
+                {filteredOptions.map((option, index) => (
+                  <button
+                    key={option.id}
+                    className={`flex w-full items-start gap-2 rounded-sm px-2 py-1.5 text-left text-sm ${
+                      index === selectedOptionIndex ? "bg-accent" : "hover:bg-accent"
+                    } focus:outline-none`}
+                    onClick={() => handleSelectOption(option)}
+                  >
+                    <div className="flex flex-col">
+                      <div className="font-medium flex items-center">
+                        <span>--{option.id}</span>
+                        {option.type && (
+                          <span className="ml-1.5 text-muted-foreground opacity-70 text-xs">
+                            {option.type}
+                          </span>
+                        )}
+                      </div>
+                      {option.description && (
+                        <span className="text-xs text-muted-foreground">{option.description}</span>
+                      )}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
           )}
         </div>
         {inputValue && (

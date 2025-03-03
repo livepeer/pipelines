@@ -48,6 +48,24 @@ export interface UpdateOptions {
   silent?: boolean;
 }
 
+const extractCommands = (promptText: string) => {
+  const commandRegex = /--([a-zA-Z0-9_-]+)(?:\s+([^\s--][^--]*?))?(?=\s+--|$)/g;
+  const cleanedPrompt = promptText.replace(commandRegex, '').trim();
+  
+  const commands: Record<string, string> = {};
+  let match;
+  
+  commandRegex.lastIndex = 0;
+  
+  while ((match = commandRegex.exec(promptText)) !== null) {
+    const commandName = match[1];
+    const commandValue = match[2]?.trim() || "true";
+    commands[commandName] = commandValue;
+  }
+  
+  return { cleanedPrompt, commands };
+};
+
 export function useDreamshaper() {
   const { user } = usePrivy();
   const searchParams = useSearchParams();
@@ -277,16 +295,71 @@ export function useDreamshaper() {
         setInputValues(updatedInputValues);
 
         if (!data?.gateway_host) {
-          console.error("No gateway host found in stream data:", data);
+          console.error("No gateway host found in stream data");
           if (!options?.silent) {
-            toast.error("No gateway host found", { id: toastId });
+            toast.error("No gateway host found in stream data");
           }
           return;
         }
 
+        const { cleanedPrompt, commands } = extractCommands(prompt);
+        
+
+        if (updatedInputValues?.prompt?.["5"]?.inputs?.text) {
+          updatedInputValues.prompt["5"].inputs.text = cleanedPrompt;
+        } else {
+          console.error("Could not find expected prompt structure:", {
+            hasPrompt: !!updatedInputValues?.prompt,
+            hasNode5: !!updatedInputValues?.prompt?.["5"],
+            hasInputs: !!updatedInputValues?.prompt?.["5"]?.inputs,
+            hasText: !!updatedInputValues?.prompt?.["5"]?.inputs?.text,
+          });
+        }
+        
+        if (pipeline?.prioritized_params && Object.keys(commands).length > 0) {
+          const prioritizedParams = typeof pipeline.prioritized_params === 'string'
+            ? JSON.parse(pipeline.prioritized_params)
+            : pipeline.prioritized_params;
+          
+          prioritizedParams.forEach((param: any) => {
+            const commandId = param.name.toLowerCase().replace(/\s+/g, '-');
+            
+            if (commands[commandId]) {
+              const pathParts = param.path.split('/');
+              const actualField = pathParts[pathParts.length - 1];
+              
+              if (!updatedInputValues.prompt[param.nodeId]) {
+                updatedInputValues.prompt[param.nodeId] = { inputs: {} };
+              }
+              if (!updatedInputValues.prompt[param.nodeId].inputs) {
+                updatedInputValues.prompt[param.nodeId].inputs = {};
+              }
+              
+              let value = commands[commandId];
+              
+              if (param.widget === 'number' || param.widget === 'slider') {
+                let numValue = parseFloat(value);
+                if (param.widgetConfig?.min !== undefined && numValue < param.widgetConfig.min) {
+                  numValue = param.widgetConfig.min;
+                }
+                if (param.widgetConfig?.max !== undefined && numValue > param.widgetConfig.max) {
+                  numValue = param.widgetConfig.max;
+                }
+                
+                updatedInputValues.prompt[param.nodeId].inputs[actualField] = numValue;
+              } else if (param.widget === 'checkbox') {
+                updatedInputValues.prompt[param.nodeId].inputs[actualField] = 
+                  value.toLowerCase() === 'true' || value === '1';
+              } else {
+                updatedInputValues.prompt[param.nodeId].inputs[actualField] = value;
+              }
+            }
+          });
+        }
+
         const response = await updateParams({
           body: updatedInputValues,
-          host: data.gateway_host as string,
+          host: data?.gateway_host as string,
           streamKey: streamKey as string,
         });
 
@@ -308,7 +381,7 @@ export function useDreamshaper() {
         setUpdating(false);
       }
     },
-    [stream, inputValues, storeParamsInLocalStorage],
+    [stream, inputValues, pipeline, storeParamsInLocalStorage],
   );
 
   const createShareLink = useCallback(async () => {
