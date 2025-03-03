@@ -74,6 +74,7 @@ interface InterstitialProps {
   onPromptApply?: (prompt: string) => void;
   showLoginPrompt?: boolean;
   showPromptSelection?: boolean;
+  sharedPrompt: string | null;
 }
 
 type PermissionState = "prompt" | "granted" | "denied";
@@ -85,6 +86,7 @@ const Interstitial: React.FC<InterstitialProps> = ({
   onPromptApply,
   showLoginPrompt = false,
   showPromptSelection = false,
+  sharedPrompt,
 }) => {
   const { authenticated } = usePrivy();
   const [cameraPermission, setCameraPermission] =

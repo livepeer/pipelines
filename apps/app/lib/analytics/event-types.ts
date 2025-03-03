@@ -4,7 +4,7 @@ export type TrackEventName =
   | "home_page_view"
   | "create_stream_page_viewed"
   | "pipeline_viewed"
-  | "daydream_prompt_submitted" 
+  | "daydream_prompt_submitted"
   | "daydream_stream_started"
   | "daydream_capacity_reached"
   | "capacity_reached"
@@ -15,10 +15,10 @@ export type TrackEventName =
   | "form_submitted"
   | "input_changed"
   | "input_focused"
-  
+
   // Allow string extensions (enables adding new events without updating this file)
   | (string & {});
 
 export interface TrackProperties {
   [key: string]: any;
-} 
+}

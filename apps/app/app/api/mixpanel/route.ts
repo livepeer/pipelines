@@ -20,7 +20,7 @@ async function getGeoData(ip: string) {
       $longitude: data.lon,
     };
   } catch (error) {
-    console.warn('Failed to get geolocation data:', error);
+    console.warn("Failed to get geolocation data:", error);
     return {};
   }
 }

@@ -39,9 +39,7 @@ export function TrialExpiredModal({
             trackingProperties={{
               location: "trial_expired_modal",
             }}
-            onClick={() =>
-              window.open("https://discord.gg/livepeer", "_blank")
-            }
+            onClick={() => window.open("https://discord.gg/livepeer", "_blank")}
             size="lg"
             className="rounded-full h-12 flex-1 bg-black text-white hover:bg-black/90"
           >
