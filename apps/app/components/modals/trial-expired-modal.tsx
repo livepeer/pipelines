@@ -7,7 +7,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@repo/design-system/components/ui/dialog";
-
+import { TrackedButton } from "../../components/analytics/TrackedButton";
 interface TrialExpiredModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -34,20 +34,30 @@ export function TrialExpiredModal({
           <img src="/images/free-trial.svg" alt="Trial expired illustration" />
         </div>
         <div className="flex gap-4 mt-8">
-          <Button
-            onClick={() => window.open("https://discord.gg/livepeer", "_blank")}
+          <TrackedButton
+            trackingEvent="daydream_trial_expired_discord_button_clicked"
+            trackingProperties={{
+              location: "trial_expired_modal",
+            }}
+            onClick={() =>
+              window.open("https://discord.gg/livepeer", "_blank")
+            }
             size="lg"
             className="rounded-full h-12 flex-1 bg-black text-white hover:bg-black/90"
           >
             Join the Community
-          </Button>
-          <Button
+          </TrackedButton>
+          <TrackedButton
+            trackingEvent="daydream_trial_expired_sign_up_button_clicked"
+            trackingProperties={{
+              location: "trial_expired_modal",
+            }}
             onClick={login}
             size="lg"
             className="rounded-full h-12 flex-1"
           >
             Sign Up
-          </Button>
+          </TrackedButton>
         </div>
       </DialogContent>
     </Dialog>

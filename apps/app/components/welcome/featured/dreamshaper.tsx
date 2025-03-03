@@ -400,7 +400,6 @@ export default function Dreamshaper({
                     isCollapsed={isCollapsed}
                     onCollapse={setIsCollapsed}
                     className="rounded-xl overflow-hidden"
-                    audio={true}
                   />
                 </div>
               )}
@@ -442,7 +441,6 @@ export default function Dreamshaper({
                 isCollapsed={isCollapsed}
                 onCollapse={setIsCollapsed}
                 className="rounded-xl overflow-hidden w-full h-full"
-                audio={true}
               />
             </div>
           )}
@@ -603,7 +601,7 @@ export default function Dreamshaper({
         <Separator orientation="vertical" />
         <Link
           target="_blank"
-          href="https://discord.gg/livepeer"
+          href="https://discord.com/invite/hxyNHeSzCK"
           className="hover:text-muted-foreground/80"
         >
           Join our community
@@ -636,7 +634,11 @@ export default function Dreamshaper({
       )}
 
       {streamId && (
-        <StreamInfo streamId={streamId} streamKey={streamKey} isFullscreen={isFullscreen} />
+        <StreamInfo 
+          streamId={streamId}
+          streamKey={streamKey}
+          isFullscreen={isFullscreen}
+        />
       )}
     </div>
   );

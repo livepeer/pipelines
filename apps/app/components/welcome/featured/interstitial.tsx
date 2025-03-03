@@ -2,22 +2,15 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Button } from "@repo/design-system/components/ui/button";
-import {
-  Camera,
-  Wand2,
-  Mic,
-  ArrowRight,
-  XCircle,
-  ChevronLeft,
-  Loader2,
-} from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
-import { useStreamStatus } from "@/hooks/useStreamStatus";
+import { Camera, Mic, XCircle, Loader2 } from "lucide-react";
+import { AnimatePresence } from "framer-motion";
 import { usePrivy } from "@privy-io/react-auth";
-import LoggedOutComponent from "@/components/modals/logged-out";
 import { TrialExpiredModal } from "@/components/modals/trial-expired-modal";
 import InterstitialDecor from "./interstitial-decor";
+import Slide from "./slide";
 import track from "@/lib/track";
+import { TrackedButton } from "@/components/analytics/TrackedButton";
+import { sleep } from "@/lib/utils";
 
 interface ExamplePrompt {
   prompt: string;
@@ -54,25 +47,23 @@ const steps: Step[] = [
   },
 ];
 
-interface SlideProps {
-  keyName: string;
-  slideVariants: any;
-  children: React.ReactNode;
-  flipDirection?: boolean;
-}
-
-const Slide: React.FC<SlideProps> = ({ keyName, children, slideVariants }) => (
-  <motion.div
-    key={keyName}
-    initial="enter"
-    animate="center"
-    exit="exit"
-    variants={slideVariants}
-    transition={{ duration: 0.3 }}
-    className="max-w-2xl w-full mx-auto p-6 space-y-8"
-  >
-    {children}
-  </motion.div>
+const TermsNotice = () => (
+  <p className="text-xs text-muted-foreground text-center mt-4">
+    By using this service, you accept the{" "}
+    <a
+      href="https://www.livepeer.org/terms-of-service-p"
+      className="underline hover:text-primary"
+    >
+      Terms of Service
+    </a>{" "}
+    and{" "}
+    <a
+      href="https://www.livepeer.org/privacy-policy-p"
+      className="underline hover:text-primary"
+    >
+      Privacy Policy
+    </a>
+  </p>
 );
 
 interface InterstitialProps {
@@ -90,13 +81,12 @@ type PermissionState = "prompt" | "granted" | "denied";
 const Interstitial: React.FC<InterstitialProps> = ({
   onReady = () => {},
   onCameraPermissionGranted = useCallback(() => {}, []),
-  outputPlaybackId,
   streamId,
   onPromptApply,
   showLoginPrompt = false,
   showPromptSelection = false,
 }) => {
-  const { authenticated, login } = usePrivy();
+  const { authenticated } = usePrivy();
   const [cameraPermission, setCameraPermission] =
     useState<PermissionState>("prompt");
   const [micPermission, setMicPermission] = useState<PermissionState>("prompt");
@@ -111,14 +101,6 @@ const Interstitial: React.FC<InterstitialProps> = ({
   const [selectedPrompt, setSelectedPrompt] = useState<string | null>(null);
   const [isPermissionLoading, setIsPermissionLoading] = useState(false);
   const [isPromptLoading, setIsPromptLoading] = useState(false);
-
-  const effectiveStreamId = streamId || "";
-  const {
-    status: streamStatus,
-    loading: statusLoading,
-    error: statusError,
-    fullResponse,
-  } = useStreamStatus(effectiveStreamId, false);
 
   useEffect(() => {
     const checkCamera = async () => {
@@ -244,46 +226,6 @@ const Interstitial: React.FC<InterstitialProps> = ({
     }
   };
 
-  const handleBack = () => {
-    setCurrentScreen("camera");
-  };
-
-  const slideVariants = {
-    enter: (direction: number) => ({
-      x: direction > 0 ? 1000 : -1000,
-      opacity: 0,
-    }),
-    center: {
-      zIndex: 1,
-      x: 0,
-      opacity: 1,
-    },
-    exit: (direction: number) => ({
-      zIndex: 0,
-      x: direction < 0 ? 1000 : -1000,
-      opacity: 0,
-    }),
-  };
-
-  const TermsNotice = () => (
-    <p className="text-xs text-muted-foreground text-center mt-4">
-      By using this service, you accept the{" "}
-      <a
-        href="https://www.livepeer.org/terms-of-service-p"
-        className="underline hover:text-primary"
-      >
-        Terms of Service
-      </a>{" "}
-      and{" "}
-      <a
-        href="https://www.livepeer.org/privacy-policy-p"
-        className="underline hover:text-primary"
-      >
-        Privacy Policy
-      </a>
-    </p>
-  );
-
   const handlePermissionContinue = async () => {
     setIsPermissionLoading(true);
     track("daydream_interstitial_continue_clicked", {
@@ -328,7 +270,7 @@ const Interstitial: React.FC<InterstitialProps> = ({
     if (selectedPrompt && onPromptApply) {
       onPromptApply(selectedPrompt);
 
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await sleep(2000);
 
       onReady();
     }
@@ -372,7 +314,7 @@ const Interstitial: React.FC<InterstitialProps> = ({
     <div className="fixed inset-0 bg-background/95 backdrop-blur-sm z-50 flex items-center justify-center p-2 sm:p-4 md:p-0">
       <AnimatePresence mode="wait" initial={false}>
         {currentScreen === "camera" ? (
-          <Slide keyName="camera" slideVariants={slideVariants}>
+          <Slide keyName="camera">
             <div
               className="bg-[#161616] border border-[#232323] rounded-xl p-3 sm:p-4 md:p-8 max-w-2xl w-full mx-auto shadow-lg cursor-pointer"
               onClick={handlePermissionContinue}
@@ -438,7 +380,7 @@ const Interstitial: React.FC<InterstitialProps> = ({
             </div>
           </Slide>
         ) : (
-          <Slide keyName="prompts" slideVariants={slideVariants} flipDirection>
+          <Slide keyName="prompts" flipDirection>
             <div className="bg-[#161616] border border-[#232323] rounded-xl p-3 sm:p-4 md:p-8 max-w-2xl w-full mx-auto shadow-lg">
               <div className="space-y-1 sm:space-y-2 md:space-y-3 mb-3 sm:mb-4 md:mb-8">
                 <h1 className="text-lg sm:text-xl md:text-2xl font-semibold">
@@ -482,7 +424,11 @@ const Interstitial: React.FC<InterstitialProps> = ({
               </div>
 
               <div className="flex gap-4 mt-8">
-                <Button
+                <TrackedButton
+                  trackingEvent="daydream_prompt_selected_continue"
+                  trackingProperties={{
+                    prompt: selectedPrompt,
+                  }}
                   onClick={handlePromptContinue}
                   disabled={!selectedPrompt || isPromptLoading}
                   size="lg"
@@ -495,7 +441,7 @@ const Interstitial: React.FC<InterstitialProps> = ({
                   ) : (
                     "Continue"
                   )}
-                </Button>
+                </TrackedButton>
               </div>
               <TermsNotice />
             </div>
