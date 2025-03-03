@@ -34,6 +34,9 @@ export const LivepeerPlayer = React.memo(
     const debugMode = searchParams.get("debugMode") === "true";
 
     useEffect(() => {
+      if (useMediamtx) {
+        return;
+      }
       const fetchPlaybackInfo = async () => {
         const info = await getStreamPlaybackInfo(output_playback_id);
         setPlaybackInfo(info);
