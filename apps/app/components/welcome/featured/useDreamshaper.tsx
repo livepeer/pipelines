@@ -474,7 +474,7 @@ export function useDreamshaper() {
   return {
     stream,
     outputPlaybackId: stream?.output_playback_id,
-    streamUrl: stream ? `${app.whipUrl}${stream.stream_key}/whip` : null,
+    streamUrl: stream ? getStreamUrl(stream.stream_key, searchParams) : null,
     pipeline,
     handleUpdate,
     loading,
@@ -483,4 +483,17 @@ export function useDreamshaper() {
     createShareLink,
     sharedPrompt,
   };
+}
+
+function getStreamUrl(streamKey: string, searchParams: URLSearchParams): string {
+  const customWhipServer = searchParams.get('whipServer');
+  
+  if (customWhipServer) {
+    if (customWhipServer.includes('<STREAM_KEY>')) {
+      return customWhipServer.replace('<STREAM_KEY>', streamKey);
+    }
+    return `${customWhipServer}${streamKey}/whip`;
+  }
+  
+  return `${app.whipUrl}${streamKey}/whip`;
 }
