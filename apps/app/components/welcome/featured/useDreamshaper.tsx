@@ -332,7 +332,7 @@ export function useDreamshaper() {
         }
 
         const updatedInputValues = JSON.parse(JSON.stringify(inputValues));
-        
+
         const { cleanedPrompt, commands } = extractCommands(prompt);
 
         if (updatedInputValues?.prompt?.["5"]?.inputs) {
@@ -388,12 +388,14 @@ export function useDreamshaper() {
                   numValue = param.widgetConfig.max;
                 }
 
-                updatedInputValues.prompt[param.nodeId].inputs[actualField] = numValue;
+                updatedInputValues.prompt[param.nodeId].inputs[actualField] =
+                  numValue;
               } else if (param.widget === "checkbox") {
                 updatedInputValues.prompt[param.nodeId].inputs[actualField] =
                   value.toLowerCase() === "true" || value === "1";
               } else {
-                updatedInputValues.prompt[param.nodeId].inputs[actualField] = value;
+                updatedInputValues.prompt[param.nodeId].inputs[actualField] =
+                  value;
               }
             }
           });
