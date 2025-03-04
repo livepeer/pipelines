@@ -1,5 +1,6 @@
 import { User } from "@privy-io/react-auth";
 import { handleDistinctId, handleSessionId } from "@/lib/analytics/mixpanel";
+import { getSharedParamsAuthor } from "@/app/api/streams/share-params";
 
 interface TrackProperties {
   [key: string]: any;
@@ -7,6 +8,9 @@ interface TrackProperties {
 
 let lastTrackedEvents: { [key: string]: number } = {};
 const DEBOUNCE_TIME = 1000; // 1000ms debounce
+
+// Cache for shared params data
+let sharedParamsCache: { [key: string]: any } = {};
 
 async function getStoredIds(user?: User) {
   if (typeof window === "undefined") return {};
@@ -22,11 +26,34 @@ async function getStoredIds(user?: User) {
   };
 }
 
-const getBrowserInfo = () => {
+const getBrowserInfo = async () => {
   if (typeof window === "undefined") return {};
 
   const urlParams = new URLSearchParams(window.location.search);
   const sharedParam = urlParams.get("shared");
+  
+  let sharedInfo = {};
+  if (sharedParam) {
+    // Check if we already have this shared param data in cache
+    if (sharedParamsCache[sharedParam]) {
+      sharedInfo = sharedParamsCache[sharedParam];
+    } else {
+      try {
+        const { data, error } = await getSharedParamsAuthor(sharedParam);
+        if (!error && data) {
+          sharedInfo = {
+            shared_author_id: data.author,
+            shared_pipeline_id: data.pipeline,
+            shared_created_at: data.created_at
+          };
+          // Store in cache for future use
+          sharedParamsCache[sharedParam] = sharedInfo;
+        }
+      } catch (error) {
+        console.error("Error fetching shared params info:", error);
+      }
+    }
+  }
   
   const browserInfo = {
     $os: navigator.platform,
@@ -43,8 +70,10 @@ const getBrowserInfo = () => {
     utm_content: urlParams.get("utm_content"),
     shared_id: sharedParam,
     referrer_type: sharedParam ? "shared_link" : document.referrer ? "external" : "direct",
+    ...sharedInfo
   };
 
+  console.log("Browser info:", browserInfo);
   return browserInfo;
 };
 
@@ -65,7 +94,7 @@ const track = async (
   }
 
   const { distinctId, sessionId, userId } = await getStoredIds(user);
-  const browserInfo = getBrowserInfo();
+  const browserInfo = await getBrowserInfo(); // Now awaiting this
   if (!sessionId) {
     console.log("No sessionId found, skipping event tracking");
     return;
