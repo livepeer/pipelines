@@ -112,7 +112,7 @@ export async function getSharedParamsAuthor(sharedId: string) {
 
   try {
     const supabase = await createServerClient();
-    
+
     // Only select the fields we need for tracking
     const { data, error } = await supabase
       .from("shared_params")

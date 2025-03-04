@@ -31,7 +31,7 @@ const getBrowserInfo = async () => {
 
   const urlParams = new URLSearchParams(window.location.search);
   const sharedParam = urlParams.get("shared");
-  
+
   let sharedInfo = {};
   if (sharedParam) {
     // Check if we already have this shared param data in cache
@@ -44,7 +44,7 @@ const getBrowserInfo = async () => {
           sharedInfo = {
             shared_author_id: data.author,
             shared_pipeline_id: data.pipeline,
-            shared_created_at: data.created_at
+            shared_created_at: data.created_at,
           };
           // Store in cache for future use
           sharedParamsCache[sharedParam] = sharedInfo;
@@ -54,7 +54,7 @@ const getBrowserInfo = async () => {
       }
     }
   }
-  
+
   const browserInfo = {
     $os: navigator.platform,
     $browser: navigator.userAgent.split("(")[0].trim(),
@@ -69,8 +69,12 @@ const getBrowserInfo = async () => {
     utm_term: urlParams.get("utm_term"),
     utm_content: urlParams.get("utm_content"),
     shared_id: sharedParam,
-    referrer_type: sharedParam ? "shared_link" : document.referrer ? "external" : "direct",
-    ...sharedInfo
+    referrer_type: sharedParam
+      ? "shared_link"
+      : document.referrer
+        ? "external"
+        : "direct",
+    ...sharedInfo,
   };
 
   console.log("Browser info:", browserInfo);
