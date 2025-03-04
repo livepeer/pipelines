@@ -16,8 +16,6 @@ Choose a platform to install ComfyStream:
   </Card>
 </CardGroup>
 
----
-
 <h2>Local GPU</h2>
 
 ### Prerequisites
@@ -66,9 +64,8 @@ If using Windows, ensure Docker Desktop is running first
 ```bash Linux
 docker run -it --gpus all \
 -p 8188:8188 \
--p 8888:8888 \
+-p 8889:8889 \
 -p 5678:5678 \
--p 3000:3000 \
 -v ~/models/ComfyUI--models:/workspace/ComfyUI/models \
 -v ~/models/ComfyUI--output:/workspace/ComfyUI/output \
 livepeer/comfystream:latest --download-models --build-engines --server
@@ -76,9 +73,8 @@ livepeer/comfystream:latest --download-models --build-engines --server
 ```batch Command Line
 docker run -it --gpus all ^
 -p 8188:8188 ^
--p 8888:8888 ^
+-p 8889:8889 ^
 -p 5678:5678 ^
--p 3000:3000 ^
 -v %USERPROFILE%\models\ComfyUI--models:/workspace/ComfyUI/models ^
 -v %USERPROFILE%\models\ComfyUI--output:/workspace/ComfyUI/output ^
 livepeer/comfystream:latest --download-models --build-engines --server
@@ -86,9 +82,8 @@ livepeer/comfystream:latest --download-models --build-engines --server
 ```powershell PowerShell
 docker run -it --gpus all `
 -p 8188:8188 `
--p 8888:8888 `
+-p 8889:8889 `
 -p 5678:5678 `
--p 3000:3000 `
 -v $env:USERPROFILE\models\ComfyUI--models:/workspace/ComfyUI/models `
 -v $env:USERPROFILE\models\ComfyUI--output:/workspace/ComfyUI/output `
 livepeer/comfystream:latest --download-models --build-engines --server
@@ -99,50 +94,49 @@ livepeer/comfystream:latest --download-models --build-engines --server
 The `--download-models` and `--build-engines` flags will download required models and build TensorRT engines. This process may take some time depending on your network connection and GPU hardware and is only needed on the first run or when adding new models.
 </Note>
 
----
-
 <h2 id="remote-gpu">Remote GPU</h2>
 
 ### Deploy on RunPod
 
-1. Deploy using the [livepeer-comfystream](https://runpod.io/console/deploy?template=w01m180vxx&ref=u8tlskew) template
-2. Create and select a network volume to persist files
+1. Deploy using the RunPod template 
+[livepeer-comfystream](https://runpod.io/console/deploy?template=w01m180vxx&ref=u8tlskew)
+<Note>
+First-time deployment to a network volume takes approximately 20-45 minutes depending on pod performance. 
+For faster deployment without data persistence, use the RunPod template [livepeer-comfystream-novolume](https://runpod.io/console/deploy?template=j4p1g7t5vs&ref=u8tlskew)
+</Note>
+2. When using the [livepeer-comfystream](https://runpod.io/console/deploy?template=w01m180vxx&ref=u8tlskew) template, create and select a network volume to persist files.
 ![New Network Volume](../../images/networkvolume.png)
 3. Select an appropriate GPU (ex: RTX 4090) and click **Deploy On-Demand**
-
-<Note>
-For faster deployment without data persistence, use [livepeer-comfystream-novolume](https://runpod.io/console/deploy?template=j4p1g7t5vs&ref=u8tlskew).
-</Note>
-
-<Warning>
-First-time deployment to a network volume takes approximately 20-45 minutes depending on pod performance. Future pod restarts will be faster.
+4. Click the **Logs** button to monitor deployment progress.
 ![runpod-log](../../images/runpod-log.png)
-Click the **Logs** button to monitor deployment progress.
-</Warning>
-
----
+5. Once the container is fully running, you can access ComfyUI by clicking **Connect**
 
 
-## Accessing ComfyStream and ComfyUI 
+## Accessing ComfyUI
+<AccordionGroup>
+  <Accordion title="RunPod">
+  1. Click **Connect** in pod dashboard
+    ![comfyui-connect-pod](../../images/comfyui-connect-pod.png)
+  2. Access ComfyUI: **HTTP Service -> :8188**
+  3. ComfyUI will open in a new tab
+  </Accordion>
 
-### Local Environment
-For local deployments, services are available at:
-- ComfyUI: [http://localhost:8188](http://localhost:8188)
-- ComfyStream: [http://localhost:8889](http://localhost:8889)
-- UI: [https://localhost:3000](https://localhost:3000)
+  <Accordion title="Local">
+  When running the docker image locally, you can access ComfyUI at [http://localhost:8188](http://localhost:8188).
+  </Accordion>
+</AccordionGroup>
 
-### RunPod Environment
-1. Click **Connect** in pod dashboard
-![comfyui-connect-pod](../../images/comfyui-connect-pod.png)
-2. Access ComfyUI: **HTTP Service -> :8188**
-3. To access ComfyStream:
+## Accessing ComfyStream 
+1. From ComfyUI, click the **ComfyStream** menu button:
+![comfystream-node-ui.png](../../images/comfystream-node-ui.png)
 
- - Copy the external IP and Port for the port 3000 mapping. 
- - Paste it into your browser with **https://** prefix
-![comfystream-connect-pod](../../images/comfystream-connect-pod.png)
- - In the example above, the ComfyStream URL would be: `https://209.170.80.132:15181`
- 
+2. Click **Server Settings** to verify ComfyStream is configured to bind to the correct interface and port <Note>When deploying to remote environments like RunPod, you will need to set the Host to `0.0.0.0`. </Note>
+![comfystream-server-settings.png](../../images/comfystream-server-settings.png)
+3. Click **Save**.
+4. Open the **ComfyStream** menu again, then click **Start ComfyStream Server**. Wait for the server status indicator to turn green. 
 <Note>
-You will receive an invalid security certificate warning, click Advanced and proceed to the site.
+You can also monitor ComfyStream server logs in ComfyUI's log terminal tab.
 </Note>
-4. You now have ComfyUI and ComfyStream running on RunPod!
+5. Click **Open ComfyStream UI** to launch in a new tab.
+Alternatively, you can double-click the node graph and search for **ComfyStream UI Preview**
+![comfystream-ui-embed.png](../../images/comfystream-ui-embed.png)
