@@ -66,7 +66,6 @@ const track = async (
 
   const { distinctId, sessionId, userId } = await getStoredIds(user);
   const browserInfo = getBrowserInfo();
-  console.log("browserInfo", browserInfo);
   if (!sessionId) {
     console.log("No sessionId found, skipping event tracking");
     return;
