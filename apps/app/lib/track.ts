@@ -33,6 +33,7 @@ const getBrowserInfo = () => {
     $current_url: window.location.href,
     $pathname: window.location.pathname,
     $referrer: document.referrer,
+    user_agent: navigator.userAgent,
     utm_source: urlParams.get("utm_source"),
     utm_medium: urlParams.get("utm_medium"),
     utm_campaign: urlParams.get("utm_campaign"),
