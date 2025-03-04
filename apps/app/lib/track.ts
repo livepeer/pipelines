@@ -28,8 +28,8 @@ const getBrowserInfo = () => {
   const urlParams = new URLSearchParams(window.location.search);
   const browserInfo = {
     $os: navigator.platform,
-    $browser: navigator.userAgent,
-    $device: navigator.userAgent.includes("Mobile") ? "Mobile" : "Desktop",
+    $browser: navigator.userAgent.split("(")[0].trim(),
+    $device: /mobile/i.test(navigator.userAgent) ? "Mobile" : "Desktop",
     $current_url: window.location.href,
     $pathname: window.location.pathname,
     $referrer: document.referrer,
@@ -39,8 +39,6 @@ const getBrowserInfo = () => {
     utm_term: urlParams.get("utm_term"),
     utm_content: urlParams.get("utm_content"),
   };
-
-  console.log("browserInfo", browserInfo);
 
   return browserInfo;
 };
