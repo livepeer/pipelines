@@ -17,7 +17,7 @@ export function MixpanelProvider({ children }: { children: ReactNode }) {
     if (mixpanelConfig.projectToken) {
       try {
         console.log("Initializing Mixpanel");
-        mixpanel.init(mixpanelConfig.projectToken, { debug: true });
+        mixpanel.init(mixpanelConfig.projectToken, { debug: true, record_sessions_percent: 1 });
 
         const initSession = async () => {
           const distinctId = await handleDistinctId(user);
@@ -30,6 +30,7 @@ export function MixpanelProvider({ children }: { children: ReactNode }) {
         };
 
         initSession();
+        mixpanel.start_session_recording();
 
         // Clean up sessions when page is unloaded
         //const handleBeforeUnload = () => {
