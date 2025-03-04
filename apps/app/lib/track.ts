@@ -26,6 +26,8 @@ const getBrowserInfo = () => {
   if (typeof window === "undefined") return {};
 
   const urlParams = new URLSearchParams(window.location.search);
+  const sharedParam = urlParams.get("shared");
+  
   const browserInfo = {
     $os: navigator.platform,
     $browser: navigator.userAgent.split("(")[0].trim(),
@@ -39,6 +41,8 @@ const getBrowserInfo = () => {
     utm_campaign: urlParams.get("utm_campaign"),
     utm_term: urlParams.get("utm_term"),
     utm_content: urlParams.get("utm_content"),
+    shared_id: sharedParam,
+    referrer_type: sharedParam ? "shared_link" : document.referrer ? "external" : "direct",
   };
 
   return browserInfo;
@@ -62,7 +66,7 @@ const track = async (
 
   const { distinctId, sessionId, userId } = await getStoredIds(user);
   const browserInfo = getBrowserInfo();
-
+  console.log("browserInfo", browserInfo);
   if (!sessionId) {
     console.log("No sessionId found, skipping event tracking");
     return;
