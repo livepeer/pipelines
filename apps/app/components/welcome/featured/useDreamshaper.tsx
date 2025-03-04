@@ -141,10 +141,37 @@ export function useDreamshaper() {
         }
 
         const sharedParams = data.params;
-        if (sharedParams?.prompt?.["5"]?.inputs?.text) {
-          setSharedPrompt(sharedParams.prompt["5"].inputs.text);
+        
+        let fullPromptText = sharedParams?.prompt?.["5"]?.inputs?.text || "";
+        
+        if (pipeline?.prioritized_params && sharedParams?.prompt) {
+          const prioritizedParams = typeof pipeline.prioritized_params === "string" 
+            ? JSON.parse(pipeline.prioritized_params) 
+            : pipeline.prioritized_params;
+          
+          const defaultValues = createDefaultValues(pipeline);
+          const processedDefaults = processInputValues(defaultValues);
+          
+          prioritizedParams.forEach((param: any) => {
+            const commandId = param.name.toLowerCase().replace(/\s+/g, "-");
+            const pathParts = param.path.split("/");
+            const nodeId = param.nodeId;
+            const actualField = pathParts[pathParts.length - 1];
+            
+            if (sharedParams.prompt[nodeId]?.inputs?.[actualField] !== undefined) {
+              const paramValue = sharedParams.prompt[nodeId].inputs[actualField];
+              
+              const defaultValue = processedDefaults?.prompt?.[nodeId]?.inputs?.[actualField];
+              
+              if (defaultValue === undefined || paramValue !== defaultValue) {
+                fullPromptText += ` --${commandId} ${paramValue}`;
+              }
+            }
+          });
         }
-
+        
+        setSharedPrompt(fullPromptText.trim());
+        
         if (!gatewayHostReady) {
           return;
         }
@@ -178,6 +205,7 @@ export function useDreamshaper() {
     storeParamsInLocalStorage,
     gatewayHostReady,
     gatewayHost,
+    pipeline,
   ]);
 
   useEffect(() => {
@@ -448,7 +476,7 @@ export function useDreamshaper() {
   return {
     stream,
     outputPlaybackId: stream?.output_playback_id,
-    streamUrl: stream ? `${app.whipUrl}${stream.stream_key}/whip` : null,
+    streamUrl: stream ? getStreamUrl(stream.stream_key, searchParams) : null,
     pipeline,
     handleUpdate,
     loading,
@@ -457,4 +485,17 @@ export function useDreamshaper() {
     createShareLink,
     sharedPrompt,
   };
+}
+
+function getStreamUrl(streamKey: string, searchParams: URLSearchParams): string {
+  const customWhipServer = searchParams.get('whipServer');
+  
+  if (customWhipServer) {
+    if (customWhipServer.includes('<STREAM_KEY>')) {
+      return customWhipServer.replace('<STREAM_KEY>', streamKey);
+    }
+    return `${customWhipServer}${streamKey}/whip`;
+  }
+  
+  return `${app.whipUrl}${streamKey}/whip`;
 }
