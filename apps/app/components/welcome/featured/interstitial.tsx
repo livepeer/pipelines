@@ -103,6 +103,7 @@ const Interstitial: React.FC<InterstitialProps> = ({
   const [selectedPrompt, setSelectedPrompt] = useState<string | null>(null);
   const [isPermissionLoading, setIsPermissionLoading] = useState(false);
   const [isPromptLoading, setIsPromptLoading] = useState(false);
+  const [hasTrackedExpiration, setHasTrackedExpiration] = useState(false);
 
   useEffect(() => {
     const checkCamera = async () => {
@@ -188,6 +189,15 @@ const Interstitial: React.FC<InterstitialProps> = ({
       setCurrentScreen("prompts");
     }
   }, [showPromptSelection]);
+
+  useEffect(() => {
+    if (showLoginPrompt && !hasTrackedExpiration) {
+      track("daydream_trial_expired_modal_shown", {
+        is_authenticated: authenticated,
+      });
+      setHasTrackedExpiration(true);
+    }
+  }, [showLoginPrompt, authenticated, hasTrackedExpiration]);
 
   const requestCamera = async () => {
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
@@ -280,9 +290,6 @@ const Interstitial: React.FC<InterstitialProps> = ({
   };
 
   if (showLoginPrompt) {
-    track("daydream_trial_expired_modal_shown", {
-      is_authenticated: authenticated,
-    });
     return (
       <TrialExpiredModal
         open={true}
@@ -389,7 +396,7 @@ const Interstitial: React.FC<InterstitialProps> = ({
                   Select Your First Prompt
                 </h1>
                 <p className="text-xs sm:text-sm md:text-base text-muted-foreground">
-                  Start tranforming your live video with AI. Select a preset
+                  Start transforming your live video with AI. Select a preset
                   prompt to continue.
                   <br />
                   <br />

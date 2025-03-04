@@ -38,7 +38,7 @@ function SettingsMenu({
         transition={{ duration: 0.2 }}
         className={cn(
           "absolute bottom-full right-0 mb-2 w-64 bg-popover rounded-md border shadow-md z-50 p-3 pt-0 space-y-3",
-          className
+          className,
         )}
       >
         {/* Triangle pointer */}
