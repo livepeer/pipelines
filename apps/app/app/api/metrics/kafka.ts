@@ -1,5 +1,5 @@
-import { Kafka, Producer, Message } from 'kafkajs';
-import { serverConfig } from '@/lib/serverEnv';
+import { Kafka, Producer, Message } from "kafkajs";
+import { serverConfig } from "@/lib/serverEnv";
 
 const KAFKA_BATCH_INTERVAL = 1000; // 1 second
 const KAFKA_REQUEST_TIMEOUT = 60000; // 60 seconds
@@ -34,7 +34,7 @@ class KafkaProducer {
       brokers: [bootstrapServers],
       ssl: true,
       sasl: {
-        mechanism: 'plain',
+        mechanism: "plain",
         username,
         password,
       },
@@ -67,7 +67,7 @@ class KafkaProducer {
   private async sendBatch() {
     if (this.events.length === 0) return;
 
-    const messages: Message[] = this.events.map((event) => ({
+    const messages: Message[] = this.events.map(event => ({
       key: event.id,
       value: JSON.stringify(event),
     }));
@@ -85,7 +85,7 @@ class KafkaProducer {
       } catch (error) {
         console.warn(`Error sending batch to Kafka, retry ${i + 1}`, error);
         if (i === retries - 1) {
-          console.error('Failed to send batch to Kafka after retries', error);
+          console.error("Failed to send batch to Kafka after retries", error);
         }
       }
     }
@@ -107,7 +107,9 @@ class KafkaProducer {
     if (this.events.length < KAFKA_CHANNEL_SIZE) {
       this.events.push(event);
     } else {
-      console.warn(`Kafka producer event queue is full, dropping event ${eventType}`);
+      console.warn(
+        `Kafka producer event queue is full, dropping event ${eventType}`,
+      );
     }
   }
 
@@ -127,7 +129,9 @@ export async function initKafkaProducer() {
   const kafka = config.kafka;
 
   if (!kafka?.bootstrapServers || !kafka?.username || !kafka?.password) {
-    console.warn('Kafka configuration missing, producer will not be initialized');
+    console.warn(
+      "Kafka configuration missing, producer will not be initialized",
+    );
     return;
   }
 
@@ -141,7 +145,12 @@ export async function initKafkaProducer() {
   await kafkaProducer.connect();
 }
 
-export async function sendKafkaEvent(eventType: string, data: any, app: string, host: string) {
+export async function sendKafkaEvent(
+  eventType: string,
+  data: any,
+  app: string,
+  host: string,
+) {
   if (!kafkaProducer) return;
   await kafkaProducer.sendEvent(eventType, data, app, host);
 }

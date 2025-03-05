@@ -16,7 +16,7 @@ export const sendStreamEvent = async (
   playbackId: string | undefined,
   pipelineType: string,
   pipelineId: string,
-  user?: User
+  user?: User,
 ) => {
   try {
     const payload = {
@@ -25,14 +25,17 @@ export const sendStreamEvent = async (
       playbackId,
       pipelineType,
       pipelineId,
-      userId: user?.id
+      userId: user?.id,
     };
-    console.log('[Client Event] Sending event:', JSON.stringify(payload, null, 2));
+    console.log(
+      "[Client Event] Sending event:",
+      JSON.stringify(payload, null, 2),
+    );
 
-    const response = await fetch('/api/events', {
-      method: 'POST',
+    const response = await fetch("/api/events", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify(payload),
     });
@@ -42,10 +45,10 @@ export const sendStreamEvent = async (
     }
 
     const result = await response.json();
-    console.log('[Client Event] Event sent successfully:', eventType);
+    console.log("[Client Event] Event sent successfully:", eventType);
     return result.success;
   } catch (error) {
-    console.error('Failed to send event:', error);
+    console.error("Failed to send event:", error);
     return false;
   }
-}; 
+};
