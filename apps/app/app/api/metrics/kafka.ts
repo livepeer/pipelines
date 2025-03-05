@@ -1,3 +1,5 @@
+"use server";
+
 import { Kafka, Producer, Message } from "kafkajs";
 import { serverConfig } from "@/lib/serverEnv";
 
@@ -104,6 +106,8 @@ class KafkaProducer {
       data,
     };
 
+    console.log("[Kafka Event] Sending event:", JSON.stringify(event, null, 2));
+
     if (this.events.length < KAFKA_CHANNEL_SIZE) {
       this.events.push(event);
     } else {
@@ -151,6 +155,8 @@ export async function sendKafkaEvent(
   app: string,
   host: string,
 ) {
-  if (!kafkaProducer) return;
-  await kafkaProducer.sendEvent(eventType, data, app, host);
+  if (!kafkaProducer) {
+    await initKafkaProducer();
+  }
+  await kafkaProducer?.sendEvent(eventType, data, app, host);
 }
