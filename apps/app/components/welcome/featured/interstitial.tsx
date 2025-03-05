@@ -199,39 +199,59 @@ const Interstitial: React.FC<InterstitialProps> = ({
     }
   }, [showLoginPrompt, authenticated, hasTrackedExpiration]);
 
-  const requestCamera = async () => {
+  const requestMediaPermissions = async () => {
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     const constraints = isMobile
-      ? { video: { facingMode: "user" } }
+      ? {
+          video: { facingMode: "user" },
+          audio: true,
+        }
       : {
           video: {
             width: { ideal: 1280 },
             height: { ideal: 720 },
             facingMode: "user",
           },
+          audio: true,
         };
 
     try {
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
+
+      const hasVideo = stream.getVideoTracks().length > 0;
+      const hasAudio = stream.getAudioTracks().length > 0;
+
       stream.getTracks().forEach(track => track.stop());
 
-      setCameraPermission("granted");
-      track("daydream_camera_permission_granted", {
-        is_authenticated: authenticated,
-      });
-      onCameraPermissionGranted();
+      if (hasVideo) {
+        setCameraPermission("granted");
+        track("daydream_camera_permission_granted", {
+          is_authenticated: authenticated,
+        });
+        onCameraPermissionGranted();
+      }
+
+      if (hasAudio) {
+        setMicPermission("granted");
+        track("daydream_microphone_permission_granted", {
+          is_authenticated: authenticated,
+        });
+      }
 
       setCurrentScreen("prompts");
-      return true;
+      return hasVideo && hasAudio;
     } catch (err) {
-      setCameraPermission("denied");
-      track("daydream_camera_permission_denied", {
-        is_authenticated: authenticated,
-      });
+      if (err instanceof Error && err.name === "NotAllowedError") {
+        setCameraPermission("denied");
+        setMicPermission("denied");
+        track("daydream_media_permission_denied", {
+          is_authenticated: authenticated,
+        });
+      }
 
       if (isMobile) {
         alert(
-          "Please ensure camera permissions are enabled in your browser settings.",
+          "Please ensure camera and microphone permissions are enabled in your browser settings.",
         );
       }
       return false;
@@ -246,29 +266,8 @@ const Interstitial: React.FC<InterstitialProps> = ({
       mic_permission: micPermission,
     });
 
-    if (micPermission !== "granted") {
-      try {
-        const audioStream = await navigator.mediaDevices.getUserMedia({
-          audio: true,
-        });
-        audioStream.getTracks().forEach(track => track.stop());
-        setMicPermission("granted");
-        track("daydream_microphone_permission_granted", {
-          is_authenticated: authenticated,
-        });
-      } catch (err) {
-        setMicPermission("denied");
-        track("daydream_microphone_permission_denied", {
-          is_authenticated: authenticated,
-        });
-      }
-    }
-
-    if (cameraPermission !== "granted") {
-      const cameraGranted = await requestCamera();
-      if (cameraGranted) {
-        setCurrentScreen("prompts");
-      }
+    if (cameraPermission !== "granted" || micPermission !== "granted") {
+      await requestMediaPermissions();
     } else {
       onCameraPermissionGranted();
       setCurrentScreen("prompts");
