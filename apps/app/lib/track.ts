@@ -1,5 +1,6 @@
 import { User } from "@privy-io/react-auth";
 import { handleDistinctId, handleSessionId } from "@/lib/analytics/mixpanel";
+import { getSharedParamsAuthor } from "@/app/api/streams/share-params";
 
 interface TrackProperties {
   [key: string]: any;
@@ -7,6 +8,16 @@ interface TrackProperties {
 
 let lastTrackedEvents: { [key: string]: number } = {};
 const DEBOUNCE_TIME = 1000; // 1000ms debounce
+
+// Cache for shared params data
+let sharedParamsCache: { [key: string]: any } = {};
+
+interface SharedInfo {
+  shared_id?: string;
+  shared_author_id?: string;
+  shared_pipeline_id?: string;
+  shared_created_at?: string;
+}
 
 async function getStoredIds(user?: User) {
   if (typeof window === "undefined") return {};
@@ -22,11 +33,40 @@ async function getStoredIds(user?: User) {
   };
 }
 
-const getBrowserInfo = () => {
+const getSharedParamsInfo = async (): Promise<SharedInfo> => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const sharedParam = urlParams.get("shared");
+
+  let sharedInfo: SharedInfo = {};
+  if (sharedParam) {
+    // Check if we already have this shared param data in cache
+    if (sharedParamsCache[sharedParam]) {
+      sharedInfo = sharedParamsCache[sharedParam];
+    } else {
+      try {
+        const { data, error } = await getSharedParamsAuthor(sharedParam);
+        if (!error && data) {
+          sharedInfo = {
+            shared_id: sharedParam,
+            shared_author_id: data.author,
+            shared_pipeline_id: data.pipeline,
+            shared_created_at: data.created_at,
+          };
+          // Store in cache for future use
+          sharedParamsCache[sharedParam] = sharedInfo;
+        }
+      } catch (error) {
+        console.error("Error fetching shared params info:", error);
+      }
+    }
+  }
+  return sharedInfo;
+};
+
+const getBrowserInfo = async () => {
   if (typeof window === "undefined") return {};
 
   const urlParams = new URLSearchParams(window.location.search);
-  const sharedParam = urlParams.get("shared");
 
   const browserInfo = {
     $os: navigator.platform,
@@ -41,12 +81,6 @@ const getBrowserInfo = () => {
     utm_campaign: urlParams.get("utm_campaign"),
     utm_term: urlParams.get("utm_term"),
     utm_content: urlParams.get("utm_content"),
-    shared_id: sharedParam,
-    referrer_type: sharedParam
-      ? "shared_link"
-      : document.referrer
-        ? "external"
-        : "direct",
   };
 
   return browserInfo;
@@ -69,7 +103,13 @@ const track = async (
   }
 
   const { distinctId, sessionId, userId } = await getStoredIds(user);
-  const browserInfo = getBrowserInfo();
+  const browserInfo = await getBrowserInfo();
+  const sharedInfo = await getSharedParamsInfo();
+  const referrerType = sharedInfo.shared_id
+    ? "shared_link"
+    : document.referrer
+      ? "external"
+      : "direct";
   if (!sessionId) {
     console.log("No sessionId found, skipping event tracking");
     return;
@@ -81,6 +121,8 @@ const track = async (
       distinct_id: distinctId,
       $user_id: userId,
       $session_id: sessionId,
+      referrer_type: referrerType,
+      ...sharedInfo,
       ...browserInfo,
       ...eventProperties,
     },
