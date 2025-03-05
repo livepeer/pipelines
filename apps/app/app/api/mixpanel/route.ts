@@ -20,7 +20,7 @@ async function getGeoData(ip: string) {
       $longitude: data.lon,
     };
   } catch (error) {
-    console.error("Error getting geolocation:", error);
+    console.warn("Failed to get geolocation data:", error);
     return {};
   }
 }
@@ -29,7 +29,7 @@ export async function POST(request: Request) {
   if (!mixpanelClient) {
     return NextResponse.json(
       { error: "Mixpanel not configured" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 
@@ -60,7 +60,7 @@ export async function POST(request: Request) {
     console.error("Error tracking event:", error);
     return NextResponse.json(
       { error: "Internal Server Error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

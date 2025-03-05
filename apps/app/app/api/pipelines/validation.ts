@@ -70,7 +70,7 @@ export async function createSmokeTestStream(pipelineId: string) {
       is_smoke_test: true,
       from_playground: false,
     },
-    "did:privy:cm4x2cuiw007lh8fcj34919fu"
+    "did:privy:cm4x2cuiw007lh8fcj34919fu",
   ); // Using system user ID
 
   console.log("Stream created successfully:", stream);
@@ -86,12 +86,14 @@ export async function createSmokeTestStream(pipelineId: string) {
 }
 
 export async function triggerSmokeTest(streamKey: string) {
-  // Check if we're in the dev environment and skip triggering the smoke test if so - to not waste resources 
+  // Check if we're in the dev environment and skip triggering the smoke test if so - to not waste resources
   if (process.env.NEXT_PUBLIC_ENV === "dev") {
-    console.log("Skipping smoke test trigger in development environment (NEXT_PUBLIC_ENV=dev)");
+    console.log(
+      "Skipping smoke test trigger in development environment (NEXT_PUBLIC_ENV=dev)",
+    );
     return;
   }
-  
+
   const { gateway } = await serverConfig();
   const gatewayUrl = gateway.url;
   const username = gateway.userId;
@@ -116,7 +118,7 @@ export async function triggerSmokeTest(streamKey: string) {
       const errorText = await response.text();
       console.error("Error starting smoke test:", errorText);
       throw new Error(
-        `Failed to start smoke test: ${response.status} ${errorText}`
+        `Failed to start smoke test: ${response.status} ${errorText}`,
       );
     }
   } catch (error) {
@@ -150,7 +152,7 @@ export async function pollStreamStatus(stream: any) {
       }
 
       console.log("Waiting for gateway_host to be available...");
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      await new Promise(resolve => setTimeout(resolve, 2000));
       retries++;
     }
     throw new Error("Timeout waiting for gateway_host");
@@ -175,19 +177,19 @@ export async function pollStreamStatus(stream: any) {
     while (attempts < MAX_POLL_ATTEMPTS) {
       try {
         await getAndStoreStreamStatus(request, streamId);
-        await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL));
+        await new Promise(resolve => setTimeout(resolve, POLL_INTERVAL));
         attempts++;
       } catch (error) {
         if (error instanceof Error && error.message.includes("404")) {
           // Stream status not available or not found
-          await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL));
+          await new Promise(resolve => setTimeout(resolve, POLL_INTERVAL));
           attempts++;
           continue;
         }
         console.error("Polling error:", error);
         console.log(
           "Polling error::Stream status map:",
-          global.streamStatusMap
+          global.streamStatusMap,
         );
         global.streamStatusMap.delete(streamId);
         break;
@@ -206,7 +208,7 @@ export async function pollStreamStatus(stream: any) {
 
 export async function getAndStoreStreamStatus(
   request: StatusRequest,
-  streamId: string
+  streamId: string,
 ) {
   const response = await fetch(request.url, {
     headers: request.headers,
@@ -224,7 +226,7 @@ export async function getAndStoreStreamStatus(
   console.log("getAndStoreStreamStatus::Stream status data:", data);
   console.log(
     "getAndStoreStreamStatus::Stream status map:",
-    global.streamStatusMap
+    global.streamStatusMap,
   );
   global.streamStatusMap.set(streamId, data);
 
@@ -232,7 +234,7 @@ export async function getAndStoreStreamStatus(
 }
 
 export async function getStoredStreamStatus(
-  streamId: string
+  streamId: string,
 ): Promise<any | undefined> {
   if (!global.streamStatusMap) {
     console.log("getStoredStreamStatus::Stream status map is undefined");

@@ -13,7 +13,7 @@ export default function LoggedOut({ text }: { text: string }) {
     <div className="flex justify-center h-[calc(100vh-15rem)] items-center">
       <Button
         onClick={() => {
-          track('login_clicked', undefined, user || undefined);
+          track("login_clicked", undefined, user || undefined);
           login();
         }}
         disabled={disableLogin}

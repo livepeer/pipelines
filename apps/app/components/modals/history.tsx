@@ -93,7 +93,7 @@ const groupPipelinesByDate = (pipelines: Pipeline[]) => {
       acc[pipeline.date].push(pipeline);
       return acc;
     },
-    {} as Record<string, Pipeline[]>
+    {} as Record<string, Pipeline[]>,
   );
 };
 
@@ -122,7 +122,7 @@ const PipelineList = ({ groupedPipelines }: PipelineListProps) => (
     {Object.entries(groupedPipelines).map(([date, pipelines]) => (
       <React.Fragment key={date}>
         <Label className="text-sm text-muted-foreground mt-2">{date}:</Label>
-        {pipelines.map((pipeline) => (
+        {pipelines.map(pipeline => (
           <PipelineCard key={pipeline.title} pipeline={pipeline} />
         ))}
       </React.Fragment>

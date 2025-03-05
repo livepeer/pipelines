@@ -1,4 +1,6 @@
 import { User } from "@privy-io/react-auth";
+import { handleDistinctId, handleSessionId } from "@/lib/analytics/mixpanel";
+
 interface TrackProperties {
   [key: string]: any;
 }
@@ -6,46 +8,64 @@ interface TrackProperties {
 let lastTrackedEvents: { [key: string]: number } = {};
 const DEBOUNCE_TIME = 1000; // 1000ms debounce
 
-function getStoredIds() {
-  if (typeof window === 'undefined') return {};
-  
+async function getStoredIds(user?: User) {
+  if (typeof window === "undefined") return {};
+
+  const distinctId = await handleDistinctId(user);
+  const sessionId = await handleSessionId();
+  const userId = localStorage.getItem("mixpanel_user_id");
+
   return {
-    distinctId: localStorage.getItem('mixpanel_distinct_id'),
-    sessionId: localStorage.getItem('mixpanel_session_id'),
-    userId: localStorage.getItem('mixpanel_user_id'),
+    distinctId,
+    sessionId,
+    userId,
   };
 }
 
-function getBrowserInfo() {
-  if (typeof window === 'undefined') return {};
+const getBrowserInfo = () => {
+  if (typeof window === "undefined") return {};
 
-  return {
+  const urlParams = new URLSearchParams(window.location.search);
+  const sharedParam = urlParams.get("shared");
+  
+  const browserInfo = {
     $os: navigator.platform,
-    $browser: navigator.userAgent.split('(')[0].trim(),
-    $device: /mobile/i.test(navigator.userAgent) ? 'Mobile' : 'Desktop',
+    $browser: navigator.userAgent.split("(")[0].trim(),
+    $device: /mobile/i.test(navigator.userAgent) ? "Mobile" : "Desktop",
     $current_url: window.location.href,
+    $pathname: window.location.pathname,
     $referrer: document.referrer,
     user_agent: navigator.userAgent,
+    utm_source: urlParams.get("utm_source"),
+    utm_medium: urlParams.get("utm_medium"),
+    utm_campaign: urlParams.get("utm_campaign"),
+    utm_term: urlParams.get("utm_term"),
+    utm_content: urlParams.get("utm_content"),
+    shared_id: sharedParam,
+    referrer_type: sharedParam ? "shared_link" : document.referrer ? "external" : "direct",
   };
-}
+
+  return browserInfo;
+};
 
 const track = async (
   eventName: string,
   eventProperties?: TrackProperties,
-  user?: User
+  user?: User,
 ) => {
   const now = Date.now();
   const lastTracked = lastTrackedEvents[eventName] || 0;
 
   // Skip if event was tracked less than DEBOUNCE_TIME ago
   if (now - lastTracked < DEBOUNCE_TIME) {
-    console.log(`Debouncing ${eventName}, last tracked ${now - lastTracked}ms ago`);
+    console.log(
+      `Debouncing ${eventName}, last tracked ${now - lastTracked}ms ago`,
+    );
     return false;
   }
 
-  const { distinctId, sessionId, userId } = getStoredIds();
+  const { distinctId, sessionId, userId } = await getStoredIds(user);
   const browserInfo = getBrowserInfo();
-
   if (!sessionId) {
     console.log("No sessionId found, skipping event tracking");
     return;
@@ -76,7 +96,7 @@ const track = async (
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-    
+
     // Update last tracked time after successful tracking
     lastTrackedEvents[eventName] = now;
     return true;

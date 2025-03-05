@@ -21,7 +21,7 @@ export async function POST(request: Request) {
     const { pipeline } = await createPipeline(body, userId);
     return NextResponse.json(
       { success: true, data: pipeline },
-      { status: 201 }
+      { status: 201 },
     );
   } catch (error) {
     if (error instanceof z.ZodError) {

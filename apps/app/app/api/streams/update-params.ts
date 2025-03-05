@@ -11,7 +11,7 @@ export async function updateParams({
   streamKey: string;
 }) {
   const credentials = Buffer.from(
-    process.env.USERNAME_PASSWORD as string
+    process.env.USERNAME_PASSWORD as string,
   ).toString("base64");
 
   const response = await fetch(
@@ -23,7 +23,7 @@ export async function updateParams({
         "Content-Type": "application/json",
       },
       body: JSON.stringify(body),
-    }
+    },
   );
 
   const status = response.status;

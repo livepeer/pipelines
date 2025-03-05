@@ -7,9 +7,9 @@ const SupabaseConfig = z.object({
 });
 
 const GatewayConfig = z.object({
-    url: z.string().url().optional(),
-    userId: z.string().min(1).optional(),
-    password: z.string().min(1).optional(),
+  url: z.string().url().optional(),
+  userId: z.string().min(1).optional(),
+  password: z.string().min(1).optional(),
 });
 
 const KafkaConfig = z.object({
@@ -57,7 +57,7 @@ export const validateServerEnv = async () => {
   } catch (error) {
     if (error instanceof z.ZodError) {
       console.error("Invalid server environment configuration:");
-      error.errors.forEach((err) => {
+      error.errors.forEach(err => {
         console.error(`- ${err.path.join(".")}: ${err.message}`);
       });
     }

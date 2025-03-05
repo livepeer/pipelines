@@ -13,7 +13,6 @@ export async function POST(request: Request) {
   const supabase = await createServerClient();
 
   try {
-
     const body = await request.json().catch(() => null);
 
     if (!body) {
@@ -55,7 +54,7 @@ export async function POST(request: Request) {
         ([, value]) =>
           value !== "" &&
           value !== null &&
-          (!Array.isArray(value) || value.length > 0)
+          (!Array.isArray(value) || value.length > 0),
       )
       .reduce<Record<string, any>>((acc, [key, value]) => {
         acc[key] = value;

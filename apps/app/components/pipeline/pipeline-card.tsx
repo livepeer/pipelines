@@ -49,7 +49,11 @@ interface PipelineCardProps {
   parameter: Parameter;
   errors?: ParameterValidationError;
   nodes: { id: string; classType: string; fields: string[] }[];
-  onUpdateParameter: (index: number, field: keyof Parameter, value: string) => void;
+  onUpdateParameter: (
+    index: number,
+    field: keyof Parameter,
+    value: string,
+  ) => void;
   onUpdateWidgetConfig: (index: number, config: Partial<WidgetConfig>) => void;
   onRemove: (index: number) => void;
   onWidgetTypeChange: (index: number, value: string) => void;
@@ -80,13 +84,13 @@ export default function PipelineCard({
             <Label>Node</Label>
             <Select
               value={parameter.nodeId}
-              onValueChange={(value) => onUpdateParameter(index, "nodeId", value)}
+              onValueChange={value => onUpdateParameter(index, "nodeId", value)}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select node" />
               </SelectTrigger>
               <SelectContent>
-                {nodes.map((node) => (
+                {nodes.map(node => (
                   <SelectItem key={node.id} value={node.id}>
                     {node.classType}
                   </SelectItem>
@@ -101,7 +105,7 @@ export default function PipelineCard({
             <Label>Field</Label>
             <Select
               value={parameter.field}
-              onValueChange={(value) => onUpdateParameter(index, "field", value)}
+              onValueChange={value => onUpdateParameter(index, "field", value)}
               disabled={!parameter.nodeId}
             >
               <SelectTrigger>
@@ -110,8 +114,8 @@ export default function PipelineCard({
               <SelectContent>
                 {parameter.nodeId &&
                   nodes
-                    .find((n) => n.id === parameter.nodeId)
-                    ?.fields.map((field) => (
+                    .find(n => n.id === parameter.nodeId)
+                    ?.fields.map(field => (
                       <SelectItem key={field} value={field}>
                         {field}
                       </SelectItem>
@@ -126,7 +130,7 @@ export default function PipelineCard({
             <Label>Display Name</Label>
             <Input
               value={parameter.name}
-              onChange={(e) => onUpdateParameter(index, "name", e.target.value)}
+              onChange={e => onUpdateParameter(index, "name", e.target.value)}
               placeholder="Parameter name"
             />
             {errors?.name && (
@@ -137,7 +141,7 @@ export default function PipelineCard({
             <Label>Description</Label>
             <Input
               value={parameter.description}
-              onChange={(e) =>
+              onChange={e =>
                 onUpdateParameter(index, "description", e.target.value)
               }
               placeholder="Parameter description"
@@ -147,7 +151,7 @@ export default function PipelineCard({
             <Label>Widget Type</Label>
             <Select
               value={parameter.widget}
-              onValueChange={(value) => onWidgetTypeChange(index, value)}
+              onValueChange={value => onWidgetTypeChange(index, value)}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select widget" />
@@ -175,14 +179,18 @@ export default function PipelineCard({
               <Input
                 type="number"
                 value={parameter.widgetConfig.min ?? ""}
-                onChange={(e) => {
+                onChange={e => {
                   const val = e.target.value;
-                  onUpdateWidgetConfig(index, { min: val === "" ? undefined : parseFloat(val) });
+                  onUpdateWidgetConfig(index, {
+                    min: val === "" ? undefined : parseFloat(val),
+                  });
                 }}
                 placeholder="Min value"
               />
               {errors?.widgetConfig?.min && (
-                <p className="text-xs text-red-600 mt-1">{errors.widgetConfig.min}</p>
+                <p className="text-xs text-red-600 mt-1">
+                  {errors.widgetConfig.min}
+                </p>
               )}
             </div>
             <div>
@@ -190,14 +198,18 @@ export default function PipelineCard({
               <Input
                 type="number"
                 value={parameter.widgetConfig.max ?? ""}
-                onChange={(e) => {
+                onChange={e => {
                   const val = e.target.value;
-                  onUpdateWidgetConfig(index, { max: val === "" ? undefined : parseFloat(val) });
+                  onUpdateWidgetConfig(index, {
+                    max: val === "" ? undefined : parseFloat(val),
+                  });
                 }}
                 placeholder="Max value"
               />
               {errors?.widgetConfig?.max && (
-                <p className="text-xs text-red-600 mt-1">{errors.widgetConfig.max}</p>
+                <p className="text-xs text-red-600 mt-1">
+                  {errors.widgetConfig.max}
+                </p>
               )}
             </div>
             <div>
@@ -205,14 +217,18 @@ export default function PipelineCard({
               <Input
                 type="number"
                 value={parameter.widgetConfig.step ?? ""}
-                onChange={(e) => {
+                onChange={e => {
                   const val = e.target.value;
-                  onUpdateWidgetConfig(index, { step: val === "" ? undefined : parseFloat(val) });
+                  onUpdateWidgetConfig(index, {
+                    step: val === "" ? undefined : parseFloat(val),
+                  });
                 }}
                 placeholder="Step size"
               />
               {errors?.widgetConfig?.step && (
-                <p className="text-xs text-red-600 mt-1">{errors.widgetConfig.step}</p>
+                <p className="text-xs text-red-600 mt-1">
+                  {errors.widgetConfig.step}
+                </p>
               )}
             </div>
           </div>
@@ -230,8 +246,8 @@ export default function PipelineCard({
                 const text = e.currentTarget.value;
                 const newOptions = text
                   .split("\n")
-                  .filter((line) => line.trim() !== "")
-                  .map((line) => {
+                  .filter(line => line.trim() !== "")
+                  .map(line => {
                     const [label, value] = line.split("=", 2);
                     return {
                       label: label.trim(),
@@ -246,7 +262,9 @@ Option 2=value2`}
               className="font-mono"
             />
             {errors?.widgetConfig?.options && (
-              <p className="text-xs text-red-600 mt-1">{errors.widgetConfig.options}</p>
+              <p className="text-xs text-red-600 mt-1">
+                {errors.widgetConfig.options}
+              </p>
             )}
           </div>
         )}

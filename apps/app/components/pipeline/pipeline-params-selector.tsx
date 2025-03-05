@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button } from "@repo/design-system/components/ui/button";
 
 import { PlusIcon, XIcon } from "lucide-react";
-import PipelineCard from './pipeline-card';
+import PipelineCard from "./pipeline-card";
 
 interface WidgetConfig {
   min?: number;
@@ -50,64 +50,71 @@ export default function PipelineParamsSelector({
   onSubmit,
   isSubmitting,
 }: PipelineParamsSelectorProps) {
-  const comfyJson = typeof formData.comfyJson === 'string'
-    ? JSON.parse(formData.comfyJson)
-    : formData.comfyJson;
+  const comfyJson =
+    typeof formData.comfyJson === "string"
+      ? JSON.parse(formData.comfyJson)
+      : formData.comfyJson;
 
-  const nodes = Object.entries(comfyJson).map(([nodeId, node]: [string, any]) => ({
-    id: nodeId,
-    classType: node.class_type,
-    fields: Object.keys(node.inputs || {})
-  }));
+  const nodes = Object.entries(comfyJson).map(
+    ([nodeId, node]: [string, any]) => ({
+      id: nodeId,
+      classType: node.class_type,
+      fields: Object.keys(node.inputs || {}),
+    }),
+  );
 
   const [parameters, setParameters] = useState<Parameter[]>(() => {
     if (formData.prioritized_params) {
       try {
-        const parsedParams = typeof formData.prioritized_params === 'string'
-          ? JSON.parse(formData.prioritized_params)
-          : formData.prioritized_params;
-        
+        const parsedParams =
+          typeof formData.prioritized_params === "string"
+            ? JSON.parse(formData.prioritized_params)
+            : formData.prioritized_params;
+
         const mappedParameters = parsedParams.map((param: any) => {
           const widgetType = (param.widget || "text").toLowerCase().trim();
           const parameter: Parameter = {
             nodeId: param.nodeId,
             field: param.field,
             name: param.name,
-            description: param.description || '',
+            description: param.description || "",
             widget: widgetType,
             widgetConfig: {},
-            optionsText: '',
-            classType: nodes.find(n => n.id === param.nodeId)?.classType || ''
+            optionsText: "",
+            classType: nodes.find(n => n.id === param.nodeId)?.classType || "",
           };
 
-          if (widgetType === 'slider' || widgetType === 'number') {
+          if (widgetType === "slider" || widgetType === "number") {
             parameter.widgetConfig = {
               min: param.widgetConfig?.min ?? 0,
               max: param.widgetConfig?.max ?? 100,
-              step: param.widgetConfig?.step ?? 1
+              step: param.widgetConfig?.step ?? 1,
             };
-          } else if (widgetType === 'select') {
+          } else if (widgetType === "select") {
             parameter.widgetConfig = {
-              options: param.widgetConfig?.options || []
+              options: param.widgetConfig?.options || [],
             };
-            parameter.optionsText = param.widgetConfig?.options
-              ?.map((opt: any) => `${opt.label}=${opt.value}`)
-              .join('\n') || '';
+            parameter.optionsText =
+              param.widgetConfig?.options
+                ?.map((opt: any) => `${opt.label}=${opt.value}`)
+                .join("\n") || "";
           }
 
           return parameter;
         });
-        
+
         return mappedParameters;
       } catch (e) {
-        console.error('Error parsing prioritized params:', e);
+        console.error("Error parsing prioritized params:", e);
         return [];
       }
     }
     return [];
   });
 
-  const [validationErrors, setValidationErrors] = useState<ParameterValidationError[]>([]);
+  const [validationErrors, setValidationErrors] = useState<
+    ParameterValidationError[]
+  >([]);
 
   const addParameter = () => {
     if (parameters.length >= 5) {
@@ -123,7 +130,7 @@ export default function PipelineParamsSelector({
         widget: "text",
         widgetConfig: {},
         optionsText: "",
-        classType: ""
+        classType: "",
       },
     ]);
     setValidationErrors([]);
@@ -133,7 +140,11 @@ export default function PipelineParamsSelector({
     setParameters(parameters.filter((_, i) => i !== index));
   };
 
-  const updateParameter = (index: number, field: keyof Parameter, value: string) => {
+  const updateParameter = (
+    index: number,
+    field: keyof Parameter,
+    value: string,
+  ) => {
     const newParameters = [...parameters];
     if (field === "nodeId") {
       const selectedNode = nodes.find(n => n.id === value);
@@ -164,23 +175,23 @@ export default function PipelineParamsSelector({
       ...newParameters[index],
       widgetConfig: {
         ...newParameters[index].widgetConfig,
-        ...config
-      }
+        ...config,
+      },
     };
     setParameters(newParameters);
   };
 
   const validateParameter = (param: Parameter): ParameterValidationError => {
     const error: ParameterValidationError = {};
-    
+
     if (!param.nodeId) error.nodeId = "Node is required.";
     if (!param.field) error.field = "Field is required.";
     if (!param.name) error.name = "Display name is required.";
     if (!param.widget) error.widget = "Widget type is required.";
 
-    if (param.widget === 'slider' || param.widget === 'number') {
+    if (param.widget === "slider" || param.widget === "number") {
       const { min, max, step } = param.widgetConfig;
-      
+
       if (min === undefined || isNaN(min)) {
         error.widgetConfig = error.widgetConfig || {};
         error.widgetConfig.min = "Minimum is required and must be a number.";
@@ -195,11 +206,11 @@ export default function PipelineParamsSelector({
       }
     }
 
-    if (param.widget === 'select') {
+    if (param.widget === "select") {
       const hasValidOptions = param.widgetConfig.options?.some(
-        opt => opt.label.trim() !== '' || opt.value.trim() !== ''
+        opt => opt.label.trim() !== "" || opt.value.trim() !== "",
       );
-      
+
       if (!hasValidOptions) {
         error.widgetConfig = { options: "At least one option is required." };
       }
@@ -211,7 +222,7 @@ export default function PipelineParamsSelector({
   const handleSubmit = () => {
     const errors = parameters.map(validateParameter);
     const isValid = errors.every(err => Object.keys(err).length === 0);
-    
+
     if (!isValid) {
       setValidationErrors(errors);
       return;
@@ -220,7 +231,9 @@ export default function PipelineParamsSelector({
     setValidationErrors([]);
 
     const parameterPaths = parameters.map(param => {
-      const path = [param.nodeId, param.field, param.name].filter(Boolean).join('/');
+      const path = [param.nodeId, param.field, param.name]
+        .filter(Boolean)
+        .join("/");
       return {
         nodeId: param.nodeId,
         field: param.field,
@@ -237,7 +250,7 @@ export default function PipelineParamsSelector({
       ...formData,
       prioritized_params: JSON.stringify(parameterPaths),
     };
-    
+
     onSubmit(updatedFormData);
   };
 
@@ -246,8 +259,9 @@ export default function PipelineParamsSelector({
       <div>
         <h4 className="text-lg font-medium">Step 2: Parameter Display</h4>
         <p className="text-sm text-muted-foreground mt-1">
-          Select up to 5 important parameters that should always be visible for users.
-          All other parameters will be available, but collapsed by default.
+          Select up to 5 important parameters that should always be visible for
+          users. All other parameters will be available, but collapsed by
+          default.
         </p>
       </div>
 
@@ -263,7 +277,7 @@ export default function PipelineParamsSelector({
             onUpdateWidgetConfig={updateWidgetConfig}
             onRemove={removeParameter}
             onWidgetTypeChange={(index, value) => {
-              setParameters((prevParameters) => {
+              setParameters(prevParameters => {
                 const newParameters = [...prevParameters];
                 newParameters[index] = {
                   ...newParameters[index],
@@ -272,15 +286,17 @@ export default function PipelineParamsSelector({
                     value === "slider" || value === "number"
                       ? { min: 0, max: 100, step: 1 }
                       : value === "select"
-                      ? { options: [] }
-                      : {},
+                        ? { options: [] }
+                        : {},
                 };
                 return newParameters;
               });
               setValidationErrors(prev => {
                 const newErrors = [...prev];
                 if (newErrors[index]) {
-                  delete newErrors[index][value as keyof ParameterValidationError];
+                  delete newErrors[index][
+                    value as keyof ParameterValidationError
+                  ];
                 }
                 return newErrors;
               });
@@ -314,4 +330,4 @@ export default function PipelineParamsSelector({
       </div>
     </div>
   );
-} 
+}

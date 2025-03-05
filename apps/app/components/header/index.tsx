@@ -26,7 +26,7 @@ export default function Header() {
     {
       label: "Community",
       external: true,
-      href: "https://discord.gg/livepeer",
+      href: "https://discord.com/invite/hxyNHeSzCK",
     },
   ];
 
@@ -37,7 +37,7 @@ export default function Header() {
         location: "header",
         is_authenticated: authenticated,
       },
-      user || undefined
+      user || undefined,
     );
   };
 
@@ -46,7 +46,7 @@ export default function Header() {
       <div className="flex items-center gap-8">{/* <Search /> */}</div>
       <div className="flex items-center gap-4">
         <div className="hidden gap-6 md:flex ">
-          {menuItems.map((item) => (
+          {menuItems.map(item => (
             <Link
               href={item.href}
               target={item.external ? "_blank" : undefined}

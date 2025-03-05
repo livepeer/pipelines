@@ -15,15 +15,7 @@ import {
   useSidebar,
 } from "@repo/design-system/components/ui/sidebar";
 import { useIsMobile } from "@repo/design-system/hooks/use-mobile";
-import {
-  DoorOpenIcon,
-  Map,
-  SendIcon,
-  SquareTerminalIcon,
-  VideoIcon,
-  BookIcon,
-  ListIcon,
-} from "lucide-react";
+import { BookIcon, LightbulbIcon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
@@ -143,7 +135,7 @@ export const GlobalSidebar = ({ children }: GlobalSidebarProperties) => {
     footer: [
       {
         title: "Join Community",
-        url: "https://discord.gg/livepeer",
+        url: "https://discord.com/invite/hxyNHeSzCK",
         external: true,
         icon: DiscordLogoIcon,
       },
@@ -157,7 +149,7 @@ export const GlobalSidebar = ({ children }: GlobalSidebarProperties) => {
         title: "Feedback",
         url: "https://livepeer.notion.site/15f0a348568781aab037c863d91b05e2",
         external: true,
-        icon: SendIcon,
+        icon: LightbulbIcon,
       },
     ],
   };
@@ -178,7 +170,7 @@ export const GlobalSidebar = ({ children }: GlobalSidebarProperties) => {
             className={cn(
               "flex items-center justify-between ml-2",
               !_sidebar.openMobile && "-mt-8",
-              isMobile && (_sidebar.openMobile ? "ml-8 mt-8" : "ml-4 mt-4")
+              isMobile && (_sidebar.openMobile ? "ml-8 mt-8" : "ml-4 mt-4"),
             )}
           >
             {_sidebar.open ? (
@@ -271,15 +263,18 @@ export const GlobalSidebar = ({ children }: GlobalSidebarProperties) => {
               <SidebarMenu
                 className={cn(
                   "flex flex-col items-start w-full",
-                  !_sidebar.open && "items-center"
+                  !_sidebar.open && "items-center",
                 )}
               >
-                {items.map((item) => (
+                {items.map(item => (
                   <SidebarMenuItem key={item.title} className="w-full">
                     <SidebarMenuButton
                       className={cn(
                         "hover:bg-muted cursor-pointer",
-                        key === "footer" && isMobile && _sidebar.openMobile && "ml-4"
+                        key === "footer" &&
+                          isMobile &&
+                          _sidebar.openMobile &&
+                          "ml-4",
                       )}
                       onClick={() => {
                         if (item.external) {
@@ -309,7 +304,7 @@ export const GlobalSidebar = ({ children }: GlobalSidebarProperties) => {
                     <SidebarMenuButton
                       className={cn(
                         "hover:bg-muted cursor-pointer",
-                        isMobile && _sidebar.openMobile && "ml-4"
+                        isMobile && _sidebar.openMobile && "ml-4",
                       )}
                       asChild
                       tooltip="My Account"

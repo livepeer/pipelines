@@ -85,7 +85,7 @@ export default function Page() {
         setDialogOpen(false);
       }
     },
-    [user]
+    [user],
   );
 
   if (loading) {
@@ -139,7 +139,7 @@ export default function Page() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {pipelines.map((pipeline) => (
+            {pipelines.map(pipeline => (
               <TableRow key={pipeline.id} className="h-12">
                 <TableCell>
                   <Link href={`/pipelines/${pipeline.id}`}>

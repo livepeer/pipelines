@@ -8,6 +8,6 @@ export async function GET() {
     `# HELP version Current version of the deployed api backend.
 # TYPE version gauge
 version{version="${commitSha}",app="pipelines-api",nodeversion="${process.version}",arch="${process.arch}",os="${process.platform}"} 1`,
-    { status: 200 }
+    { status: 200 },
   );
 }

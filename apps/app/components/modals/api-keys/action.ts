@@ -7,7 +7,7 @@ import { newId } from "@/lib/generate-id";
 
 export async function createAPIKey(
   apiKeyName: string,
-  userId: string | undefined
+  userId: string | undefined,
 ) {
   const supabase = await createServerClient();
 

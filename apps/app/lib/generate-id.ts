@@ -2,7 +2,7 @@ import { customAlphabet } from "nanoid";
 
 const nanoid = customAlphabet(
   "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz",
-  16
+  16,
 );
 
 const prefixes = {
@@ -11,6 +11,7 @@ const prefixes = {
   stream_key: "stk",
   webhook: "whk",
   api_key: "lp",
+  shared: "shp",
 } as const;
 
 type ResourceType = keyof typeof prefixes;

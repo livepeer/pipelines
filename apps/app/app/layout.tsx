@@ -34,17 +34,17 @@ const RootLayout = ({ children }: RootLayoutProperties) => (
           <SidebarProvider open={false}>
             <GlobalSidebar>
               <div>
-                <div className="flex h-screen md:h-[calc(100vh-2rem)] flex-col overflow-y-auto px-2 md:px-6">
+                <div className="flex h-screen md:h-auto md:min-h-[calc(100vh-2rem)] flex-col px-2 md:px-6">
                   <AlphaBanner />
                   {children}
                 </div>
                 <footer className="fixed bottom-0 right-0 p-4">
-                  <VersionInfo />
+                  {/* <VersionInfo /> */}
                 </footer>
               </div>
             </GlobalSidebar>
           </SidebarProvider>
-          <Intercom />
+          {<Intercom />}
           {/* TODO: REENABLE WHEN SHIH-YU IS READY FOR IT <Intercom /> */}
         </DesignSystemProvider>
       </MixpanelProvider>
