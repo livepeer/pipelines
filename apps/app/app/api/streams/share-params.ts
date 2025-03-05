@@ -103,3 +103,31 @@ export async function getSharedParams(sharedId: string) {
 
   return { data, error: null };
 }
+
+// New function specifically for tracking purposes
+export async function getSharedParamsAuthor(sharedId: string) {
+  if (!sharedId) {
+    return { data: null, error: "Missing shared ID" };
+  }
+
+  try {
+    const supabase = await createServerClient();
+
+    // Only select the fields we need for tracking
+    const { data, error } = await supabase
+      .from("shared_params")
+      .select("author, pipeline, created_at")
+      .eq("id", sharedId)
+      .single();
+
+    if (error) {
+      console.error("Error fetching shared params author:", error);
+      return { data: null, error: error.message };
+    }
+
+    return { data, error: null };
+  } catch (error) {
+    console.error("Unexpected error in getSharedParamsAuthor:", error);
+    return { data: null, error: "Server error" };
+  }
+}
