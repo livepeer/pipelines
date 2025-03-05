@@ -27,6 +27,7 @@ const getBrowserInfo = () => {
 
   const urlParams = new URLSearchParams(window.location.search);
   const sharedParam = urlParams.get("shared");
+  
   const browserInfo = {
     $os: navigator.platform,
     $browser: navigator.userAgent.split("(")[0].trim(),
