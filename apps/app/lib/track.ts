@@ -27,7 +27,7 @@ const getBrowserInfo = () => {
 
   const urlParams = new URLSearchParams(window.location.search);
   const sharedParam = urlParams.get("shared");
-  
+
   const browserInfo = {
     $os: navigator.platform,
     $browser: navigator.userAgent.split("(")[0].trim(),
@@ -42,7 +42,11 @@ const getBrowserInfo = () => {
     utm_term: urlParams.get("utm_term"),
     utm_content: urlParams.get("utm_content"),
     shared_id: sharedParam,
-    referrer_type: sharedParam ? "shared_link" : document.referrer ? "external" : "direct",
+    referrer_type: sharedParam
+      ? "shared_link"
+      : document.referrer
+        ? "external"
+        : "direct",
   };
 
   return browserInfo;

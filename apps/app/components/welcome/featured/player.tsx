@@ -238,13 +238,13 @@ const useFirstFrameLoaded = ({
           stream_id: streamId,
           pipeline: pipelineType,
           pipeline_id: pipelineId,
-          // TODO: get viewer info from client
+          // TODO: Get viewer info from client
           viewer_info: {
             ip: "",
             user_agent: "",
             country: "",
-            city: ""
-          }
+            city: "",
+          },
         },
         "daydream",
         "server",
@@ -269,13 +269,13 @@ const useFirstFrameLoaded = ({
             stream_id: streamId,
             pipeline: pipelineType,
             pipeline_id: pipelineId,
-            // TODO: get viewer info from client
+            // TODO: Get viewer info from client
             viewer_info: {
               ip: "",
               user_agent: "",
               country: "",
-              city: ""
-            }
+              city: "",
+            },
           },
           "daydream",
           "server",
