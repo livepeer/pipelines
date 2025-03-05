@@ -2,9 +2,9 @@
 
 import { createServerClient } from "@repo/supabase";
 import { z } from "zod";
-import { Livepeer } from "livepeer";
 import { newId } from "@/lib/generate-id";
 import { livepeer as livePeerEnv } from "@/lib/env";
+import { livepeerSDK } from "@/lib/core";
 
 const streamSchema = z
   .object({
@@ -115,11 +115,6 @@ export async function upsertStream(body: any, userId: string) {
 
 export const createLivepeerStream = async (name?: string) => {
   try {
-    const livepeerSDK = new Livepeer({
-      serverURL: livePeerEnv.apiUrl,
-      apiKey: livePeerEnv.apiKey,
-    });
-
     const { stream, error } = await livepeerSDK.stream.create({
       name: name || "stream",
     });

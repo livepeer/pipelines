@@ -52,7 +52,6 @@ export async function identifyUser(
 
 export async function handleDistinctId(user: any) {
   let distinctId = localStorage.getItem("mixpanel_distinct_id");
-
   if (!distinctId) {
     distinctId = crypto.randomUUID();
     localStorage.setItem("mixpanel_distinct_id", distinctId);
@@ -63,7 +62,6 @@ export async function handleDistinctId(user: any) {
 
 export async function handleSessionId() {
   let sessionId = localStorage.getItem("mixpanel_session_id");
-  console.log("SessionTracker sessionId:", sessionId);
   if (!sessionId) {
     sessionId = crypto.randomUUID();
     console.log(

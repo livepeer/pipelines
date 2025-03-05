@@ -22,18 +22,31 @@ async function getStoredIds(user?: User) {
   };
 }
 
-function getBrowserInfo() {
+const getBrowserInfo = () => {
   if (typeof window === "undefined") return {};
 
-  return {
+  const urlParams = new URLSearchParams(window.location.search);
+  const sharedParam = urlParams.get("shared");
+  
+  const browserInfo = {
     $os: navigator.platform,
     $browser: navigator.userAgent.split("(")[0].trim(),
     $device: /mobile/i.test(navigator.userAgent) ? "Mobile" : "Desktop",
     $current_url: window.location.href,
+    $pathname: window.location.pathname,
     $referrer: document.referrer,
     user_agent: navigator.userAgent,
+    utm_source: urlParams.get("utm_source"),
+    utm_medium: urlParams.get("utm_medium"),
+    utm_campaign: urlParams.get("utm_campaign"),
+    utm_term: urlParams.get("utm_term"),
+    utm_content: urlParams.get("utm_content"),
+    shared_id: sharedParam,
+    referrer_type: sharedParam ? "shared_link" : document.referrer ? "external" : "direct",
   };
-}
+
+  return browserInfo;
+};
 
 const track = async (
   eventName: string,
@@ -52,9 +65,7 @@ const track = async (
   }
 
   const { distinctId, sessionId, userId } = await getStoredIds(user);
-  console.log("getStoredIds", distinctId, sessionId, userId, user);
   const browserInfo = getBrowserInfo();
-
   if (!sessionId) {
     console.log("No sessionId found, skipping event tracking");
     return;
