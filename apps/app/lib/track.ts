@@ -12,6 +12,13 @@ const DEBOUNCE_TIME = 1000; // 1000ms debounce
 // Cache for shared params data
 let sharedParamsCache: { [key: string]: any } = {};
 
+interface SharedInfo {
+  shared_id?: string;
+  shared_author_id?: string;
+  shared_pipeline_id?: string;
+  shared_created_at?: string;
+}
+
 async function getStoredIds(user?: User) {
   if (typeof window === "undefined") return {};
 
@@ -26,13 +33,11 @@ async function getStoredIds(user?: User) {
   };
 }
 
-const getBrowserInfo = async () => {
-  if (typeof window === "undefined") return {};
-
+const getSharedParamsInfo = async (): Promise<SharedInfo> => {
   const urlParams = new URLSearchParams(window.location.search);
   const sharedParam = urlParams.get("shared");
 
-  let sharedInfo = {};
+  let sharedInfo: SharedInfo = {};
   if (sharedParam) {
     // Check if we already have this shared param data in cache
     if (sharedParamsCache[sharedParam]) {
@@ -42,6 +47,7 @@ const getBrowserInfo = async () => {
         const { data, error } = await getSharedParamsAuthor(sharedParam);
         if (!error && data) {
           sharedInfo = {
+            shared_id: sharedParam,
             shared_author_id: data.author,
             shared_pipeline_id: data.pipeline,
             shared_created_at: data.created_at,
@@ -54,6 +60,13 @@ const getBrowserInfo = async () => {
       }
     }
   }
+  return sharedInfo;
+};
+
+const getBrowserInfo = async () => {
+  if (typeof window === "undefined") return {};
+
+  const urlParams = new URLSearchParams(window.location.search);
 
   const browserInfo = {
     $os: navigator.platform,
@@ -68,16 +81,8 @@ const getBrowserInfo = async () => {
     utm_campaign: urlParams.get("utm_campaign"),
     utm_term: urlParams.get("utm_term"),
     utm_content: urlParams.get("utm_content"),
-    shared_id: sharedParam,
-    referrer_type: sharedParam
-      ? "shared_link"
-      : document.referrer
-        ? "external"
-        : "direct",
-    ...sharedInfo,
   };
 
-  console.log("Browser info:", browserInfo);
   return browserInfo;
 };
 
@@ -98,7 +103,13 @@ const track = async (
   }
 
   const { distinctId, sessionId, userId } = await getStoredIds(user);
-  const browserInfo = await getBrowserInfo(); // Now awaiting this
+  const browserInfo = await getBrowserInfo();
+  const sharedInfo = await getSharedParamsInfo();
+  const referrerType = sharedInfo.shared_id
+    ? "shared_link"
+    : document.referrer
+      ? "external"
+      : "direct";
   if (!sessionId) {
     console.log("No sessionId found, skipping event tracking");
     return;
@@ -110,6 +121,8 @@ const track = async (
       distinct_id: distinctId,
       $user_id: userId,
       $session_id: sessionId,
+      referrer_type: referrerType,
+      ...sharedInfo,
       ...browserInfo,
       ...eventProperties,
     },
