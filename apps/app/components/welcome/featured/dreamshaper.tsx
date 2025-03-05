@@ -632,9 +632,12 @@ export default function Dreamshaper({
             <>
               <div className="relative w-full h-full">
                 <LivepeerPlayer
-                  output_playback_id={outputPlaybackId}
+                  playbackId={outputPlaybackId}
                   isMobile={isMobile}
                   stream_key={streamKey}
+                  streamId={streamId as string}
+                  pipelineId={pipeline.id}
+                  pipelineType={pipeline.type}
                 />
                 {/* Overlay */}
                 <div className="absolute inset-x-0 top-0 h-[85%] bg-transparent" />

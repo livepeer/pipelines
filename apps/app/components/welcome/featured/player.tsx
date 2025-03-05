@@ -16,19 +16,29 @@ import { useEffect, useRef, useState } from "react";
 import { isProduction } from "@/lib/env";
 import { useSearchParams } from "next/navigation";
 import { PauseIcon, PlayIcon } from "lucide-react";
-import track from "@/lib/track";
 import { usePrivy } from "@privy-io/react-auth";
+import { sendKafkaEvent } from "@/app/api/metrics/kafka";
+
+type TrackingProps = {
+  playbackId: string;
+  streamId: string;
+  pipelineId: string;
+  pipelineType: string;
+};
 
 export const LivepeerPlayer = React.memo(
   ({
-    output_playback_id,
+    playbackId,
     isMobile,
     stream_key,
+    streamId,
+    pipelineId,
+    pipelineType,
   }: {
-    output_playback_id: string;
+    playbackId: string;
     isMobile?: boolean;
     stream_key?: string | null;
-  }) => {
+  } & TrackingProps) => {
     const [playbackInfo, setPlaybackInfo] = useState<PlaybackInfo | null>(null);
     const playerUrl = `https://ai.livepeer.${isProduction() ? "com" : "monster"}/aiWebrtc/${stream_key}-out/whep`;
 
@@ -43,11 +53,11 @@ export const LivepeerPlayer = React.memo(
         return;
       }
       const fetchPlaybackInfo = async () => {
-        const info = await getStreamPlaybackInfo(output_playback_id);
+        const info = await getStreamPlaybackInfo(playbackId);
         setPlaybackInfo(info);
       };
       fetchPlaybackInfo();
-    }, [output_playback_id]);
+    }, [playbackId]);
 
     const src = getSrc(useMediamtx ? playerUrl : playbackInfo);
 
@@ -157,7 +167,13 @@ export const LivepeerPlayer = React.memo(
             </div>
           </Player.Controls>
 
-          <DebugTimer debugMode={debugMode} />
+          <DebugTimer
+            debugMode={debugMode}
+            playbackId={playbackId}
+            streamId={streamId}
+            pipelineId={pipelineId}
+            pipelineType={pipelineType}
+          />
         </Player.Root>
       </div>
     );
@@ -196,39 +212,87 @@ export const PlayerLoading = ({
   </div>
 );
 
-const useFirstFrameLoaded = ({ __scopeMedia }: Player.MediaScopedProps) => {
+const useFirstFrameLoaded = ({
+  __scopeMedia,
+  playbackId,
+  streamId,
+  pipelineType,
+  pipelineId,
+}: Player.MediaScopedProps & TrackingProps) => {
+  const { user } = usePrivy();
   const startTime = useRef(Date.now());
   const [firstFrameTime, setFirstFrameTime] = useState<string | null>(null);
   const context = Player.useMediaContext("CustomComponent", __scopeMedia);
   const state = Player.useStore(context.store);
 
+  // Send event on load
+  useEffect(() => {
+    const sendEvent = async () =>
+      await sendKafkaEvent(
+        "stream_trace",
+        {
+          type: "app_send_stream_request",
+          timestamp: startTime.current,
+          user_id: user?.id || "anonymous",
+          playback_id: playbackId,
+          stream_id: streamId,
+          pipeline: pipelineType,
+          pipeline_id: pipelineId,
+          // TODO: Get viewer info from client
+          viewer_info: {
+            ip: "",
+            user_agent: "",
+            country: "",
+            city: "",
+          },
+        },
+        "daydream",
+        "server",
+      );
+    sendEvent();
+  }, []);
+
+  // Send event when the firstFrameIsLoaded
   useEffect(() => {
     if (state.hasPlayed && !firstFrameTime) {
-      const frameTime = ((Date.now() - startTime.current) / 1000).toFixed(2);
-      setFirstFrameTime(frameTime);
+      const currentTime = Date.now();
+      setFirstFrameTime(((currentTime - startTime.current) / 1000).toFixed(2));
+
+      const sendEvent = async () =>
+        await sendKafkaEvent(
+          "stream_trace",
+          {
+            type: "app_receive_first_segment",
+            timestamp: Date.now(),
+            user_id: user?.id || "anonymous",
+            playback_id: playbackId,
+            stream_id: streamId,
+            pipeline: pipelineType,
+            pipeline_id: pipelineId,
+            // TODO: Get viewer info from client
+            viewer_info: {
+              ip: "",
+              user_agent: "",
+              country: "",
+              city: "",
+            },
+          },
+          "daydream",
+          "server",
+        );
+      sendEvent();
     }
   }, [state.hasPlayed]);
 
   return firstFrameTime;
 };
 
-const DebugTimer = ({
-  __scopeMedia,
-  debugMode,
-}: Player.MediaScopedProps & { debugMode: boolean }) => {
-  const { authenticated } = usePrivy();
-  const firstFrameTime = useFirstFrameLoaded({ __scopeMedia });
+const DebugTimer = (
+  props: Player.MediaScopedProps & TrackingProps & { debugMode: boolean },
+) => {
+  const firstFrameTime = useFirstFrameLoaded(props);
 
-  useEffect(() => {
-    if (firstFrameTime) {
-      track("stream_first_frame_loaded", {
-        duration: firstFrameTime,
-        is_authenticated: authenticated,
-      });
-    }
-  }, [firstFrameTime, authenticated]);
-
-  if (!firstFrameTime || !debugMode) {
+  if (!props.debugMode || !firstFrameTime) {
     return null;
   }
 
