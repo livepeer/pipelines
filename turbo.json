@@ -12,7 +12,13 @@
         "LIVEPEER_STUDIO_RTMP_URL",
         "SUPABASE_SERVICE_ROLE_KEY",
         "SUPABASE_URL",
-        "SUPABASE_ANON_KEY"
+        "SUPABASE_ANON_KEY",
+        "KAFKA_BOOTSTRAP_NODE",
+        "KAFKA_USER",
+        "KAFKA_PASSWORD",
+        "STREAM_STATUS_ENDPOINT_URL",
+        "STREAM_STATUS_ENDPOINT_USER",
+        "STREAM_STATUS_ENDPOINT_PASSWORD"
       ]
     },
     "lint": {
