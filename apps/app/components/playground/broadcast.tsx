@@ -85,11 +85,9 @@ export function BroadcastWithControls({
       }
       forceEnabled={true}
       noIceGathering={true}
-      audio={true}
-      video={true}
+      audio={false}
       aspectRatio={16 / 9}
       ingestUrl={ingestUrl}
-      storage={null}
     >
       <Broadcast.Container
         id={videoId}
