@@ -326,54 +326,55 @@ export function useDreamshaper() {
       }
 
       try {
-        const { data, error } = await getStream(streamId);
+        const { data: streamData, error: streamError } = await getStream(streamId);
 
-        if (error) {
-          console.error("Error fetching stream:", error);
+        if (streamError) {
+          console.error("Error fetching stream:", streamError);
           if (!options?.silent) {
             toast.error("Error updating parameters", { id: toastId });
           }
           return;
         }
 
-        const updatedInputValues = JSON.parse(JSON.stringify(inputValues));
+        // Fetching the pipeline again to ensure we have the latest values
+        const freshPipeline = await getPipeline(pipeline.id);
+        
+        const defaultValues = createDefaultValues(freshPipeline);
+        const updatedInputValues = processInputValues(defaultValues);
 
         const { cleanedPrompt, commands } = extractCommands(prompt);
 
-        if (updatedInputValues?.prompt?.["5"]?.inputs) {
-          updatedInputValues.prompt["5"].inputs.text = cleanedPrompt;
-        } else {
-          // Create the structure if it doesn't exist
-          if (!updatedInputValues.prompt) {
-            updatedInputValues.prompt = {};
-          }
-          if (!updatedInputValues.prompt["5"]) {
-            updatedInputValues.prompt["5"] = { inputs: {} };
-          }
-          if (!updatedInputValues.prompt["5"].inputs) {
-            updatedInputValues.prompt["5"].inputs = {};
-          }
-          updatedInputValues.prompt["5"].inputs.text = cleanedPrompt;
+        if (!updatedInputValues.prompt) {
+          updatedInputValues.prompt = {};
         }
+        if (!updatedInputValues.prompt["5"]) {
+          updatedInputValues.prompt["5"] = { inputs: {} };
+        }
+        if (!updatedInputValues.prompt["5"].inputs) {
+          updatedInputValues.prompt["5"].inputs = {};
+        }
+        
+        updatedInputValues.prompt["5"].inputs.text = cleanedPrompt;
 
-        if (pipeline?.prioritized_params && Object.keys(commands).length > 0) {
+        if (freshPipeline?.prioritized_params && Object.keys(commands).length > 0) {
           const prioritizedParams =
-            typeof pipeline.prioritized_params === "string"
-              ? JSON.parse(pipeline.prioritized_params)
-              : pipeline.prioritized_params;
+            typeof freshPipeline.prioritized_params === "string"
+              ? JSON.parse(freshPipeline.prioritized_params)
+              : freshPipeline.prioritized_params;
 
           prioritizedParams.forEach((param: any) => {
             const commandId = param.name.toLowerCase().replace(/\s+/g, "-");
 
             if (commands[commandId]) {
               const pathParts = param.path.split("/");
+              const nodeId = param.nodeId;
               const actualField = pathParts[pathParts.length - 1];
 
-              if (!updatedInputValues.prompt[param.nodeId]) {
-                updatedInputValues.prompt[param.nodeId] = { inputs: {} };
+              if (!updatedInputValues.prompt[nodeId]) {
+                updatedInputValues.prompt[nodeId] = { inputs: {} };
               }
-              if (!updatedInputValues.prompt[param.nodeId].inputs) {
-                updatedInputValues.prompt[param.nodeId].inputs = {};
+              if (!updatedInputValues.prompt[nodeId].inputs) {
+                updatedInputValues.prompt[nodeId].inputs = {};
               }
 
               let value = commands[commandId];
@@ -393,14 +394,12 @@ export function useDreamshaper() {
                   numValue = param.widgetConfig.max;
                 }
 
-                updatedInputValues.prompt[param.nodeId].inputs[actualField] =
-                  numValue;
+                updatedInputValues.prompt[nodeId].inputs[actualField] = numValue;
               } else if (param.widget === "checkbox") {
-                updatedInputValues.prompt[param.nodeId].inputs[actualField] =
+                updatedInputValues.prompt[nodeId].inputs[actualField] =
                   value.toLowerCase() === "true" || value === "1";
               } else {
-                updatedInputValues.prompt[param.nodeId].inputs[actualField] =
-                  value;
+                updatedInputValues.prompt[nodeId].inputs[actualField] = value;
               }
             }
           });
@@ -409,7 +408,7 @@ export function useDreamshaper() {
         storeParamsInLocalStorage(updatedInputValues);
         setInputValues(updatedInputValues);
 
-        if (!data?.gateway_host) {
+        if (!streamData?.gateway_host) {
           console.error("No gateway host found in stream data");
           if (!options?.silent) {
             toast.error("No gateway host found in stream data");
@@ -419,7 +418,7 @@ export function useDreamshaper() {
 
         const response = await updateParams({
           body: updatedInputValues,
-          host: data?.gateway_host as string,
+          host: streamData?.gateway_host as string,
           streamKey: streamKey as string,
         });
 
@@ -441,7 +440,7 @@ export function useDreamshaper() {
         setUpdating(false);
       }
     },
-    [stream, inputValues, pipeline, storeParamsInLocalStorage],
+    [stream, pipeline, storeParamsInLocalStorage]
   );
 
   const createShareLink = useCallback(async () => {
