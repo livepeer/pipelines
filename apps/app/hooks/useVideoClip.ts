@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 
+export type ClipRecordingMode = 'both' | 'output-only';
+
 export const CLIP_DURATION = 10000;
 
 const INPUT_DELAY = 1000; // 1 second delay 
@@ -15,6 +17,8 @@ export const useVideoClip = () => {
   const [clipUrl, setClipUrl] = useState<string | null>(null);
   const [clipFilename, setClipFilename] = useState<string | null>(null);
   const [showClipModal, setShowClipModal] = useState(false);
+  
+  const [showOptionsModal, setShowOptionsModal] = useState(false);
 
   const cleanupClipUrl = () => {
     if (clipUrl) {
@@ -26,6 +30,14 @@ export const useVideoClip = () => {
 
   const closeClipModal = () => {
     setShowClipModal(false);
+  };
+  
+  const closeOptionsModal = () => {
+    setShowOptionsModal(false);
+  };
+  
+  const showRecordingOptions = () => {
+    setShowOptionsModal(true);
   };
 
   const drawRoundedRect = (
@@ -49,8 +61,10 @@ export const useVideoClip = () => {
     ctx.closePath();
   };
 
-  const recordClip = async () => {
+  const recordClip = async (mode: ClipRecordingMode = 'both') => {
     if (isRecording) return;
+    
+    setShowOptionsModal(false);
     
     const videos = document.querySelectorAll('video');
     
@@ -123,7 +137,7 @@ export const useVideoClip = () => {
     let animationFrameId: number;
     
     const captureInputFrame = () => {
-      if (!inputCtx) return null;
+      if (!inputCtx || mode === 'output-only') return null; 
       
       inputCtx.drawImage(inputVideo, 0, 0, inputWidth, inputHeight);
       
@@ -132,17 +146,18 @@ export const useVideoClip = () => {
       inputFrameBuffer.push(frameData);
       
       if (inputFrameBuffer.length > BUFFER_SIZE) {
-        inputFrameBuffer.shift(); // Remove oldest frame
+        inputFrameBuffer.shift(); 
       }
       
       return frameData;
     };
     
     const prefillBuffer = () => {
-      /*toast(`Preparing to record (${INPUT_DELAY/1000}s delay sync)...`, {
-        description: "Syncing input and output streams"
-      });*/
-      toast("Recording clip...")
+      toast("Recording clip...");
+      
+      if (mode === 'output-only') {
+        return Promise.resolve();
+      }
       
       return new Promise<void>((resolve) => {
         const fillInterval = setInterval(() => {
@@ -161,17 +176,11 @@ export const useVideoClip = () => {
     const drawFrame = () => {
       if (!ctx || !isDrawing) return;
       
-      captureInputFrame();
+      const margin = 16; 
       
-      const pipSize = 0.25; // Size of the PiP relative to canvas width
-      const margin = 16; // Margin in pixels
-      const borderRadius = 12; // Border radius for the PiP
-      
-      const pipWidth = Math.floor(canvas.width * pipSize);
-      const pipHeight = Math.floor((inputHeight / inputWidth) * pipWidth);
-      
-      const pipX = canvas.width - pipWidth - margin;
-      const pipY = canvas.height - pipHeight - margin;
+      if (mode === 'both') {
+        captureInputFrame();
+      }
       
       ctx.fillStyle = 'black';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -182,7 +191,16 @@ export const useVideoClip = () => {
         canvas.width, canvas.height
       );
       
-      if (inputFrameBuffer.length > 0 && inputCtx) {
+      if (mode === 'both' && inputFrameBuffer.length > 0 && inputCtx) {
+        const pipSize = 0.25;
+        const borderRadius = 12;
+        
+        const pipWidth = Math.floor(canvas.width * pipSize);
+        const pipHeight = Math.floor((inputHeight / inputWidth) * pipWidth);
+        
+        const pipX = canvas.width - pipWidth - margin;
+        const pipY = canvas.height - pipHeight - margin;
+        
         ctx.save();
         
         ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
@@ -211,20 +229,22 @@ export const useVideoClip = () => {
       }
       
       const watermarkText = "daydream.live";
-      const watermarkPadding = 10;
-      const watermarkHeight = 36;
+      const watermarkPadding = 4;
+      const watermarkHeight = 16;
       
-      ctx.font = "bold 20px Inter, system-ui, sans-serif";
+      ctx.font = "bold 10px Inter, system-ui, sans-serif";
       const watermarkWidth = ctx.measureText(watermarkText).width + (watermarkPadding * 2);
       
-      ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+      const bottomMargin = 8;
+      
+      ctx.fillStyle = "rgba(0, 0, 0, 0.4)";
       ctx.beginPath();
       ctx.roundRect(
         margin, 
-        canvas.height - margin - watermarkHeight, 
+        canvas.height - bottomMargin - watermarkHeight,
         watermarkWidth, 
         watermarkHeight, 
-        8
+        3
       );
       ctx.fill();
       
@@ -233,7 +253,7 @@ export const useVideoClip = () => {
       ctx.fillText(
         watermarkText, 
         margin + watermarkPadding, 
-        canvas.height - margin - (watermarkHeight / 2) // Vertical center in the background box
+        canvas.height - bottomMargin - (watermarkHeight / 2)
       );
       
       if (isDrawing) {
@@ -271,13 +291,16 @@ export const useVideoClip = () => {
   };
 
   return { 
-    recordClip, 
+    showRecordingOptions,
+    recordClip,
     isRecording, 
     progress, 
     clipUrl, 
     clipFilename, 
     showClipModal, 
     closeClipModal,
-    cleanupClipUrl
+    cleanupClipUrl,
+    showOptionsModal, 
+    closeOptionsModal 
   };
 }; 

@@ -44,7 +44,6 @@ import { useCommandSuggestions } from "@/hooks/useCommandSuggestions";
 import { Label } from "@repo/design-system/components/ui/label";
 import SettingsMenu from "./prompt-settings";
 import { ClipButton } from "@/components/ClipButton";
-import { MobileClipButton } from "@/components/MobileClipButton";
 
 const PROMPT_INTERVAL = 4000;
 const samplePrompts = examplePrompts.map(prompt => prompt.prompt);
@@ -531,14 +530,12 @@ export default function Dreamshaper({
         {!isMobile && !isFullscreen && (
           <div className="absolute bottom-3 right-0 flex gap-2">
             <div className="flex items-center gap-2">
-              {!isMobile && (
-                <ClipButton 
-                  disabled={!outputPlaybackId || !streamUrl}
-                  className="mr-2"
-                  trackAnalytics={track}
-                  isAuthenticated={authenticated}
-                />
-              )}
+              <ClipButton 
+                disabled={!outputPlaybackId || !streamUrl}
+                className="mr-2"
+                trackAnalytics={track}
+                isAuthenticated={authenticated}
+              />
               
               {createShareLink && (
                 <TrackedButton
@@ -572,10 +569,11 @@ export default function Dreamshaper({
         <div className="absolute top-4 right-4 z-50 flex gap-2">
           {/* Mobile clip button */}
           {outputPlaybackId && streamUrl && (
-            <MobileClipButton
+            <ClipButton
               disabled={!outputPlaybackId || !streamUrl}
               trackAnalytics={track}
               isAuthenticated={authenticated}
+              isMobile={true}
             />
           )}
           
