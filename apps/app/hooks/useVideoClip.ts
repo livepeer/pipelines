@@ -3,7 +3,7 @@ import { toast } from 'sonner';
 
 export type ClipRecordingMode = 'both' | 'output-only';
 
-export const CLIP_DURATION = 10000;
+export const CLIP_DURATION = 15000;
 
 const INPUT_DELAY = 1000; // 1 second delay 
 // // increase this to sync the input and output stream 
