@@ -88,6 +88,16 @@ class KafkaProducer {
         console.warn(`Error sending batch to Kafka, retry ${i + 1}`, error);
         if (i === retries - 1) {
           console.error("Failed to send batch to Kafka after retries", error);
+          try {
+            await this.producer.disconnect();
+          } catch (error) {
+            console.log("Failed to disconnect from Kafka", error);
+          }
+          try {
+            await this.producer.connect();
+          } catch (error) {
+            console.error("Failed to connect to Kafka", error);
+          }
         }
       }
     }
