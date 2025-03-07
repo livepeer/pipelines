@@ -41,7 +41,6 @@ import { ShareModal } from "./ShareModal";
 import { UpdateOptions } from "./useDreamshaper";
 import { MAX_PROMPT_LENGTH, useValidateInput } from "./useValidateInput";
 import { ClipButton } from "@/components/ClipButton";
-import { MobileClipButton } from "@/components/MobileClipButton";
 
 const PROMPT_PLACEHOLDER = "Describe the style to transform your stream...";
 
@@ -512,14 +511,12 @@ export default function Dreamshaper({
         {!isMobile && !isFullscreen && (
           <div className="absolute bottom-3 right-0 flex gap-2">
             <div className="flex items-center gap-2">
-              {!isMobile && (
-                <ClipButton 
-                  disabled={!outputPlaybackId || !streamUrl}
-                  className="mr-2"
-                  trackAnalytics={track}
-                  isAuthenticated={authenticated}
-                />
-              )}
+              <ClipButton 
+                disabled={!outputPlaybackId || !streamUrl}
+                className="mr-2"
+                trackAnalytics={track}
+                isAuthenticated={authenticated}
+              />
               
               {createShareLink && (
                 <TrackedButton
@@ -553,10 +550,11 @@ export default function Dreamshaper({
         <div className="absolute top-4 right-4 z-50 flex gap-2">
           {/* Mobile clip button */}
           {outputPlaybackId && streamUrl && (
-            <MobileClipButton
+            <ClipButton
               disabled={!outputPlaybackId || !streamUrl}
               trackAnalytics={track}
               isAuthenticated={authenticated}
+              isMobile={true}
             />
           )}
           
