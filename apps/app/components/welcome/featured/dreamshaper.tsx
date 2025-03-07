@@ -17,6 +17,7 @@ import {
   SlidersHorizontal,
   Copy,
   Share2,
+  Share,
 } from "lucide-react";
 import { LPPLayer } from "@/components/playground/player";
 import { useIsMobile } from "@repo/design-system/hooks/use-mobile";
@@ -42,6 +43,7 @@ import { ShareModal } from "./ShareModal";
 import { useCommandSuggestions } from "@/hooks/useCommandSuggestions";
 import { Label } from "@repo/design-system/components/ui/label";
 import SettingsMenu from "./prompt-settings";
+import { ClipButton } from "@/components/ClipButton";
 
 const PROMPT_INTERVAL = 4000;
 const samplePrompts = examplePrompts.map(prompt => prompt.prompt);
@@ -527,20 +529,32 @@ export default function Dreamshaper({
         {/* Header buttons */}
         {!isMobile && !isFullscreen && (
           <div className="absolute bottom-3 right-0 flex gap-2">
-            {createShareLink && hasSubmittedPrompt && (
-              <TrackedButton
-                trackingEvent="daydream_share_button_clicked"
-                trackingProperties={{
-                  is_authenticated: authenticated,
-                }}
-                variant="ghost"
-                size="sm"
-                className="bg-transparent hover:bg-black/10 border border-muted-foreground/30 text-foreground px-3 py-1 text-xs rounded-lg font-semibold h-[36px] flex items-center"
-                onClick={() => setIsShareModalOpen(true)}
-              >
-                Share
-              </TrackedButton>
-            )}
+            <div className="flex items-center gap-2">
+              {!isMobile && (
+                <ClipButton 
+                  disabled={!outputPlaybackId || !streamUrl}
+                  className="mr-2"
+                  trackAnalytics={track}
+                  isAuthenticated={authenticated}
+                />
+              )}
+              
+              {createShareLink && (
+                <TrackedButton
+                  trackingEvent="daydream_share_button_clicked"
+                  trackingProperties={{
+                    is_authenticated: authenticated,
+                  }}
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 gap-2"
+                  onClick={() => setIsShareModalOpen(true)}
+                >
+                  <Share className="h-4 w-4" />
+                  <span>Share</span>
+                </TrackedButton>
+              )}
+            </div>
 
             <Link
               target="_blank"
