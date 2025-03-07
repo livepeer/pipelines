@@ -33,8 +33,18 @@ export const useVideoClip = () => {
     canvas.width = Math.max(outputWidth, inputWidth);
     canvas.height = outputHeight + inputHeight;
     
+    const mimeTypes = [
+      'video/mp4',
+      'video/mp4; codecs=h264',
+      'video/webm; codecs=h264', 
+      'video/webm; codecs=vp9'
+    ];
+    
+    const supportedMimeType = mimeTypes.find(type => MediaRecorder.isTypeSupported(type)) || 'video/webm';
+    const fileExtension = supportedMimeType.startsWith('video/mp4') ? 'mp4' : 'webm';
+    
     const stream = canvas.captureStream(30); // 30fps
-    const mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm; codecs=vp9' });
+    const mediaRecorder = new MediaRecorder(stream, { mimeType: supportedMimeType });
     
     const chunks: Blob[] = [];
     mediaRecorder.ondataavailable = (e) => {
@@ -44,12 +54,12 @@ export const useVideoClip = () => {
     };
     
     mediaRecorder.onstop = () => {
-      const blob = new Blob(chunks, { type: 'video/webm' });
+      const blob = new Blob(chunks, { type: supportedMimeType });
       
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `livepeer-clip-${new Date().toISOString()}.webm`;
+      a.download = `livepeer-clip-${new Date().toISOString()}.${fileExtension}`;
       document.body.appendChild(a);
       a.click();
       
