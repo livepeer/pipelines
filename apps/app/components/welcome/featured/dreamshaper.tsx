@@ -41,6 +41,7 @@ import { ShareModal } from "./ShareModal";
 import { UpdateOptions } from "./useDreamshaper";
 import { MAX_PROMPT_LENGTH, useValidateInput } from "./useValidateInput";
 import { ClipButton } from "@/components/ClipButton";
+import { MobileClipButton } from "@/components/MobileClipButton";
 
 const PROMPT_PLACEHOLDER = "Describe the style to transform your stream...";
 
@@ -548,17 +549,28 @@ export default function Dreamshaper({
         )}
       </div>
 
-      {/* Mobile share button */}
-      {isMobile && createShareLink && hasSubmittedPrompt && (
-        <div className="absolute top-4 right-4 z-50">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="p-0 m-0 bg-transparent border-none hover:bg-transparent focus:outline-none"
-            onClick={() => setIsShareModalOpen(true)}
-          >
-            <Share2 className="h-4 w-4" />
-          </Button>
+      {isMobile && (
+        <div className="absolute top-4 right-4 z-50 flex gap-2">
+          {/* Mobile clip button */}
+          {outputPlaybackId && streamUrl && (
+            <MobileClipButton
+              disabled={!outputPlaybackId || !streamUrl}
+              trackAnalytics={track}
+              isAuthenticated={authenticated}
+            />
+          )}
+          
+          {/* Mobile share button */}
+          {createShareLink && hasSubmittedPrompt && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="p-0 m-0 bg-transparent border-none hover:bg-transparent focus:outline-none"
+              onClick={() => setIsShareModalOpen(true)}
+            >
+              <Share2 className="h-4 w-4" />
+            </Button>
+          )}
         </div>
       )}
 
