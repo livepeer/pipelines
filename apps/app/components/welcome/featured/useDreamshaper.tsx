@@ -87,7 +87,7 @@ const extractCommands = (promptText: string) => {
 };
 
 export function useDreamshaper() {
-  const { user } = usePrivy();
+  const { user, ready } = usePrivy();
   const searchParams = useSearchParams();
   const pathname = usePathname();
 
@@ -261,6 +261,8 @@ export function useDreamshaper() {
   ]);
 
   useEffect(() => {
+    if (!ready) return;
+    
     let isMounted = true;
 
     const fetchData = async () => {
@@ -305,7 +307,7 @@ export function useDreamshaper() {
     return () => {
       isMounted = false;
     };
-  }, [pathname, user]);
+  }, [pathname, ready, user]);
 
   const handleUpdate = useCallback(
     async (prompt: string, options?: UpdateOptions) => {
