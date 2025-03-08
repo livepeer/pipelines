@@ -1,5 +1,5 @@
-import { Button } from "@repo/design-system/components/ui/button"; 
-import { ClipIcon } from "@livepeer/react/assets"; 
+import { Button } from "@repo/design-system/components/ui/button";
+import { ClipIcon } from "@livepeer/react/assets";
 import { useVideoClip } from "../hooks/useVideoClip";
 import { cn } from "@repo/design-system/lib/utils";
 import { ClipModal } from "./ClipModal";
@@ -13,24 +13,24 @@ interface ClipButtonProps {
   isMobile?: boolean;
 }
 
-export const ClipButton = ({ 
-  disabled = false, 
+export const ClipButton = ({
+  disabled = false,
   className = "",
   trackAnalytics,
   isAuthenticated = false,
-  isMobile = false
+  isMobile = false,
 }: ClipButtonProps) => {
-  const { 
-    recordClip, 
+  const {
+    recordClip,
     showRecordingOptions,
-    isRecording, 
+    isRecording,
     progress,
     clipUrl,
     clipFilename,
     showClipModal,
     closeClipModal,
     showOptionsModal,
-    closeOptionsModal
+    closeOptionsModal,
   } = useVideoClip();
 
   const handleClick = () => {
@@ -54,10 +54,7 @@ export const ClipButton = ({
         <Button
           variant="ghost"
           size="sm"
-          className={cn(
-            "h-8 gap-2 relative overflow-hidden",
-            className
-          )}
+          className={cn("h-8 gap-2 relative overflow-hidden", className)}
           onClick={handleClick}
           disabled={disabled || isRecording}
         >
@@ -65,17 +62,17 @@ export const ClipButton = ({
           {isRecording && (
             <>
               <div className="absolute inset-0 bg-gray-200/20 rounded-md" />
-              
-              <div 
+
+              <div
                 className="absolute inset-0 bg-[#ff3333] z-10 rounded-md"
-                style={{ 
+                style={{
                   width: `${progress}%`,
-                  boxShadow: '0 0 8px rgba(255, 51, 51, 0.7)' 
+                  boxShadow: "0 0 8px rgba(255, 51, 51, 0.7)",
                 }}
               />
             </>
           )}
-          
+
           <ClipIcon className="h-4 w-4 z-10 relative" />
           <span className="z-10 relative">
             {isRecording ? "Recording..." : "Clip (15s)"}
@@ -93,15 +90,15 @@ export const ClipButton = ({
           disabled={disabled || isRecording}
         >
           {!isRecording && (
-            <svg 
-              xmlns="http://www.w3.org/2000/svg" 
-              width="16" 
-              height="16" 
-              viewBox="0 0 24 24" 
-              fill="none" 
-              stroke="currentColor" 
-              strokeWidth="2" 
-              strokeLinecap="round" 
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
               strokeLinejoin="round"
             >
               <circle cx="6" cy="6" r="3" />
@@ -111,13 +108,9 @@ export const ClipButton = ({
               <line x1="8.12" y1="8.12" x2="12" y2="12" />
             </svg>
           )}
-          
+
           {isRecording && (
-            <svg 
-              width="16" 
-              height="16" 
-              viewBox="0 0 24 24"
-            >
+            <svg width="16" height="16" viewBox="0 0 24 24">
               <circle
                 cx="12"
                 cy="12"
@@ -128,14 +121,8 @@ export const ClipButton = ({
                 strokeDasharray={`${(circleDegrees / 360) * 2 * Math.PI * 10}, ${2 * Math.PI * 10}`}
                 transform="rotate(-90, 12, 12)"
               />
-              
-              <rect
-                x="8"
-                y="8"
-                width="8"
-                height="8"
-                fill="#ff3333"
-              />
+
+              <rect x="8" y="8" width="8" height="8" fill="#ff3333" />
             </svg>
           )}
         </Button>
@@ -157,4 +144,4 @@ export const ClipButton = ({
       />
     </>
   );
-}; 
+};

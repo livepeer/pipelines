@@ -1,5 +1,10 @@
-import React from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@repo/design-system/components/ui/dialog";
+import React from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@repo/design-system/components/ui/dialog";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Download } from "lucide-react";
 
@@ -14,32 +19,32 @@ export function ClipModal({
   isOpen,
   onClose,
   clipUrl,
-  clipFilename
+  clipFilename,
 }: ClipModalProps) {
   const handleDownload = () => {
     if (clipUrl && clipFilename) {
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = clipUrl;
       a.download = clipFilename;
       document.body.appendChild(a);
       a.click();
-      
+
       setTimeout(() => {
         document.body.removeChild(a);
       }, 100);
     }
   };
-  
+
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+    <Dialog open={isOpen} onOpenChange={open => !open && onClose()}>
       <DialogContent className="max-w-[calc(100%-2rem)] mx-auto sm:max-w-[600px] max-h-[80vh] overflow-y-auto rounded-xl">
         <DialogHeader>
           <DialogTitle>Your Clip is ready!</DialogTitle>
         </DialogHeader>
-        
+
         <div className="mt-4 mb-4 flex justify-center">
           {clipUrl && (
-            <video 
+            <video
               src={clipUrl}
               autoPlay
               loop
@@ -50,9 +55,9 @@ export function ClipModal({
             />
           )}
         </div>
-        
+
         <div className="w-full mt-2">
-          <Button 
+          <Button
             onClick={handleDownload}
             className="w-full flex items-center justify-center gap-2 rounded-md"
           >
@@ -63,4 +68,4 @@ export function ClipModal({
       </DialogContent>
     </Dialog>
   );
-} 
+}

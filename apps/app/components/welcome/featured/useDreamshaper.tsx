@@ -264,7 +264,7 @@ export function useDreamshaper() {
 
   useEffect(() => {
     if (!ready) return;
-    
+
     let isMounted = true;
 
     const fetchData = async () => {

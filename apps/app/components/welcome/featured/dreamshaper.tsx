@@ -511,13 +511,13 @@ export default function Dreamshaper({
         {!isMobile && !isFullscreen && (
           <div className="absolute bottom-3 right-0 flex gap-2">
             <div className="flex items-center gap-2">
-              <ClipButton 
+              <ClipButton
                 disabled={!outputPlaybackId || !streamUrl}
                 className="mr-2"
                 trackAnalytics={track}
                 isAuthenticated={authenticated}
               />
-              
+
               {createShareLink && (
                 <TrackedButton
                   trackingEvent="daydream_share_button_clicked"
@@ -557,7 +557,7 @@ export default function Dreamshaper({
               isMobile={true}
             />
           )}
-          
+
           {/* Mobile share button */}
           {createShareLink && hasSubmittedPrompt && (
             <Button
