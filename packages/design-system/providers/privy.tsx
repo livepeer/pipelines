@@ -3,11 +3,12 @@
 import { PrivyProvider as PrivyProviderRaw } from "@privy-io/react-auth";
 
 const DEFAULT_LOGIN_METHODS = ["discord", "github", "wallet", "email"] as any;
+const DEFAULT_PRIVY_APP_ID = "cm2xth5uy0acgf4dk18qfg2vq"; // Production App ID
 
 export const PrivyProvider = ({ children }: { children: React.ReactNode }) => {
   return (
     <PrivyProviderRaw
-      appId={"cm2xth5uy0acgf4dk18qfg2vq"}
+      appId={process.env.NEXT_PUBLIC_PRIVY_APP_ID ?? DEFAULT_PRIVY_APP_ID}
       config={{
         loginMethods: DEFAULT_LOGIN_METHODS,
         appearance: {
