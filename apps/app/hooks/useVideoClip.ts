@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 
-export type ClipRecordingMode = 'both' | 'output-only';
+export type ClipRecordingMode = 'horizontal' | 'vertical' | 'output-only';
 
 export const CLIP_DURATION = 15000;
 
@@ -61,7 +61,7 @@ export const useVideoClip = () => {
     ctx.closePath();
   };
 
-  const recordClip = async (mode: ClipRecordingMode = 'both') => {
+  const recordClip = async (mode: ClipRecordingMode = 'horizontal') => {
     if (isRecording) return;
     
     setShowOptionsModal(false);
@@ -81,20 +81,41 @@ export const useVideoClip = () => {
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
     
-    const outputWidth = outputVideo.videoWidth;
-    const outputHeight = outputVideo.videoHeight;
-    const inputWidth = inputVideo.videoWidth;
-    const inputHeight = inputVideo.videoHeight;
-    
-    canvas.width = outputWidth;
-    canvas.height = outputHeight;
+    if (mode === 'vertical') {
+      const outputAspectRatio = outputVideo.videoWidth / outputVideo.videoHeight;
+      const inputAspectRatio = inputVideo.videoWidth / inputVideo.videoHeight;
+      
+      const canvasWidth = Math.max(outputVideo.videoWidth, inputVideo.videoWidth);
+      
+      let outputHeight = Math.round(canvasWidth / outputAspectRatio);
+      let inputHeight = Math.round(canvasWidth / inputAspectRatio);
+      
+      const totalHeight = outputHeight + inputHeight;
+      
+      // If total height exceeds a reasonable maximum 
+      // scale everything down proportionally
+      const maxHeight = 1080; 
+      if (totalHeight > maxHeight) {
+        const scale = maxHeight / totalHeight;
+        outputHeight = Math.round(outputHeight * scale);
+        inputHeight = Math.round(inputHeight * scale);
+        canvas.width = Math.round(canvasWidth * scale);
+      } else {
+        canvas.width = canvasWidth;
+      }
+      
+      canvas.height = outputHeight + inputHeight;
+    } else {
+      canvas.width = outputVideo.videoWidth;
+      canvas.height = outputVideo.videoHeight;
+    }
     
     const inputFrameBuffer: ImageData[] = [];
     
     const inputCanvas = document.createElement('canvas');
     const inputCtx = inputCanvas.getContext('2d');
-    inputCanvas.width = inputWidth;
-    inputCanvas.height = inputHeight;
+    inputCanvas.width = inputVideo.videoWidth;
+    inputCanvas.height = inputVideo.videoHeight;
     
     const mimeTypes = [
       'video/mp4',
@@ -137,16 +158,18 @@ export const useVideoClip = () => {
     let animationFrameId: number;
     
     const captureInputFrame = () => {
-      if (!inputCtx || mode === 'output-only') return null; 
+      if (!inputCtx || mode === 'output-only') return null;
       
-      inputCtx.drawImage(inputVideo, 0, 0, inputWidth, inputHeight);
+      inputCtx.drawImage(inputVideo, 0, 0, inputVideo.videoWidth, inputVideo.videoHeight);
       
-      const frameData = inputCtx.getImageData(0, 0, inputWidth, inputHeight);
+      const frameData = inputCtx.getImageData(0, 0, inputVideo.videoWidth, inputVideo.videoHeight);
       
-      inputFrameBuffer.push(frameData);
-      
-      if (inputFrameBuffer.length > BUFFER_SIZE) {
-        inputFrameBuffer.shift(); 
+      if (mode === 'horizontal') {
+        inputFrameBuffer.push(frameData);
+        
+        if (inputFrameBuffer.length > BUFFER_SIZE) {
+          inputFrameBuffer.shift();
+        }
       }
       
       return frameData;
@@ -155,7 +178,7 @@ export const useVideoClip = () => {
     const prefillBuffer = () => {
       toast("Recording clip...");
       
-      if (mode === 'output-only') {
+      if (mode !== 'horizontal') {
         return Promise.resolve();
       }
       
@@ -176,56 +199,79 @@ export const useVideoClip = () => {
     const drawFrame = () => {
       if (!ctx || !isDrawing) return;
       
-      const margin = 16; 
-      
-      if (mode === 'both') {
-        captureInputFrame();
-      }
+      const margin = 16;
       
       ctx.fillStyle = 'black';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       
-      ctx.drawImage(
-        outputVideo,
-        0, 0,
-        canvas.width, canvas.height
-      );
-      
-      if (mode === 'both' && inputFrameBuffer.length > 0 && inputCtx) {
-        const pipSize = 0.25;
-        const borderRadius = 12;
-        
-        const pipWidth = Math.floor(canvas.width * pipSize);
-        const pipHeight = Math.floor((inputHeight / inputWidth) * pipWidth);
-        
-        const pipX = canvas.width - pipWidth - margin;
-        const pipY = canvas.height - pipHeight - margin;
-        
-        ctx.save();
-        
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-        drawRoundedRect(ctx, pipX - 2, pipY - 2, pipWidth + 4, pipHeight + 4, borderRadius);
-        ctx.fill();
-        
-        drawRoundedRect(ctx, pipX, pipY, pipWidth, pipHeight, borderRadius - 2);
-        ctx.clip();
-        
-        const delayedFrame = inputFrameBuffer[0];
-        
-        inputCtx.putImageData(delayedFrame, 0, 0);
-        
+      if (mode === 'output-only') {
         ctx.drawImage(
-          inputCanvas,
-          pipX, pipY,
-          pipWidth, pipHeight
+          outputVideo,
+          0, 0,
+          canvas.width, canvas.height
+        );
+      } 
+      else if (mode === 'horizontal') {
+        ctx.drawImage(
+          outputVideo,
+          0, 0,
+          canvas.width, canvas.height
         );
         
-        ctx.restore();
+        if (inputFrameBuffer.length > 0 && inputCtx) {
+          const pipSize = 0.25;
+          const borderRadius = 12;
+          
+          const pipWidth = Math.floor(canvas.width * pipSize);
+          const pipHeight = Math.floor((inputVideo.videoHeight / inputVideo.videoWidth) * pipWidth);
+          
+          const pipX = canvas.width - pipWidth - margin;
+          const pipY = canvas.height - pipHeight - margin;
+          
+          ctx.save();
+          
+          ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+          drawRoundedRect(ctx, pipX - 2, pipY - 2, pipWidth + 4, pipHeight + 4, borderRadius);
+          ctx.fill();
+          
+          drawRoundedRect(ctx, pipX, pipY, pipWidth, pipHeight, borderRadius - 2);
+          ctx.clip();
+          
+          const delayedFrame = inputFrameBuffer[0];
+          
+          inputFrameBuffer.shift();
+          
+          captureInputFrame();
+          
+          inputCtx.putImageData(delayedFrame, 0, 0);
+          
+          ctx.drawImage(
+            inputCanvas,
+            pipX, pipY,
+            pipWidth, pipHeight
+          );
+          
+          ctx.restore();
+        }
+      }
+      else if (mode === 'vertical') {
+        const outputAspectRatio = outputVideo.videoWidth / outputVideo.videoHeight;
+        const inputAspectRatio = inputVideo.videoWidth / inputVideo.videoHeight;
         
-        ctx.strokeStyle = 'white';
-        ctx.lineWidth = 2;
-        drawRoundedRect(ctx, pipX, pipY, pipWidth, pipHeight, borderRadius - 2);
-        ctx.stroke();
+        const outputHeight = Math.round(canvas.width / outputAspectRatio);
+        const inputHeight = Math.round(canvas.width / inputAspectRatio);
+        
+        ctx.drawImage(
+          outputVideo,
+          0, 0,
+          canvas.width, outputHeight
+        );
+        
+        ctx.drawImage(
+          inputVideo,
+          0, outputHeight,
+          canvas.width, inputHeight
+        );
       }
       
       const watermarkText = "daydream.live";
