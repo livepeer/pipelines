@@ -32,12 +32,12 @@ export function ClipModal({
   
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-[calc(100%-2rem)] mx-auto sm:max-w-[600px] max-h-[90vh] overflow-y-auto rounded-xl">
+      <DialogContent className="max-w-[calc(100%-2rem)] mx-auto sm:max-w-[600px] max-h-[80vh] overflow-y-auto rounded-xl">
         <DialogHeader>
           <DialogTitle>Your Clip is ready!</DialogTitle>
         </DialogHeader>
         
-        <div className="mt-4 mb-4">
+        <div className="mt-4 mb-4 flex justify-center">
           {clipUrl && (
             <video 
               src={clipUrl}
@@ -45,7 +45,8 @@ export function ClipModal({
               loop
               muted={false}
               playsInline
-              className="w-full rounded-md"
+              controls
+              className="w-full max-h-[60vh] object-contain rounded-md"
             />
           )}
         </div>
