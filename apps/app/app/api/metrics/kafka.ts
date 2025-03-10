@@ -137,7 +137,7 @@ class KafkaProducer {
       data,
     };
 
-    console.log("[Kafka Event] Queueing event:", eventType);
+    console.log("[Kafka Event] Queueing event:", eventType, JSON.stringify(event, null, 2));
 
     if (this.events.length < KAFKA_CHANNEL_SIZE) {
       this.events.push(event);
