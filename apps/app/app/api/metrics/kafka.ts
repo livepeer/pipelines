@@ -4,9 +4,11 @@ import { Kafka, Producer, Message } from "kafkajs";
 import { serverConfig } from "@/lib/serverEnv";
 
 const KAFKA_BATCH_INTERVAL = 1000; // 1 second
-const KAFKA_REQUEST_TIMEOUT = 60000; // 60 seconds
+const KAFKA_REQUEST_TIMEOUT = 5000; // 5 seconds
 const KAFKA_BATCH_SIZE = 100;
 const KAFKA_CHANNEL_SIZE = 100;
+const KAFKA_CONNECTION_TIMEOUT = 10000; // 10 seconds
+const KAFKA_AUTH_TIMEOUT = 10000; // 10 seconds
 
 interface NetworkEvent {
   id?: string;
@@ -40,17 +42,35 @@ class KafkaProducer {
         username,
         password,
       },
+      connectionTimeout: KAFKA_CONNECTION_TIMEOUT,
+      authenticationTimeout: KAFKA_AUTH_TIMEOUT,
+      retry: {
+        initialRetryTime: 300,
+        retries: 10,
+        maxRetryTime: 30000,
+        factor: 0.2,
+      },
     });
 
-    this.producer = kafka.producer();
+    this.producer = kafka.producer({
+      allowAutoTopicCreation: false,
+      transactionTimeout: 30000,
+    });
     this.topic = topic;
     this.events = [];
     this.batchTimeout = null;
   }
 
   async connect() {
-    await this.producer.connect();
-    this.processBatch();
+    try {
+      console.log('Connecting to Kafka...');
+      await this.producer.connect();
+      console.log('Successfully connected to Kafka');
+      this.processBatch();
+    } catch (error) {
+      console.error('Failed to connect to Kafka:', error);
+      throw error;
+    }
   }
 
   private processBatch = async () => {
@@ -82,21 +102,22 @@ class KafkaProducer {
           messages,
           timeout: KAFKA_REQUEST_TIMEOUT,
         });
+        console.log(`Successfully sent ${messages.length} messages to Kafka`);
         this.events = [];
         return;
       } catch (error) {
         console.warn(`Error sending batch to Kafka, retry ${i + 1}`, error);
+        await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)));
+        
         if (i === retries - 1) {
           console.error("Failed to send batch to Kafka after retries", error);
           try {
+            console.log('Attempting to reconnect to Kafka...');
             await this.producer.disconnect();
-          } catch (error) {
-            console.log("Failed to disconnect from Kafka", error);
-          }
-          try {
             await this.producer.connect();
-          } catch (error) {
-            console.error("Failed to connect to Kafka", error);
+            console.log('Successfully reconnected to Kafka');
+          } catch (reconnectError) {
+            console.error("Failed to reconnect to Kafka", reconnectError);
           }
         }
       }
@@ -116,7 +137,7 @@ class KafkaProducer {
       data,
     };
 
-    console.log("[Kafka Event] Sending event:", JSON.stringify(event, null, 2));
+    console.log("[Kafka Event] Queueing event:", eventType);
 
     if (this.events.length < KAFKA_CHANNEL_SIZE) {
       this.events.push(event);
@@ -131,32 +152,46 @@ class KafkaProducer {
     if (this.batchTimeout) {
       clearTimeout(this.batchTimeout);
     }
-    await this.sendBatch(); // Send any remaining events
-    await this.producer.disconnect();
+    try {
+      await this.sendBatch(); // Send any remaining events
+      await this.producer.disconnect();
+      console.log('Successfully disconnected from Kafka');
+    } catch (error) {
+      console.error('Error disconnecting from Kafka:', error);
+    }
   }
 }
 
 let kafkaProducer: KafkaProducer | null = null;
 
 export async function initKafkaProducer() {
-  const config = await serverConfig();
-  const kafka = config.kafka;
+  try {
+    const config = await serverConfig();
+    const kafka = config.kafka;
 
-  if (!kafka?.bootstrapServers || !kafka?.username || !kafka?.password) {
-    console.warn(
-      "Kafka configuration missing, producer will not be initialized",
+    if (!kafka?.bootstrapServers || !kafka?.username || !kafka?.password) {
+      console.warn(
+        "Kafka configuration missing, producer will not be initialized",
+      );
+      return;
+    }
+
+    console.log('Initializing Kafka producer...');
+    
+    kafkaProducer = new KafkaProducer(
+      kafka.bootstrapServers,
+      kafka.username,
+      kafka.password,
+      "network_events",
     );
-    return;
+
+    await kafkaProducer.connect();
+    console.log('Kafka producer initialized successfully');
+  } catch (error) {
+    console.error('Failed to initialize Kafka producer:', error);
+    // Reset the producer if initialization fails
+    kafkaProducer = null;
   }
-
-  kafkaProducer = new KafkaProducer(
-    kafka.bootstrapServers,
-    kafka.username,
-    kafka.password,
-    "network_events",
-  );
-
-  await kafkaProducer.connect();
 }
 
 export async function sendKafkaEvent(
@@ -165,8 +200,16 @@ export async function sendKafkaEvent(
   app: string,
   host: string,
 ) {
-  if (!kafkaProducer) {
-    await initKafkaProducer();
+  try {
+    if (!kafkaProducer) {
+      await initKafkaProducer();
+      if (!kafkaProducer) {
+        console.error('Failed to initialize Kafka producer, event not sent');
+        return;
+      }
+    }
+    await kafkaProducer.sendEvent(eventType, data, app, host);
+  } catch (error) {
+    console.error('Error sending Kafka event:', error);
   }
-  await kafkaProducer?.sendEvent(eventType, data, app, host);
 }
