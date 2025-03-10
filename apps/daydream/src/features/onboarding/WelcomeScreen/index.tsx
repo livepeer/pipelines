@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Personas from "./Personas";
 
 export default function WelcomeScreen() {
   return (
@@ -10,7 +11,7 @@ export default function WelcomeScreen() {
         alt="Background"
         fill
         priority
-        className="object-cover z-0 opacity-50"
+        className="object-cover z-0 opacity-[55%]"
         quality={100}
       />
       <div className="z-10 relative bg-[#EDEDED] p-[16px] sm:p-[24px] md:p-[56px] rounded-[23px] w-[90%] sm:w-[80%] md:max-w-[812px]">
@@ -42,20 +43,8 @@ export default function WelcomeScreen() {
             First, tell us a little about yourself
           </p>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[12px] w-full">
-            <button className="w-full sm:max-w-none h-[30px] px-[13px] flex justify-center items-center bg-white text-[#232323] text-[13px] font-normal font-inter rounded-full border border-[#83A5B5] hover:border-[#9A9A9A] transition-colors">
-              Streamer
-            </button>
-            <button className="w-full sm:max-w-none h-[30px] px-[13px] flex justify-center items-center bg-[#95B4BE] text-[#010101] text-[13px] font-normal font-inter rounded-full border border-[#83A5B5] hover:border-[#9A9A9A] transition-colors">
-              Content Creator
-            </button>
-            <button className="w-full sm:max-w-none h-[30px] px-[13px] flex justify-center items-center bg-white text-[#232323] text-[13px] font-normal font-inter rounded-full border border-[#83A5B5] hover:border-[#9A9A9A] transition-colors">
-              Live Performer
-            </button>
-            <button className="w-full sm:max-w-none h-[30px] px-[13px] flex justify-center items-center bg-white text-[#232323] text-[13px] font-normal font-inter rounded-full border border-[#83A5B5] hover:border-[#9A9A9A] transition-colors">
-              Other
-            </button>
-          </div>
+          <Personas />
+
           {/* 
           <button className=" bg-[#161616] text-[#EDEDED] font-inter font-semibold text-[15px] py-[12px] px-[24px] rounded-[6px] hover:bg-[#2a2a2a] transition-colors">
             Continue
