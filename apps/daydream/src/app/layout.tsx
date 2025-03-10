@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Playfair, Open_Sans } from "next/font/google";
+import { DesignSystemProvider } from "@repo/design-system/providers";
 import "./globals.css";
 
 const playfair = Playfair({
@@ -35,7 +36,9 @@ export default function RootLayout({
       <body
         className={`${playfair.variable} ${inter.variable} ${openSans.variable} antialiased ${inter.className}`}
       >
-        {children}
+        <DesignSystemProvider defaultTheme="dark">
+          {children}
+        </DesignSystemProvider>
       </body>
     </html>
   );

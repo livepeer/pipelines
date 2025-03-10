@@ -9,6 +9,8 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@privy-io/react-auth": "^1.93.0",
+    "@repo/design-system": "workspace:*",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "next": "15.2.1"
