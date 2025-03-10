@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Personas from "./Personas";
+import CameraAccess from "./CameraAccess";
 
 export default function WelcomeScreen() {
   return (
@@ -45,10 +46,7 @@ export default function WelcomeScreen() {
 
           <Personas />
 
-          {/* 
-          <button className=" bg-[#161616] text-[#EDEDED] font-inter font-semibold text-[15px] py-[12px] px-[24px] rounded-[6px] hover:bg-[#2a2a2a] transition-colors">
-            Continue
-          </button> */}
+          <CameraAccess />
         </div>
       </div>
     </div>
