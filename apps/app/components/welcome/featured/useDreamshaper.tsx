@@ -16,8 +16,6 @@ import { useGatewayHost } from "@/hooks/useGatewayHost";
 const DEFAULT_PIPELINE_ID = "pip_DRQREDnSei4HQyC8"; // Staging Dreamshaper ID
 const DUMMY_USER_ID_FOR_NON_AUTHENTICATED_USERS =
   "did:privy:cm4x2cuiw007lh8fcj34919fu"; // Infra Email User ID
-const SHOWCASE_PIPELINE_ID =
-  process.env.NEXT_PUBLIC_SHOWCASE_PIPELINE_ID || DEFAULT_PIPELINE_ID;
 
 const DREAMSHAPER_PARAMS_STORAGE_KEY = "dreamshaper_latest_params";
 
@@ -90,6 +88,10 @@ export function useDreamshaper() {
   const { user, ready } = usePrivy();
   const searchParams = useSearchParams();
   const pathname = usePathname();
+
+  const pipelineId = searchParams.get("pipeline_id") || 
+    process.env.NEXT_PUBLIC_SHOWCASE_PIPELINE_ID || 
+    DEFAULT_PIPELINE_ID;
 
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
@@ -267,7 +269,7 @@ export function useDreamshaper() {
 
     const fetchData = async () => {
       try {
-        const pipeline = await getPipeline(SHOWCASE_PIPELINE_ID);
+        const pipeline = await getPipeline(pipelineId);
         if (!isMounted) return;
         setPipeline(pipeline);
 
