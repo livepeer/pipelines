@@ -19,6 +19,7 @@ interface NetworkEvent {
   };
 }
 
+// TODO: this is a hacky temp fix, move to a permanent solution
 export async function sendKafkaEvent(
   eventType: string,
   data: any,
