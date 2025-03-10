@@ -309,7 +309,7 @@ export function useDreamshaper() {
     return () => {
       isMounted = false;
     };
-  }, [pathname, ready, user, pipelineId]);
+  }, [pathname, ready, user]);
 
   const handleUpdate = useCallback(
     async (prompt: string, options?: UpdateOptions) => {
