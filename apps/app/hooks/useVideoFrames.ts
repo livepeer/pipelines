@@ -37,52 +37,6 @@ export function useVideoFrames(isOpen: boolean, onClose: () => void) {
     const outputVideo = videos[0] as HTMLVideoElement;
     const inputVideo = videos[1] as HTMLVideoElement;
 
-    const setCanvasSize = (
-      canvas: HTMLCanvasElement,
-      aspectRatio: number,
-      maxWidth: number = 200,
-    ) => {
-      canvas.width = maxWidth;
-      canvas.height = Math.round(maxWidth / aspectRatio);
-    };
-
-    const calculateVerticalSizes = (
-      outputAspectRatio: number,
-      inputAspectRatio: number,
-      containerHeight: number,
-      maxWidth: number,
-    ) => {
-      const totalAspectUnits = 1 / outputAspectRatio + 1 / inputAspectRatio;
-      const outputHeightRatio = 1 / outputAspectRatio / totalAspectUnits;
-
-      let outputHeight = Math.floor(containerHeight * outputHeightRatio) - 1;
-      let inputHeight = containerHeight - outputHeight - 1;
-
-      let outputWidth = Math.floor(outputHeight * outputAspectRatio);
-      let inputWidth = Math.floor(inputHeight * inputAspectRatio);
-
-      if (outputWidth > maxWidth) {
-        outputWidth = maxWidth;
-        const newOutputHeight = Math.floor(outputWidth / outputAspectRatio);
-        if (newOutputHeight <= outputHeight) {
-          outputHeight = newOutputHeight;
-        }
-      }
-
-      if (inputWidth > maxWidth) {
-        inputWidth = maxWidth;
-        const newInputHeight = Math.floor(inputWidth / inputAspectRatio);
-        if (newInputHeight <= inputHeight) {
-          inputHeight = newInputHeight;
-        }
-      }
-
-      return {
-        output: { width: outputWidth, height: outputHeight },
-        input: { width: inputWidth, height: inputHeight },
-      };
-    };
-
     if (outputVideo.readyState < 2) {
       const checkVideoReady = setTimeout(() => {
         if (outputVideo.readyState < 2) {
@@ -92,28 +46,28 @@ export function useVideoFrames(isOpen: boolean, onClose: () => void) {
           });
           onClose();
         } else {
-          captureFrames();
+          captureFramesOnce();
         }
       }, 1000);
 
       return () => clearTimeout(checkVideoReady);
     }
 
-    const captureFrames = () => {
+    captureFramesOnce();
+
+    function captureFramesOnce() {
       try {
         const outputAspectRatio =
           outputVideo.videoWidth / outputVideo.videoHeight;
         const inputAspectRatio = inputVideo.videoWidth / inputVideo.videoHeight;
 
-        if (outputVideo.readyState < 2 || outputVideo.videoWidth === 0) {
-          throw new Error("Output video is not ready yet");
-        }
-
         if (horizontalOutputRef.current) {
           const ctx = horizontalOutputRef.current.getContext("2d");
           if (!ctx) throw new Error("Could not get canvas context");
 
-          setCanvasSize(horizontalOutputRef.current, outputAspectRatio, 240);
+          horizontalOutputRef.current.width = 240;
+          horizontalOutputRef.current.height = Math.round(240 / outputAspectRatio);
+
           ctx.drawImage(
             outputVideo,
             0,
@@ -123,36 +77,56 @@ export function useVideoFrames(isOpen: boolean, onClose: () => void) {
           );
         }
 
-        if (horizontalInputRef.current && inputVideo.readyState >= 2) {
-          setCanvasSize(horizontalInputRef.current, inputAspectRatio, 60);
+        if (horizontalInputRef.current) {
           const ctx = horizontalInputRef.current.getContext("2d");
-          if (ctx) {
-            ctx.drawImage(
-              inputVideo,
-              0,
-              0,
-              horizontalInputRef.current.width,
-              horizontalInputRef.current.height,
-            );
-          }
+          if (!ctx) throw new Error("Could not get canvas context");
+
+          horizontalInputRef.current.width = 60;
+          horizontalInputRef.current.height = Math.round(60 / inputAspectRatio);
+
+          ctx.drawImage(
+            inputVideo,
+            0,
+            0,
+            horizontalInputRef.current.width,
+            horizontalInputRef.current.height,
+          );
         }
 
         const containerHeight = 180;
         const maxWidth = 200;
 
-        const verticalDimensions = calculateVerticalSizes(
-          outputAspectRatio,
-          inputAspectRatio,
-          containerHeight,
-          maxWidth,
-        );
+        const totalAspectUnits = 1 / outputAspectRatio + 1 / inputAspectRatio;
+        const outputHeightRatio = 1 / outputAspectRatio / totalAspectUnits;
 
-        setVerticalOutputDimensions(verticalDimensions.output);
-        setVerticalInputDimensions(verticalDimensions.input);
+        let outputHeight = Math.floor(containerHeight * outputHeightRatio) - 1;
+        let inputHeight = containerHeight - outputHeight - 1;
 
-        if (verticalOutputRef.current && outputVideo.readyState >= 2) {
-          verticalOutputRef.current.width = verticalDimensions.output.width;
-          verticalOutputRef.current.height = verticalDimensions.output.height;
+        let outputWidth = Math.floor(outputHeight * outputAspectRatio);
+        let inputWidth = Math.floor(inputHeight * inputAspectRatio);
+
+        if (outputWidth > maxWidth) {
+          outputWidth = maxWidth;
+          const newOutputHeight = Math.floor(outputWidth / outputAspectRatio);
+          if (newOutputHeight <= outputHeight) {
+            outputHeight = newOutputHeight;
+          }
+        }
+
+        if (inputWidth > maxWidth) {
+          inputWidth = maxWidth;
+          const newInputHeight = Math.floor(inputWidth / inputAspectRatio);
+          if (newInputHeight <= inputHeight) {
+            inputHeight = newInputHeight;
+          }
+        }
+
+        setVerticalOutputDimensions({ width: outputWidth, height: outputHeight });
+        setVerticalInputDimensions({ width: inputWidth, height: inputHeight });
+
+        if (verticalOutputRef.current) {
+          verticalOutputRef.current.width = outputWidth;
+          verticalOutputRef.current.height = outputHeight;
 
           const ctx = verticalOutputRef.current.getContext("2d");
           if (ctx) {
@@ -160,15 +134,15 @@ export function useVideoFrames(isOpen: boolean, onClose: () => void) {
               outputVideo,
               0,
               0,
-              verticalOutputRef.current.width,
-              verticalOutputRef.current.height,
+              outputWidth,
+              outputHeight,
             );
           }
         }
 
-        if (verticalInputRef.current && inputVideo.readyState >= 2) {
-          verticalInputRef.current.width = verticalDimensions.input.width;
-          verticalInputRef.current.height = verticalDimensions.input.height;
+        if (verticalInputRef.current) {
+          verticalInputRef.current.width = inputWidth;
+          verticalInputRef.current.height = inputHeight;
 
           const ctx = verticalInputRef.current.getContext("2d");
           if (ctx) {
@@ -176,14 +150,16 @@ export function useVideoFrames(isOpen: boolean, onClose: () => void) {
               inputVideo,
               0,
               0,
-              verticalInputRef.current.width,
-              verticalInputRef.current.height,
+              inputWidth,
+              inputHeight,
             );
           }
         }
 
-        if (outputOnlyRef.current && outputVideo.readyState >= 2) {
-          setCanvasSize(outputOnlyRef.current, outputAspectRatio, 240);
+        if (outputOnlyRef.current) {
+          outputOnlyRef.current.width = 240;
+          outputOnlyRef.current.height = Math.round(240 / outputAspectRatio);
+
           const ctx = outputOnlyRef.current.getContext("2d");
           if (ctx) {
             ctx.drawImage(
@@ -207,13 +183,7 @@ export function useVideoFrames(isOpen: boolean, onClose: () => void) {
         });
         onClose();
       }
-    };
-
-    const timeoutId = setTimeout(captureFrames, 100);
-
-    return () => {
-      clearTimeout(timeoutId);
-    };
+    }
   }, [isOpen, onClose]);
 
   return {
