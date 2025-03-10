@@ -327,7 +327,7 @@ export default function Dreamshaper({
       });
 
       // Prevent accidental NSFW images
-      const inputValueSFW = inputValue + " ((clothed))";
+      const inputValueSFW = inputValue + " (((clothed)))";
 
       handleUpdate(inputValueSFW, { silent: true });
       setLastSubmittedPrompt(inputValue); // Store the submitted prompt
