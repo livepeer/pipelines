@@ -102,7 +102,7 @@ export default function DayDreamContent(): ReactElement {
   };
 
   const handlePromptApply = (prompt: string) => {
-    setPendingPrompt(prompt + " ((clothed))");
+    setPendingPrompt(prompt);
     localStorage.setItem("hasSelectedPrompt", "true");
   };
 
