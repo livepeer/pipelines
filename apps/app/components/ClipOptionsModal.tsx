@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -6,7 +6,6 @@ import {
   DialogTitle,
 } from "@repo/design-system/components/ui/dialog";
 import { toast } from "sonner";
-import { useVideoFrames } from "../hooks/useVideoFrames";
 
 export type ClipRecordingMode = "horizontal" | "vertical" | "output-only";
 
@@ -38,78 +37,126 @@ const LayoutOption = ({
   </div>
 );
 
-// Horizontal Layout
-const HorizontalLayout = ({
-  outputCanvas,
-  inputCanvas,
-}: {
-  outputCanvas: React.RefObject<HTMLCanvasElement>;
-  inputCanvas: React.RefObject<HTMLCanvasElement>;
-}) => (
-  <div className="relative w-full h-full flex items-center justify-center">
-    <canvas
-      ref={outputCanvas}
-      className="max-w-full max-h-full rounded-md bg-black"
-    />
-    <div className="absolute bottom-4 right-4 max-w-[25%] overflow-hidden rounded-sm">
-      <canvas ref={inputCanvas} className="w-full h-full bg-black" />
-    </div>
-  </div>
-);
-
-// Vertical Layout
-const VerticalLayout = ({
-  outputCanvas,
-  inputCanvas,
-  outputDimensions,
-  inputDimensions,
-}: {
-  outputCanvas: React.RefObject<HTMLCanvasElement>;
-  inputCanvas: React.RefObject<HTMLCanvasElement>;
-  outputDimensions: { width: number; height: number };
-  inputDimensions: { width: number; height: number };
-}) => (
-  <div className="flex flex-col items-center gap-1">
-    <canvas
-      ref={outputCanvas}
-      className="rounded-md bg-black"
-      style={{
-        width: `${outputDimensions.width}px`,
-        height: `${outputDimensions.height}px`,
-      }}
-    />
-    <canvas
-      ref={inputCanvas}
-      className="rounded-md bg-black"
-      style={{
-        width: `${inputDimensions.width}px`,
-        height: `${inputDimensions.height}px`,
-      }}
-    />
-  </div>
-);
-
-// Output Only Layout
-const OutputOnlyLayout = ({
-  outputCanvas,
-}: {
-  outputCanvas: React.RefObject<HTMLCanvasElement>;
-}) => (
-  <canvas
-    ref={outputCanvas}
-    className="max-w-full max-h-full rounded-md bg-black"
-  />
-);
-
 export function ClipOptionsModal({
   isOpen,
   onClose,
   onCreateClip,
 }: ClipOptionsModalProps) {
-  const { canvasRefs, verticalDimensions, isReady } = useVideoFrames(
-    isOpen,
-    onClose,
-  );
+  const [previewBlobs, setPreviewBlobs] = useState<{
+    horizontal: string | null;
+    outputOnly: string | null;
+  }>({ horizontal: null, outputOnly: null });
+  const [isReady, setIsReady] = useState(false);
+  const [isCaptured, setIsCaptured] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen || isCaptured) return;
+    
+    const container = document.createElement('div');
+    container.style.position = 'absolute';
+    container.style.left = '-9999px';
+    container.style.top = '-9999px';
+    document.body.appendChild(container);
+    
+    const capturePreviewsToBlob = async () => {
+      try {
+        const videos = document.querySelectorAll('video');
+        if (videos.length < 2) {
+          toast("Can't create clip", { description: "Video elements not found" });
+          onClose();
+          return;
+        }
+        
+        const outputVideo = videos[0] as HTMLVideoElement;
+        const inputVideo = videos[1] as HTMLVideoElement;
+        
+        if (outputVideo.readyState < 2 || inputVideo.readyState < 2) {
+          setTimeout(capturePreviewsToBlob, 500);
+          return;
+        }
+        
+        const horizontalCanvas = document.createElement('canvas');
+        const outputOnlyCanvas = document.createElement('canvas');
+        
+        container.appendChild(horizontalCanvas);
+        container.appendChild(outputOnlyCanvas);
+        
+        const previewWidth = 300;
+        const previewHeight = Math.round(previewWidth * (outputVideo.videoHeight / outputVideo.videoWidth));
+        
+        horizontalCanvas.width = previewWidth;
+        horizontalCanvas.height = previewHeight;
+        outputOnlyCanvas.width = previewWidth;
+        outputOnlyCanvas.height = previewHeight;
+        
+        const horizontalCtx = horizontalCanvas.getContext('2d');
+        const outputOnlyCtx = outputOnlyCanvas.getContext('2d');
+        
+        if (!horizontalCtx || !outputOnlyCtx) {
+          throw new Error("Could not get canvas contexts");
+        }
+        
+        horizontalCtx.fillStyle = "black";
+        horizontalCtx.fillRect(0, 0, previewWidth, previewHeight);
+        horizontalCtx.drawImage(outputVideo, 0, 0, previewWidth, previewHeight);
+        
+        outputOnlyCtx.fillStyle = "black";
+        outputOnlyCtx.fillRect(0, 0, previewWidth, previewHeight);
+        outputOnlyCtx.drawImage(outputVideo, 0, 0, previewWidth, previewHeight);
+        
+        const pipSize = 0.25;
+        const pipWidth = Math.floor(previewWidth * pipSize);
+        const pipHeight = Math.floor(pipWidth * (inputVideo.videoHeight / inputVideo.videoWidth));
+        const pipX = previewWidth - pipWidth - 16;
+        const pipY = previewHeight - pipHeight - 16;
+        
+        horizontalCtx.fillStyle = "rgba(0, 0, 0, 0.5)";
+        horizontalCtx.beginPath();
+        horizontalCtx.roundRect(pipX - 2, pipY - 2, pipWidth + 4, pipHeight + 4, 8);
+        horizontalCtx.fill();
+        
+        horizontalCtx.drawImage(inputVideo, pipX, pipY, pipWidth, pipHeight);
+        
+        const getCanvasBlob = (canvas: HTMLCanvasElement): Promise<string> => {
+          return new Promise((resolve, reject) => {
+            canvas.toBlob(blob => {
+              if (!blob) reject(new Error("Failed to create blob"));
+              else resolve(URL.createObjectURL(blob));
+            }, 'image/jpeg', 0.95);
+          });
+        };
+        
+        const horizontalBlob = await getCanvasBlob(horizontalCanvas);
+        const outputOnlyBlob = await getCanvasBlob(outputOnlyCanvas);
+        
+        setPreviewBlobs({
+          horizontal: horizontalBlob,
+          outputOnly: outputOnlyBlob
+        });
+        
+        setIsCaptured(true);
+        setIsReady(true);
+        
+        container.removeChild(horizontalCanvas);
+        container.removeChild(outputOnlyCanvas);
+      } catch (error) {
+        console.error("Error capturing frames:", error);
+        toast("Can't create clip", {
+          description: "Failed to capture video frames"
+        });
+        onClose();
+      }
+    };
+    
+    capturePreviewsToBlob();
+    
+    return () => {
+      document.body.removeChild(container);
+      
+      if (previewBlobs.horizontal) URL.revokeObjectURL(previewBlobs.horizontal);
+      if (previewBlobs.outputOnly) URL.revokeObjectURL(previewBlobs.outputOnly);
+    };
+  }, [isOpen, isCaptured, onClose, previewBlobs.horizontal, previewBlobs.outputOnly]);
 
   const handleSelectMode = (mode: ClipRecordingMode) => {
     if (!isReady) {
@@ -130,29 +177,23 @@ export function ClipOptionsModal({
           </DialogTitle>
         </DialogHeader>
 
-        <div className="mt-4 mb-2 grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="mt-4 mb-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
           <LayoutOption
             title="Combined"
             mode="horizontal"
             onSelect={handleSelectMode}
           >
-            <HorizontalLayout
-              outputCanvas={canvasRefs.horizontalOutput}
-              inputCanvas={canvasRefs.horizontalInput}
-            />
-          </LayoutOption>
-
-          <LayoutOption
-            title="Vertical"
-            mode="vertical"
-            onSelect={handleSelectMode}
-          >
-            <VerticalLayout
-              outputCanvas={canvasRefs.verticalOutput}
-              inputCanvas={canvasRefs.verticalInput}
-              outputDimensions={verticalDimensions.output}
-              inputDimensions={verticalDimensions.input}
-            />
+            {isReady && previewBlobs.horizontal ? (
+              <div className="w-full h-full flex items-center justify-center">
+                <img 
+                  src={previewBlobs.horizontal} 
+                  alt="Combined preview"
+                  className="max-w-full max-h-full rounded-md"
+                />
+              </div>
+            ) : (
+              <div className="text-white">Loading...</div>
+            )}
           </LayoutOption>
 
           <LayoutOption
@@ -160,7 +201,17 @@ export function ClipOptionsModal({
             mode="output-only"
             onSelect={handleSelectMode}
           >
-            <OutputOnlyLayout outputCanvas={canvasRefs.outputOnly} />
+            {isReady && previewBlobs.outputOnly ? (
+              <div className="w-full h-full flex items-center justify-center">
+                <img 
+                  src={previewBlobs.outputOnly} 
+                  alt="Output only preview"
+                  className="max-w-full max-h-full rounded-md"
+                />
+              </div>
+            ) : (
+              <div className="text-white">Loading...</div>
+            )}
           </LayoutOption>
         </div>
       </DialogContent>
