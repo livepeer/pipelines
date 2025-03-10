@@ -1,56 +1,65 @@
+"use client";
+
 import Image from "next/image";
 
 export default function WelcomeScreen() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center relative">
       <Image
-        src="/image.png"
+        src="/background.png"
         alt="Background"
         fill
         priority
         className="object-cover z-0 opacity-50"
         quality={100}
       />
-      <div className="z-10 relative bg-[#EDEDED] p-14 rounded-[23px] max-w-[812px] w-full">
-        <div className="flex flex-col gap-[22px]">
-          <div className="flex flex-col w-full">
-            <h1 className="font-playfair font-bold text-[64px] leading-tight text-[#1C1C1C]">
+      <div className="z-10 relative bg-[#EDEDED] p-[16px] sm:p-[24px] md:p-[56px] rounded-[23px] w-[90%] sm:w-[80%] md:max-w-[812px]">
+        <div className="flex flex-col gap-[24px] py-[12px]">
+          <div className="flex flex-col w-full gap-[8px]">
+            <h1 className="font-playfair font-bold text-[30px] sm:text-[45px] md:text-[64px] leading-[1.2em] text-[#1C1C1C]">
               Welcome to Daydream
             </h1>
-          </div>
 
-          <p className="font-playfair font-semibold text-2xl text-[#1C1C1C] w-full">
-            ✨ Dream it. Build it. Share it.
-          </p>
+            <p className="font-playfair font-semibold text-[18px] sm:text-xl md:text-2xl text-[#1C1C1C]">
+              ✨ Dream it. Build it. Share it.
+            </p>
+          </div>
 
           <div className="w-full h-px bg-[#D2D2D2]"></div>
 
-          <p className="font-open-sans text-lg leading-[1.55em] text-[#232323]">
-            Daydream is a limitless portal for transforming your video 🚀
-            <br />
-            <br />
-            Whether you're crafting stories, building experiences, or
-            experimenting with something entirely new, this is your playground.
+          <div className="flex flex-col gap-[16px]">
+            <p className="font-open-sans text-base sm:text-lg leading-[1.35em] text-[#232323]">
+              Daydream is a limitless portal for transforming your video 🚀
+            </p>
+            <p className="font-open-sans text-base sm:text-lg leading-[1.35em] text-[#232323]">
+              Whether you're crafting stories, building experiences, or
+              experimenting with something entirely new, this is your
+              playground.
+            </p>
+          </div>
+
+          <p className="font-playfair font-semibold text-[18px] sm:text-xl md:text-2xl text-[#1C1C1C]">
+            First, tell us a little about yourself
           </p>
 
-          <p className="font-playfair font-semibold text-2xl text-[#1C1C1C] w-full">
-            But first, let's get to know you!
-          </p>
-
-          <div className="flex flex-row flex-wrap gap-10 items-center w-full">
-            <button className="w-36 h-[30px] px-[13px] flex justify-center items-center gap-1 bg-white text-[#232323] text-[13px] font-normal font-inter rounded-full border border-[#83A5B5]">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[12px] w-full">
+            <button className="w-full sm:max-w-none h-[30px] px-[13px] flex justify-center items-center bg-white text-[#232323] text-[13px] font-normal font-inter rounded-full border border-[#83A5B5] hover:border-[#9A9A9A] transition-colors">
               Streamer
             </button>
-            <button className="w-36 h-[30px] px-[13px] flex justify-center items-center gap-1 bg-white text-[#232323] text-[13px] font-normal font-inter rounded-full border border-[#83A5B5]">
+            <button className="w-full sm:max-w-none h-[30px] px-[13px] flex justify-center items-center bg-[#95B4BE] text-[#010101] text-[13px] font-normal font-inter rounded-full border border-[#83A5B5] hover:border-[#9A9A9A] transition-colors">
               Content Creator
             </button>
-            <button className="w-36 h-[30px] px-[13px] flex justify-center items-center gap-1 bg-white text-[#232323] text-[13px] font-normal font-inter rounded-full border border-[#83A5B5]">
+            <button className="w-full sm:max-w-none h-[30px] px-[13px] flex justify-center items-center bg-white text-[#232323] text-[13px] font-normal font-inter rounded-full border border-[#83A5B5] hover:border-[#9A9A9A] transition-colors">
               Live Performer
             </button>
-            <button className="w-36 h-[30px] px-[13px] flex justify-center items-center gap-1 bg-white text-[#232323] text-[13px] font-normal font-inter rounded-full border border-[#83A5B5]">
+            <button className="w-full sm:max-w-none h-[30px] px-[13px] flex justify-center items-center bg-white text-[#232323] text-[13px] font-normal font-inter rounded-full border border-[#83A5B5] hover:border-[#9A9A9A] transition-colors">
               Other
             </button>
           </div>
+          {/* 
+          <button className=" bg-[#161616] text-[#EDEDED] font-inter font-semibold text-[15px] py-[12px] px-[24px] rounded-[6px] hover:bg-[#2a2a2a] transition-colors">
+            Continue
+          </button> */}
         </div>
       </div>
     </div>
