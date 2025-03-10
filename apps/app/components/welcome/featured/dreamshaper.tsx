@@ -326,7 +326,10 @@ export default function Dreamshaper({
         stream_id: streamId,
       });
 
-      handleUpdate(inputValue, { silent: true });
+      // Prevent accidental NSFW images
+      const inputValueSFW = inputValue + " ((clothed))";
+
+      handleUpdate(inputValueSFW, { silent: true });
       setLastSubmittedPrompt(inputValue); // Store the submitted prompt
       setHasSubmittedPrompt(true);
       setInputValue("");
