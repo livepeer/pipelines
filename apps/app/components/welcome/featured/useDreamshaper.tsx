@@ -500,8 +500,15 @@ function getStreamUrl(
   searchParams: URLSearchParams,
 ): string {
   const customWhipServer = searchParams.get("whipServer");
+  const proxy = searchParams.get("proxy");
 
   if (customWhipServer) {
+    if (proxy) {
+      if( customWhipServer.includes("<STREAM_KEY>")) {
+        return `${window.location.origin}/api/whip-proxy?url=${customWhipServer.replace("<STREAM_KEY>", streamKey)}`
+      }
+      return `${window.location.origin}/api/whip-proxy?url=${customWhipServer}`
+    }
     if (customWhipServer.includes("<STREAM_KEY>")) {
       return customWhipServer.replace("<STREAM_KEY>", streamKey);
     }
