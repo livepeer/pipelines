@@ -1,11 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { serverConfig } from "@/lib/serverEnv";
 
-export const config = {
-  api: {
-    bodyParser: false, 
-  },
-};
+export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
   const url = new URL(req.url);
