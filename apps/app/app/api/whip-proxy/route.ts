@@ -36,16 +36,12 @@ export async function POST(req: NextRequest) {
     
     headers.set('Authorization', `Basic ${credentials}`);
     
-    console.log('WHIP proxy headers:', Object.fromEntries(headers.entries()));
-    
     const response = await fetch(targetWhipEndpoint, {
       method: 'POST',
       headers,
       body: req.body,
       duplex: 'half'
     } as any);
-
-    console.log('WHIP proxy response status:', response.status);
     
     if (!response.ok) {
       const errorText = await response.text();
