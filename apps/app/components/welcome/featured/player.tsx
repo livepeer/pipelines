@@ -224,6 +224,7 @@ const useFirstFrameLoaded = ({
   const [firstFrameTime, setFirstFrameTime] = useState<string | null>(null);
   const context = Player.useMediaContext("CustomComponent", __scopeMedia);
   const state = Player.useStore(context.store);
+  console.log("[Player State]", state);
 
   // Send event on load
   useEffect(() => {
