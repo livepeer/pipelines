@@ -66,7 +66,9 @@ export function useVideoFrames(isOpen: boolean, onClose: () => void) {
           if (!ctx) throw new Error("Could not get canvas context");
 
           horizontalOutputRef.current.width = 240;
-          horizontalOutputRef.current.height = Math.round(240 / outputAspectRatio);
+          horizontalOutputRef.current.height = Math.round(
+            240 / outputAspectRatio,
+          );
 
           ctx.drawImage(
             outputVideo,
@@ -121,7 +123,10 @@ export function useVideoFrames(isOpen: boolean, onClose: () => void) {
           }
         }
 
-        setVerticalOutputDimensions({ width: outputWidth, height: outputHeight });
+        setVerticalOutputDimensions({
+          width: outputWidth,
+          height: outputHeight,
+        });
         setVerticalInputDimensions({ width: inputWidth, height: inputHeight });
 
         if (verticalOutputRef.current) {
@@ -130,13 +135,7 @@ export function useVideoFrames(isOpen: boolean, onClose: () => void) {
 
           const ctx = verticalOutputRef.current.getContext("2d");
           if (ctx) {
-            ctx.drawImage(
-              outputVideo,
-              0,
-              0,
-              outputWidth,
-              outputHeight,
-            );
+            ctx.drawImage(outputVideo, 0, 0, outputWidth, outputHeight);
           }
         }
 
@@ -146,13 +145,7 @@ export function useVideoFrames(isOpen: boolean, onClose: () => void) {
 
           const ctx = verticalInputRef.current.getContext("2d");
           if (ctx) {
-            ctx.drawImage(
-              inputVideo,
-              0,
-              0,
-              inputWidth,
-              inputHeight,
-            );
+            ctx.drawImage(inputVideo, 0, 0, inputWidth, inputHeight);
           }
         }
 

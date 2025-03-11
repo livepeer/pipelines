@@ -51,112 +51,134 @@ export function ClipOptionsModal({
 
   useEffect(() => {
     if (!isOpen || isCaptured) return;
-    
-    const container = document.createElement('div');
-    container.style.position = 'absolute';
-    container.style.left = '-9999px';
-    container.style.top = '-9999px';
+
+    const container = document.createElement("div");
+    container.style.position = "absolute";
+    container.style.left = "-9999px";
+    container.style.top = "-9999px";
     document.body.appendChild(container);
-    
+
     const capturePreviewsToBlob = async () => {
       try {
-        const videos = document.querySelectorAll('video');
+        const videos = document.querySelectorAll("video");
         if (videos.length < 2) {
-          toast("Can't create clip", { description: "Video elements not found" });
+          toast("Can't create clip", {
+            description: "Video elements not found",
+          });
           onClose();
           return;
         }
-        
+
         const outputVideo = videos[0] as HTMLVideoElement;
         const inputVideo = videos[1] as HTMLVideoElement;
-        
+
         if (outputVideo.readyState < 2 || inputVideo.readyState < 2) {
           setTimeout(capturePreviewsToBlob, 500);
           return;
         }
-        
-        const horizontalCanvas = document.createElement('canvas');
-        const outputOnlyCanvas = document.createElement('canvas');
-        
+
+        const horizontalCanvas = document.createElement("canvas");
+        const outputOnlyCanvas = document.createElement("canvas");
+
         container.appendChild(horizontalCanvas);
         container.appendChild(outputOnlyCanvas);
-        
+
         const previewWidth = 300;
-        const previewHeight = Math.round(previewWidth * (outputVideo.videoHeight / outputVideo.videoWidth));
-        
+        const previewHeight = Math.round(
+          previewWidth * (outputVideo.videoHeight / outputVideo.videoWidth),
+        );
+
         horizontalCanvas.width = previewWidth;
         horizontalCanvas.height = previewHeight;
         outputOnlyCanvas.width = previewWidth;
         outputOnlyCanvas.height = previewHeight;
-        
-        const horizontalCtx = horizontalCanvas.getContext('2d');
-        const outputOnlyCtx = outputOnlyCanvas.getContext('2d');
-        
+
+        const horizontalCtx = horizontalCanvas.getContext("2d");
+        const outputOnlyCtx = outputOnlyCanvas.getContext("2d");
+
         if (!horizontalCtx || !outputOnlyCtx) {
           throw new Error("Could not get canvas contexts");
         }
-        
+
         horizontalCtx.fillStyle = "black";
         horizontalCtx.fillRect(0, 0, previewWidth, previewHeight);
         horizontalCtx.drawImage(outputVideo, 0, 0, previewWidth, previewHeight);
-        
+
         outputOnlyCtx.fillStyle = "black";
         outputOnlyCtx.fillRect(0, 0, previewWidth, previewHeight);
         outputOnlyCtx.drawImage(outputVideo, 0, 0, previewWidth, previewHeight);
-        
+
         const pipSize = 0.25;
         const pipWidth = Math.floor(previewWidth * pipSize);
-        const pipHeight = Math.floor(pipWidth * (inputVideo.videoHeight / inputVideo.videoWidth));
+        const pipHeight = Math.floor(
+          pipWidth * (inputVideo.videoHeight / inputVideo.videoWidth),
+        );
         const pipX = previewWidth - pipWidth - 16;
         const pipY = previewHeight - pipHeight - 16;
-        
+
         horizontalCtx.fillStyle = "rgba(0, 0, 0, 0.5)";
         horizontalCtx.beginPath();
-        horizontalCtx.roundRect(pipX - 2, pipY - 2, pipWidth + 4, pipHeight + 4, 8);
+        horizontalCtx.roundRect(
+          pipX - 2,
+          pipY - 2,
+          pipWidth + 4,
+          pipHeight + 4,
+          8,
+        );
         horizontalCtx.fill();
-        
+
         horizontalCtx.drawImage(inputVideo, pipX, pipY, pipWidth, pipHeight);
-        
+
         const getCanvasBlob = (canvas: HTMLCanvasElement): Promise<string> => {
           return new Promise((resolve, reject) => {
-            canvas.toBlob(blob => {
-              if (!blob) reject(new Error("Failed to create blob"));
-              else resolve(URL.createObjectURL(blob));
-            }, 'image/jpeg', 0.95);
+            canvas.toBlob(
+              blob => {
+                if (!blob) reject(new Error("Failed to create blob"));
+                else resolve(URL.createObjectURL(blob));
+              },
+              "image/jpeg",
+              0.95,
+            );
           });
         };
-        
+
         const horizontalBlob = await getCanvasBlob(horizontalCanvas);
         const outputOnlyBlob = await getCanvasBlob(outputOnlyCanvas);
-        
+
         setPreviewBlobs({
           horizontal: horizontalBlob,
-          outputOnly: outputOnlyBlob
+          outputOnly: outputOnlyBlob,
         });
-        
+
         setIsCaptured(true);
         setIsReady(true);
-        
+
         container.removeChild(horizontalCanvas);
         container.removeChild(outputOnlyCanvas);
       } catch (error) {
         console.error("Error capturing frames:", error);
         toast("Can't create clip", {
-          description: "Failed to capture video frames"
+          description: "Failed to capture video frames",
         });
         onClose();
       }
     };
-    
+
     capturePreviewsToBlob();
-    
+
     return () => {
       document.body.removeChild(container);
-      
+
       if (previewBlobs.horizontal) URL.revokeObjectURL(previewBlobs.horizontal);
       if (previewBlobs.outputOnly) URL.revokeObjectURL(previewBlobs.outputOnly);
     };
-  }, [isOpen, isCaptured, onClose, previewBlobs.horizontal, previewBlobs.outputOnly]);
+  }, [
+    isOpen,
+    isCaptured,
+    onClose,
+    previewBlobs.horizontal,
+    previewBlobs.outputOnly,
+  ]);
 
   const handleSelectMode = (mode: ClipRecordingMode) => {
     if (!isReady) {
@@ -185,8 +207,8 @@ export function ClipOptionsModal({
           >
             {isReady && previewBlobs.horizontal ? (
               <div className="w-full h-full flex items-center justify-center">
-                <img 
-                  src={previewBlobs.horizontal} 
+                <img
+                  src={previewBlobs.horizontal}
                   alt="Combined preview"
                   className="max-w-full max-h-full rounded-md"
                 />
@@ -203,8 +225,8 @@ export function ClipOptionsModal({
           >
             {isReady && previewBlobs.outputOnly ? (
               <div className="w-full h-full flex items-center justify-center">
-                <img 
-                  src={previewBlobs.outputOnly} 
+                <img
+                  src={previewBlobs.outputOnly}
                   alt="Output only preview"
                   className="max-w-full max-h-full rounded-md"
                 />

@@ -89,8 +89,9 @@ export function useDreamshaper() {
   const searchParams = useSearchParams();
   const pathname = usePathname();
 
-  const pipelineId = searchParams.get("pipeline_id") || 
-    process.env.NEXT_PUBLIC_SHOWCASE_PIPELINE_ID || 
+  const pipelineId =
+    searchParams.get("pipeline_id") ||
+    process.env.NEXT_PUBLIC_SHOWCASE_PIPELINE_ID ||
     DEFAULT_PIPELINE_ID;
 
   const [loading, setLoading] = useState(true);
@@ -330,7 +331,8 @@ export function useDreamshaper() {
       }
 
       try {
-        const { data: streamData, error: streamError } = await getStream(streamId);
+        const { data: streamData, error: streamError } =
+          await getStream(streamId);
 
         if (streamError) {
           console.error("Error fetching stream:", streamError);
@@ -342,7 +344,7 @@ export function useDreamshaper() {
 
         // Fetching the pipeline again to ensure we have the latest values
         const freshPipeline = await getPipeline(pipeline.id);
-        
+
         const defaultValues = createDefaultValues(freshPipeline);
         const updatedInputValues = processInputValues(defaultValues);
 
@@ -357,10 +359,13 @@ export function useDreamshaper() {
         if (!updatedInputValues.prompt["5"].inputs) {
           updatedInputValues.prompt["5"].inputs = {};
         }
-        
+
         updatedInputValues.prompt["5"].inputs.text = cleanedPrompt;
 
-        if (freshPipeline?.prioritized_params && Object.keys(commands).length > 0) {
+        if (
+          freshPipeline?.prioritized_params &&
+          Object.keys(commands).length > 0
+        ) {
           const prioritizedParams =
             typeof freshPipeline.prioritized_params === "string"
               ? JSON.parse(freshPipeline.prioritized_params)
@@ -398,7 +403,8 @@ export function useDreamshaper() {
                   numValue = param.widgetConfig.max;
                 }
 
-                updatedInputValues.prompt[nodeId].inputs[actualField] = numValue;
+                updatedInputValues.prompt[nodeId].inputs[actualField] =
+                  numValue;
               } else if (param.widget === "checkbox") {
                 updatedInputValues.prompt[nodeId].inputs[actualField] =
                   value.toLowerCase() === "true" || value === "1";
@@ -444,7 +450,7 @@ export function useDreamshaper() {
         setUpdating(false);
       }
     },
-    [stream, pipeline, storeParamsInLocalStorage]
+    [stream, pipeline, storeParamsInLocalStorage],
   );
 
   const createShareLink = useCallback(async () => {

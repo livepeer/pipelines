@@ -28,7 +28,11 @@ export async function sendKafkaEvent(
 ) {
   const config = await serverConfig();
   const kafkaConfig = config.kafka;
-  if (!kafkaConfig?.bootstrapServers || !kafkaConfig?.username || !kafkaConfig?.password) {
+  if (
+    !kafkaConfig?.bootstrapServers ||
+    !kafkaConfig?.username ||
+    !kafkaConfig?.password
+  ) {
     console.log("[Kafka Event] Missing configuration, aborting event send");
     return;
   }
@@ -64,7 +68,10 @@ export async function sendKafkaEvent(
 
   try {
     await producer.connect();
-    console.log("[Kafka Event] Producer connected, now sending event:", JSON.stringify(event));
+    console.log(
+      "[Kafka Event] Producer connected, now sending event:",
+      JSON.stringify(event),
+    );
     await producer.send({
       topic: "network_events",
       messages: [
