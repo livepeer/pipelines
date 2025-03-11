@@ -18,6 +18,7 @@ import { useSearchParams } from "next/navigation";
 import { PauseIcon, PlayIcon } from "lucide-react";
 import { usePrivy } from "@privy-io/react-auth";
 import { sendKafkaEvent } from "@/app/api/metrics/kafka";
+import { LPPLayer } from "@/components/playground/player";
 
 type TrackingProps = {
   playbackId: string;
@@ -47,9 +48,11 @@ export const LivepeerPlayer = React.memo(
       process.env.NEXT_PUBLIC_LIVEPEER_DIRECT_PLAYBACK !== "true" ||
       searchParams.get("useMediamtx") === "true";
     const debugMode = searchParams.get("debugMode") === "true";
+    const iframePlayerFallback =
+      process.env.NEXT_PUBLIC_IFRAME_PLAYER_FALLBACK === "true";
 
     useEffect(() => {
-      if (useMediamtx) {
+      if (useMediamtx || iframePlayerFallback) {
         return;
       }
       const fetchPlaybackInfo = async () => {
@@ -58,6 +61,16 @@ export const LivepeerPlayer = React.memo(
       };
       fetchPlaybackInfo();
     }, [playbackId]);
+
+    if (iframePlayerFallback) {
+      return (
+        <LPPLayer
+          output_playback_id={playbackId}
+          stream_key={stream_key || null}
+          isMobile={isMobile}
+        />
+      );
+    }
 
     const src = getSrc(useMediamtx ? playerUrl : playbackInfo);
 
@@ -224,7 +237,6 @@ const useFirstFrameLoaded = ({
   const [firstFrameTime, setFirstFrameTime] = useState<string | null>(null);
   const context = Player.useMediaContext("CustomComponent", __scopeMedia);
   const state = Player.useStore(context.store);
-  console.log("[Player State]", state);
 
   // Send event on load
   useEffect(() => {

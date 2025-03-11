@@ -657,6 +657,16 @@ export default function Dreamshaper({
                   />
                 </div>
               )}
+              {!live || showOverlay ? (
+                <div className="absolute inset-0 bg-black flex flex-col items-center justify-center rounded-2xl">
+                  <Loader2 className="h-8 w-8 animate-spin text-white" />
+                  {statusMessage && (
+                    <span className="mt-4 text-white text-sm">
+                      {statusMessage}
+                    </span>
+                  )}
+                </div>
+              ) : null}
             </>
           ) : (
             <div className="w-full h-full flex items-center justify-center text-muted-foreground">
