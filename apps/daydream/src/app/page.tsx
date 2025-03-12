@@ -1,5 +1,5 @@
-import WelcomeScreen from "@/features/onboarding/WelcomeScreen";
+import LoginScreen from "@/features/onboarding/LoginScreen";
 
 export default function Home() {
-  return <WelcomeScreen />;
+  return <LoginScreen />;
 }
