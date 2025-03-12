@@ -96,9 +96,12 @@ export default function DayDreamContent(): ReactElement {
   }, []);
 
   const handleReady = () => {
-    setShowInterstitial(false);
-    setStreamKilled(false);
-    setShowPromptSelection(false);
+    // Don't reset state if stream was killed due to trial expiration
+    if (!streamKilled) {
+      setShowInterstitial(false);
+      setStreamKilled(false);
+      setShowPromptSelection(false);
+    }
   };
 
   const handlePromptApply = (prompt: string) => {
