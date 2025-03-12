@@ -18,6 +18,7 @@ const DUMMY_USER_ID_FOR_NON_AUTHENTICATED_USERS =
   "did:privy:cm4x2cuiw007lh8fcj34919fu"; // Infra Email User ID
 
 const DREAMSHAPER_PARAMS_STORAGE_KEY = "dreamshaper_latest_params";
+const DREAMSHAPER_PARAMS_VERSION_KEY = "dreamshaper_params_version";
 
 const createDefaultValues = (pipeline: any) => {
   const inputs = pipeline.config.inputs;
@@ -106,20 +107,30 @@ export function useDreamshaper() {
     stream?.id || null,
   );
 
-  const storeParamsInLocalStorage = useCallback((params: any) => {
+  const storeParamsInLocalStorage = useCallback((params: any, pipelineVersion: string) => {
     try {
       localStorage.setItem(
         DREAMSHAPER_PARAMS_STORAGE_KEY,
-        JSON.stringify(params),
+        JSON.stringify(params)
       );
+      localStorage.setItem(DREAMSHAPER_PARAMS_VERSION_KEY, pipelineVersion);
     } catch (error) {
       console.error("Error storing parameters in localStorage:", error);
     }
   }, []);
 
-  const getParamsFromLocalStorage = useCallback(() => {
+  const getParamsFromLocalStorage = useCallback((currentPipelineVersion: string) => {
     try {
+      const storedVersion = localStorage.getItem(DREAMSHAPER_PARAMS_VERSION_KEY);
       const storedParams = localStorage.getItem(DREAMSHAPER_PARAMS_STORAGE_KEY);
+
+      // If versions don't match or stored version doesn't exist, clear storage and return null
+      if (!storedVersion || storedVersion !== currentPipelineVersion) {
+        localStorage.removeItem(DREAMSHAPER_PARAMS_STORAGE_KEY);
+        localStorage.removeItem(DREAMSHAPER_PARAMS_VERSION_KEY);
+        return null;
+      }
+
       return storedParams ? JSON.parse(storedParams) : null;
     } catch (error) {
       console.error("Error retrieving parameters from localStorage:", error);
@@ -191,7 +202,7 @@ export function useDreamshaper() {
           });
 
           if (response.status == 200 || response.status == 201) {
-            storeParamsInLocalStorage(sharedParams);
+            storeParamsInLocalStorage(sharedParams, pipeline.version);
             setInputValues(sharedParams);
           }
 
@@ -216,7 +227,7 @@ export function useDreamshaper() {
   ]);
 
   useEffect(() => {
-    if (searchParams.get("shared") || !stream || sharedParamsApplied) {
+    if (searchParams.get("shared") || !stream || sharedParamsApplied || !pipeline) {
       return;
     }
 
@@ -225,7 +236,7 @@ export function useDreamshaper() {
     }
 
     const applyStoredParams = async () => {
-      const storedParams = getParamsFromLocalStorage();
+      const storedParams = getParamsFromLocalStorage(pipeline.version);
 
       if (!storedParams) {
         return;
@@ -260,6 +271,7 @@ export function useDreamshaper() {
     getParamsFromLocalStorage,
     gatewayHostReady,
     gatewayHost,
+    pipeline,
   ]);
 
   useEffect(() => {
@@ -409,7 +421,7 @@ export function useDreamshaper() {
           });
         }
 
-        storeParamsInLocalStorage(updatedInputValues);
+        storeParamsInLocalStorage(updatedInputValues, freshPipeline.version);
         setInputValues(updatedInputValues);
 
         if (!streamData?.gateway_host) {
@@ -454,7 +466,7 @@ export function useDreamshaper() {
     }
 
     try {
-      const storedParams = getParamsFromLocalStorage();
+      const storedParams = getParamsFromLocalStorage(pipeline.version);
 
       if (!storedParams) {
         console.error("No parameters found in localStorage");
