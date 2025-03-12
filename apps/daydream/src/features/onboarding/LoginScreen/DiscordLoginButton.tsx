@@ -1,4 +1,6 @@
-export default function DiscordIcon() {
+import { useLoginWithOAuth } from "@privy-io/react-auth";
+
+function DiscordIcon() {
   return (
     <svg
       width="16"
@@ -15,5 +17,26 @@ export default function DiscordIcon() {
         strokeLinejoin="round"
       />
     </svg>
+  );
+}
+
+export default function DiscordLoginButton() {
+  const { state, loading, initOAuth } = useLoginWithOAuth();
+
+  const handleLogin = async () => {
+    await initOAuth({ provider: "discord" });
+  };
+
+  return (
+    <button
+      className="flex items-center justify-center h-9 gap-2 py-2.5 px-4 w-1/2 border border-[#E4E4E7] rounded-[6px] bg-white"
+      onClick={handleLogin}
+      disabled={loading}
+    >
+      <DiscordIcon />
+      <span className="text-[14px] font-inter font-medium text-[#09090B]">
+        Discord
+      </span>
+    </button>
   );
 }

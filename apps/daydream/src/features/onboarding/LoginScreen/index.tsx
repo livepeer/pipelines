@@ -2,8 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import DiscordIcon from "./DiscordIcon";
-import GoogleIcon from "./GoogleIcon";
+import GoogleLoginButton from "./GoogleLoginButton";
+import DiscordLoginButton from "./DiscordLoginButton";
 
 export default function LoginScreen() {
   return (
@@ -59,20 +59,10 @@ export default function LoginScreen() {
             {/* Social login buttons */}
             <div className="flex gap-[12px] w-full">
               {/* Google button */}
-              <button className="flex items-center justify-center h-9 gap-2 py-2.5 px-4 w-1/2 border border-[#E4E4E7] rounded-[6px] bg-white">
-                <GoogleIcon />
-                <span className="text-[14px] font-inter font-medium text-[#09090B]">
-                  Google
-                </span>
-              </button>
+              <GoogleLoginButton />
 
               {/* Discord button */}
-              <button className="flex items-center justify-center h-9 gap-2 py-2.5 px-4 w-1/2 border border-[#E4E4E7] rounded-[6px] bg-white">
-                <DiscordIcon />
-                <span className="text-[14px] font-inter font-medium text-[#09090B]">
-                  Discord
-                </span>
-              </button>
+              <DiscordLoginButton />
             </div>
           </div>
 

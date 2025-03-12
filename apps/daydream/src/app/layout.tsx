@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Playfair, Open_Sans } from "next/font/google";
-import { DesignSystemProvider } from "@repo/design-system/providers";
 import "./globals.css";
-import { PrivyProvider } from "@repo/design-system/providers/privy";
+import PrivyProvider from "./providers";
 
 const playfair = Playfair({
   variable: "--font-playfair",
