@@ -158,7 +158,7 @@ export const useVideoClip = () => {
     mediaRecorder.onstop = () => {
       const blob = new Blob(chunks, { type: mimeType });
       const url = URL.createObjectURL(blob);
-      const filename = `livepeer-clip-${new Date().toISOString()}.${extension}`;
+      const filename = `daydream-clip-${new Date().toISOString()}.${extension}`;
 
       setClipUrl(url);
       setClipFilename(filename);

@@ -23,14 +23,14 @@ export function ClipModal({
 }: ClipModalProps) {
   const handleDownload = () => {
     if (clipUrl && clipFilename) {
-      const a = document.createElement("a");
-      a.href = clipUrl;
-      a.download = clipFilename;
-      document.body.appendChild(a);
-      a.click();
+      const downloadLink = document.createElement("a");
+      downloadLink.href = clipUrl;
+      downloadLink.download = clipFilename;
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
 
       setTimeout(() => {
-        document.body.removeChild(a);
+        document.body.removeChild(downloadLink);
       }, 100);
     }
   };

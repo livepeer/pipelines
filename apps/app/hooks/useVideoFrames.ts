@@ -26,6 +26,7 @@ export function useVideoFrames(isOpen: boolean, onClose: () => void) {
     }
 
     const videos = document.querySelectorAll("video");
+    // We need both input and output video elements to create a clip  
     if (videos.length < 2) {
       toast("Can't create clip", {
         description: "Video elements not found",
@@ -36,24 +37,6 @@ export function useVideoFrames(isOpen: boolean, onClose: () => void) {
 
     const outputVideo = videos[0] as HTMLVideoElement;
     const inputVideo = videos[1] as HTMLVideoElement;
-
-    if (outputVideo.readyState < 2) {
-      const checkVideoReady = setTimeout(() => {
-        if (outputVideo.readyState < 2) {
-          toast("Can't create clip", {
-            description:
-              "Output video is not ready yet. Please try again in a moment.",
-          });
-          onClose();
-        } else {
-          captureFramesOnce();
-        }
-      }, 1000);
-
-      return () => clearTimeout(checkVideoReady);
-    }
-
-    captureFramesOnce();
 
     function captureFramesOnce() {
       try {
@@ -177,6 +160,25 @@ export function useVideoFrames(isOpen: boolean, onClose: () => void) {
         onClose();
       }
     }
+
+    if (outputVideo.readyState < 2) {
+      const checkVideoReady = setTimeout(() => {
+        if (outputVideo.readyState < 2) {
+          toast("Can't create clip", {
+            description:
+              "Output video is not ready yet. Please try again in a moment.",
+          });
+          onClose();
+        } else {
+          captureFramesOnce();
+        }
+      }, 1000);
+
+      return () => clearTimeout(checkVideoReady);
+    }
+
+    captureFramesOnce();
+
   }, [isOpen, onClose]);
 
   return {
