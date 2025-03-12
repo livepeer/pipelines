@@ -1,72 +1,57 @@
 "use client";
 
+import { TrackedButton } from "@/components/analytics/TrackedButton";
+import { StreamInfo } from "@/components/footer/stream-info";
+import { BroadcastWithControls } from "@/components/playground/broadcast";
+import { StreamDebugPanel } from "@/components/stream/stream-debug-panel";
+import { useCommandSuggestions } from "@/hooks/useCommandSuggestions";
+import { StreamStatus } from "@/hooks/useStreamStatus";
+import { useTrialTimer } from "@/hooks/useTrialTimer";
+import track from "@/lib/track";
+import { usePrivy } from "@privy-io/react-auth";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Input } from "@repo/design-system/components/ui/input";
-import { examplePrompts } from "./interstitial";
-import { TooltipTrigger } from "@repo/design-system/components/ui/tooltip";
-import { TooltipContent } from "@repo/design-system/components/ui/tooltip";
-import { Tooltip } from "@repo/design-system/components/ui/tooltip";
-import { motion, AnimatePresence, useMotionValue } from "framer-motion";
-import { useState, useEffect, useRef, useMemo, useCallback } from "react";
-import { BroadcastWithControls } from "@/components/playground/broadcast";
+import { Separator } from "@repo/design-system/components/ui/separator";
+import { SidebarTrigger } from "@repo/design-system/components/ui/sidebar";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@repo/design-system/components/ui/tooltip";
+import { useIsMobile } from "@repo/design-system/hooks/use-mobile";
+import { cn } from "@repo/design-system/lib/utils";
 import {
   Loader2,
   Maximize,
   Minimize,
   Send,
-  SlidersHorizontal,
-  Copy,
   Share2,
+  SlidersHorizontal,
 } from "lucide-react";
-import { LPPLayer } from "@/components/playground/player";
-import { useIsMobile } from "@repo/design-system/hooks/use-mobile";
-import { usePrivy } from "@privy-io/react-auth";
-import { useTrialTimer } from "@/hooks/useTrialTimer";
-import { cn } from "@repo/design-system/lib/utils";
-import { UpdateOptions } from "./useDreamshaper";
-import Link from "next/link";
-import { Separator } from "@repo/design-system/components/ui/separator";
-import TextareaAutosize from "react-textarea-autosize";
-import { MAX_PROMPT_LENGTH, useValidateInput } from "./useValidateInput";
-import { toast } from "sonner";
-import track from "@/lib/track";
-import Image from "next/image";
-import { SidebarTrigger } from "@repo/design-system/components/ui/sidebar";
 import { Inter } from "next/font/google";
-import { StreamDebugPanel } from "@/components/stream/stream-debug-panel";
-import { StreamStatus } from "@/hooks/useStreamStatus";
-import { TrackedButton } from "@/components/analytics/TrackedButton";
-import { StreamInfo } from "@/components/footer/stream-info";
+import Image from "next/image";
+import Link from "next/link";
+import { useEffect, useMemo, useRef, useState } from "react";
+import TextareaAutosize from "react-textarea-autosize";
+import { toast } from "sonner";
 import { LivepeerPlayer } from "./player";
-import { ShareModal } from "./ShareModal";
-import { useCommandSuggestions } from "@/hooks/useCommandSuggestions";
-import { Label } from "@repo/design-system/components/ui/label";
 import SettingsMenu from "./prompt-settings";
+import { ShareModal } from "./ShareModal";
+import { UpdateOptions } from "./useDreamshaper";
+import { MAX_PROMPT_LENGTH, useValidateInput } from "./useValidateInput";
 
-const PROMPT_INTERVAL = 4000;
-const samplePrompts = examplePrompts.map(prompt => prompt.prompt);
+const PROMPT_PLACEHOLDER = "Describe the style to transform your stream...";
 
 const MAX_STREAM_TIMEOUT_MS = 90000; // 90 seconds
 
 // Rotate through prompts every 4 seconds
-function usePrompts() {
-  const [currentPromptIndex, setCurrentPromptIndex] = useState(0);
+const usePrompts = () => {
   const [lastSubmittedPrompt, setLastSubmittedPrompt] = useState<string | null>(
     null,
   );
 
-  useEffect(() => {
-    if (lastSubmittedPrompt) return;
-
-    const interval = setInterval(() => {
-      setCurrentPromptIndex(prev => (prev + 1) % samplePrompts.length);
-    }, PROMPT_INTERVAL);
-
-    return () => clearInterval(interval);
-  }, [lastSubmittedPrompt]);
-
-  return { currentPromptIndex, lastSubmittedPrompt, setLastSubmittedPrompt };
-}
+  return { lastSubmittedPrompt, setLastSubmittedPrompt };
+};
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -123,18 +108,14 @@ export default function Dreamshaper({
   sharedPrompt = null,
   pipeline,
 }: DreamshaperProps) {
-  const { currentPromptIndex, lastSubmittedPrompt, setLastSubmittedPrompt } =
-    usePrompts();
+  const { lastSubmittedPrompt, setLastSubmittedPrompt } = usePrompts();
   const [inputValue, setInputValue] = useState("");
   const { profanity, exceedsMaxLength } = useValidateInput(inputValue);
   const isMobile = useIsMobile();
   const outputPlayerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
 
-  const x = useMotionValue(0);
-  const y = useMotionValue(0);
-
-  const { authenticated, login, user } = usePrivy();
+  const { authenticated, user } = usePrivy();
   const { timeRemaining, formattedTime } = useTrialTimer();
 
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -657,6 +638,16 @@ export default function Dreamshaper({
                   />
                 </div>
               )}
+              {!live || showOverlay ? (
+                <div className="absolute inset-0 bg-black flex flex-col items-center justify-center rounded-2xl">
+                  <Loader2 className="h-8 w-8 animate-spin text-white" />
+                  {statusMessage && (
+                    <span className="mt-4 text-white text-sm">
+                      {statusMessage}
+                    </span>
+                  )}
+                </div>
+              ) : null}
             </>
           ) : (
             <div className="w-full h-full flex items-center justify-center text-muted-foreground">
@@ -711,59 +702,49 @@ export default function Dreamshaper({
           onMouseEnter={() => setIsInputHovered(true)}
           onMouseLeave={() => setIsInputHovered(false)}
         >
-          <AnimatePresence mode="wait">
-            {!inputValue && (
-              <motion.div
-                key={lastSubmittedPrompt || `prompt-${currentPromptIndex}`}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 0.5, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.3 }}
-                className={cn(
-                  "absolute inset-y-0 left-3 md:left-3 flex items-center text-muted-foreground text-xs w-full z-10",
-                  isInputHovered
-                    ? "pointer-events-auto"
-                    : "pointer-events-none",
-                )}
-                onClick={e => {
-                  if ((e.target as HTMLElement).closest("button")) {
-                    return;
-                  }
-                  if (inputRef.current) {
-                    inputRef.current.focus();
-                  }
-                }}
-              >
-                <span>
-                  {lastSubmittedPrompt || samplePrompts[currentPromptIndex]}
-                </span>
-                {isInputHovered && lastSubmittedPrompt && (
-                  <button
-                    onClick={e => {
-                      e.stopPropagation();
-                      restoreLastPrompt();
-                    }}
-                    className="ml-2 text-muted-foreground hover:text-foreground transition-colors flex items-center justify-center relative z-20"
-                    aria-label="Restore last prompt"
+          {!inputValue && (
+            <div
+              key={lastSubmittedPrompt}
+              className={cn(
+                "absolute inset-y-0 left-3 md:left-3 flex items-center text-muted-foreground/50 text-xs w-full z-10",
+                isInputHovered ? "pointer-events-auto" : "pointer-events-none",
+              )}
+              onClick={e => {
+                if ((e.target as HTMLElement).closest("button")) {
+                  return;
+                }
+                if (inputRef.current) {
+                  inputRef.current.focus();
+                }
+              }}
+            >
+              <span>{lastSubmittedPrompt || PROMPT_PLACEHOLDER}</span>
+              {isInputHovered && lastSubmittedPrompt && (
+                <button
+                  onClick={e => {
+                    e.stopPropagation();
+                    restoreLastPrompt();
+                  }}
+                  className="ml-2 text-muted-foreground hover:text-foreground transition-colors flex items-center justify-center relative z-20"
+                  aria-label="Restore last prompt"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="h-3.5 w-3.5"
                   >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="h-3.5 w-3.5"
-                    >
-                      <path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-                      <path d="m15 5 4 4" />
-                    </svg>
-                  </button>
-                )}
-              </motion.div>
-            )}
-          </AnimatePresence>
+                    <path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                    <path d="m15 5 4 4" />
+                  </svg>
+                </button>
+              )}
+            </div>
+          )}
 
           {/* Input wrapper with highlighting */}
           <div

@@ -29,8 +29,15 @@ First, install the required system software:
   </Accordion>
 
   <Accordion title="Windows">
-    - [Docker Desktop for Windows](https://docs.docker.com/get-started/introduction/get-docker-desktop/)
-    - [NVIDIA CUDA Toolkit](https://developer.nvidia.com/cuda-12-6-3-download-archive?target_os=Windows&target_arch=x86_64&target_version=11&target_type=exe_local)
+    1. Install WSL 2:
+      - From a new command prompt, run: `wsl --install`
+      - Update WSL if needed: `wsl.exe --update`
+    2. Launch a new Terminal, then open a tab for **Ubuntu (WSL)**.
+    3. Inside of WSL, install [NVIDIA CUDA Toolkit](https://developer.nvidia.com/cuda-12-6-3-download-archive?target_os=Windows&target_arch=x86_64&target_version=11&target_type=exe_local) for WSL.
+    4. Install [Docker Desktop for Windows](https://docs.docker.com/get-started/introduction/get-docker-desktop/) for Windows.
+    5. Ensure WSL 2 Engine is enabled in Docker Desktop settings.
+    6. Inside of WSL, run `docker ps` to verify you have access to docker. 
+    7. From the WSL Terminal, continue with the steps below to setup the local environment
   </Accordion>
 </AccordionGroup>
 
@@ -61,31 +68,13 @@ If using Windows, ensure Docker Desktop is running first
 </Info>
 
 <CodeGroup>
-```bash Linux
+```bash Linux/WSL
 docker run -it --gpus all \
 -p 8188:8188 \
 -p 8889:8889 \
 -p 5678:5678 \
 -v ~/models/ComfyUI--models:/workspace/ComfyUI/models \
 -v ~/models/ComfyUI--output:/workspace/ComfyUI/output \
-livepeer/comfystream:latest --download-models --build-engines --server
-```
-```batch Command Line
-docker run -it --gpus all ^
--p 8188:8188 ^
--p 8889:8889 ^
--p 5678:5678 ^
--v %USERPROFILE%\models\ComfyUI--models:/workspace/ComfyUI/models ^
--v %USERPROFILE%\models\ComfyUI--output:/workspace/ComfyUI/output ^
-livepeer/comfystream:latest --download-models --build-engines --server
-```
-```powershell PowerShell
-docker run -it --gpus all `
--p 8188:8188 `
--p 8889:8889 `
--p 5678:5678 `
--v $env:USERPROFILE\models\ComfyUI--models:/workspace/ComfyUI/models `
--v $env:USERPROFILE\models\ComfyUI--output:/workspace/ComfyUI/output `
 livepeer/comfystream:latest --download-models --build-engines --server
 ```
 </CodeGroup>
