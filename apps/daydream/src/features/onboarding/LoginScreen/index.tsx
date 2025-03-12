@@ -7,7 +7,7 @@ import GoogleIcon from "./GoogleIcon";
 
 export default function LoginScreen() {
   return (
-    <div className="min-h-screen flex flex-col sm:flex-row relative w-full">
+    <div className="min-h-screen flex flex-col-reverse sm:flex-row relative w-full h-[100dvh]">
       <Image
         src="/background.png"
         alt="Background"
@@ -18,9 +18,9 @@ export default function LoginScreen() {
       />
 
       {/* Login container */}
-      <div className="z-10 relative bg-white p-[40px] sm:p-[60px] rounded-[20px] sm:rounded-none w-full sm:w-1/2 shadow-lg flex items-center justify-center">
+      <div className="z-10 relative bg-white h-full p-[40px] sm:p-[60px] rounded-[20px] sm:rounded-none w-full sm:w-1/2 shadow-lg flex items-center justify-center">
         <div className="flex flex-col items-center justify-center w-full gap-[12px]">
-          <h3 className="font-playfair font-bold text-[24px] text-[#1C1C1C]">
+          <h3 className="font-playfair font-bold text-8 text-[#1C1C1C]">
             Daydream
           </h3>
 
@@ -104,12 +104,12 @@ export default function LoginScreen() {
         </div>
       </div>
 
-      <div className="z-10 relative bg-transparent p-8 rounded-[20px] sm:rounded-none w-full sm:w-1/2 shadow-lg flex flex-col items-center gap-8">
-        <h1 className="font-playfair font-bold text-[48px] text-[#1C1C1C] text-center">
+      <div className="z-10 relative bg-transparent h-full p-8 rounded-[20px] sm:rounded-none w-full sm:w-1/2 shadow-lg flex flex-col items-center gap-8">
+        <h1 className="font-playfair font-bold hidden sm:block sm:text-[48px] text-[#1C1C1C] text-center">
           Transform your video
         </h1>
 
-        <div className="w-full h-[calc(100vh-200px)] rounded-[20px] overflow-hidden">
+        <div className="w-full h-[calc(30dvh)] sm:max-h-none sm:h-[calc(100dvh-200px)] rounded-[20px] overflow-hidden">
           <video
             src="/daydream.mp4"
             autoPlay
