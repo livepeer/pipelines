@@ -3,6 +3,7 @@ import { serverConfig } from "@/lib/serverEnv";
 
 export const dynamic = 'force-dynamic';
 
+// Whip proxy
 async function handleRequest(req: NextRequest, method: string, streamkey: string) {
   try {
     const { gateway } = await serverConfig();
