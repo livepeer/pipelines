@@ -137,13 +137,6 @@ export default function DayDreamContent(): ReactElement {
     }
   }, [pendingPrompt, status, handleUpdate]);
 
-  console.log(
-    "streamKilled",
-    streamKilled,
-    "showInterstitial",
-    showInterstitial,
-  );
-
   return (
     <div className="relative">
       {cameraPermissionGranted && (
