@@ -7,17 +7,19 @@ import GoogleIcon from "./GoogleIcon";
 
 export default function LoginScreen() {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center relative">
+    <div className="min-h-screen flex flex-col sm:flex-row relative w-full">
       <Image
         src="/background.png"
         alt="Background"
         fill
         priority
-        className="object-cover z-0"
+        className="object-cover z-0 rotate-180"
         quality={100}
       />
-      <div className="z-10 relative bg-white p-[40px] sm:p-[60px] rounded-[20px] w-[90%] sm:w-[80%] md:max-w-[560px] shadow-lg">
-        <div className="flex flex-col items-center w-full gap-[12px]">
+
+      {/* Login container */}
+      <div className="z-10 relative bg-white p-[40px] sm:p-[60px] rounded-[20px] sm:rounded-none w-full sm:w-1/2 shadow-lg flex items-center justify-center">
+        <div className="flex flex-col items-center justify-center w-full gap-[12px]">
           <h3 className="font-playfair font-bold text-[24px] text-[#1C1C1C]">
             Daydream
           </h3>
@@ -84,15 +86,37 @@ export default function LoginScreen() {
           {/* Terms text */}
           <p className="text-[12px] font-inter text-[#A1A1AA] text-center mt-[24px]">
             By clicking continue, you agree to our{" "}
-            <Link href="#" className="text-[#A1A1AA] hover:text-[#71717A]">
+            <Link
+              href="#"
+              className="text-[#A1A1AA] hover:text-[#71717A] underline"
+            >
               Terms of Service
             </Link>{" "}
             and{" "}
-            <Link href="#" className="text-[#A1A1AA] hover:text-[#71717A]">
+            <Link
+              href="#"
+              className="text-[#A1A1AA] hover:text-[#71717A] underline"
+            >
               Privacy Policy
             </Link>
             .
           </p>
+        </div>
+      </div>
+
+      <div className="z-10 relative bg-transparent p-8 rounded-[20px] sm:rounded-none w-full sm:w-1/2 shadow-lg flex flex-col items-center gap-8">
+        <h1 className="font-playfair font-bold text-[48px] text-[#1C1C1C] text-center">
+          Transform your video
+        </h1>
+
+        <div className="w-full h-[calc(100vh-200px)] rounded-[20px] overflow-hidden">
+          <video
+            src="/daydream.mp4"
+            autoPlay
+            muted
+            loop
+            className="w-full h-full"
+          />
         </div>
       </div>
     </div>
