@@ -41,6 +41,7 @@ import { ShareModal } from "./ShareModal";
 import { UpdateOptions } from "./useDreamshaper";
 import { MAX_PROMPT_LENGTH, useValidateInput } from "./useValidateInput";
 import { ClipButton } from "@/components/ClipButton";
+import { ManagedBroadcast } from "./ManagedBroadcast";
 
 const PROMPT_PLACEHOLDER = "Describe the style to transform your stream...";
 
@@ -650,21 +651,6 @@ export default function Dreamshaper({
                 {/* Overlay */}
                 <div className="absolute inset-x-0 top-0 h-[85%] bg-transparent" />
               </div>
-              {!isMobile && streamUrl && (
-                <div
-                  className={cn(
-                    "absolute bottom-16 right-4 z-50 transition-all duration-300",
-                    isCollapsed ? "w-12 h-12" : "w-[25%] aspect-video",
-                  )}
-                >
-                  <BroadcastWithControls
-                    ingestUrl={streamUrl}
-                    isCollapsed={isCollapsed}
-                    onCollapse={setIsCollapsed}
-                    className="rounded-xl overflow-hidden"
-                  />
-                </div>
-              )}
               {!live || showOverlay ? (
                 <div className="absolute inset-0 bg-black flex flex-col items-center justify-center rounded-2xl">
                   <Loader2 className="h-8 w-8 animate-spin text-white" />
@@ -684,30 +670,13 @@ export default function Dreamshaper({
         </div>
       </div>
 
-      {/* Mobile broadcast controls */}
-      {isMobile && streamUrl && (
-        <div className="mx-4 w-auto -mt-2 mb-4">
-          {loading ? (
-            <div className="w-8 h-8 flex items-center justify-center">
-              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-            </div>
-          ) : (
-            <div
-              className={cn(
-                "flex-shrink-0 transition-all duration-300 [&>div]:!pb-0 [&>div]:h-full",
-                isCollapsed ? "h-8" : "h-64",
-              )}
-            >
-              <BroadcastWithControls
-                ingestUrl={streamUrl}
-                isCollapsed={isCollapsed}
-                onCollapse={setIsCollapsed}
-                className="rounded-xl overflow-hidden w-full h-full"
-              />
-            </div>
-          )}
-        </div>
-      )}
+      <ManagedBroadcast
+        streamUrl={streamUrl}
+        isMobile={isMobile}
+        isFullscreen={isFullscreen}
+        outputPlayerRef={outputPlayerRef}
+        loading={loading}
+      />
 
       {/* Input prompt */}
       <div
