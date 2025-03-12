@@ -1,6 +1,15 @@
 import { useState, useCallback } from "react";
 import { toast } from "sonner";
 
+declare global {
+  interface HTMLVideoElement {
+    captureStream(): MediaStream;
+  }
+  interface HTMLCanvasElement {
+    captureStream(frameRate?: number): MediaStream;
+  }
+}
+
 export type ClipRecordingMode = "horizontal" | "vertical" | "output-only";
 
 export const CLIP_DURATION = 15000;
@@ -132,6 +141,13 @@ export const useVideoClip = () => {
     const canvas = setupCanvasForMode(mode, outputVideo, inputVideo);
     const ctx = canvas.getContext("2d");
 
+    const inputCanvas = document.createElement("canvas");
+    const inputCtx = inputCanvas.getContext("2d");
+    const inputFrameBuffer: ImageData[] = [];
+
+    inputCanvas.width = inputVideo.videoWidth;
+    inputCanvas.height = inputVideo.videoHeight;
+
     if (!ctx) {
       toast("Couldn't initialize recording canvas", {
         description: "Please try again",
@@ -139,16 +155,17 @@ export const useVideoClip = () => {
       return;
     }
 
-    const inputFrameBuffer: ImageData[] = [];
-    const inputCanvas = document.createElement("canvas");
-    const inputCtx = inputCanvas.getContext("2d");
-
-    inputCanvas.width = inputVideo.videoWidth;
-    inputCanvas.height = inputVideo.videoHeight;
+    const audioContext = new AudioContext();
+    
+    const outputAudioSource = outputVideo.captureStream().getAudioTracks()[0];
+    
+    const canvasStream = canvas.captureStream(FRAME_RATE);
+    if (outputAudioSource) {
+      canvasStream.addTrack(outputAudioSource);
+    }
 
     const { mimeType, extension } = getSupportedVideoFormat();
-    const stream = canvas.captureStream(FRAME_RATE);
-    const mediaRecorder = new MediaRecorder(stream, { mimeType });
+    const mediaRecorder = new MediaRecorder(canvasStream, { mimeType });
 
     const chunks: Blob[] = [];
     mediaRecorder.ondataavailable = e => {

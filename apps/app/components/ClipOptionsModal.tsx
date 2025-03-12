@@ -180,6 +180,12 @@ export function ClipOptionsModal({
     previewBlobs.outputOnly,
   ]);
 
+  useEffect(() => {
+    if (!isOpen) {
+      setIsCaptured(false);
+    }
+  }, [isOpen]);
+
   const handleSelectMode = (mode: ClipRecordingMode) => {
     if (!isReady) {
       toast("Video frames not ready yet", {
