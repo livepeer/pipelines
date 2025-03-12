@@ -511,12 +511,15 @@ export default function Dreamshaper({
         {!isMobile && !isFullscreen && (
           <div className="absolute bottom-3 right-0 flex gap-2">
             <div className="flex items-center gap-2">
-              <ClipButton
-                disabled={!outputPlaybackId || !streamUrl}
-                className="mr-2"
-                trackAnalytics={track}
-                isAuthenticated={authenticated}
-              />
+              {/* Only show clip button when stream is live */}
+              {live && outputPlaybackId && streamUrl && (
+                <ClipButton
+                  disabled={!outputPlaybackId || !streamUrl}
+                  className="mr-2"
+                  trackAnalytics={track}
+                  isAuthenticated={authenticated}
+                />
+              )}
 
               {createShareLink && (
                 <TrackedButton
@@ -548,8 +551,8 @@ export default function Dreamshaper({
 
       {isMobile && (
         <div className="absolute top-4 right-4 z-50 flex gap-2">
-          {/* Mobile clip button */}
-          {outputPlaybackId && streamUrl && (
+          {/* Mobile clip button - only show when live */}
+          {live && outputPlaybackId && streamUrl && (
             <ClipButton
               disabled={!outputPlaybackId || !streamUrl}
               trackAnalytics={track}
