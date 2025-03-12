@@ -155,14 +155,7 @@ export const useVideoClip = () => {
       return;
     }
 
-    const audioContext = new AudioContext();
-    
-    const outputAudioSource = outputVideo.captureStream().getAudioTracks()[0];
-    
     const canvasStream = canvas.captureStream(FRAME_RATE);
-    if (outputAudioSource) {
-      canvasStream.addTrack(outputAudioSource);
-    }
 
     const { mimeType, extension } = getSupportedVideoFormat();
     const mediaRecorder = new MediaRecorder(canvasStream, { mimeType });
