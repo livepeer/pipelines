@@ -18,17 +18,17 @@ export default function LoginScreen() {
       />
 
       {/* Login container */}
-      <div className="z-10 relative bg-white h-full p-[40px] sm:p-[60px] rounded-[20px] sm:rounded-none w-full sm:w-1/2 shadow-lg flex items-center justify-center">
-        <div className="flex flex-col items-center justify-center w-full gap-[12px]">
-          <h3 className="font-playfair font-bold text-8 text-[#1C1C1C]">
+      <div className="z-10 relative bg-white h-[55dvh] sm:h-full p-[40px] sm:p-[60px] rounded-t-[20px] sm:rounded-none w-full sm:w-1/2 shadow-lg flex items-center justify-center">
+        <div className="flex flex-col items-center justify-center w-full gap-2 sm:gap-3">
+          <h3 className="font-playfair font-bold hidden sm:block text-[24px] text-[#1C1C1C]">
             Daydream
           </h3>
 
-          <h1 className="font-playfair font-bold text-[32px] text-[#1C1C1C] text-center mt-[12px]">
+          <h1 className="font-playfair font-bold text-2xl sm:text-4xl text-[#1C1C1C] text-center mt-[12px]">
             Welcome to Daydream
           </h1>
 
-          <p className="font-inter text-[14px] text-[#71717A] text-center mt-[4px] mb-[24px]">
+          <p className="font-inter text-xs sm:text-sm text-[#71717A] text-center mt-[4px] mb-[24px]">
             Sign in using your password
           </p>
 
@@ -37,14 +37,7 @@ export default function LoginScreen() {
             <input
               type="email"
               placeholder="name@example.com"
-              className="w-full h-[44px] px-[16px] py-[10px] border border-[#E4E4E7] rounded-[6px] text-[14px] font-inter text-[#71717A] outline-none"
-            />
-
-            {/* Password input */}
-            <input
-              type="password"
-              placeholder="Password"
-              className="w-full h-[44px] px-[16px] py-[10px] border border-[#E4E4E7] rounded-[6px] text-[14px] font-inter text-[#71717A] outline-none"
+              className="w-full h-[44px] px-4 py-2.5 border border-[#E4E4E7] rounded-[6px] text-[14px] font-inter text-[#71717A] outline-none"
             />
 
             {/* Sign in button */}
@@ -66,7 +59,7 @@ export default function LoginScreen() {
             {/* Social login buttons */}
             <div className="flex gap-[12px] w-full">
               {/* Google button */}
-              <button className="flex items-center justify-center gap-[8px] py-[10px] px-[16px] w-1/2 border border-[#E4E4E7] rounded-[6px] bg-white">
+              <button className="flex items-center justify-center h-9 gap-2 py-2.5 px-4 w-1/2 border border-[#E4E4E7] rounded-[6px] bg-white">
                 <GoogleIcon />
                 <span className="text-[14px] font-inter font-medium text-[#09090B]">
                   Google
@@ -74,7 +67,7 @@ export default function LoginScreen() {
               </button>
 
               {/* Discord button */}
-              <button className="flex items-center justify-center gap-[8px] py-[10px] px-[16px] w-1/2 border border-[#E4E4E7] rounded-[6px] bg-white">
+              <button className="flex items-center justify-center h-9 gap-2 py-2.5 px-4 w-1/2 border border-[#E4E4E7] rounded-[6px] bg-white">
                 <DiscordIcon />
                 <span className="text-[14px] font-inter font-medium text-[#09090B]">
                   Discord
@@ -104,12 +97,12 @@ export default function LoginScreen() {
         </div>
       </div>
 
-      <div className="z-10 relative bg-transparent h-full p-8 rounded-[20px] sm:rounded-none w-full sm:w-1/2 shadow-lg flex flex-col items-center gap-8">
+      <div className="z-10 relative bg-transparent h-[45dvh] sm:h-full p-6 rounded-t-[20px] sm:rounded-none w-full sm:w-1/2 flex flex-col items-center gap-8">
         <h1 className="font-playfair font-bold hidden sm:block sm:text-[48px] text-[#1C1C1C] text-center">
           Transform your video
         </h1>
 
-        <div className="w-full h-[calc(30dvh)] sm:max-h-none sm:h-[calc(100dvh-200px)] rounded-[20px] overflow-hidden">
+        <div className="w-full h-[calc(40dvh)] sm:max-h-none sm:h-[calc(100dvh-200px)] rounded-[20px] overflow-hidden">
           <video
             src="/daydream.mp4"
             autoPlay
