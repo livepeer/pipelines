@@ -19,7 +19,11 @@ export async function submitToHubspot(user: PrivyUser) {
       },
       {
         name: "firstname",
-        value: user?.github?.name || user?.discord?.username || "",
+        value:
+          user.email?.address?.split("@")[0] ||
+          user?.github?.name ||
+          user?.discord?.username ||
+          "",
       },
       { name: "user_id", value: user?.id || "" },
       {
