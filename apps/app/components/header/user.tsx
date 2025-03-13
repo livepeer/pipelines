@@ -46,7 +46,8 @@ export default function User({ className }: { className?: string }) {
 
         await Promise.all([
           identifyUser(user.id, distinctId || "", user),
-          isNewUser ? submitToHubspot(user) : Promise.resolve(),
+          submitToHubspot(user),
+          // isNewUser ? submitToHubspot(user) : Promise.resolve(),
         ]);
 
         track("user_logged_in", {
