@@ -13,6 +13,11 @@ const IntercomConfig = z.object({
   appId: z.string().min(1),
 });
 
+const HubspotConfig = z.object({
+  portalId: z.string().min(1),
+  formId: z.string().min(1),
+});
+
 const MixpanelConfig = z.object({
   projectToken: z.string().min(1).optional(),
 });
@@ -28,6 +33,7 @@ const EnvironmentConfig = z.object({
   intercom: IntercomConfig,
   mixpanel: MixpanelConfig,
   app: AppConfig,
+  hubspot: HubspotConfig,
 });
 
 type EnvironmentConfig = z.infer<typeof EnvironmentConfig>;
@@ -49,13 +55,17 @@ const envConfig = {
     rtmpUrl: process.env.NEXT_PUBLIC_RTMP_URL,
     environment: process.env.NEXT_PUBLIC_ENV as Environment,
   },
+  hubspot: {
+    portalId: process.env.NEXT_PUBLIC_HUBSPOT_PORTAL_ID,
+    formId: process.env.NEXT_PUBLIC_HUBSPOT_FORM_ID,
+  },
 } as const;
 
 export const config = EnvironmentConfig.parse(envConfig);
 
 export const isProduction = () => config.app.environment === "production";
 
-export const { livepeer, intercom, mixpanel, app } = config;
+export const { livepeer, intercom, mixpanel, app, hubspot } = config;
 
 export const validateEnv = () => {
   try {

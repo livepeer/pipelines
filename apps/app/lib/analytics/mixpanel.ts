@@ -1,12 +1,14 @@
-import mixpanel from "mixpanel-browser";
-import { mixpanel as mixpanelConfig } from "@/lib/env";
+import { User as PrivyUser } from "@privy-io/react-auth";
 
 export async function identifyUser(
   userId: string,
   anonymousId: string,
-  user: any,
+  user: PrivyUser,
 ) {
   try {
+    const currentDate = new Date();
+    const currentDateString = currentDate.toISOString();
+
     const payload = {
       userId,
       anonymousId,
@@ -16,10 +18,10 @@ export async function identifyUser(
         $email: user?.email?.address,
         user_id: userId,
         user_type: "authenticated",
-        $last_login: new Date().toISOString(),
+        $last_login: currentDateString,
         authenticated: true,
         first_time_properties: {
-          $first_login: new Date().toISOString(),
+          $first_login: currentDateString,
           first_wallet_address: user?.wallet?.address,
           first_email: user?.email?.address,
         },
