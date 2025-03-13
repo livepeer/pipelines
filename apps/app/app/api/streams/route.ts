@@ -40,10 +40,8 @@ export async function POST(request: Request) {
 
 export async function GET(request: Request) {
   try {
-    // Try to get user ID from header first (backward compatibility)
     let userId = request.headers.get("x-user-id");
     
-    // If no user ID from header, try API key
     if (!userId) {
       userId = await getUserFromApiKey(request);
     }
@@ -62,10 +60,8 @@ export async function GET(request: Request) {
 
 export async function DELETE(request: Request) {
   try {
-    // Try to get user ID from header first (backward compatibility)
     let userId = request.headers.get("x-user-id");
     
-    // If no user ID from header, try API key
     if (!userId) {
       userId = await getUserFromApiKey(request);
     }

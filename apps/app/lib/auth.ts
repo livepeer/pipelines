@@ -1,7 +1,7 @@
 "use server";
 
 import { createServerClient } from "@repo/supabase/server";
-import { compareSync } from "bcrypt-edge";
+import { compareSync, hashSync } from "bcrypt-edge";
 
 /**
  * Validates an API key and returns the associated user ID if valid
