@@ -94,7 +94,7 @@ export const LivepeerPlayer = React.memo(
           src={src}
           jwt={null}
           backoffMax={1000}
-          timeout={90000}
+          timeout={300000}
           lowLatency="force"
         >
           <Player.Video
