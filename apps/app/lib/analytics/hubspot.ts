@@ -9,7 +9,14 @@ interface HubspotField {
 export async function submitToHubspot(user: PrivyUser) {
   try {
     const fields: HubspotField[] = [
-      { name: "email", value: user?.email?.address || "" },
+      {
+        name: "email",
+        value:
+          user.email?.address ||
+          user.discord?.email ||
+          user.github?.email ||
+          "",
+      },
       {
         name: "firstname",
         value: user?.github?.name || user?.discord?.username || "",
