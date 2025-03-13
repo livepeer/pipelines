@@ -672,7 +672,6 @@ export default function Dreamshaper({
 
       <ManagedBroadcast
         streamUrl={streamUrl}
-        isMobile={isMobile}
         isFullscreen={isFullscreen}
         outputPlayerRef={outputPlayerRef}
         loading={loading}

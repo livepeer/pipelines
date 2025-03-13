@@ -4,10 +4,10 @@ import { useEffect, useRef, useState } from "react";
 import { BroadcastWithControls } from "@/components/playground/broadcast";
 import { Loader2 } from "lucide-react";
 import { cn } from "@repo/design-system/lib/utils";
+import { useIsMobile } from "@repo/design-system/hooks/use-mobile";
 
 interface ManagedBroadcastProps {
   streamUrl: string | null;
-  isMobile: boolean;
   isFullscreen: boolean;
   outputPlayerRef: React.RefObject<HTMLDivElement>;
   loading?: boolean;
@@ -15,24 +15,28 @@ interface ManagedBroadcastProps {
 
 export function ManagedBroadcast({
   streamUrl,
-  isMobile,
   isFullscreen,
   outputPlayerRef,
   loading = false
 }: ManagedBroadcastProps) {
+  const isMobile = useIsMobile();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [playerPosition, setPlayerPosition] = useState({ bottom: 0, right: 0 });
 
   useEffect(() => {
     if (!isMobile && outputPlayerRef.current) {
       const updatePlayerPosition = () => {
-        const rect = outputPlayerRef.current?.getBoundingClientRect();
-        if (rect) {
-          setPlayerPosition({
-            bottom: rect.bottom,
-            right: rect.right
-          });
-        }
+        if (!outputPlayerRef.current) return;
+        const rect = outputPlayerRef.current.getBoundingClientRect();
+        const newBottom = rect.bottom;
+        const newRight = rect.right;
+        
+        setPlayerPosition(prev => {
+          if (prev.bottom === newBottom && prev.right === newRight) {
+            return prev;
+          }
+          return { bottom: newBottom, right: newRight };
+        });
       };
       
       updatePlayerPosition();
