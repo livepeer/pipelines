@@ -3,6 +3,7 @@ import { upsertStream } from "./upsert";
 import { getAllStreams } from "./get-all";
 import { z } from "zod";
 import { deleteStream } from "./delete";
+import { getUserFromApiKey } from "@/lib/auth";
 
 const ERROR_MESSAGES = {
   UNAUTHORIZED: "Authentication required",
@@ -12,7 +13,13 @@ const ERROR_MESSAGES = {
 
 export async function POST(request: Request) {
   try {
-    const userId = "did:privy:cm4x2cuiw007lh8fcj34919fu"; // Dummy user id (infra email)
+    // Default user ID
+    let userId = "did:privy:cm4x2cuiw007lh8fcj34919fu";
+    
+    const apiKeyUserId = await getUserFromApiKey(request);
+    if (apiKeyUserId) {
+      userId = apiKeyUserId;
+    }
 
     const body = await request.json().catch(() => null);
     if (!body) {
@@ -33,7 +40,12 @@ export async function POST(request: Request) {
 
 export async function GET(request: Request) {
   try {
-    const userId = request.headers.get("x-user-id");
+    let userId = request.headers.get("x-user-id");
+    
+    if (!userId) {
+      userId = await getUserFromApiKey(request);
+    }
+    
     if (!userId) {
       return createErrorResponse(401, ERROR_MESSAGES.UNAUTHORIZED);
     }
@@ -48,7 +60,12 @@ export async function GET(request: Request) {
 
 export async function DELETE(request: Request) {
   try {
-    const userId = request.headers.get("x-user-id");
+    let userId = request.headers.get("x-user-id");
+    
+    if (!userId) {
+      userId = await getUserFromApiKey(request);
+    }
+    
     if (!userId) {
       return createErrorResponse(401, ERROR_MESSAGES.UNAUTHORIZED);
     }
