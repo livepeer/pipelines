@@ -15,7 +15,6 @@ export async function submitToHubspot(user: PrivyUser) {
         value: user?.github?.name || user?.discord?.username || "",
       },
       { name: "user_id", value: user?.id || "" },
-      { name: "source", value: "Pipeline App Signup" },
       {
         name: "signup_method",
         value: user?.github ? "GitHub" : user?.discord ? "Discord" : "Email",
