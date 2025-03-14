@@ -3,6 +3,7 @@ import { useVideoClip } from "../hooks/useVideoClip";
 import { cn } from "@repo/design-system/lib/utils";
 import { ClipModal } from "./ClipModal";
 import { ClipOptionsModal, ClipRecordingMode } from "./ClipOptionsModal";
+import { Scissors, Square } from "lucide-react";
 
 interface ClipButtonProps {
   disabled?: boolean;
@@ -11,26 +12,6 @@ interface ClipButtonProps {
   isAuthenticated?: boolean;
   isMobile?: boolean;
 }
-
-const ClipIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="16"
-    height="16"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <circle cx="6" cy="6" r="3" />
-    <circle cx="6" cy="18" r="3" />
-    <line x1="20" y1="4" x2="8.12" y2="15.88" />
-    <line x1="14.47" y1="14.48" x2="20" y2="20" />
-    <line x1="8.12" y1="8.12" x2="12" y2="12" />
-  </svg>
-);
 
 const RecordingProgressIcon = ({ progress }: { progress: number }) => {
   const circleDegrees = (progress / 100) * 360;
@@ -60,6 +41,7 @@ export const ClipButton = ({
 }: ClipButtonProps) => {
   const {
     recordClip,
+    stopRecording,
     showRecordingOptions,
     isRecording,
     progress,
@@ -72,6 +54,17 @@ export const ClipButton = ({
   } = useVideoClip();
 
   const handleClick = () => {
+    if (isRecording) {
+      if (trackAnalytics) {
+        trackAnalytics("daydream_clip_stopped", {
+          is_authenticated: isAuthenticated,
+          progress: progress,
+        });
+      }
+      stopRecording();
+      return;
+    }
+    
     if (trackAnalytics) {
       trackAnalytics("daydream_clip_button_clicked", {
         is_authenticated: isAuthenticated,
@@ -92,7 +85,7 @@ export const ClipButton = ({
           size="sm"
           className={cn("h-8 gap-2 relative overflow-hidden", className)}
           onClick={handleClick}
-          disabled={disabled || isRecording}
+          disabled={disabled}
         >
           {/* Progress bar */}
           {isRecording && (
@@ -100,7 +93,7 @@ export const ClipButton = ({
               <div className="absolute inset-0 bg-gray-200/20 rounded-md" />
 
               <div
-                className="absolute inset-0 bg-[#ff3333] z-10 rounded-md"
+                className="absolute inset-0 bg-[#ff3333] z-0 rounded-md"
                 style={{
                   width: `${progress}%`,
                   boxShadow: "0 0 8px rgba(255, 51, 51, 0.7)",
@@ -109,10 +102,12 @@ export const ClipButton = ({
             </>
           )}
 
-          <ClipIcon />
-          <span className="z-10 relative">
-            {isRecording ? "Recording..." : "Clip (15s)"}
-          </span>
+          <div className="z-20 relative flex items-center gap-2">
+            {isRecording ? <Square size={16} /> : <Scissors size={16} />}
+            <span>
+              {isRecording ? "Stop Recording" : "Create Clip"}
+            </span>
+          </div>
         </Button>
       )}
 
@@ -122,10 +117,10 @@ export const ClipButton = ({
           size="icon"
           className="p-0 m-0 bg-transparent border-none hover:bg-transparent focus:outline-none relative"
           onClick={handleClick}
-          disabled={disabled || isRecording}
+          disabled={disabled}
         >
-          {!isRecording && <ClipIcon />}
-          {isRecording && <RecordingProgressIcon progress={progress} />}
+          {!isRecording && <Scissors size={16} />}
+          {isRecording && <Square size={16} />}
         </Button>
       )}
 
