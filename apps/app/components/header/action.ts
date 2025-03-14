@@ -15,7 +15,9 @@ export async function createUser(user: User) {
     console.error(error);
   }
 
-  if (data?.length === 0) {
+  const isNewUser = data?.length === 0;
+
+  if (isNewUser) {
     console.log("user not found, creating");
 
     const { error } = await supabase.from("users").insert({
@@ -28,4 +30,6 @@ export async function createUser(user: User) {
       console.error(error);
     }
   }
+
+  return { isNewUser };
 }

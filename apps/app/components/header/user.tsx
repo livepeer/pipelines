@@ -21,6 +21,7 @@ import { useEffect } from "react";
 import { cn } from "@repo/design-system/lib/utils";
 import { useIsMobile } from "@repo/design-system/hooks/use-mobile";
 import { identifyUser } from "@/lib/analytics/mixpanel";
+import { submitToHubspot } from "@/lib/analytics/hubspot";
 export default function User({ className }: { className?: string }) {
   const { ready, authenticated, user, login, logout } = usePrivy();
   const isMobile = useIsMobile();
@@ -33,16 +34,22 @@ export default function User({ className }: { className?: string }) {
   const disableLogin = !ready || authenticated;
 
   const checkUser = async (userToInsert: PrivyUser) => {
-    await createUser(userToInsert);
+    return await createUser(userToInsert);
   };
 
   useEffect(() => {
     const initUser = async () => {
       if (user?.id) {
-        await checkUser(user);
+        const { isNewUser } = await checkUser(user);
         const distinctId = localStorage.getItem("mixpanel_distinct_id");
         localStorage.setItem("mixpanel_user_id", user.id);
-        await identifyUser(user.id, distinctId || "", user);
+
+        await Promise.all([
+          identifyUser(user.id, distinctId || "", user),
+          // TODO: only submit to Hubspot on production
+          isNewUser ? submitToHubspot(user) : Promise.resolve(),
+        ]);
+
         track("user_logged_in", {
           user_id: user.id,
           distinct_id: distinctId,
