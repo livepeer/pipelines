@@ -2,11 +2,11 @@
 
 import { TrackedButton } from "@/components/analytics/TrackedButton";
 import { StreamInfo } from "@/components/footer/stream-info";
-import { BroadcastWithControls } from "@/components/playground/broadcast";
 import { StreamDebugPanel } from "@/components/stream/stream-debug-panel";
 import { useCommandSuggestions } from "@/hooks/useCommandSuggestions";
 import { StreamStatus } from "@/hooks/useStreamStatus";
 import { useTrialTimer } from "@/hooks/useTrialTimer";
+import { useTauriVirtualCamera } from "@/hooks/useTauriVirtualCamera";
 import track from "@/lib/track";
 import { usePrivy } from "@privy-io/react-auth";
 import { Button } from "@repo/design-system/components/ui/button";
@@ -28,6 +28,7 @@ import {
   Share2,
   SlidersHorizontal,
   Share,
+  Camera,
 } from "lucide-react";
 import { Inter } from "next/font/google";
 import Image from "next/image";
@@ -130,6 +131,7 @@ export default function Dreamshaper({
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [promptVersion, setPromptVersion] = useState(0);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [isTauriMode, setIsTauriMode] = useState(false);
 
   const isFullscreenAPISupported =
     typeof document !== "undefined" &&
@@ -460,6 +462,19 @@ export default function Dreamshaper({
     }
   }, [pipeline]);
 
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      setIsTauriMode(urlParams.get('tauri') === 'true');
+    }
+  }, []);
+
+  const { 
+    isVirtualCameraRunning,
+    isLoading,
+    toggleVirtualCamera 
+  } = useTauriVirtualCamera(streamKey);
+
   return (
     <div className="relative flex flex-col min-h-screen overflow-y-auto">
       {/* Header section */}
@@ -549,6 +564,30 @@ export default function Dreamshaper({
           </div>
         )}
       </div>
+
+      {isTauriMode && (
+        <div className="fixed top-4 right-4 z-[100]">
+          <Button
+            variant={isVirtualCameraRunning ? "destructive" : "outline"}
+            size="sm"
+            className="gap-2 shadow-md"
+            onClick={toggleVirtualCamera}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span>{isVirtualCameraRunning ? "Stopping..." : "Starting..."}</span>
+              </>
+            ) : (
+              <>
+                <Camera className="h-4 w-4" />
+                <span>{isVirtualCameraRunning ? "Stop Virtual Camera" : "Start Virtual Camera"}</span>
+              </>
+            )}
+          </Button>
+        </div>
+      )}
 
       {isMobile && (
         <div className="absolute top-4 right-4 z-50 flex gap-2">
