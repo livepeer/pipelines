@@ -23,7 +23,7 @@
         "title": "Daydream",
         "width": 1200,
         "height": 800,
-        "url": "http://localhost:3000?tauri=true",
+        "url": "https://pipelines-app-git-gio-experimenttauri-app-livepeer.vercel.app/?tauri=true",
         "label": "main"
       }
     ]
