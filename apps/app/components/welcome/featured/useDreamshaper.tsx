@@ -18,6 +18,7 @@ const DUMMY_USER_ID_FOR_NON_AUTHENTICATED_USERS =
   "did:privy:cm4x2cuiw007lh8fcj34919fu"; // Infra Email User ID
 
 const DREAMSHAPER_PARAMS_STORAGE_KEY = "dreamshaper_latest_params";
+const DREAMSHAPER_PARAMS_VERSION_KEY = "dreamshaper_params_version";
 
 const createDefaultValues = (pipeline: any) => {
   const inputs = pipeline.config.inputs;
@@ -89,8 +90,9 @@ export function useDreamshaper() {
   const searchParams = useSearchParams();
   const pathname = usePathname();
 
-  const pipelineId = searchParams.get("pipeline_id") || 
-    process.env.NEXT_PUBLIC_SHOWCASE_PIPELINE_ID || 
+  const pipelineId =
+    searchParams.get("pipeline_id") ||
+    process.env.NEXT_PUBLIC_SHOWCASE_PIPELINE_ID ||
     DEFAULT_PIPELINE_ID;
 
   const [loading, setLoading] = useState(true);
@@ -106,20 +108,30 @@ export function useDreamshaper() {
     stream?.id || null,
   );
 
-  const storeParamsInLocalStorage = useCallback((params: any) => {
+  const storeParamsInLocalStorage = useCallback((params: any, pipelineVersion: string) => {
     try {
       localStorage.setItem(
         DREAMSHAPER_PARAMS_STORAGE_KEY,
-        JSON.stringify(params),
+        JSON.stringify(params)
       );
+      localStorage.setItem(DREAMSHAPER_PARAMS_VERSION_KEY, pipelineVersion);
     } catch (error) {
       console.error("Error storing parameters in localStorage:", error);
     }
   }, []);
 
-  const getParamsFromLocalStorage = useCallback(() => {
+  const getParamsFromLocalStorage = useCallback((currentPipelineVersion: string) => {
     try {
+      const storedVersion = localStorage.getItem(DREAMSHAPER_PARAMS_VERSION_KEY);
       const storedParams = localStorage.getItem(DREAMSHAPER_PARAMS_STORAGE_KEY);
+
+      // If versions don't match or stored version doesn't exist, clear storage and return null
+      if (!storedVersion || storedVersion !== currentPipelineVersion) {
+        localStorage.removeItem(DREAMSHAPER_PARAMS_STORAGE_KEY);
+        localStorage.removeItem(DREAMSHAPER_PARAMS_VERSION_KEY);
+        return null;
+      }
+
       return storedParams ? JSON.parse(storedParams) : null;
     } catch (error) {
       console.error("Error retrieving parameters from localStorage:", error);
@@ -191,7 +203,7 @@ export function useDreamshaper() {
           });
 
           if (response.status == 200 || response.status == 201) {
-            storeParamsInLocalStorage(sharedParams);
+            storeParamsInLocalStorage(sharedParams, pipeline.version);
             setInputValues(sharedParams);
           }
 
@@ -216,7 +228,7 @@ export function useDreamshaper() {
   ]);
 
   useEffect(() => {
-    if (searchParams.get("shared") || !stream || sharedParamsApplied) {
+    if (searchParams.get("shared") || !stream || sharedParamsApplied || !pipeline) {
       return;
     }
 
@@ -225,7 +237,7 @@ export function useDreamshaper() {
     }
 
     const applyStoredParams = async () => {
-      const storedParams = getParamsFromLocalStorage();
+      const storedParams = getParamsFromLocalStorage(pipeline.version);
 
       if (!storedParams) {
         return;
@@ -260,11 +272,12 @@ export function useDreamshaper() {
     getParamsFromLocalStorage,
     gatewayHostReady,
     gatewayHost,
+    pipeline,
   ]);
 
   useEffect(() => {
     if (!ready) return;
-    
+
     let isMounted = true;
 
     const fetchData = async () => {
@@ -330,7 +343,8 @@ export function useDreamshaper() {
       }
 
       try {
-        const { data: streamData, error: streamError } = await getStream(streamId);
+        const { data: streamData, error: streamError } =
+          await getStream(streamId);
 
         if (streamError) {
           console.error("Error fetching stream:", streamError);
@@ -342,7 +356,7 @@ export function useDreamshaper() {
 
         // Fetching the pipeline again to ensure we have the latest values
         const freshPipeline = await getPipeline(pipeline.id);
-        
+
         const defaultValues = createDefaultValues(freshPipeline);
         const updatedInputValues = processInputValues(defaultValues);
 
@@ -357,10 +371,13 @@ export function useDreamshaper() {
         if (!updatedInputValues.prompt["5"].inputs) {
           updatedInputValues.prompt["5"].inputs = {};
         }
-        
+
         updatedInputValues.prompt["5"].inputs.text = cleanedPrompt;
 
-        if (freshPipeline?.prioritized_params && Object.keys(commands).length > 0) {
+        if (
+          freshPipeline?.prioritized_params &&
+          Object.keys(commands).length > 0
+        ) {
           const prioritizedParams =
             typeof freshPipeline.prioritized_params === "string"
               ? JSON.parse(freshPipeline.prioritized_params)
@@ -398,7 +415,8 @@ export function useDreamshaper() {
                   numValue = param.widgetConfig.max;
                 }
 
-                updatedInputValues.prompt[nodeId].inputs[actualField] = numValue;
+                updatedInputValues.prompt[nodeId].inputs[actualField] =
+                  numValue;
               } else if (param.widget === "checkbox") {
                 updatedInputValues.prompt[nodeId].inputs[actualField] =
                   value.toLowerCase() === "true" || value === "1";
@@ -409,7 +427,7 @@ export function useDreamshaper() {
           });
         }
 
-        storeParamsInLocalStorage(updatedInputValues);
+        storeParamsInLocalStorage(updatedInputValues, freshPipeline.version);
         setInputValues(updatedInputValues);
 
         if (!streamData?.gateway_host) {
@@ -444,7 +462,7 @@ export function useDreamshaper() {
         setUpdating(false);
       }
     },
-    [stream, pipeline, storeParamsInLocalStorage]
+    [stream, pipeline, storeParamsInLocalStorage],
   );
 
   const createShareLink = useCallback(async () => {
@@ -454,7 +472,7 @@ export function useDreamshaper() {
     }
 
     try {
-      const storedParams = getParamsFromLocalStorage();
+      const storedParams = getParamsFromLocalStorage(pipeline.version);
 
       if (!storedParams) {
         console.error("No parameters found in localStorage");

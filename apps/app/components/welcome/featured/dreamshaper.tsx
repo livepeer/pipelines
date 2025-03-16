@@ -27,6 +27,7 @@ import {
   Send,
   Share2,
   SlidersHorizontal,
+  Share,
 } from "lucide-react";
 import { Inter } from "next/font/google";
 import Image from "next/image";
@@ -39,6 +40,7 @@ import SettingsMenu from "./prompt-settings";
 import { ShareModal } from "./ShareModal";
 import { UpdateOptions } from "./useDreamshaper";
 import { MAX_PROMPT_LENGTH, useValidateInput } from "./useValidateInput";
+import { ClipButton } from "@/components/ClipButton";
 
 const PROMPT_PLACEHOLDER = "Describe the style to transform your stream...";
 
@@ -508,20 +510,33 @@ export default function Dreamshaper({
         {/* Header buttons */}
         {!isMobile && !isFullscreen && (
           <div className="absolute bottom-3 right-0 flex gap-2">
-            {createShareLink && hasSubmittedPrompt && (
-              <TrackedButton
-                trackingEvent="daydream_share_button_clicked"
-                trackingProperties={{
-                  is_authenticated: authenticated,
-                }}
-                variant="ghost"
-                size="sm"
-                className="bg-transparent hover:bg-black/10 border border-muted-foreground/30 text-foreground px-3 py-1 text-xs rounded-lg font-semibold h-[36px] flex items-center"
-                onClick={() => setIsShareModalOpen(true)}
-              >
-                Share
-              </TrackedButton>
-            )}
+            <div className="flex items-center gap-2">
+              {/* Only show clip button when stream is live */}
+              {live && outputPlaybackId && streamUrl && (
+                <ClipButton
+                  disabled={!outputPlaybackId || !streamUrl}
+                  className="mr-2"
+                  trackAnalytics={track}
+                  isAuthenticated={authenticated}
+                />
+              )}
+
+              {createShareLink && (
+                <TrackedButton
+                  trackingEvent="daydream_share_button_clicked"
+                  trackingProperties={{
+                    is_authenticated: authenticated,
+                  }}
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 gap-2"
+                  onClick={() => setIsShareModalOpen(true)}
+                >
+                  <Share className="h-4 w-4" />
+                  <span>Share</span>
+                </TrackedButton>
+              )}
+            </div>
 
             <Link
               target="_blank"
@@ -534,17 +549,29 @@ export default function Dreamshaper({
         )}
       </div>
 
-      {/* Mobile share button */}
-      {isMobile && createShareLink && hasSubmittedPrompt && (
-        <div className="absolute top-4 right-4 z-50">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="p-0 m-0 bg-transparent border-none hover:bg-transparent focus:outline-none"
-            onClick={() => setIsShareModalOpen(true)}
-          >
-            <Share2 className="h-4 w-4" />
-          </Button>
+      {isMobile && (
+        <div className="absolute top-4 right-4 z-50 flex gap-2">
+          {/* Mobile clip button - only show when live */}
+          {live && outputPlaybackId && streamUrl && (
+            <ClipButton
+              disabled={!outputPlaybackId || !streamUrl}
+              trackAnalytics={track}
+              isAuthenticated={authenticated}
+              isMobile={true}
+            />
+          )}
+
+          {/* Mobile share button */}
+          {createShareLink && hasSubmittedPrompt && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="p-0 m-0 bg-transparent border-none hover:bg-transparent focus:outline-none"
+              onClick={() => setIsShareModalOpen(true)}
+            >
+              <Share2 className="h-4 w-4" />
+            </Button>
+          )}
         </div>
       )}
 
