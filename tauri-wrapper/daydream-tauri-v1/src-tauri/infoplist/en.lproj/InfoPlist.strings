@@ -1,0 +1,2 @@
+NSCameraUsageDescription = "Daydream needs access to your camera for virtual camera functionality";
+NSMicrophoneUsageDescription = "Daydream needs access to your microphone for audio input"; 

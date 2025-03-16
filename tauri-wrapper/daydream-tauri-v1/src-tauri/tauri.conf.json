@@ -10,7 +10,7 @@
   },
   "app": {
     "security": {
-      "csp": null
+      "csp": "default-src 'self'; img-src 'self' asset: https://asset.localhost data:; media-src 'self' https: data:; connect-src 'self' https:; script-src 'self' 'unsafe-eval' 'unsafe-inline' https:; style-src 'self' 'unsafe-inline' https:; frame-src 'self' https:"
     },
     "trayIcon": {
       "iconPath": "icons/tray-icon-Template.png",
@@ -26,7 +26,9 @@
         "url": "https://pipelines-app-git-gio-experimenttauri-app-livepeer.vercel.app/?tauri=true",
         "label": "main"
       }
-    ]
+    ],
+    "macOSPrivateApi": true,
+    "withGlobalTauri": true
   },
   "bundle": {
     "active": true,
@@ -37,7 +39,17 @@
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ]
+    ],
+    "macOS": {
+      "entitlements": "Daydream.entitlements",
+      "exceptionDomain": "",
+      "frameworks": [],
+      "providerShortName": null,
+      "signingIdentity": null,
+      "files": {
+        "Info.plist": "./Info.plist"
+      }
+    }
   },
   "plugins": {
     "shell": {
