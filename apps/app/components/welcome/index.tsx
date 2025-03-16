@@ -184,7 +184,7 @@ const MyStats = () => {
 const CTA = () => {
   return (
     <Link
-      href={"https://discord.com/invite/hxyNHeSzCK"}
+      href={"https://discord.gg/livepeer"}
       target="_blank"
       style={{
         backgroundImage:
