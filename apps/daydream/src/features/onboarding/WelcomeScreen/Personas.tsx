@@ -4,7 +4,7 @@ const personas = ["Streamer", "Content Creator", "Live Performer", "Other"];
 
 export default function Personas() {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[12px] w-full">
+    <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-[12px] w-full">
       {personas.map(persona => (
         <button
           key={persona}

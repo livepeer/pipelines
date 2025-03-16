@@ -3,10 +3,11 @@
 import Image from "next/image";
 import Personas from "./Personas";
 import CameraAccess from "./CameraAccess";
+import Footer from "./Footer";
 
 export default function WelcomeScreen() {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center relative">
+    <div className="min-h-screen flex flex-col items-center justify-center relative overflow-y-auto">
       <Image
         src="/background.png"
         alt="Background"
@@ -31,7 +32,8 @@ export default function WelcomeScreen() {
 
           <div className="flex flex-col gap-[16px]">
             <p className="font-open-sans text-base sm:text-lg leading-[1.35em] text-[#232323]">
-              Daydream is a limitless portal for transforming your video 🚀
+              Daydream is a <span className="font-black">limitless</span> portal
+              for transforming your video 🚀
             </p>
             <p className="font-open-sans text-base sm:text-lg leading-[1.35em] text-[#232323]">
               Whether you're crafting stories, building experiences, or
@@ -41,7 +43,7 @@ export default function WelcomeScreen() {
           </div>
 
           <p className="font-playfair font-semibold text-[18px] sm:text-xl md:text-2xl text-[#1C1C1C]">
-            First, tell us a little about yourself
+            But first, let’s get to know you!
           </p>
 
           <Personas />
@@ -49,6 +51,7 @@ export default function WelcomeScreen() {
           <CameraAccess />
         </div>
       </div>
+      <Footer />
     </div>
   );
 }
