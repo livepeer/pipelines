@@ -15,8 +15,15 @@ export const useTauriVirtualCamera = (streamKey: string | null) => {
       
       setIsLoading(true);
       
-      const isProduction = () => window.location.hostname !== "daydream.live";
+      const isProduction = () => {
+        return window.location.hostname === "daydream.live";
+      };
+      
+      console.log(`Current hostname: ${window.location.hostname}`);
+      console.log(`Using environment: ${isProduction() ? 'production' : 'development'}`);
+      
       const formattedUrl = `https://ai.livepeer.${isProduction() ? "com" : "monster"}/aiWebrtc/${streamKey}-out`;
+      console.log(`Generated URL: ${formattedUrl}`);
       
       const _ = await invoke<string>('handle_stream_url', { url: formattedUrl });
       
