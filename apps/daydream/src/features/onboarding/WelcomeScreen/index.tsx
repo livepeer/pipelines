@@ -4,6 +4,7 @@ import Image from "next/image";
 import Personas from "./Personas";
 import CameraAccess from "./CameraAccess";
 import Footer from "./Footer";
+import SelectPrompt from "./SelectPrompt";
 
 export default function WelcomeScreen() {
   return (
@@ -49,6 +50,8 @@ export default function WelcomeScreen() {
           <Personas />
 
           <CameraAccess />
+
+          <SelectPrompt />
         </div>
       </div>
       <Footer />
