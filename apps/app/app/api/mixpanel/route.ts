@@ -35,10 +35,7 @@ export async function POST(request: NextRequest) {
 
   const forwardedFor = request.headers.get("x-forwarded-for");
 
-  const app = getAppConfig(
-    !isProduction() &&
-      request.nextUrl.searchParams?.get("gateway") === "secondary",
-  );
+  const app = getAppConfig(request.nextUrl.searchParams);
   const ip =
     app.environment === "dev"
       ? "93.152.210.100" // Hardcoded development IP (truncated ip that resolves to San Francisco)

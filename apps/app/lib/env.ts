@@ -78,7 +78,10 @@ export const isProduction = () => config.app.environment === "production";
 
 export const { livepeer, intercom, mixpanel, hubspot } = config;
 
-export const getAppConfig = (useSecondary?: boolean) => {
+export const getAppConfig = (searchParams?: URLSearchParams) => {
+  const useSecondary =
+    !isProduction() && searchParams?.get("gateway") === "secondary";
+
   if (useSecondary && config.app_secondary) {
     return config.app_secondary;
   }

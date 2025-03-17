@@ -112,9 +112,7 @@ export function useGatewayHost(
     });
   }, [ready, gatewayHost, error]);
 
-  const appConfig = getAppConfig(
-    !isProduction() && searchParams?.get("gateway") === "secondary",
-  );
+  const appConfig = getAppConfig(searchParams);
 
   return {
     gatewayHost,

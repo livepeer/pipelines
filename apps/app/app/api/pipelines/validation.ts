@@ -1,8 +1,8 @@
 "use server";
 import { upsertStream } from "../streams/upsert";
 import { createServerClient } from "@repo/supabase/server";
-import { getGatewayConfig, serverConfig } from "@/lib/serverEnv";
-import { getAppConfig, isProduction } from "@/lib/env";
+import { getGatewayConfig } from "@/lib/serverEnv";
+import { getAppConfig } from "@/lib/env";
 
 type StatusRequest = {
   headers: {
@@ -97,15 +97,12 @@ export async function triggerSmokeTest(
     return;
   }
 
-  const useSecondaryGateway =
-    !isProduction() && searchParams?.get("gateway") === "secondary";
-
-  const gateway = getGatewayConfig(useSecondaryGateway);
+  const gateway = getGatewayConfig();
   const gatewayUrl = gateway.url;
   const username = gateway.userId;
   const password = gateway.password;
 
-  const currentApp = getAppConfig(useSecondaryGateway);
+  const currentApp = getAppConfig();
   const credentials = Buffer.from(`${username}:${password}`).toString("base64");
   const streamUrl = `${currentApp.rtmpUrl}${currentApp.rtmpUrl?.endsWith("/") ? "" : "/"}${streamKey}`;
 
@@ -140,9 +137,7 @@ export async function pollStreamStatus(
 ) {
   const supabase = await createServerClient();
   const streamId = stream.id;
-  const gateway = getGatewayConfig(
-    !isProduction() && searchParams?.get("gateway") === "secondary",
-  );
+  const gateway = getGatewayConfig();
   const username = gateway.userId;
   const password = gateway.password;
 

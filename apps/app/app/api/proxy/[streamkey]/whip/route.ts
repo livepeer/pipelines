@@ -11,10 +11,7 @@ async function handleRequest(
   streamkey: string,
 ) {
   try {
-    const gateway = getGatewayConfig(
-      !isProduction() &&
-        req.nextUrl.searchParams.get("gateway") === "secondary",
-    );
+    const gateway = getGatewayConfig(req.nextUrl.searchParams);
     const targetWhipEndpoint = `${gateway.url}/${streamkey}/whip`;
     const credentials = Buffer.from(
       `${gateway.userId}:${gateway.password}`,

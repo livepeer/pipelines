@@ -1,25 +1,24 @@
 "use client";
 
-import * as React from "react";
+import { sendKafkaEvent } from "@/app/api/metrics/kafka";
 import { getStreamPlaybackInfo } from "@/app/api/streams/get";
+import { LPPLayer } from "@/components/playground/player";
+import { useAppConfig } from "@/hooks/useAppConfig";
 import {
-  PrivateErrorIcon,
   LoadingIcon,
-  PictureInPictureIcon,
-  UnmuteIcon,
   MuteIcon,
+  PictureInPictureIcon,
+  PrivateErrorIcon,
+  UnmuteIcon,
 } from "@livepeer/react/assets";
 import { getSrc } from "@livepeer/react/external";
 import * as Player from "@livepeer/react/player";
-import { PlaybackInfo } from "livepeer/models/components";
-import { useEffect, useRef, useState } from "react";
-import { getAppConfig, isProduction } from "@/lib/env";
-import { useSearchParams } from "next/navigation";
-import { PauseIcon, PlayIcon } from "lucide-react";
 import { usePrivy } from "@privy-io/react-auth";
-import { sendKafkaEvent } from "@/app/api/metrics/kafka";
-import { LPPLayer } from "@/components/playground/player";
-import { useAppConfig } from "@/hooks/useAppConfig";
+import { PlaybackInfo } from "livepeer/models/components";
+import { PauseIcon, PlayIcon } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import * as React from "react";
+import { useEffect, useRef, useState } from "react";
 
 type TrackingProps = {
   playbackId: string;

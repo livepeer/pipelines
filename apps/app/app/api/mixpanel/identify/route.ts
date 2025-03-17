@@ -41,10 +41,7 @@ export async function POST(request: NextRequest) {
     if (anonymousId !== userId) {
       mixpanelClient.alias(userId, anonymousId);
     }
-    const app = getAppConfig(
-      !isProduction() &&
-        request.nextUrl.searchParams.get("app") === "secondary",
-    );
+    const app = getAppConfig(request.nextUrl.searchParams);
 
     const forwardedFor = request.headers.get("x-forwarded-for");
 

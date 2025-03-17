@@ -4,12 +4,6 @@ import { useMemo } from "react";
 
 export const useAppConfig = () => {
   const searchParams = useSearchParams();
-  const appConfig = useMemo(
-    () =>
-      getAppConfig(
-        !isProduction() && searchParams?.get("gateway") === "secondary",
-      ),
-    [searchParams],
-  );
+  const appConfig = useMemo(() => getAppConfig(searchParams), [searchParams]);
   return appConfig;
 };

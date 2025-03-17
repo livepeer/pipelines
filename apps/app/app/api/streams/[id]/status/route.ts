@@ -44,10 +44,7 @@ export async function GET(
 ) {
   const streamId = (await params).id;
 
-  const gateway = getGatewayConfig(
-    !isProduction() &&
-      request.nextUrl.searchParams.get("gateway") === "secondary",
-  );
+  const gateway = getGatewayConfig(request.nextUrl.searchParams);
   const gatewayUrl = gateway.url;
   const username = gateway.userId;
   const password = gateway.password;

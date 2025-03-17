@@ -534,9 +534,7 @@ function getStreamUrl(
 ): string {
   const customWhipServer = searchParams.get("whipServer");
 
-  const app = getAppConfig(
-    !isProduction() && searchParams?.get("gateway") === "secondary",
-  );
+  const app = getAppConfig(searchParams);
 
   if (customWhipServer) {
     if (customWhipServer.includes("<STREAM_KEY>")) {

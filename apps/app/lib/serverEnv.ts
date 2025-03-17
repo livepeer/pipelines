@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isProduction } from "./env";
 
 const SupabaseConfig = z.object({
   url: z.string().url().optional(),
@@ -62,7 +63,10 @@ const serverOnlyConfig = ServerEnvironmentConfig.parse(serverOnlyEnvConfig);
 
 export const serverConfig = async () => serverOnlyConfig;
 
-export const getGatewayConfig = (useSecondary?: boolean) => {
+export const getGatewayConfig = (searchParams?: URLSearchParams) => {
+  const useSecondary =
+    !isProduction && searchParams?.get("gateway") === "secondary";
+
   if (useSecondary && serverOnlyConfig.gateway_secondary) {
     return serverOnlyConfig.gateway_secondary;
   }
