@@ -17,7 +17,7 @@ export function ManagedBroadcast({
   streamUrl,
   isFullscreen,
   outputPlayerRef,
-  loading = false
+  loading = false,
 }: ManagedBroadcastProps) {
   const isMobile = useIsMobile();
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -30,7 +30,7 @@ export function ManagedBroadcast({
         const rect = outputPlayerRef.current.getBoundingClientRect();
         const newBottom = rect.bottom;
         const newRight = rect.right;
-        
+
         setPlayerPosition(prev => {
           if (prev.bottom === newBottom && prev.right === newRight) {
             return prev;
@@ -38,21 +38,21 @@ export function ManagedBroadcast({
           return { bottom: newBottom, right: newRight };
         });
       };
-      
+
       updatePlayerPosition();
-      
-      window.addEventListener('resize', updatePlayerPosition);
-      window.addEventListener('scroll', updatePlayerPosition);
-      
+
+      window.addEventListener("resize", updatePlayerPosition);
+      window.addEventListener("scroll", updatePlayerPosition);
+
       const resizeObserver = new ResizeObserver(() => {
         updatePlayerPosition();
       });
-      
+
       resizeObserver.observe(outputPlayerRef.current);
-      
+
       return () => {
-        window.removeEventListener('resize', updatePlayerPosition);
-        window.removeEventListener('scroll', updatePlayerPosition);
+        window.removeEventListener("resize", updatePlayerPosition);
+        window.removeEventListener("scroll", updatePlayerPosition);
         resizeObserver.disconnect();
       };
     }
@@ -65,27 +65,29 @@ export function ManagedBroadcast({
   if (!streamUrl) return null;
 
   return (
-    <div 
+    <div
       className={cn(
         "transition-all duration-100",
-        isMobile 
-          ? "mx-4 w-auto -mt-2 mb-4" 
-          : "absolute z-50" 
+        isMobile ? "mx-4 w-auto -mt-2 mb-4" : "absolute z-50",
       )}
-      style={!isMobile ? {
-        position: "fixed",
-        bottom: isFullscreen 
-          ? "80px" 
-          : `${window.innerHeight - playerPosition.bottom + 40}px`,
-        right: isFullscreen 
-          ? "16px" 
-          : `${window.innerWidth - playerPosition.right + 20}px`,
-        width: isCollapsed ? "48px" : "250px",
-        height: isCollapsed ? "48px" : "auto",
-        aspectRatio: isCollapsed ? "1" : "16/9",
-        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
-        transform: "translate(0, 0)",
-      } : {}}
+      style={
+        !isMobile
+          ? {
+              position: "fixed",
+              bottom: isFullscreen
+                ? "80px"
+                : `${window.innerHeight - playerPosition.bottom + 40}px`,
+              right: isFullscreen
+                ? "16px"
+                : `${window.innerWidth - playerPosition.right + 20}px`,
+              width: isCollapsed ? "48px" : "250px",
+              height: isCollapsed ? "48px" : "auto",
+              aspectRatio: isCollapsed ? "1" : "16/9",
+              boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+              transform: "translate(0, 0)",
+            }
+          : {}
+      }
     >
       {loading && isMobile ? (
         <div className="w-8 h-8 flex items-center justify-center">
@@ -95,15 +97,15 @@ export function ManagedBroadcast({
         <div
           className={cn(
             "transition-all duration-300",
-            isMobile 
+            isMobile
               ? cn(
                   "flex-shrink-0 [&>div]:!pb-0 [&>div]:h-full",
-                  isCollapsed ? "h-8" : "h-64"
+                  isCollapsed ? "h-8" : "h-64",
                 )
               : cn(
-                  "rounded-xl overflow-hidden", 
-                  isCollapsed ? "w-12 h-12" : "w-full aspect-video"
-                )
+                  "rounded-xl overflow-hidden",
+                  isCollapsed ? "w-12 h-12" : "w-full aspect-video",
+                ),
           )}
         >
           <BroadcastWithControls
@@ -112,11 +114,11 @@ export function ManagedBroadcast({
             onCollapse={setIsCollapsed}
             className={cn(
               "rounded-xl overflow-hidden",
-              isMobile ? "w-full h-full" : ""
+              isMobile ? "w-full h-full" : "",
             )}
           />
         </div>
       )}
     </div>
   );
-} 
+}
