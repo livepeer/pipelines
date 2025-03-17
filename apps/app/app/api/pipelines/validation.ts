@@ -1,8 +1,8 @@
 "use server";
 import { upsertStream } from "../streams/upsert";
 import { createServerClient } from "@repo/supabase/server";
-import { serverConfig } from "@/lib/serverEnv";
-import { app } from "@/lib/env";
+import { getGatewayConfig, serverConfig } from "@/lib/serverEnv";
+import { getAppConfig } from "@/lib/env";
 
 type StatusRequest = {
   headers: {
@@ -85,7 +85,10 @@ export async function createSmokeTestStream(pipelineId: string) {
   return stream;
 }
 
-export async function triggerSmokeTest(streamKey: string) {
+export async function triggerSmokeTest(
+  streamKey: string,
+  searchParams?: URLSearchParams,
+) {
   // Check if we're in the dev environment and skip triggering the smoke test if so - to not waste resources
   if (process.env.NEXT_PUBLIC_ENV === "dev") {
     console.log(
@@ -94,13 +97,15 @@ export async function triggerSmokeTest(streamKey: string) {
     return;
   }
 
-  const { gateway } = await serverConfig();
+  const gateway = getGatewayConfig(searchParams);
   const gatewayUrl = gateway.url;
   const username = gateway.userId;
   const password = gateway.password;
 
+  // Get the appropriate app config for RTMP URL
+  const currentApp = getAppConfig(searchParams);
   const credentials = Buffer.from(`${username}:${password}`).toString("base64");
-  const streamUrl = `${app.rtmpUrl}${app.rtmpUrl?.endsWith("/") ? "" : "/"}${streamKey}`;
+  const streamUrl = `${currentApp.rtmpUrl}${currentApp.rtmpUrl?.endsWith("/") ? "" : "/"}${streamKey}`;
 
   try {
     const response = await fetch(`${gatewayUrl}/smoketest`, {
@@ -127,10 +132,13 @@ export async function triggerSmokeTest(streamKey: string) {
   }
 }
 
-export async function pollStreamStatus(stream: any) {
+export async function pollStreamStatus(
+  stream: any,
+  searchParams?: URLSearchParams,
+) {
   const supabase = await createServerClient();
   const streamId = stream.id;
-  const { gateway } = await serverConfig();
+  const gateway = getGatewayConfig(searchParams);
   const username = gateway.userId;
   const password = gateway.password;
 

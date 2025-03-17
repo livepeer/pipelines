@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Label } from "@repo/design-system/components/ui/label";
 import {
   Select,
@@ -22,7 +22,6 @@ import { ScrollArea } from "@repo/design-system/components/ui/scroll-area";
 import { Button } from "@repo/design-system/components/ui/button";
 import { toast } from "sonner";
 import { updateParams } from "@/app/api/streams/update-params";
-import { app } from "@/lib/env";
 import { getStream } from "@/app/api/streams/get";
 import track from "@/lib/track";
 import { BroadcastWithControls } from "./broadcast";
@@ -36,8 +35,9 @@ import { useStreamStatus } from "@/hooks/useStreamStatus";
 
 import { useTrialTimer } from "@/hooks/useTrialTimer";
 import { TrialExpiredModal } from "@/components/modals/trial-expired-modal";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { StreamStatus } from "@/hooks/useStreamStatus";
+import { useAppConfig } from "@/hooks/useAppConfig";
 
 type BaseParam = {
   nodeId: string;
@@ -118,6 +118,7 @@ export default function Try({
   const [streamKey, setStreamKey] = useState<string | null>(null);
   const [streamKilled, setStreamKilled] = useState(false);
   const { timeRemaining } = useTrialTimer();
+  const appConfig = useAppConfig();
 
   useEffect(() => {
     const handleTrialExpired = () => {
@@ -266,7 +267,7 @@ export default function Try({
     }
     setStreamId(stream.id);
     setStreamInfo(stream);
-    setStreamUrl(`${app.whipUrl}${stream.stream_key}/whip`);
+    setStreamUrl(`${appConfig.whipUrl}${stream.stream_key}/whip`);
     setStreamKey(stream.stream_key);
     console.log("stream", stream);
     setGatewayHost(stream.gateway_host);

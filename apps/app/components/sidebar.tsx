@@ -1,5 +1,6 @@
 "use client";
-import { app, isProduction } from "@/lib/env";
+
+import { isProduction } from "@/lib/env";
 import { Badge } from "@repo/design-system/components/ui/badge";
 
 import {
@@ -17,12 +18,13 @@ import {
 import { useIsMobile } from "@repo/design-system/hooks/use-mobile";
 import { BookIcon, LightbulbIcon } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import type { ReactNode } from "react";
 import { usePrivy } from "@privy-io/react-auth";
 import { DiscordLogoIcon } from "@radix-ui/react-icons";
 import User from "components/header/user";
 import { cn } from "@repo/design-system/lib/utils";
+import { useAppConfig } from "@/hooks/useAppConfig";
 
 type GlobalSidebarProperties = {
   readonly children: ReactNode;
@@ -154,6 +156,8 @@ export const GlobalSidebar = ({ children }: GlobalSidebarProperties) => {
     ],
   };
 
+  const appConfig = useAppConfig();
+
   const labelMap: Record<string, string> = {
     /*streams: "Streams",
     pipelines: "Pipelines",
@@ -241,7 +245,9 @@ export const GlobalSidebar = ({ children }: GlobalSidebarProperties) => {
                   />
                 </svg>
                 {!isProduction() && (
-                  <Badge className="uppercase text-xs">{app.environment}</Badge>
+                  <Badge className="uppercase text-xs">
+                    {appConfig.environment}
+                  </Badge>
                 )}
               </div>
             ) : (

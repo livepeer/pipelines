@@ -33,6 +33,7 @@ const EnvironmentConfig = z.object({
   intercom: IntercomConfig,
   mixpanel: MixpanelConfig,
   app: AppConfig,
+  app_secondary: AppConfig.optional(),
   hubspot: HubspotConfig,
 });
 
@@ -55,6 +56,15 @@ const envConfig = {
     rtmpUrl: process.env.NEXT_PUBLIC_RTMP_URL,
     environment: process.env.NEXT_PUBLIC_ENV as Environment,
   },
+  app_secondary: process.env.NEXT_PUBLIC_RTMP_URL_SECONDARY
+    ? {
+        whipUrl:
+          process.env.NEXT_PUBLIC_WHIP_URL_SECONDARY ||
+          process.env.NEXT_PUBLIC_WHIP_URL,
+        rtmpUrl: process.env.NEXT_PUBLIC_RTMP_URL_SECONDARY,
+        environment: process.env.NEXT_PUBLIC_ENV as Environment,
+      }
+    : undefined,
   hubspot: {
     portalId: process.env.NEXT_PUBLIC_HUBSPOT_PORTAL_ID,
     formId: process.env.NEXT_PUBLIC_HUBSPOT_FORM_ID,
@@ -65,7 +75,19 @@ export const config = EnvironmentConfig.parse(envConfig);
 
 export const isProduction = () => config.app.environment === "production";
 
-export const { livepeer, intercom, mixpanel, app, hubspot } = config;
+export const { livepeer, intercom, mixpanel, hubspot } = config;
+
+export const getAppConfig = (searchParams?: URLSearchParams) => {
+  const isStaging = process.env.NEXT_PUBLIC_ENV === "staging";
+  const useSecondary =
+    isStaging && searchParams?.get("gateway") === "secondary";
+
+  if (useSecondary && config.app_secondary) {
+    return config.app_secondary;
+  }
+
+  return config.app;
+};
 
 export const validateEnv = () => {
   try {

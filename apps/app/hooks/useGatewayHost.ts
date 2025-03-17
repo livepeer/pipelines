@@ -1,10 +1,12 @@
 // hooks/useGatewayHost.ts
 import { useState, useEffect, useCallback } from "react";
 import { getStream } from "@/app/api/streams/get";
+import { getAppConfig } from "@/lib/env";
 
 export function useGatewayHost(
   streamId: string | null,
   delayAfterReady = 3000,
+  searchParams?: URLSearchParams,
 ) {
   const [gatewayHost, setGatewayHost] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -109,6 +111,8 @@ export function useGatewayHost(
     });
   }, [ready, gatewayHost, error]);
 
+  const appConfig = getAppConfig(searchParams);
+
   return {
     gatewayHost,
     loading,
@@ -116,5 +120,7 @@ export function useGatewayHost(
     ready,
     executeWhenReady,
     whenReady,
+    rtmpUrl: appConfig.rtmpUrl,
+    whipUrl: appConfig.whipUrl,
   };
 }
