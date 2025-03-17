@@ -6,5 +6,7 @@
   <string>Daydream needs access to your camera for virtual camera functionality</string>
   <key>NSMicrophoneUsageDescription</key>
   <string>Daydream needs access to your microphone for audio input</string>
+  <key>CFBundleIconFile</key>
+  <string>icon.icns</string>
 </dict>
 </plist> 

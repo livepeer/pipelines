@@ -1,5 +1,5 @@
 [package]
-name = "daydream-tauri-v1"
+name = "daydream"
 version = "0.1.0"
 description = "A Tauri App"
 authors = ["you"]
