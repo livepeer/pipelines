@@ -12,7 +12,7 @@ declare global {
 
 export type ClipRecordingMode = "horizontal" | "vertical" | "output-only";
 
-export const CLIP_DURATION = 15000;
+export const CLIP_DURATION = 30000;
 
 const FRAME_RATE = 30;
 const INPUT_DELAY = 1000; // 1 second delay for input video - increase or decreas to sync
@@ -26,6 +26,14 @@ export const useVideoClip = () => {
   const [showClipModal, setShowClipModal] = useState(false);
 
   const [showOptionsModal, setShowOptionsModal] = useState(false);
+
+  const [recordingResources, setRecordingResources] = useState<{
+    mediaRecorder?: MediaRecorder;
+    progressInterval?: NodeJS.Timeout;
+    timeoutId?: NodeJS.Timeout;
+    isDrawing?: boolean;
+    animationFrameId?: number;
+  }>({});
 
   const cleanupClipUrl = () => {
     if (clipUrl) {
@@ -124,8 +132,27 @@ export const useVideoClip = () => {
     return canvas;
   };
 
+  const stopRecording = useCallback(() => {
+    if (!isRecording || !recordingResources) return;
+    
+    const { mediaRecorder, progressInterval, timeoutId, isDrawing, animationFrameId } = recordingResources;
+    
+    if (timeoutId) clearTimeout(timeoutId);
+    if (progressInterval) clearInterval(progressInterval);
+    if (animationFrameId && isDrawing === true) cancelAnimationFrame(animationFrameId);
+    
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+      mediaRecorder.stop();
+    }
+    
+    setRecordingResources({});
+  }, [isRecording, recordingResources]);
+
   const recordClip = async (mode: ClipRecordingMode = "horizontal") => {
-    if (isRecording) return;
+    if (isRecording) {
+      stopRecording();
+      return;
+    }
     setShowOptionsModal(false);
 
     const videos = document.querySelectorAll("video");
@@ -182,7 +209,7 @@ export const useVideoClip = () => {
     };
 
     let isDrawing = true;
-    let animationFrameId: number;
+    let animationFrameId = 0;
 
     const captureInputFrame = () => {
       if (!inputCtx || mode === "output-only") return null;
@@ -352,17 +379,26 @@ export const useVideoClip = () => {
       }
     }, 100);
 
-    setTimeout(() => {
+    const timeoutId = setTimeout(() => {
       isDrawing = false;
       cancelAnimationFrame(animationFrameId);
       clearInterval(progressInterval);
       mediaRecorder.stop();
     }, CLIP_DURATION);
+    
+    setRecordingResources({
+      mediaRecorder,
+      progressInterval,
+      timeoutId,
+      isDrawing: true,
+      animationFrameId,
+    });
   };
 
   return {
     showRecordingOptions,
     recordClip,
+    stopRecording,
     isRecording,
     progress,
     clipUrl,
