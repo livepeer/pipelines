@@ -11,7 +11,7 @@ import {
 } from "@/app/api/streams/share-params";
 import { useSearchParams, usePathname } from "next/navigation";
 import { useGatewayHost } from "@/hooks/useGatewayHost";
-import { getAppConfig } from "@/lib/env";
+import { getAppConfig, isProduction } from "@/lib/env";
 
 const DEFAULT_PIPELINE_ID = "pip_DRQREDnSei4HQyC8"; // Staging Dreamshaper ID
 const DUMMY_USER_ID_FOR_NON_AUTHENTICATED_USERS =
@@ -533,7 +533,10 @@ function getStreamUrl(
   searchParams: URLSearchParams,
 ): string {
   const customWhipServer = searchParams.get("whipServer");
-  const app = getAppConfig(searchParams);
+
+  const app = getAppConfig(
+    !isProduction() && searchParams?.get("gateway") === "secondary",
+  );
 
   if (customWhipServer) {
     if (customWhipServer.includes("<STREAM_KEY>")) {

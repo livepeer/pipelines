@@ -2,7 +2,6 @@
 
 import { TrackedButton } from "@/components/analytics/TrackedButton";
 import { StreamInfo } from "@/components/footer/stream-info";
-import { BroadcastWithControls } from "@/components/playground/broadcast";
 import { StreamDebugPanel } from "@/components/stream/stream-debug-panel";
 import { useCommandSuggestions } from "@/hooks/useCommandSuggestions";
 import { StreamStatus } from "@/hooks/useStreamStatus";

@@ -89,7 +89,12 @@ export const useStreamStatus = (
 
     const fetchStatus = async () => {
       try {
-        const res = await fetch(`/api/streams/${streamId}/status`, {
+        const searchParams = new URLSearchParams(window.location.search);
+        const url = searchParams.get("gateway")
+          ? `/api/streams/${streamId}/status?gateway=${searchParams.get("gateway")}`
+          : `/api/streams/${streamId}/status`;
+
+        const res = await fetch(url, {
           headers: {
             "cache-control": "no-cache",
             pragma: "no-cache",

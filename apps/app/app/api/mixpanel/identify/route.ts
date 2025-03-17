@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAppConfig, mixpanel } from "@/lib/env";
+import { getAppConfig, isProduction, mixpanel } from "@/lib/env";
 import type { Mixpanel } from "mixpanel";
 const MixpanelLib = require("mixpanel");
 
@@ -41,7 +41,10 @@ export async function POST(request: NextRequest) {
     if (anonymousId !== userId) {
       mixpanelClient.alias(userId, anonymousId);
     }
-    const app = getAppConfig(request.nextUrl.searchParams);
+    const app = getAppConfig(
+      !isProduction() &&
+        request.nextUrl.searchParams.get("app") === "secondary",
+    );
 
     const forwardedFor = request.headers.get("x-forwarded-for");
 

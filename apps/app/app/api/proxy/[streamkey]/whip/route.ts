@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getGatewayConfig, serverConfig } from "@/lib/serverEnv";
+import { isProduction } from "@/lib/env";
 
 export const dynamic = "force-dynamic";
 
@@ -10,7 +11,10 @@ async function handleRequest(
   streamkey: string,
 ) {
   try {
-    const gateway = getGatewayConfig(req.nextUrl.searchParams);
+    const gateway = getGatewayConfig(
+      !isProduction() &&
+        req.nextUrl.searchParams.get("gateway") === "secondary",
+    );
     const targetWhipEndpoint = `${gateway.url}/${streamkey}/whip`;
     const credentials = Buffer.from(
       `${gateway.userId}:${gateway.password}`,

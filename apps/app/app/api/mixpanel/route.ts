@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAppConfig, mixpanel } from "@/lib/env";
+import { getAppConfig, isProduction, mixpanel } from "@/lib/env";
 import type { Mixpanel } from "mixpanel";
 const MixpanelLib = require("mixpanel");
 
@@ -35,7 +35,10 @@ export async function POST(request: NextRequest) {
 
   const forwardedFor = request.headers.get("x-forwarded-for");
 
-  const app = getAppConfig(request.nextUrl.searchParams);
+  const app = getAppConfig(
+    !isProduction() &&
+      request.nextUrl.searchParams?.get("gateway") === "secondary",
+  );
   const ip =
     app.environment === "dev"
       ? "93.152.210.100" // Hardcoded development IP (truncated ip that resolves to San Francisco)

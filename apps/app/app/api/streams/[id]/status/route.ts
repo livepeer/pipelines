@@ -2,6 +2,7 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getStream } from "@/app/api/streams/get";
 import { getGatewayConfig } from "@/lib/serverEnv";
+import { isProduction } from "@/lib/env";
 
 const ERROR_MESSAGES = {
   UNAUTHORIZED: "Authentication required",
@@ -43,7 +44,10 @@ export async function GET(
 ) {
   const streamId = (await params).id;
 
-  const gateway = getGatewayConfig(request.nextUrl.searchParams);
+  const gateway = getGatewayConfig(
+    !isProduction() &&
+      request.nextUrl.searchParams.get("gateway") === "secondary",
+  );
   const gatewayUrl = gateway.url;
   const username = gateway.userId;
   const password = gateway.password;

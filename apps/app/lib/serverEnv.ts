@@ -62,11 +62,7 @@ const serverOnlyConfig = ServerEnvironmentConfig.parse(serverOnlyEnvConfig);
 
 export const serverConfig = async () => serverOnlyConfig;
 
-export const getGatewayConfig = (searchParams?: URLSearchParams) => {
-  const isStaging = process.env.NEXT_PUBLIC_ENV === "staging";
-  const useSecondary =
-    isStaging && searchParams?.get("gateway") === "secondary";
-
+export const getGatewayConfig = (useSecondary?: boolean) => {
   if (useSecondary && serverOnlyConfig.gateway_secondary) {
     return serverOnlyConfig.gateway_secondary;
   }
