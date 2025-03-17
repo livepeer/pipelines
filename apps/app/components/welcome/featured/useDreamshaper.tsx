@@ -108,36 +108,46 @@ export function useDreamshaper() {
     stream?.id || null,
   );
 
-  const storeParamsInLocalStorage = useCallback((params: any, pipelineVersion: string) => {
-    try {
-      localStorage.setItem(
-        DREAMSHAPER_PARAMS_STORAGE_KEY,
-        JSON.stringify(params)
-      );
-      localStorage.setItem(DREAMSHAPER_PARAMS_VERSION_KEY, pipelineVersion);
-    } catch (error) {
-      console.error("Error storing parameters in localStorage:", error);
-    }
-  }, []);
+  const storeParamsInLocalStorage = useCallback(
+    (params: any, pipelineVersion: string) => {
+      try {
+        localStorage.setItem(
+          DREAMSHAPER_PARAMS_STORAGE_KEY,
+          JSON.stringify(params),
+        );
+        localStorage.setItem(DREAMSHAPER_PARAMS_VERSION_KEY, pipelineVersion);
+      } catch (error) {
+        console.error("Error storing parameters in localStorage:", error);
+      }
+    },
+    [],
+  );
 
-  const getParamsFromLocalStorage = useCallback((currentPipelineVersion: string) => {
-    try {
-      const storedVersion = localStorage.getItem(DREAMSHAPER_PARAMS_VERSION_KEY);
-      const storedParams = localStorage.getItem(DREAMSHAPER_PARAMS_STORAGE_KEY);
+  const getParamsFromLocalStorage = useCallback(
+    (currentPipelineVersion: string) => {
+      try {
+        const storedVersion = localStorage.getItem(
+          DREAMSHAPER_PARAMS_VERSION_KEY,
+        );
+        const storedParams = localStorage.getItem(
+          DREAMSHAPER_PARAMS_STORAGE_KEY,
+        );
 
-      // If versions don't match or stored version doesn't exist, clear storage and return null
-      if (!storedVersion || storedVersion !== currentPipelineVersion) {
-        localStorage.removeItem(DREAMSHAPER_PARAMS_STORAGE_KEY);
-        localStorage.removeItem(DREAMSHAPER_PARAMS_VERSION_KEY);
+        // If versions don't match or stored version doesn't exist, clear storage and return null
+        if (!storedVersion || storedVersion !== currentPipelineVersion) {
+          localStorage.removeItem(DREAMSHAPER_PARAMS_STORAGE_KEY);
+          localStorage.removeItem(DREAMSHAPER_PARAMS_VERSION_KEY);
+          return null;
+        }
+
+        return storedParams ? JSON.parse(storedParams) : null;
+      } catch (error) {
+        console.error("Error retrieving parameters from localStorage:", error);
         return null;
       }
-
-      return storedParams ? JSON.parse(storedParams) : null;
-    } catch (error) {
-      console.error("Error retrieving parameters from localStorage:", error);
-      return null;
-    }
-  }, []);
+    },
+    [],
+  );
 
   useEffect(() => {
     const applySharedParams = async () => {
@@ -228,7 +238,12 @@ export function useDreamshaper() {
   ]);
 
   useEffect(() => {
-    if (searchParams.get("shared") || !stream || sharedParamsApplied || !pipeline) {
+    if (
+      searchParams.get("shared") ||
+      !stream ||
+      sharedParamsApplied ||
+      !pipeline
+    ) {
       return;
     }
 

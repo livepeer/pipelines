@@ -3,6 +3,7 @@ use crate::virtual_camera::VirtualCameraError;
 use std::path::Path;
 use std::sync::Once;
 use std::time::Duration;
+use serde::{Serialize, Deserialize};
 
 const OBS_PATH: &str = "/Applications/OBS.app/Contents/MacOS/obs";
 const OBS_PLUGIN_PATH: &str = "/Library/CoreMediaIO/Plug-Ins/DAL";
@@ -11,6 +12,17 @@ const OBS_WEBSOCKET_PORT: u16 = 4455;
 const OBS_WEBSOCKET_PASSWORD: &str = "daydream-virtual-camera-2025";
 static START_VIRTUAL_CAMERA: Once = Once::new();
 static mut VIRTUAL_CAMERA_RUNNING: bool = false;
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct ObsStatus {
+    installed: bool,
+    websocket_plugin_available: bool,
+    websocket_enabled: bool,
+    virtual_camera_plugin_available: bool,
+    version: String,
+    version_supported: bool,  // true if >= 30.0
+    message: String,
+}
 
 pub fn is_obs_installed() -> bool {
     let path_exists = Path::new(OBS_PATH).exists();
@@ -23,6 +35,43 @@ pub fn is_obs_plugin_installed() -> bool {
     let path_exists = dal_dir.exists();
     println!("🔍 Checking if OBS plugin is installed at: {} => {}", OBS_PLUGIN_PATH, path_exists);
     path_exists
+}
+
+pub fn get_obs_status() -> ObsStatus {
+    let obs_installed = is_obs_installed();
+    let virtual_camera_plugin_available = is_obs_plugin_installed();
+    let websocket_plugin_available = check_obs_websocket_plugin();
+    let websocket_enabled = check_obs_websocket_enabled();
+    
+    let (version, version_supported) = if obs_installed {
+        get_obs_version()
+    } else {
+        ("Not installed".to_string(), false)
+    };
+    
+    let message = if !obs_installed {
+        "OBS is not installed. Please install OBS Studio from https://obsproject.com".to_string()
+    } else if !version_supported {
+        format!("OBS version {} is too old. Version 30.0 or later is required.", version)
+    } else if !virtual_camera_plugin_available {
+        "OBS virtual camera plugin is not installed. Please ensure OBS is set up correctly.".to_string()
+    } else if !websocket_plugin_available {
+        "OBS WebSocket plugin is not found. Please install from https://github.com/obsproject/obs-websocket/releases".to_string()
+    } else if !websocket_enabled {
+        "WebSocket server is not enabled in OBS. Please enable it in Tools > WebSocket Server Settings.".to_string()
+    } else {
+        format!("OBS {} is properly installed and configured", version)
+    };
+    
+    ObsStatus {
+        installed: obs_installed,
+        websocket_plugin_available,
+        websocket_enabled,
+        virtual_camera_plugin_available,
+        version,
+        version_supported,
+        message,
+    }
 }
 
 fn check_for_obs_processes() -> bool {
@@ -110,20 +159,25 @@ fn check_obs_websocket_plugin() -> bool {
     false
 }
 
+fn check_obs_websocket_enabled() -> bool {
+    println!("ℹ️ Check will happen on connection)");
+    return true;
+}
+
 pub fn start_obs_with_websocket() -> Result<(), VirtualCameraError> {
-    if !is_obs_installed() {
+    let status = get_obs_status();
+    
+    if !status.installed {
         return Err(VirtualCameraError::NotImplemented);
     }
     
-    if !is_obs_plugin_installed() {
+    if !status.virtual_camera_plugin_available {
         return Err(VirtualCameraError::NotImplemented);
     }
     
-    let websocket_enabled = check_obs_websocket_plugin();
-    
-    if !websocket_enabled {
+    if !status.websocket_plugin_available {
         println!("⚠️ WebSocket plugin not found, but continuing anyway...");
-        println!("ℹ️ We'll try default command line arguments, but this may fail");
+        println!("ℹ️ We'll try command line arguments, but this may fail");
     }
     
     if check_for_obs_processes() {
@@ -134,7 +188,7 @@ pub fn start_obs_with_websocket() -> Result<(), VirtualCameraError> {
         println!("⚠️ OBS processes still running after termination attempt. This may cause issues.");
     }
     
-    println!("🎥 Starting OBS with WebSocket server enabled");
+    println!("🎥 Starting OBS with virtual camera");
     
     let version_output = Command::new(OBS_PATH)
         .args(&["--version"])
@@ -145,42 +199,13 @@ pub fn start_obs_with_websocket() -> Result<(), VirtualCameraError> {
         println!("ℹ️ OBS Version: {}", version.trim());
     }
     
-    println!("🔧 Checking for OBS config directory...");
-    let home_dir = dirs::home_dir().unwrap_or_default();
-    let obs_config_dir = home_dir.join("Library/Application Support/obs-studio");
-    
-    if obs_config_dir.exists() {
-        println!("✅ Found OBS config directory: {:?}", obs_config_dir);
-    } else {
-        println!("⚠️ OBS config directory not found. Will use portable mode.");
-    }
-    
-    let args: Vec<String> = if websocket_enabled {
-        vec![
-            "--startVirtualCam".to_string(),
-            "--minimize-to-tray".to_string(),
-            "--disable-shutdown-check".to_string(),
-            "--websocket_server_enabled=true".to_string(),
-            format!("--websocket_server_port={}", OBS_WEBSOCKET_PORT),
-            format!("--websocket_password={}", OBS_WEBSOCKET_PASSWORD), 
-            "--websocket_debug".to_string(),
-            "--multi".to_string(),
-            "--portable".to_string(),
-            "--show-ui".to_string(),
-        ]
-    } else {
-        vec![
-            "--startVirtualCam".to_string(),
-            "--minimize-to-tray".to_string(),
-            "--disable-shutdown-check".to_string(),
-            "--enable-websocket".to_string(),
-            format!("--websocket-port={}", OBS_WEBSOCKET_PORT),
-            format!("--websocket-password={}", OBS_WEBSOCKET_PASSWORD), 
-            "--multi".to_string(),
-            "--portable".to_string(),
-            "--show-ui".to_string(),
-        ]
-    };
+    let args: Vec<String> = vec![
+        "--startvirtualcam".to_string(),      // Correct spelling/case
+        "--minimize-to-tray".to_string(),
+        "--disable-shutdown-check".to_string(),
+        "--multi".to_string(),
+        "--portable".to_string(),
+    ];
     
     println!("🚀 Starting OBS with arguments: {:?}", args);
     
@@ -297,4 +322,29 @@ pub fn force_kill_obs_processes() -> Result<(), crate::virtual_camera::VirtualCa
     
     println!("✅ OBS process termination complete");
     Ok(())
+}
+
+fn get_obs_version() -> (String, bool) {
+    let version_output = Command::new(OBS_PATH)
+        .args(&["--version"])
+        .output();
+    
+    if let Ok(output) = version_output {
+        let version_str = String::from_utf8_lossy(&output.stdout).trim().to_string();
+        
+        let version_parts: Vec<&str> = version_str.split('-').collect();
+        if version_parts.len() > 1 {
+            let version_number = version_parts[1].trim();
+            
+            if let Some(major_version) = version_number.split('.').next() {
+                if let Ok(major) = major_version.parse::<u32>() {
+                    return (version_str, major >= 30);
+                }
+            }
+        }
+        
+        return (version_str, false); // Could not parse version properly
+    }
+    
+    ("Unknown".to_string(), false)
 } 

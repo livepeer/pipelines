@@ -19,6 +19,32 @@ pub enum VirtualCameraError {
 }
 
 #[tauri::command]
+pub fn get_obs_status() -> serde_json::Value {
+    #[cfg(target_os = "macos")]
+    {
+        let status = macos::get_obs_status();
+        serde_json::to_value(status).unwrap_or_else(|_| serde_json::json!({
+            "installed": false,
+            "message": "Failed to serialize OBS status"
+        }))
+    }
+    #[cfg(target_os = "windows")]
+    {
+        serde_json::json!({
+            "installed": windows::is_obs_installed(),
+            "message": "Windows implementation incomplete"
+        })
+    }
+    #[cfg(not(any(target_os = "macos", target_os = "windows")))]
+    {
+        serde_json::json!({
+            "installed": false,
+            "message": "OBS integration not supported on this platform"
+        })
+    }
+}
+
+#[tauri::command]
 pub fn is_obs_installed() -> bool {
     #[cfg(target_os = "macos")]
     {
@@ -56,7 +82,6 @@ pub fn init<R: Runtime>(_app: &tauri::App<R>) -> Result<(), Box<dyn std::error::
 
 #[tauri::command]
 pub async fn start_obs_virtual_camera() -> Result<(), VirtualCameraError> {
-    // Start OBS with WebSocket server enabled
     #[cfg(target_os = "macos")]
     {
         macos::start_obs_with_websocket()?;

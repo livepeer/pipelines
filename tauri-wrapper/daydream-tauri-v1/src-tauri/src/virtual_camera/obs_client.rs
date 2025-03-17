@@ -567,7 +567,6 @@ async fn debug_message_receiver() {
                     Ok(Some(Ok(_))) => println!("🐛 Debug received binary message"),
                     Ok(Some(Err(e))) => {
                         println!("🐛 Debug error: {}", e);
-                        // Connection error, break out of the loop
                         println!("🐛 Debug connection error occurred, exiting monitoring loop");
                         break;
                     },
@@ -576,7 +575,6 @@ async fn debug_message_receiver() {
                         break;
                     },
                     Err(_) => {
-                        // Timeout waiting for a message, continue
                         sleep(Duration::from_millis(100)).await;
                     }
                 }
@@ -606,7 +604,6 @@ pub async fn disconnect() -> Result<(), VirtualCameraError> {
 }
 
 pub async fn reset_connection() -> Result<(), VirtualCameraError> {
-    // Reset the connection without trying to close it gracefully
     let mut ws_connection = WS_CONNECTION.lock().await;
     *ws_connection = None;
     println!("🧹 Reset WebSocket connection without attempting to close it");

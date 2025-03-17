@@ -72,6 +72,7 @@ pub fn run() {
             lib::virtual_camera::stop_obs_virtual_camera,
             lib::virtual_camera::is_virtual_camera_running,
             lib::virtual_camera::enable_virtual_camera_for_stream,
+            lib::virtual_camera::get_obs_status,
             stop_virtual_camera,
             force_kill_obs,
         ])

@@ -29,6 +29,8 @@ import {
   SlidersHorizontal,
   Share,
   Camera,
+  AlertTriangle,
+  Info,
 } from "lucide-react";
 import { Inter } from "next/font/google";
 import Image from "next/image";
@@ -463,16 +465,23 @@ export default function Dreamshaper({
   }, [pipeline]);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       const urlParams = new URLSearchParams(window.location.search);
-      setIsTauriMode(urlParams.get('tauri') === 'true');
+      setIsTauriMode(urlParams.get("tauri") === "true");
     }
   }, []);
 
-  const { 
+  const {
     isVirtualCameraRunning,
     isLoading,
-    toggleVirtualCamera 
+    obsStatus,
+    statusError,
+    tauriMessage,
+    toggleVirtualCamera,
+    checkObsStatus,
+    isObsInstalled,
+    isVirtualCameraPluginAvailable,
+    isObsReadyForVirtualCamera,
   } = useTauriVirtualCamera(streamKey);
 
   return (
@@ -566,26 +575,70 @@ export default function Dreamshaper({
       </div>
 
       {isTauriMode && (
-        <div className="fixed top-4 right-4 z-[100]">
-          <Button
-            variant={isVirtualCameraRunning ? "destructive" : "outline"}
-            size="sm"
-            className="gap-2 shadow-md"
-            onClick={toggleVirtualCamera}
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                <span>{isVirtualCameraRunning ? "Stopping..." : "Starting..."}</span>
-              </>
-            ) : (
-              <>
-                <Camera className="h-4 w-4" />
-                <span>{isVirtualCameraRunning ? "Stop Virtual Camera" : "Start Virtual Camera"}</span>
-              </>
-            )}
-          </Button>
+        <div className="fixed top-4 right-4 z-[100] flex flex-row-reverse items-center gap-2">
+          {statusError || !isObsReadyForVirtualCamera() ? (
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2 shadow-md text-yellow-500"
+              onClick={checkObsStatus}
+              title={obsStatus?.message || statusError || "OBS status unknown"}
+            >
+              <AlertTriangle className="h-4 w-4" />
+              <span>
+                {!isObsInstalled() ? "OBS Not Installed" : "OBS Not Configured"}
+              </span>
+            </Button>
+          ) : (
+            <Button
+              variant={isVirtualCameraRunning ? "destructive" : "outline"}
+              size="sm"
+              className="gap-2 shadow-md"
+              onClick={toggleVirtualCamera}
+              disabled={isLoading}
+              title={obsStatus?.message || "Click to toggle virtual camera"}
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>
+                    {isVirtualCameraRunning ? "Stopping..." : "Starting..."}
+                  </span>
+                </>
+              ) : (
+                <>
+                  <Camera className="h-4 w-4" />
+                  <span>
+                    {isVirtualCameraRunning
+                      ? "Stop Virtual Camera"
+                      : "Start Virtual Camera"}
+                  </span>
+                </>
+              )}
+            </Button>
+          )}
+
+          {tauriMessage && (
+            <div
+              className={cn(
+                "text-xs px-3 py-2 rounded-md shadow-md max-w-[300px] flex items-center gap-1.5",
+                tauriMessage.type === "error"
+                  ? "bg-red-500/10 text-red-500 border border-red-500/20"
+                  : tauriMessage.type === "warning"
+                    ? "bg-yellow-500/10 text-yellow-500 border border-yellow-500/20"
+                    : "bg-blue-500/10 text-blue-500 border border-blue-500/20",
+              )}
+            >
+              {tauriMessage.type === "error" ? (
+                <AlertTriangle size={12} />
+              ) : tauriMessage.type === "warning" ? (
+                <AlertTriangle size={12} />
+              ) : (
+                <Info size={12} />
+              )}
+              <span>{tauriMessage.message}</span>
+            </div>
+          )}
         </div>
       )}
 
