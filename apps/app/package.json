@@ -24,7 +24,6 @@
     "@sentry/nextjs": "^8.42.0",
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.46.1",
-    "@vercel/toolbar": "^0.1.26",
     "bcrypt": "^5.1.1",
     "bcrypt-edge": "^0.1.0",
     "bcryptjs": "^2.4.3",
