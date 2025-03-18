@@ -55,11 +55,11 @@ export default function SelectPrompt() {
         </p>
       </div>
 
-      <div className="flex flex-row flex-wrap justify-center items-center gap-12">
+      <div className="grid grid-cols-2 gap-[12px] w-full">
         {promptOptions.map(prompt => (
           <div
             key={prompt.id}
-            className="w-[314px] cursor-pointer"
+            className="cursor-pointer"
             onClick={() => setSelectedPrompt(prompt.id)}
           >
             <div className="relative group">

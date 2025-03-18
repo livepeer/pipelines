@@ -7,7 +7,7 @@ export default function useScrollView(shouldScroll: boolean) {
     if (shouldScroll && componentRef.current) {
       componentRef.current.scrollIntoView({
         behavior: "smooth",
-        block: "center",
+        inline: "start",
       });
     }
   }, [shouldScroll]);
