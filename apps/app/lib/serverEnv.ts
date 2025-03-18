@@ -65,7 +65,7 @@ export const serverConfig = async () => serverOnlyConfig;
 
 export const getGatewayConfig = (searchParams?: URLSearchParams) => {
   const useSecondary =
-    !isProduction && searchParams?.get("gateway") === "secondary";
+    !isProduction() && searchParams?.get("gateway") === "secondary";
 
   if (useSecondary && serverOnlyConfig.gateway_secondary) {
     return serverOnlyConfig.gateway_secondary;
