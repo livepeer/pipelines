@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isProduction } from "./env";
 
 const SupabaseConfig = z.object({
   url: z.string().url().optional(),
@@ -21,6 +22,7 @@ const KafkaConfig = z.object({
 export const ServerEnvironmentConfig = z.object({
   supabase: SupabaseConfig,
   gateway: GatewayConfig,
+  gateway_secondary: GatewayConfig.optional(),
   kafka: KafkaConfig,
 });
 
@@ -39,6 +41,17 @@ const serverOnlyEnvConfig = {
     userId: process.env.STREAM_STATUS_ENDPOINT_USER,
     password: process.env.STREAM_STATUS_ENDPOINT_PASSWORD,
   },
+  gateway_secondary: process.env.STREAM_STATUS_ENDPOINT_URL_SECONDARY
+    ? {
+        url: process.env.STREAM_STATUS_ENDPOINT_URL_SECONDARY,
+        userId:
+          process.env.STREAM_STATUS_ENDPOINT_USER_SECONDARY ||
+          process.env.STREAM_STATUS_ENDPOINT_USER,
+        password:
+          process.env.STREAM_STATUS_ENDPOINT_PASSWORD_SECONDARY ||
+          process.env.STREAM_STATUS_ENDPOINT_PASSWORD,
+      }
+    : undefined,
   kafka: {
     bootstrapServers: process.env.KAFKA_BOOTSTRAP_NODE,
     username: process.env.KAFKA_USER,
@@ -49,6 +62,17 @@ const serverOnlyEnvConfig = {
 const serverOnlyConfig = ServerEnvironmentConfig.parse(serverOnlyEnvConfig);
 
 export const serverConfig = async () => serverOnlyConfig;
+
+export const getGatewayConfig = (searchParams?: URLSearchParams) => {
+  const useSecondary =
+    !isProduction() && searchParams?.get("gateway") === "secondary";
+
+  if (useSecondary && serverOnlyConfig.gateway_secondary) {
+    return serverOnlyConfig.gateway_secondary;
+  }
+
+  return serverOnlyConfig.gateway;
+};
 
 export const validateServerEnv = async () => {
   try {

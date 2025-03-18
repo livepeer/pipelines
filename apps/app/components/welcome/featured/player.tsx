@@ -1,24 +1,24 @@
 "use client";
 
-import * as React from "react";
+import { sendKafkaEvent } from "@/app/api/metrics/kafka";
 import { getStreamPlaybackInfo } from "@/app/api/streams/get";
+import { LPPLayer } from "@/components/playground/player";
+import { useAppConfig } from "@/hooks/useAppConfig";
 import {
-  PrivateErrorIcon,
   LoadingIcon,
-  PictureInPictureIcon,
-  UnmuteIcon,
   MuteIcon,
+  PictureInPictureIcon,
+  PrivateErrorIcon,
+  UnmuteIcon,
 } from "@livepeer/react/assets";
 import { getSrc } from "@livepeer/react/external";
 import * as Player from "@livepeer/react/player";
-import { PlaybackInfo } from "livepeer/models/components";
-import { useEffect, useRef, useState } from "react";
-import { isProduction } from "@/lib/env";
-import { useSearchParams } from "next/navigation";
-import { PauseIcon, PlayIcon } from "lucide-react";
 import { usePrivy } from "@privy-io/react-auth";
-import { sendKafkaEvent } from "@/app/api/metrics/kafka";
-import { LPPLayer } from "@/components/playground/player";
+import { PlaybackInfo } from "livepeer/models/components";
+import { PauseIcon, PlayIcon } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import * as React from "react";
+import { useEffect, useRef, useState } from "react";
 
 type TrackingProps = {
   playbackId: string;
@@ -40,8 +40,13 @@ export const LivepeerPlayer = React.memo(
     isMobile?: boolean;
     stream_key?: string | null;
   } & TrackingProps) => {
+    const appConfig = useAppConfig();
+
     const [playbackInfo, setPlaybackInfo] = useState<PlaybackInfo | null>(null);
-    const playerUrl = `https://ai.livepeer.${isProduction() ? "com" : "monster"}/aiWebrtc/${stream_key}-out/whep`;
+
+    // Assuming whip host = whep host
+    // const playerUrl = `https://ai.livepeer.monster/aiWebrtc/${stream_key}-out/whep`;
+    const playerUrl = `${appConfig.whipUrl}${appConfig?.whipUrl?.endsWith("/") ? "" : "/"}${stream_key}-out/whep`;
 
     const searchParams = useSearchParams();
     const useMediamtx =

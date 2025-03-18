@@ -1,25 +1,19 @@
 "use client";
 
-import { usePrivy } from "@privy-io/react-auth";
-import React, { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import track from "@/lib/track";
-import { getStreams } from "@/app/api/streams/get";
 import { deleteStream } from "@/app/api/streams/delete";
-import { toast } from "sonner";
+import { getStreams } from "@/app/api/streams/get";
+import ConfirmDialog from "@/components/modals/confirm";
+import LoggedOutComponent from "@/components/modals/logged-out";
+import StreamStatusIndicator from "@/components/stream/stream-status-indicator";
+import track from "@/lib/track";
+import { usePrivy } from "@privy-io/react-auth";
+import { Button } from "@repo/design-system/components/ui/button";
 import {
-  Copy,
-  LoaderCircleIcon,
-  PencilIcon,
-  SettingsIcon,
-  TrashIcon,
-} from "lucide-react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@repo/design-system/components/ui/tooltip";
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogTrigger,
+} from "@repo/design-system/components/ui/dialog";
 import {
   Table,
   TableBody,
@@ -29,17 +23,29 @@ import {
   TableRow,
 } from "@repo/design-system/components/ui/table";
 import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  DialogTrigger,
-} from "@repo/design-system/components/ui/dialog";
-import { Button } from "@repo/design-system/components/ui/button";
-import StreamStatusIndicator from "@/components/stream/stream-status-indicator";
-import ConfirmDialog from "@/components/modals/confirm";
-import LoggedOutComponent from "@/components/modals/logged-out";
-import { app as appEnv } from "@/lib/env";
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@repo/design-system/components/ui/tooltip";
+import {
+  Copy,
+  LoaderCircleIcon,
+  PencilIcon,
+  SettingsIcon,
+  TrashIcon,
+} from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
+import Modals from "@/components/modals";
+import { useAppConfig } from "@/hooks/useAppConfig";
+import {
+  DoubleArrowLeftIcon,
+  DoubleArrowRightIcon,
+} from "@radix-ui/react-icons";
+import { Badge } from "@repo/design-system/components/ui/badge";
 import {
   Pagination,
   PaginationContent,
@@ -47,12 +53,6 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@repo/design-system/components/ui/pagination";
-import {
-  DoubleArrowLeftIcon,
-  DoubleArrowRightIcon,
-} from "@radix-ui/react-icons";
-import Modals from "@/components/modals";
-import { Badge } from "@repo/design-system/components/ui/badge";
 
 export default function MyStreams({ searchParams }: { searchParams: any }) {
   const { authenticated, user, ready: isAuthLoaded } = usePrivy();
@@ -68,6 +68,8 @@ export default function MyStreams({ searchParams }: { searchParams: any }) {
   const copyIconSize = 18;
 
   const router = useRouter();
+
+  const appConfig = useAppConfig();
 
   const EmptyState = () => (
     <div className="flex justify-center h-[calc(100vh-15rem)] items-center">
@@ -209,8 +211,8 @@ export default function MyStreams({ searchParams }: { searchParams: any }) {
                     <TableCell>
                       <div className="inline-flex items-center gap-x-2 w-full">
                         <span className="truncate max-w-[200px]">
-                          {appEnv.rtmpUrl}
-                          {appEnv?.rtmpUrl?.endsWith("/") ? "" : "/"}
+                          {appConfig.rtmpUrl}
+                          {appConfig?.rtmpUrl?.endsWith("/") ? "" : "/"}
                           {stream.stream_key}
                         </span>
                         <Copy
@@ -218,7 +220,7 @@ export default function MyStreams({ searchParams }: { searchParams: any }) {
                           className="mr-2 cursor-pointer flex-shrink-0"
                           onClick={() =>
                             copy(
-                              `${appEnv.rtmpUrl}${appEnv?.rtmpUrl?.endsWith("/") ? "" : "/"}${stream.stream_key}`,
+                              `${appConfig.rtmpUrl}${appConfig?.rtmpUrl?.endsWith("/") ? "" : "/"}${stream.stream_key}`,
                             )
                           }
                         />
@@ -314,15 +316,15 @@ export default function MyStreams({ searchParams }: { searchParams: any }) {
                             <div className="mb-2">
                               <strong>Ingest URL (RTMP): </strong>
                               <div className="inline-flex items-center gap-x-2">
-                                {appEnv?.rtmpUrl}
-                                {appEnv?.rtmpUrl?.endsWith("/") ? "" : "/"}
+                                {appConfig?.rtmpUrl}
+                                {appConfig?.rtmpUrl?.endsWith("/") ? "" : "/"}
                                 {stream.stream_key}
                                 <Copy
                                   size={copyIconSize}
                                   className="mr-2 cursor-pointer"
                                   onClick={() =>
                                     copy(
-                                      `${appEnv?.rtmpUrl}${appEnv?.rtmpUrl?.endsWith("/") ? "" : "/"}${stream.stream_key}`,
+                                      `${appConfig?.rtmpUrl}${appConfig?.rtmpUrl?.endsWith("/") ? "" : "/"}${stream.stream_key}`,
                                     )
                                   }
                                 />
@@ -331,15 +333,15 @@ export default function MyStreams({ searchParams }: { searchParams: any }) {
                             <div className="mb-2">
                               <strong>Ingest URL (WHIP): </strong>
                               <div className="inline-flex items-center gap-x-2">
-                                {appEnv?.whipUrl}
-                                {appEnv?.whipUrl?.endsWith("/") ? "" : "/"}
+                                {appConfig?.whipUrl}
+                                {appConfig?.whipUrl?.endsWith("/") ? "" : "/"}
                                 {stream.stream_key}/whip
                                 <Copy
                                   size={copyIconSize}
                                   className="mr-2 cursor-pointer"
                                   onClick={() =>
                                     copy(
-                                      `${appEnv?.whipUrl}${appEnv?.whipUrl?.endsWith("/") ? "" : "/"}${stream.stream_key}/whip`,
+                                      `${appConfig?.whipUrl}${appConfig?.whipUrl?.endsWith("/") ? "" : "/"}${stream.stream_key}/whip`,
                                     )
                                   }
                                 />

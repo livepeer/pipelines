@@ -74,6 +74,8 @@ export function BroadcastWithControls({
     );
   }
 
+  console.log("**********");
+  console.log("Ingest URL:", ingestUrl);
   return (
     <Broadcast.Root
       onError={error =>

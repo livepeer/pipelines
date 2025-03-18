@@ -1,6 +1,8 @@
 // hooks/useGatewayHost.ts
 import { useState, useEffect, useCallback } from "react";
 import { getStream } from "@/app/api/streams/get";
+import { getAppConfig, isProduction } from "@/lib/env";
+import { useSearchParams } from "next/navigation";
 
 export function useGatewayHost(
   streamId: string | null,
@@ -11,6 +13,7 @@ export function useGatewayHost(
   const [error, setError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
   const [ready, setReady] = useState(false);
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     if (!streamId) {
@@ -109,6 +112,8 @@ export function useGatewayHost(
     });
   }, [ready, gatewayHost, error]);
 
+  const appConfig = getAppConfig(searchParams);
+
   return {
     gatewayHost,
     loading,
@@ -116,5 +121,7 @@ export function useGatewayHost(
     ready,
     executeWhenReady,
     whenReady,
+    rtmpUrl: appConfig.rtmpUrl,
+    whipUrl: appConfig.whipUrl,
   };
 }
