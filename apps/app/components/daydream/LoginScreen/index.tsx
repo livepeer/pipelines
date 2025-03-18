@@ -29,11 +29,7 @@ export default function LoginScreen() {
             Welcome to Daydream
           </h1>
 
-          <p className="font-inter text-xs sm:text-sm text-[#71717A] text-center mt-[4px] mb-[24px]">
-            Sign in using your password
-          </p>
-
-          <div className="w-full max-w-[400px] space-y-[16px]">
+          <div className="w-full max-w-[400px] space-y-[16px] mt-4">
             {/* Email input */}
             <EmailLoginButton />
 

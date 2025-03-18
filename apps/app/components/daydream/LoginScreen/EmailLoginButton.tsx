@@ -79,7 +79,7 @@ export function InputOTPControlled() {
         }
         onChange={handleChange}
       >
-        <InputOTPGroup className="w-full">
+        <InputOTPGroup className="w-full text-black caret-slate-600">
           <InputOTPSlot index={0} />
           <InputOTPSlot index={1} />
           <InputOTPSlot index={2} />
