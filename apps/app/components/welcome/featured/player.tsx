@@ -50,32 +50,19 @@ export const LivepeerPlayer = React.memo(
     const [key, setKey] = useState(0);
     
     const handleError = useCallback((error: any) => {
-      console.log("Player error received:", {
-        type: error?.type,
-        message: error?.message,
-        full: error
-      });
-      
       if (
         error?.message?.includes("Failed to connect to peer") && 
         retryCount < MAX_RETRIES
       ) {
-        console.log(`REMOUNTING - "Failed to connect to peer" detected (attempt ${retryCount + 1}/${MAX_RETRIES})`);
         
         const delay = Math.min(1000 * Math.pow(2, retryCount), MAX_DELAY);
-        console.log(`Retrying player connection in ${delay}ms`);
         
         setTimeout(() => {
           setRetryCount(prev => prev + 1);
           setKey(prev => prev + 1); // Force Player to remount
         }, delay);
       } else {
-        if (error?.message?.includes("Failed to connect to peer")) {
-          console.log(`MAX RETRIES REACHED - No more remounting (${MAX_RETRIES}/${MAX_RETRIES})`);
-        } else {
-          console.log(`NO REMOUNT - Error doesn't match "Failed to connect to peer" criteria`);
-          console.log(`Error message: "${error?.message}"`);
-        }
+        console.error(`MAX RETRIES REACHED - No more remounting (${MAX_RETRIES}/${MAX_RETRIES})`);
       }
     }, [retryCount]);
 
