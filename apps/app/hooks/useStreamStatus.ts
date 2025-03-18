@@ -1,4 +1,5 @@
 import { usePrivy } from "@privy-io/react-auth";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
 
 const BASE_POLLING_INTERVAL = 5000;
@@ -24,6 +25,7 @@ export const useStreamStatus = (
   const failureCountRef = useRef(0);
   const orchestratorFailureCountRef = useRef(0);
   const intervalIdRef = useRef<NodeJS.Timeout | null>(null);
+  const searchParams = useSearchParams();
 
   const capacityReached = orchestratorFailureCountRef.current >= 5;
 
@@ -89,7 +91,11 @@ export const useStreamStatus = (
 
     const fetchStatus = async () => {
       try {
-        const res = await fetch(`/api/streams/${streamId}/status`, {
+        const url = searchParams.get("gateway")
+          ? `/api/streams/${streamId}/status?gateway=${searchParams.get("gateway")}`
+          : `/api/streams/${streamId}/status`;
+
+        const res = await fetch(url, {
           headers: {
             "cache-control": "no-cache",
             pragma: "no-cache",

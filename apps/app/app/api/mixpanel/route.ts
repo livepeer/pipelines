@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server";
-import { app, mixpanel } from "@/lib/env";
+import { NextRequest, NextResponse } from "next/server";
+import { getAppConfig, isProduction, mixpanel } from "@/lib/env";
 import type { Mixpanel } from "mixpanel";
 const MixpanelLib = require("mixpanel");
 
@@ -25,7 +25,7 @@ async function getGeoData(ip: string) {
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   if (!mixpanelClient) {
     return NextResponse.json(
       { error: "Mixpanel not configured" },
@@ -35,6 +35,7 @@ export async function POST(request: Request) {
 
   const forwardedFor = request.headers.get("x-forwarded-for");
 
+  const app = getAppConfig(request.nextUrl.searchParams);
   const ip =
     app.environment === "dev"
       ? "93.152.210.100" // Hardcoded development IP (truncated ip that resolves to San Francisco)

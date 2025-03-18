@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { app } from "@/lib/env";
 
 export async function POST(request: Request) {
   try {

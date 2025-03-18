@@ -1,21 +1,4 @@
-import {
-  ClipIcon,
-  EnterFullscreenIcon,
-  ExitFullscreenIcon,
-  LoadingIcon,
-  MuteIcon,
-  PauseIcon,
-  PictureInPictureIcon,
-  PlayIcon,
-  UnmuteIcon,
-} from "@livepeer/react/assets";
-import * as Player from "@livepeer/react/player";
-import { CheckIcon, ChevronDownIcon, XIcon } from "lucide-react";
-import React, { useCallback, useTransition } from "react";
-import { toast } from "sonner";
-
-import { Src } from "@livepeer/react";
-import { cn } from "@repo/design-system/lib/utils";
+import { useAppConfig } from "@/hooks/useAppConfig";
 import { isProduction } from "@/lib/env";
 import { useSearchParams } from "next/navigation";
 
@@ -28,8 +11,9 @@ export function LPPLayer({
   isMobile?: boolean;
   stream_key: string | null;
 }) {
+  const appConfig = useAppConfig();
   // default to direct playback but allow us to disable this and go back to studio playback with an env variable or queryparam
-  let playerUrl = `https://ai.livepeer.${isProduction() ? "com" : "monster"}/aiWebrtc/${stream_key}-out`;
+  let playerUrl = `${appConfig.whipUrl}${appConfig?.whipUrl?.endsWith("/") ? "" : "/"}${stream_key}-out`;
   const searchParams = useSearchParams();
   if (
     (searchParams.get("directPlayback") !== "true" &&

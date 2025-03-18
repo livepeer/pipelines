@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server";
-import { app, mixpanel } from "@/lib/env";
+import { NextRequest, NextResponse } from "next/server";
+import { getAppConfig, isProduction, mixpanel } from "@/lib/env";
 import type { Mixpanel } from "mixpanel";
 const MixpanelLib = require("mixpanel");
 
@@ -27,7 +27,7 @@ async function getGeoData(ip: string | null) {
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   if (!mixpanelClient) {
     return NextResponse.json(
       { error: "Mixpanel not configured" },
@@ -41,6 +41,7 @@ export async function POST(request: Request) {
     if (anonymousId !== userId) {
       mixpanelClient.alias(userId, anonymousId);
     }
+    const app = getAppConfig(request.nextUrl.searchParams);
 
     const forwardedFor = request.headers.get("x-forwarded-for");
 
