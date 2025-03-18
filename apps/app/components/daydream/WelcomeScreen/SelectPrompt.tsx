@@ -41,6 +41,11 @@ export default function SelectPrompt() {
     return null;
   }
 
+  const handleSelectPrompt = (prompt: string) => {
+    setSelectedPrompt(prompt);
+    setCurrentStep("main");
+  };
+
   return (
     <div
       ref={componentRef}
@@ -60,7 +65,7 @@ export default function SelectPrompt() {
           <div
             key={prompt.id}
             className="cursor-pointer"
-            onClick={() => setSelectedPrompt(prompt.id)}
+            onClick={() => handleSelectPrompt(prompt.title)}
           >
             <div className="relative group">
               <div className="relative w-full h-[200px] rounded-[14px] overflow-hidden shadow-[4px_8px_12px_0px_rgba(9,28,20,0.77)]">

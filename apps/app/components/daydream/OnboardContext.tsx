@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useMemo, ReactNode } from "react";
 
 // Define the possible onboarding steps
-export type OnboardingStep = "persona" | "camera" | "prompt";
+export type OnboardingStep = "persona" | "camera" | "prompt" | "main";
 
 export type CameraPermission = "prompt" | "granted" | "denied";
 
@@ -12,14 +12,12 @@ interface OnboardContextType {
   cameraPermission: CameraPermission;
   // Selected options for each step
   selectedPersonas: string[] | null;
-  selectedCamera: string | null;
   selectedPrompt: string | null;
   // Methods to update state
   setCurrentStep: (step: OnboardingStep) => void;
   setCameraPermission: (permission: CameraPermission) => void;
   setSelectedPersonas: (personas: string[]) => void;
-  setSelectedCamera: (camera: string) => void;
-  setSelectedPrompt: (prompt: string) => void;
+  setSelectedPrompt: (prompt: string | null) => void;
 }
 
 // Create the context with a default undefined value
@@ -31,7 +29,6 @@ export function OnboardProvider({ children }: { children: ReactNode }) {
   const [cameraPermission, setCameraPermission] =
     useState<CameraPermission>("prompt");
   const [selectedPersonas, setSelectedPersonas] = useState<string[]>([]);
-  const [selectedCamera, setSelectedCamera] = useState<string | null>(null);
   const [selectedPrompt, setSelectedPrompt] = useState<string | null>(null);
 
   const value = useMemo(
@@ -39,21 +36,13 @@ export function OnboardProvider({ children }: { children: ReactNode }) {
       currentStep,
       cameraPermission,
       selectedPersonas,
-      selectedCamera,
       selectedPrompt,
       setCurrentStep,
       setCameraPermission,
       setSelectedPersonas,
-      setSelectedCamera,
       setSelectedPrompt,
     }),
-    [
-      currentStep,
-      cameraPermission,
-      selectedPersonas,
-      selectedCamera,
-      selectedPrompt,
-    ],
+    [currentStep, cameraPermission, selectedPersonas, selectedPrompt],
   );
 
   return (

@@ -8,6 +8,12 @@ import { useOnboard } from "../OnboardContext";
 import SelectPrompt from "./SelectPrompt";
 
 export default function WelcomeScreen() {
+  const { currentStep } = useOnboard();
+
+  if (currentStep === "main") {
+    return null;
+  }
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center relative overflow-y-auto">
       <Image
