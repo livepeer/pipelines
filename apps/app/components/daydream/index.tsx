@@ -1,8 +1,9 @@
 "use client";
 
 import { usePrivy } from "@privy-io/react-auth";
-import DayDreamContent from "./DaydreamContent";
 import LoginScreen from "./LoginScreen";
+import WelcomeScreen from "./WelcomeScreen";
+import { OnboardProvider } from "./OnboardContext";
 
 export default function Daydream() {
   const { user } = usePrivy();
@@ -11,5 +12,9 @@ export default function Daydream() {
     return <LoginScreen />;
   }
 
-  return <DayDreamContent />;
+  return (
+    <OnboardProvider>
+      <WelcomeScreen />
+    </OnboardProvider>
+  );
 }
