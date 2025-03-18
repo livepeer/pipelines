@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import GoogleLoginButton from "./GoogleLoginButton";
 import DiscordLoginButton from "./DiscordLoginButton";
+import EmailLoginButton from "./EmailLoginButton";
 
 export default function LoginScreen() {
   return (
@@ -34,16 +35,7 @@ export default function LoginScreen() {
 
           <div className="w-full max-w-[400px] space-y-[16px]">
             {/* Email input */}
-            <input
-              type="email"
-              placeholder="name@example.com"
-              className="w-full h-[44px] px-4 py-2.5 border border-[#E4E4E7] rounded-[6px] text-[14px] font-inter text-[#71717A] outline-none"
-            />
-
-            {/* Sign in button */}
-            <button className="w-full h-[44px] py-[10px] bg-[#18181B] rounded-[6px] text-[14px] font-inter font-medium text-white">
-              Sign In with Email
-            </button>
+            <EmailLoginButton />
 
             {/* Divider */}
             <div className="flex items-center w-full my-[4px]">
