@@ -43,8 +43,7 @@ import { ClipButton } from "@/components/ClipButton";
 import { ManagedBroadcast } from "./ManagedBroadcast";
 
 const PROMPT_PLACEHOLDER = "Describe the style to transform your stream...";
-
-const MAX_STREAM_TIMEOUT_MS = 90000; // 90 seconds
+const MAX_STREAM_TIMEOUT_MS = 300000; // 5 minutes
 
 // Rotate through prompts every 4 seconds
 const usePrompts = () => {
