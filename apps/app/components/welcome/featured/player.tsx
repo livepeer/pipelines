@@ -45,6 +45,7 @@ export const LivepeerPlayer = React.memo(
     const [playbackInfo, setPlaybackInfo] = useState<PlaybackInfo | null>(null);
 
     // Assuming whip host = whep host
+    // const playerUrl = `https://ai.livepeer.monster/aiWebrtc/${stream_key}-out/whep`;
     const playerUrl = `${appConfig.whipUrl}${appConfig?.whipUrl?.endsWith("/") ? "" : "/"}${stream_key}-out/whep`;
 
     const searchParams = useSearchParams();
