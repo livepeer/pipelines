@@ -16,7 +16,7 @@ export default function EmailLoginButton() {
   const handleLogin = async () => {
     try {
       setInputState("loading");
-      await sendCode({ email: "ashwin@livepeer.org" });
+      await sendCode({ email });
       setInputState("success");
     } catch (error) {
       console.error(error);
@@ -32,7 +32,7 @@ export default function EmailLoginButton() {
       <input
         type="email"
         placeholder="name@example.com"
-        className="w-full h-[44px] px-4 py-2.5 border border-[#E4E4E7] rounded-[6px] text-[14px] font-inter text-[#71717A] outline-none"
+        className="w-full h-[44px] px-4 py-2.5 border border-[#E4E4E7] rounded-[6px] text-[14px] font-inter text-[#71717A] outline-none bg-inherit placeholder:opacity-90"
         value={email}
         onChange={e => setEmail(e.target.value)}
       />
@@ -50,28 +50,36 @@ export default function EmailLoginButton() {
 
 export function InputOTPControlled() {
   const [value, setValue] = useState("");
+  const [otpState, setOtpState] = useState<
+    "idle" | "loading" | "success" | "error"
+  >("idle");
   const { loginWithCode } = useLoginWithEmail();
 
   const handleChange = async (value: string) => {
     setValue(value);
     if (value.length === 6) {
+      setOtpState("loading");
       try {
         await loginWithCode({ code: value });
+        setOtpState("success");
       } catch (error) {
         console.error(error);
+        setOtpState("error");
       }
     }
   };
 
   return (
-    <div className="space-y-2 bg-pink-50">
+    <div className="space-y-2 w-full flex flex-col items-center justify-center">
       <InputOTP
         maxLength={6}
         value={value}
-        disabled={value.length === 6}
+        disabled={
+          value.length === 6 && ["success", "loading"].includes(otpState)
+        }
         onChange={handleChange}
       >
-        <InputOTPGroup>
+        <InputOTPGroup className="w-full">
           <InputOTPSlot index={0} />
           <InputOTPSlot index={1} />
           <InputOTPSlot index={2} />
@@ -80,14 +88,22 @@ export function InputOTPControlled() {
           <InputOTPSlot index={5} />
         </InputOTPGroup>
       </InputOTP>
-      <div className="text-center text-sm">
-        {value === "" ? (
-          <>Enter your one-time password.</>
-        ) : (
-          <>You entered: {value}</>
-        )}
-      </div>
-      <UserInfo />
+      {otpState === "idle" && (
+        <div className="text-center text-sm text-[#71717A]">
+          Enter your one-time password.
+        </div>
+      )}
+      {otpState === "loading" && (
+        <div className="text-center text-sm text-[#71717A]">
+          Verifying OTP...
+        </div>
+      )}
+      {otpState === "success" && <UserInfo />}
+      {otpState === "error" && (
+        <div className="text-center text-sm text-red-500">
+          Invalid one-time password.
+        </div>
+      )}
     </div>
   );
 }
@@ -101,5 +117,9 @@ export function UserInfo() {
     return null;
   }
 
-  return <div>{email}</div>;
+  return (
+    <div className="text-center text-sm text-[#71717A]">
+      Signed in as {email}
+    </div>
+  );
 }
