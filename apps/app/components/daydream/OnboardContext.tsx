@@ -3,18 +3,20 @@ import { createContext, useContext, useState, useMemo, ReactNode } from "react";
 // Define the possible onboarding steps
 export type OnboardingStep = "persona" | "camera" | "prompt";
 
+export type CameraPermission = "prompt" | "granted" | "denied";
+
 interface OnboardContextType {
   // Current step in the onboarding flow
   currentStep: OnboardingStep;
   // Camera permission state
-  isCameraPermissionGranted: boolean;
+  cameraPermission: CameraPermission;
   // Selected options for each step
   selectedPersonas: string[] | null;
   selectedCamera: string | null;
   selectedPrompt: string | null;
   // Methods to update state
   setCurrentStep: (step: OnboardingStep) => void;
-  setCameraPermission: (granted: boolean) => void;
+  setCameraPermission: (permission: CameraPermission) => void;
   setSelectedPersonas: (personas: string[]) => void;
   setSelectedCamera: (camera: string) => void;
   setSelectedPrompt: (prompt: string) => void;
@@ -26,7 +28,8 @@ const OnboardContext = createContext<OnboardContextType | undefined>(undefined);
 // Provider component
 export function OnboardProvider({ children }: { children: ReactNode }) {
   const [currentStep, setCurrentStep] = useState<OnboardingStep>("persona");
-  const [isCameraPermissionGranted, setCameraPermission] = useState(false);
+  const [cameraPermission, setCameraPermission] =
+    useState<CameraPermission>("prompt");
   const [selectedPersonas, setSelectedPersonas] = useState<string[]>([]);
   const [selectedCamera, setSelectedCamera] = useState<string | null>(null);
   const [selectedPrompt, setSelectedPrompt] = useState<string | null>(null);
@@ -34,7 +37,7 @@ export function OnboardProvider({ children }: { children: ReactNode }) {
   const value = useMemo(
     () => ({
       currentStep,
-      isCameraPermissionGranted,
+      cameraPermission,
       selectedPersonas,
       selectedCamera,
       selectedPrompt,
@@ -46,7 +49,7 @@ export function OnboardProvider({ children }: { children: ReactNode }) {
     }),
     [
       currentStep,
-      isCameraPermissionGranted,
+      cameraPermission,
       selectedPersonas,
       selectedCamera,
       selectedPrompt,
