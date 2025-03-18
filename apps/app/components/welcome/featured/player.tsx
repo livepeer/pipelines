@@ -18,7 +18,10 @@ import { PlaybackInfo } from "livepeer/models/components";
 import { PauseIcon, PlayIcon } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import * as React from "react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+
+const MAX_RETRIES = 10;
+const MAX_DELAY = 5000;
 
 type TrackingProps = {
   playbackId: string;
@@ -43,9 +46,39 @@ export const LivepeerPlayer = React.memo(
     const appConfig = useAppConfig();
 
     const [playbackInfo, setPlaybackInfo] = useState<PlaybackInfo | null>(null);
+    const [retryCount, setRetryCount] = useState(0);
+    const [key, setKey] = useState(0);
+    
+    const handleError = useCallback((error: any) => {
+      console.log("Player error received:", {
+        type: error?.type,
+        message: error?.message,
+        full: error
+      });
+      
+      if (
+        error?.message?.includes("Failed to connect to peer") && 
+        retryCount < MAX_RETRIES
+      ) {
+        console.log(`REMOUNTING - "Failed to connect to peer" detected (attempt ${retryCount + 1}/${MAX_RETRIES})`);
+        
+        const delay = Math.min(1000 * Math.pow(2, retryCount), MAX_DELAY);
+        console.log(`Retrying player connection in ${delay}ms`);
+        
+        setTimeout(() => {
+          setRetryCount(prev => prev + 1);
+          setKey(prev => prev + 1); // Force Player to remount
+        }, delay);
+      } else {
+        if (error?.message?.includes("Failed to connect to peer")) {
+          console.log(`MAX RETRIES REACHED - No more remounting (${MAX_RETRIES}/${MAX_RETRIES})`);
+        } else {
+          console.log(`NO REMOUNT - Error doesn't match "Failed to connect to peer" criteria`);
+          console.log(`Error message: "${error?.message}"`);
+        }
+      }
+    }, [retryCount]);
 
-    // Assuming whip host = whep host
-    // const playerUrl = `https://ai.livepeer.monster/aiWebrtc/${stream_key}-out/whep`;
     const playerUrl = `${appConfig.whipUrl}${appConfig?.whipUrl?.endsWith("/") ? "" : "/"}${stream_key}-out/whep`;
 
     const searchParams = useSearchParams();
@@ -65,7 +98,7 @@ export const LivepeerPlayer = React.memo(
         setPlaybackInfo(info);
       };
       fetchPlaybackInfo();
-    }, [playbackId]);
+    }, [playbackId, useMediamtx, iframePlayerFallback]);
 
     if (iframePlayerFallback) {
       return (
@@ -93,6 +126,7 @@ export const LivepeerPlayer = React.memo(
     return (
       <div className={isMobile ? "w-full h-full" : "aspect-video"}>
         <Player.Root
+          key={key}
           autoPlay
           aspectRatio={16 / 9}
           clipLength={30}
@@ -101,6 +135,7 @@ export const LivepeerPlayer = React.memo(
           backoffMax={1000}
           timeout={300000}
           lowLatency="force"
+          onError={handleError}
         >
           <Player.Video
             title="Live stream"
