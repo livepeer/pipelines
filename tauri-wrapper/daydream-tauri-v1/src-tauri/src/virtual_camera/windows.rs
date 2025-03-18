@@ -100,7 +100,7 @@ pub fn start_obs_virtual_camera() -> Result<(), VirtualCameraError> {
         println!("🎥 Starting OBS Virtual Camera in headless mode");
         
         match Command::new(obs_path)
-            .args(&["--startVirtualCam", "--minimize-to-tray"])
+            .args(&["--minimize-to-tray"])
             .stdout(Stdio::null())
             .stderr(Stdio::null())
             .spawn() {

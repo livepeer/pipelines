@@ -181,14 +181,13 @@ pub fn start_obs_with_websocket() -> Result<(), VirtualCameraError> {
     }
     
     if check_for_obs_processes() {
-        terminate_obs_processes();
+        println!("🔄 OBS is already running, using existing instance");
+        unsafe { VIRTUAL_CAMERA_RUNNING = true; }
+        return Ok(());
     }
     
-    if check_for_obs_processes() {
-        println!("⚠️ OBS processes still running after termination attempt. This may cause issues.");
-    }
-    
-    println!("🎥 Starting OBS with virtual camera");
+    // Only start a new OBS instance if one is not already running
+    println!("🎥 Starting new OBS instance with virtual camera");
     
     let version_output = Command::new(OBS_PATH)
         .args(&["--version"])
@@ -200,7 +199,6 @@ pub fn start_obs_with_websocket() -> Result<(), VirtualCameraError> {
     }
     
     let args: Vec<String> = vec![
-        "--startvirtualcam".to_string(),      // Correct spelling/case
         "--minimize-to-tray".to_string(),
         "--disable-shutdown-check".to_string(),
         "--multi".to_string(),
@@ -218,7 +216,7 @@ pub fn start_obs_with_websocket() -> Result<(), VirtualCameraError> {
                 println!("🎥 OBS started with PID: {:?}", child.id());
                 unsafe { VIRTUAL_CAMERA_RUNNING = true; }
                 
-                std::thread::sleep(Duration::from_secs(1));
+                std::thread::sleep(Duration::from_secs(3));
                 if check_for_obs_processes() {
                     println!("✅ Confirmed OBS is running");
                 } else {
@@ -230,7 +228,7 @@ pub fn start_obs_with_websocket() -> Result<(), VirtualCameraError> {
             }
         }
         
-    std::thread::sleep(Duration::from_secs(2));
+    std::thread::sleep(Duration::from_secs(1));
     
     if unsafe { VIRTUAL_CAMERA_RUNNING } {
         Ok(())

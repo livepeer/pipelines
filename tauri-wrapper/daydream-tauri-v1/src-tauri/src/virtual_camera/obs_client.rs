@@ -14,7 +14,7 @@ const OBS_WEBSOCKET_HOST: &str = "localhost";
 const OBS_WEBSOCKET_PORT: u16 = 4455;
 const OBS_WEBSOCKET_PASSWORD: &str = "daydream-virtual-camera-2025";
 
-const SCENE_NAME: &str = "VirtualCameraScene";
+const SCENE_NAME: &str = "DaydreamCameraScene";
 const BROWSER_SOURCE_NAME: &str = "LivepeerDaydreamSource";
 
 pub static WS_CONNECTION: Lazy<Arc<TokioMutex<Option<WebSocketConnection>>>> = 
@@ -243,14 +243,14 @@ async fn get_message_with_timeout(timeout_duration: Duration) -> Result<Option<M
 }
 
 pub async fn initialize_obs_client() -> Result<(), VirtualCameraError> {
-    sleep(Duration::from_secs(5)).await;
+    sleep(Duration::from_secs(2)).await;
     
     let ws_url = format!("ws://{}:{}", OBS_WEBSOCKET_HOST, OBS_WEBSOCKET_PORT);
     println!("🔄 Attempting to connect to OBS WebSocket at {}", ws_url);
     println!("🔑 Using password (obscured): {}***", &OBS_WEBSOCKET_PASSWORD[0..4]);
     
     let mut retry_count = 0;
-    let max_retries = 5;
+    let max_retries = 10;
     let mut last_error = None;
     let mut auth_challenge: Option<(String, String)> = None;
     
@@ -656,11 +656,16 @@ pub async fn create_browser_source(url: &str) -> Result<(), VirtualCameraError> 
                 "url": url,
                 "width": 1920,
                 "height": 1080,
-                "fps": 30,
                 "reroute_audio": false,
                 "restart_when_active": true,
-                "shutdown": true,
-                "webpage_control_level": 1
+                "shutdown": false,
+                "webpage_control_level": 1,
+                "css": "",
+                "is_local_file": false,
+                "render_delay": 0,
+                "custom_css": "body { background-color: rgba(0, 0, 0, 0); margin: 0px auto; overflow: hidden; }",
+                "reload_when_scene_active": false,
+                "hardware_acceleration": true
             }
         }))).await;
         
@@ -707,7 +712,11 @@ async fn update_browser_source_url(url: &str) -> Result<(), VirtualCameraError> 
         "inputName": BROWSER_SOURCE_NAME,
         "inputSettings": {
             "url": url,
-            "restart_when_active": true
+            "restart_when_active": true,
+            "reload_when_scene_active": true,
+            "shutdown": false,
+            "render_delay": 0,
+            "hardware_acceleration": true
         }
     }))).await;
     

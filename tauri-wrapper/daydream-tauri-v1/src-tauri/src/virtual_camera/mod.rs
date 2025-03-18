@@ -171,7 +171,7 @@ pub async fn set_obs_browser_source(url: String) -> Result<String, VirtualCamera
         windows::start_obs_with_websocket()?;
         
         println!("⏳ Waiting for OBS to initialize...");
-        std::thread::sleep(Duration::from_secs(5));
+        std::thread::sleep(Duration::from_secs(1));
     }
     
     let mut attempts = 0;
