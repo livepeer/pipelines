@@ -41,11 +41,6 @@ export default function User({ className }: { className?: string }) {
     return await createUser(userToInsert);
   };
 
-  const logoutUser = () => {
-    logout();
-    localStorage.removeItem("hasSeenLandingPage");
-  };
-
   useEffect(() => {
     const initUser = async () => {
       if (user?.id) {
@@ -106,7 +101,7 @@ export default function User({ className }: { className?: string }) {
           </div>
         </div>
         <DropdownMenuSeparator />
-        <DropdownMenuItem className="h-10" onClick={logoutUser}>
+        <DropdownMenuItem className="h-10" onClick={logout}>
           <LogOut />
           Sign Out
         </DropdownMenuItem>

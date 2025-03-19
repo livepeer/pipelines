@@ -52,13 +52,16 @@ function DaydreamRenderer() {
     setCameraPermission,
     setCurrentStep,
   } = useOnboard();
+  const { user } = usePrivy();
 
   // Check if the user has camera permission
   useEffect(() => {
     const checkPermissions = async () => {
       try {
         if ("permissions" in navigator) {
-          const hasVisited = localStorage.getItem("hasSeenLandingPage");
+          const hasVisited = localStorage.getItem(
+            `hasSeenLandingPage-${user?.id}`,
+          );
           const cameraPermission = await navigator.permissions.query({
             name: "camera" as PermissionName,
           });
