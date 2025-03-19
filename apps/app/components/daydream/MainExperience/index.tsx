@@ -1,6 +1,5 @@
 import DayDreamContent from "./DaydreamContent";
 import { useOnboard } from "../OnboardContext";
-import useMount from "@/hooks/useMount";
 import { GlobalSidebar } from "@/components/sidebar";
 import { SidebarProvider } from "@repo/design-system/components/ui/sidebar";
 import { cn } from "@repo/design-system/lib/utils";
@@ -11,13 +10,10 @@ export default function MainExperience() {
   const { cameraPermission, currentStep } = useOnboard();
   const { setTheme } = useTheme();
 
-  useMount(() => {
-    localStorage.setItem("hasSeenLandingPage", "true");
-  });
-
   useEffect(() => {
     if (currentStep === "main") {
       setTheme("dark");
+      localStorage.setItem("hasSeenLandingPage", "true");
     }
   }, [currentStep, setTheme]);
 

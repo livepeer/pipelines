@@ -13,7 +13,9 @@ export default function EmailLoginButton() {
   >("idle");
   const { sendCode } = useLoginWithEmail();
 
-  const handleLogin = async () => {
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
     try {
       setInputState("loading");
       await sendCode({ email });
@@ -27,7 +29,7 @@ export default function EmailLoginButton() {
   return inputState === "success" ? (
     <InputOTPControlled />
   ) : (
-    <>
+    <form onSubmit={handleLogin} className="w-full flex flex-col gap-4">
       {/* Email input */}
       <input
         type="email"
@@ -46,11 +48,11 @@ export default function EmailLoginButton() {
       {/* Sign in button */}
       <button
         className="w-full h-[44px] py-[10px] bg-[#18181B] rounded-[6px] text-[14px] font-inter font-medium text-white"
-        onClick={handleLogin}
+        type="submit"
       >
         Sign Up with Email
       </button>
-    </>
+    </form>
   );
 }
 
