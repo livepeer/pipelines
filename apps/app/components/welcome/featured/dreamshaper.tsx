@@ -436,9 +436,9 @@ export default function Dreamshaper({
               key={i}
               className={
                 part.isCommand && part.isValid
-                  ? "text-[#00EB88] font-medium"
+                  ? "text-green-500 font-medium"
                   : part.isValue && part.isValidCommand
-                    ? "text-white font-bold"
+                    ? "text-foreground font-bold"
                     : ""
               }
             >
@@ -492,7 +492,7 @@ export default function Dreamshaper({
               <span className="uppercase text-xs">by</span>
               <span className="w-16">
                 <Image
-                  src="https://mintlify.s3.us-west-1.amazonaws.com/livepeer-ai/logo/dark.svg"
+                  src="https://mintlify.s3.us-west-1.amazonaws.com/livepeer-ai/logo/light.svg"
                   alt="Livepeer logo"
                   width={100}
                   height={100}
@@ -501,8 +501,7 @@ export default function Dreamshaper({
             </div>
           </h1>
           <p className="text-xs md:text-sm text-muted-foreground max-w-[280px] md:max-w-none">
-            Transform your video in real-time with AI - and build your own
-            workflow with ComfyUI
+            Transform your video in real-time with AI
           </p>
         </div>
 
@@ -678,7 +677,7 @@ export default function Dreamshaper({
       {/* Input prompt */}
       <div
         className={cn(
-          "relative mx-auto flex justify-center items-center gap-2 h-14 md:h-auto md:min-h-14 md:gap-2 mt-4 mb-2 dark:bg-[#1A1A1A] md:rounded-xl py-2.5 px-3 md:py-1.5 md:px-3 w-[calc(100%-2rem)] md:w-[calc(min(100%,800px))] border-2 border-muted-foreground/10",
+          "relative mx-auto flex justify-center items-center gap-2 h-14 md:h-auto md:min-h-14 md:gap-2 mt-4 mb-2 dark:bg-[#1A1A1A] bg-white md:rounded-xl py-2.5 px-3 md:py-1.5 md:px-3 w-[calc(100%-2rem)] md:w-[calc(min(100%,800px))] border-2 border-muted-foreground/10",
           isFullscreen
             ? isMobile
               ? "fixed left-1/2 bottom-[calc(env(safe-area-inset-bottom)+16px)] -translate-x-1/2 z-[10000] w-[600px] max-w-[calc(100%-2rem)] max-h-16 rounded-2xl"
@@ -760,7 +759,7 @@ export default function Dreamshaper({
                 onKeyDown={handleKeyDown}
                 style={{
                   color: "transparent",
-                  caretColor: "white",
+                  caretColor: "black",
                   paddingLeft: "12px",
                 }}
               />
@@ -769,14 +768,14 @@ export default function Dreamshaper({
                 ref={inputRef as React.RefObject<HTMLTextAreaElement>}
                 minRows={1}
                 maxRows={5}
-                className="w-full shadow-none border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-sm outline-none bg-transparent py-3 break-all font-sans pl-3"
+                className="text-black w-full shadow-none border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-sm outline-none bg-transparent py-3 break-all font-sans pl-3"
                 value={inputValue}
                 onChange={e => setInputValue(e.target.value)}
                 onKeyDown={handleKeyDown}
                 style={{
                   resize: "none",
                   color: "transparent",
-                  caretColor: "white",
+                  caretColor: "black",
                 }}
               />
             )}

@@ -100,7 +100,7 @@ export function BroadcastWithControls({
           !collapsed
             ? "w-full h-full"
             : isMobile
-              ? "!w-full !h-12 bg-[#161616] rounded-2xl"
+              ? "!w-full !h-12 bg-muted-background rounded-2xl"
               : "!w-12 !h-12 rounded-full",
         )}
         style={collapsed && !isMobile ? { width: "3rem", height: "3rem" } : {}}
@@ -128,14 +128,14 @@ export function BroadcastWithControls({
             <div className="flex items-center gap-3">
               <div
                 className={cn(
-                  "flex items-center justify-center border border-white/10 rounded-full",
+                  "flex items-center justify-center border border-grey-900 rounded-full",
                   isMobile
                     ? "px-4 py-2 bg-[linear-gradient(120.63deg,rgba(232,232,232,0.05)_31.4%,rgba(130,130,130,0.05)_85.12%)]"
                     : "p-2 bg-transparent",
                 )}
               >
                 <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse mr-1.5" />
-                <Camera className="w-4 h-4 text-white/50" />
+                <Camera className="w-4 h-4 text-black/50" />
               </div>
               {isMobile && (
                 <span className="text-sm text-white font-medium">
