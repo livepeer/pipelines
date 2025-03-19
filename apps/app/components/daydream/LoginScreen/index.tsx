@@ -5,8 +5,20 @@ import Link from "next/link";
 import GoogleLoginButton from "./GoogleLoginButton";
 import DiscordLoginButton from "./DiscordLoginButton";
 import EmailLoginButton from "./EmailLoginButton";
+import { cn } from "@repo/design-system/lib/utils";
+import { useIsMobile } from "@repo/design-system/hooks/use-mobile";
+import useMount from "@/hooks/useMount";
+import { useTheme } from "next-themes";
+import LivepeerLogo from "../LivepeerLogo";
 
 export default function LoginScreen() {
+  const isMobile = useIsMobile();
+  const { setTheme } = useTheme();
+
+  useMount(() => {
+    setTheme("light");
+  });
+
   return (
     <div className="min-h-screen flex flex-col-reverse sm:flex-row relative w-full h-[100dvh]">
       <Image
@@ -20,11 +32,20 @@ export default function LoginScreen() {
 
       {/* Login container */}
       <div className="z-10 relative bg-white h-[55dvh] sm:h-full p-[40px] sm:p-[60px] rounded-t-[20px] sm:rounded-none w-full sm:w-1/2 shadow-lg flex items-center justify-center">
-        <div className="flex flex-col items-center justify-center w-full gap-2 sm:gap-3">
-          <h3 className="font-playfair font-bold hidden sm:block text-[24px] text-[#1C1C1C]">
-            Daydream
-          </h3>
+        <h1
+          className={cn(
+            "absolute top-9 left-9 font-inter text-lg md:text-xl flex flex-col uppercase font-light",
+            isMobile && "left-1/2 -translate-x-1/2",
+          )}
+        >
+          Daydream
+          <div className="flex items-center gap-2 text-xs">
+            <span className="uppercase text-xs">by</span>
+            <LivepeerLogo className="w-16" />
+          </div>
+        </h1>
 
+        <div className="flex flex-col items-center justify-center w-full gap-2 sm:gap-3">
           <h1 className="font-playfair font-bold text-2xl sm:text-4xl text-[#1C1C1C] text-center mt-[12px]">
             Welcome to Daydream
           </h1>
@@ -58,14 +79,14 @@ export default function LoginScreen() {
           <p className="text-[12px] font-inter text-[#A1A1AA] text-center mt-[24px]">
             By clicking continue, you agree to our{" "}
             <Link
-              href="#"
+              href="https://www.livepeer.org/terms-of-service-p"
               className="text-[#A1A1AA] hover:text-[#71717A] underline"
             >
               Terms of Service
             </Link>{" "}
             and{" "}
             <Link
-              href="#"
+              href="https://www.livepeer.org/privacy-policy-p"
               className="text-[#A1A1AA] hover:text-[#71717A] underline"
             >
               Privacy Policy

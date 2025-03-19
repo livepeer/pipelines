@@ -37,12 +37,18 @@ export default function EmailLoginButton() {
         onChange={e => setEmail(e.target.value)}
       />
 
+      {inputState === "error" && (
+        <div className="text-center text-sm text-red-500">
+          Please enter a valid email and try again.
+        </div>
+      )}
+
       {/* Sign in button */}
       <button
         className="w-full h-[44px] py-[10px] bg-[#18181B] rounded-[6px] text-[14px] font-inter font-medium text-white"
         onClick={handleLogin}
       >
-        Sign In with Email
+        Sign Up with Email
       </button>
     </>
   );

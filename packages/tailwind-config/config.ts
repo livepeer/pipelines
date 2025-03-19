@@ -78,10 +78,6 @@ export const config: Config = {
           ring: "hsl(var(--sidebar-ring))",
         },
       },
-      fontFamily: {
-        sans: ["FavoritPro", "sans-serif"],
-        mono: ["var(--font-geist-mono)", ...defaultTheme.fontFamily.mono],
-      },
       keyframes: {
         "accordion-down": {
           from: { height: "0" },

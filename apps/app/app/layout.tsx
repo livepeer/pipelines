@@ -43,7 +43,7 @@ export const viewport: Viewport = {
 const RootLayout = ({ children }: RootLayoutProperties) => (
   <html lang="en" suppressHydrationWarning>
     <body
-      className={`${inter.variable} ${playfair.variable} ${openSans.variable} bg-sidebar`}
+      className={`${inter.variable} ${playfair.variable} ${openSans.variable} bg-sidebar font-sans`}
     >
       <MixpanelProvider>
         <DesignSystemProvider defaultTheme="light" enableSystem={false}>

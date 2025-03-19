@@ -53,7 +53,7 @@ export default function Personas() {
           <button
             onClick={handleContinue}
             disabled={selectedPersonas.length === 0}
-            className="bg-[#161616] disabled:bg-opacity-50 w-full max-w-[187px] text-[#EDEDED] px-6 py-3 rounded-md font-inter font-semibold text-[15px] hover:bg-[#2D2D2D] transition-colors"
+            className="bg-[#161616] disabled:bg-opacity-50 w-full sm:max-w-[187px] text-[#EDEDED] px-6 py-3 rounded-md font-inter font-semibold text-[15px] hover:bg-[#2D2D2D] transition-colors"
           >
             Continue
           </button>
