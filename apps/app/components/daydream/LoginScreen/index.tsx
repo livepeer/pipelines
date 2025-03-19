@@ -101,15 +101,15 @@ export default function LoginScreen() {
           Transform your video
         </h1>
 
-        <div className="w-full h-[calc(40dvh)] sm:max-h-none sm:h-[calc(100dvh-200px)] rounded-[20px] overflow-hidden">
-          <video
-            src="/daydream.mp4"
-            autoPlay
-            muted
-            loop
-            playsInline
-            className="w-full h-full"
-          />
+        <div className="h-[calc(40dvh)] sm:max-h-none sm:h-[calc(100dvh-200px)] overflow-hidden shadow-[12px_24px_33px_0px_#0913168A]rounded-[26px]">
+            <video
+              src="/daydream.mp4"
+              autoPlay
+              muted
+              loop
+              playsInline
+              className="w-full h-full rounded-[26px]"
+            />
         </div>
       </div>
     </div>
