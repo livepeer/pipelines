@@ -78,6 +78,12 @@ export const config: Config = {
           ring: "hsl(var(--sidebar-ring))",
         },
       },
+      fontFamily: {
+        sans: ["var(--font-inter)", ...defaultTheme.fontFamily.sans],
+        playfair: ["var(--font-playfair)", ...defaultTheme.fontFamily.sans],
+        openSans: ["var(--font-open-sans)", ...defaultTheme.fontFamily.sans],
+        mono: ["var(--font-geist-mono)", ...defaultTheme.fontFamily.mono],
+      },
       keyframes: {
         "accordion-down": {
           from: { height: "0" },
