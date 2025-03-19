@@ -20,7 +20,7 @@ export default function LoginScreen() {
   });
 
   return (
-    <div className="min-h-screen flex flex-col-reverse sm:flex-row relative w-full h-[100dvh]">
+    <div className="min-h-screen flex flex-col-reverse sm:flex-row relative w-full h-[100vh] overflow-auto">
       <Image
         src="/background.png"
         alt="Background"
@@ -31,11 +31,11 @@ export default function LoginScreen() {
       />
 
       {/* Login container */}
-      <div className="z-10 relative bg-white h-[55dvh] sm:h-full p-[40px] sm:p-[60px] rounded-t-[20px] sm:rounded-none w-full sm:w-1/2 shadow-lg flex items-center justify-center">
+      <div className="z-10 relative bg-white h-[55vh] sm:h-full p-[40px] sm:p-[60px] rounded-t-[20px] sm:rounded-none w-full sm:w-1/2 shadow-lg flex flex-col items-center justify-center">
         <h1
           className={cn(
-            "absolute top-9 left-9 font-inter text-lg md:text-xl flex flex-col uppercase font-light",
-            isMobile && "left-1/2 -translate-x-1/2",
+            "mt- font-inter text-lg md:text-xl flex flex-col uppercase font-light",
+            !isMobile && "absolute top-9 left-9",
           )}
         >
           Daydream
@@ -96,8 +96,8 @@ export default function LoginScreen() {
         </div>
       </div>
 
-      <div className="z-10 relative bg-transparent h-[45dvh] sm:h-full p-6 rounded-t-[20px] sm:rounded-none w-full sm:w-1/2 flex flex-col items-center gap-8">
-        <h1 className="font-playfair font-bold hidden sm:block sm:text-[48px] text-[#1C1C1C] text-center">
+      <div className="z-10 relative bg-transparent h-[45vh] sm:h-full p-6 rounded-t-[20px] sm:rounded-none w-full sm:w-1/2 flex flex-col items-center gap-8">
+        <h1 className="font-playfair font-bold hidden sm:block sm:text-[48px] text-white text-center">
           Transform your video
         </h1>
 
@@ -107,6 +107,7 @@ export default function LoginScreen() {
             autoPlay
             muted
             loop
+            playsInline
             className="w-full h-full"
           />
         </div>

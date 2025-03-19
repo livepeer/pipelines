@@ -24,7 +24,8 @@ export async function createUser(user: User) {
       id: user?.id,
       email:
         user?.email?.address || user?.google?.email || user?.discord?.email,
-      name: user?.google?.name || user?.github?.name || user?.discord?.username,
+      name:
+        user?.google?.name || user?.discord?.username || user?.email?.address,
       provider: user?.google ? "google" : user?.discord ? "discord" : "email",
     });
     if (error) {

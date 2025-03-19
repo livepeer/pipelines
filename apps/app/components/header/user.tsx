@@ -28,17 +28,12 @@ export default function User({ className }: { className?: string }) {
   const isMobile = useIsMobile();
 
   const name =
-    user?.github?.name ||
-    user?.discord?.username ||
-    user?.google?.name ||
-    user?.email?.address;
+    user?.discord?.username || user?.google?.name || user?.email?.address;
   const provider = user?.google
     ? "Google"
     : user?.discord
       ? "Discord"
-      : user?.github
-        ? "GitHub"
-        : "Email";
+      : "Email";
 
   const disableLogin = !ready || authenticated;
 
