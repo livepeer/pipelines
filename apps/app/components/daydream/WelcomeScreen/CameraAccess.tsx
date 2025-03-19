@@ -82,6 +82,10 @@ export default function CameraAccess() {
 
   return (
     <>
+      <p className="font-semibold font-playfair text-start text-xl sm:text-3xl">
+        {" "}
+        Before we start
+      </p>
       <div
         className="flex flex-col gap-3 cursor-pointer animate-fade-in"
         onClick={currentStep === "camera" ? requestMediaPermissions : undefined}

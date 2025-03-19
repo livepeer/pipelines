@@ -7,9 +7,16 @@ import Footer from "./Footer";
 import { useOnboard } from "../OnboardContext";
 import SelectPrompt from "./SelectPrompt";
 import LayoutWrapper from "../LayoutWrapper";
+import useMount from "@/hooks/useMount";
+import { useTheme } from "next-themes";
 
 export default function WelcomeScreen() {
   const { currentStep } = useOnboard();
+  const { setTheme } = useTheme();
+
+  useMount(() => {
+    setTheme("light");
+  });
 
   if (currentStep === "main") {
     return null;

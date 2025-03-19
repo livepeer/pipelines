@@ -22,14 +22,23 @@ import { cn } from "@repo/design-system/lib/utils";
 import { useIsMobile } from "@repo/design-system/hooks/use-mobile";
 import { identifyUser } from "@/lib/analytics/mixpanel";
 import { submitToHubspot } from "@/lib/analytics/hubspot";
+
 export default function User({ className }: { className?: string }) {
   const { ready, authenticated, user, login, logout } = usePrivy();
   const isMobile = useIsMobile();
 
   const name =
-    user?.github?.name || user?.discord?.username || user?.email?.address;
-  const email = typeof user?.email === "string" ? user.email : "";
-  const provider = user?.github ? "GitHub" : "Discord";
+    user?.github?.name ||
+    user?.discord?.username ||
+    user?.google?.name ||
+    user?.email?.address;
+  const provider = user?.google
+    ? "Google"
+    : user?.discord
+      ? "Discord"
+      : user?.github
+        ? "GitHub"
+        : "Email";
 
   const disableLogin = !ready || authenticated;
 
@@ -62,9 +71,7 @@ export default function User({ className }: { className?: string }) {
 
   return authenticated ? (
     <DropdownMenu>
-      <DropdownMenuTrigger
-        className={cn("mt-2 flex items-center gap-2", className)}
-      >
+      <DropdownMenuTrigger className={cn("flex items-center gap-2", className)}>
         <Avatar className="h-6 w-6">
           <AvatarImage
             src={`https://github.com/${user?.github?.username}.png`}
@@ -79,7 +86,6 @@ export default function User({ className }: { className?: string }) {
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-72 p-3 pb-1" side="right" align="end">
         <div>
-          <p className="mb-2 text-muted-foreground text-sm">{email}</p>
           <div className="mb-2 flex items-center gap-2">
             <Avatar className="h-10 w-10 rounded-lg">
               <AvatarImage

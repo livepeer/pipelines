@@ -8,6 +8,7 @@ import { Loader2 } from "lucide-react";
 import MainExperience from "./MainExperience";
 import { useEffect } from "react";
 import LayoutWrapper from "./LayoutWrapper";
+import { createUser } from "../header/action";
 
 export default function Daydream() {
   const { user, ready } = usePrivy();
@@ -48,6 +49,7 @@ function DaydreamRenderer() {
     setCurrentStep,
   } = useOnboard();
 
+  // Check if the user has camera permission
   useEffect(() => {
     const checkPermissions = async () => {
       try {

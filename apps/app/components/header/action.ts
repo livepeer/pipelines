@@ -22,9 +22,10 @@ export async function createUser(user: User) {
 
     const { error } = await supabase.from("users").insert({
       id: user?.id,
-      email: user?.email,
-      name: user?.github?.name || user?.discord?.username,
-      provider: user?.github ? "github" : "discord",
+      email:
+        user?.email?.address || user?.google?.email || user?.discord?.email,
+      name: user?.google?.name || user?.github?.name || user?.discord?.username,
+      provider: user?.google ? "google" : user?.discord ? "discord" : "email",
     });
     if (error) {
       console.error(error);
