@@ -50,7 +50,7 @@ export default function EmailLoginButton() {
         className="w-full h-[44px] py-[10px] bg-[#18181B] rounded-[6px] text-[14px] font-inter font-medium text-white"
         type="submit"
       >
-        Sign-up with Email
+        Sign up with Email
       </button>
     </form>
   );

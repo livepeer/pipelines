@@ -15,7 +15,10 @@ export default function Daydream({
 }: {
   hasSharedPrompt: boolean;
 }) {
-  const { user, ready } = usePrivy();
+  const { user, ready, authenticated } = usePrivy();
+
+  console.log("daydream::: authenticated", authenticated);
+  console.log("daydream::: user", user);
 
   // If the user is not ready, show a loading screen
   if (!ready) {

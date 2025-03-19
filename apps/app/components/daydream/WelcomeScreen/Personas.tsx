@@ -30,10 +30,7 @@ export default function Personas() {
     <div className="flex flex-col gap-6 w-full">
       <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-[12px] w-full">
         {personas.map(persona => (
-          <div 
-            key={persona}
-            className="persona-button-wrapper"
-          >
+          <div key={persona} className="persona-button-wrapper">
             <button
               onClick={
                 currentStep === "persona"
@@ -63,7 +60,7 @@ export default function Personas() {
           <button
             onClick={handleContinue}
             disabled={selectedPersonas.length === 0}
-            className="bg-[#161616] disabled:bg-opacity-50 w-full sm:max-w-[187px] text-[#EDEDED] px-6 py-3 rounded-md font-inter font-semibold text-[15px] hover:bg-[#2D2D2D] transition-colors"
+            className="bg-[#161616] disabled:bg-opacity-50 w-full sm:max-w-[187px] text-[#EDEDED] px-6 py-3 rounded-md font-inter font-semibold text-[15px] hover:bg-[#2D2D2D] disabled:hover:bg-[#161616] disabled:hover:bg-opacity-50 transition-colors"
           >
             Continue
           </button>
