@@ -10,7 +10,11 @@ import { useEffect } from "react";
 import LayoutWrapper from "./LayoutWrapper";
 import { createUser } from "../header/action";
 
-export default function Daydream() {
+export default function Daydream({
+  hasSharedPrompt,
+}: {
+  hasSharedPrompt: boolean;
+}) {
   const { user, ready } = usePrivy();
 
   // If the user is not ready, show a loading screen
@@ -35,7 +39,7 @@ export default function Daydream() {
 
   // If the user is logged in, show the onboarding screen and main experience
   return (
-    <OnboardProvider>
+    <OnboardProvider hasSharedPrompt={hasSharedPrompt}>
       <DaydreamRenderer />
     </OnboardProvider>
   );

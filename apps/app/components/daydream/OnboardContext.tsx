@@ -10,6 +10,7 @@ interface OnboardContextType {
   currentStep: OnboardingStep;
   // Camera permission state
   initialCameraValidation: boolean;
+  hasSharedPrompt: boolean;
   cameraPermission: CameraPermission;
   // Selected options for each step
   selectedPersonas: string[] | null;
@@ -26,7 +27,13 @@ interface OnboardContextType {
 const OnboardContext = createContext<OnboardContextType | undefined>(undefined);
 
 // Provider component
-export function OnboardProvider({ children }: { children: ReactNode }) {
+export function OnboardProvider({
+  children,
+  hasSharedPrompt,
+}: {
+  children: ReactNode;
+  hasSharedPrompt: boolean;
+}) {
   const [currentStep, setCurrentStep] = useState<OnboardingStep>("persona");
   const [cameraPermission, setCameraPermission] =
     useState<CameraPermission>("prompt");
@@ -46,6 +53,7 @@ export function OnboardProvider({ children }: { children: ReactNode }) {
       setSelectedPersonas,
       setSelectedPrompt,
       setInitialCameraValidation,
+      hasSharedPrompt,
     }),
     [
       currentStep,
@@ -53,6 +61,7 @@ export function OnboardProvider({ children }: { children: ReactNode }) {
       selectedPersonas,
       selectedPrompt,
       initialCameraValidation,
+      hasSharedPrompt,
     ],
   );
 

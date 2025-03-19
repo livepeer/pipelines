@@ -7,7 +7,7 @@ import { usePrivy } from "@privy-io/react-auth";
 import { cn } from "@repo/design-system/lib/utils";
 
 const useMediaPermissions = () => {
-  const { setCameraPermission, setCurrentStep } = useOnboard();
+  const { setCameraPermission, setCurrentStep, hasSharedPrompt } = useOnboard();
   const { authenticated } = usePrivy();
 
   const requestMediaPermissions = async () => {
@@ -47,7 +47,7 @@ const useMediaPermissions = () => {
         });
       }
 
-      setCurrentStep("prompt");
+      setCurrentStep(hasSharedPrompt ? "main" : "prompt");
     } catch (err) {
       if (
         err instanceof Error &&

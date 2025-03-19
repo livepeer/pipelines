@@ -30,6 +30,12 @@ export const generateMetadata = async ({
   return { ...metaData, openGraph: metaData };
 };
 
-export default function HomePage() {
-  return <Daydream />;
+export default function HomePage({
+  searchParams,
+}: {
+  searchParams: { shared: string };
+}) {
+  const { shared } = searchParams;
+
+  return <Daydream hasSharedPrompt={!!shared} />;
 }
