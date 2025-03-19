@@ -108,7 +108,8 @@ export default function CameraAccess() {
               We will need access to your Camera & Microphone
             </h3>
             <p className="font-inter text-xs leading-[1.55] tracking-[-1.1%] text-[#161616]">
-              In order to transform your video we need access to these devices
+              In order to transform your video we need access. Nothing is
+              recorded unless you click "record"
             </p>
           </div>
           <button className="flex justify-center items-center gap-2 bg-[#EDEDED] rounded-md p-2 shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)]">
@@ -121,8 +122,13 @@ export default function CameraAccess() {
       {cameraPermission === "denied" && (
         <p className="font-inter text-sm leading-[1.55] tracking-[-1.1%] text-[#161616] text-center">
           We couldn’t load your permissions, please look into{" "}
-          <span className="font-semibold underline">documentation</span> for
-          help
+          <a
+            className="font-semibold underline"
+            href="https://pipelines.livepeer.org/docs"
+          >
+            documentation
+          </a>{" "}
+          for help
         </p>
       )}
     </>

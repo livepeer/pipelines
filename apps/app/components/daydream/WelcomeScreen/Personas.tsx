@@ -32,7 +32,11 @@ export default function Personas() {
         {personas.map(persona => (
           <button
             key={persona}
-            onClick={() => togglePersona(persona)}
+            onClick={
+              currentStep === "persona"
+                ? () => togglePersona(persona)
+                : undefined
+            }
             className={`w-full sm:max-w-none h-[30px] px-[13px] flex justify-center items-center gap-1 text-[13px] font-normal font-inter rounded-full border transition-colors ${
               selectedPersonas.includes(persona)
                 ? "bg-[#95B4BE] text-[#010101] border-[#010101]"
