@@ -12,6 +12,7 @@ export async function submitToHubspot(user: PrivyUser) {
       {
         name: "email",
         value:
+          user.google?.email ||
           user.email?.address ||
           user.discord?.email ||
           user.github?.email ||
@@ -20,6 +21,7 @@ export async function submitToHubspot(user: PrivyUser) {
       {
         name: "firstname",
         value:
+          user.google?.name ||
           user.email?.address?.split("@")[0] ||
           user?.github?.name ||
           user?.discord?.username ||
@@ -28,7 +30,13 @@ export async function submitToHubspot(user: PrivyUser) {
       { name: "user_id", value: user?.id || "" },
       {
         name: "signup_method",
-        value: user?.github ? "GitHub" : user?.discord ? "Discord" : "Email",
+        value: user?.google
+          ? "Google"
+          : user?.discord
+            ? "Discord"
+            : user?.github
+              ? "GitHub"
+              : "Email",
       },
     ];
 

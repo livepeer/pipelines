@@ -303,10 +303,7 @@ export const GlobalSidebar = ({ children }: GlobalSidebarProperties) => {
                   </SidebarMenuItem>
                 ))}
                 {key === "footer" && (
-                  <SidebarMenuItem
-                    key="My Account"
-                    className="w-full flex items-center justify-center cursor-pointer"
-                  >
+                  <SidebarMenuItem key="My Account" className="w-full">
                     <SidebarMenuButton
                       className={cn(
                         "hover:bg-muted cursor-pointer",

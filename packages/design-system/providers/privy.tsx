@@ -2,7 +2,13 @@
 
 import { PrivyProvider as PrivyProviderRaw } from "@privy-io/react-auth";
 
-const DEFAULT_LOGIN_METHODS = ["discord", "github", "wallet", "email"] as any;
+const DEFAULT_LOGIN_METHODS = [
+  "discord",
+  "github",
+  "wallet",
+  "email",
+  "google",
+] as any;
 const DEFAULT_PRIVY_APP_ID = "cm2xth5uy0acgf4dk18qfg2vq"; // Production App ID
 
 export const PrivyProvider = ({ children }: { children: React.ReactNode }) => {

@@ -79,7 +79,9 @@ export const config: Config = {
         },
       },
       fontFamily: {
-        sans: ["FavoritPro", "sans-serif"],
+        sans: ["var(--font-inter)", ...defaultTheme.fontFamily.sans],
+        playfair: ["var(--font-playfair)", ...defaultTheme.fontFamily.sans],
+        openSans: ["var(--font-open-sans)", ...defaultTheme.fontFamily.sans],
         mono: ["var(--font-geist-mono)", ...defaultTheme.fontFamily.mono],
       },
       keyframes: {
@@ -91,10 +93,21 @@ export const config: Config = {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
+        "fade-in": {
+          from: {
+            opacity: "0",
+            transform: "translateY(10px)",
+          },
+          to: {
+            opacity: "1",
+            transform: "translateY(0)",
+          },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "fade-in": "fade-in 1s ease-out",
       },
       typography: typographyConfig,
     },

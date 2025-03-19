@@ -1,174 +1,99 @@
 "use client";
 
-import ClientSideTracker from "@/components/analytics/ClientSideTracker";
-import Dreamshaper from "@/components/welcome/featured/dreamshaper";
-import Interstitial from "@/components/welcome/featured/interstitial";
-import { ReactElement, useState, useEffect } from "react";
-import { useDreamshaper } from "@/components/welcome/featured/useDreamshaper";
 import { usePrivy } from "@privy-io/react-auth";
-import { useStreamStatus } from "@/hooks/useStreamStatus";
+import LoginScreen from "./LoginScreen";
+import WelcomeScreen from "./WelcomeScreen";
+import { OnboardProvider, useOnboard } from "./OnboardContext";
+import { Loader2 } from "lucide-react";
+import MainExperience from "./MainExperience";
+import { useEffect } from "react";
+import LayoutWrapper from "./LayoutWrapper";
+import { createUser } from "../header/action";
 
-const UNREGISTERED_APP_TRIAL_TIMEOUT = 10 * 60 * 1000;
+export default function Daydream({
+  hasSharedPrompt,
+}: {
+  hasSharedPrompt: boolean;
+}) {
+  const { user, ready } = usePrivy();
 
-export default function DayDreamContent(): ReactElement {
-  const { authenticated } = usePrivy();
-  const [showInterstitial, setShowInterstitial] = useState(true);
-  const [streamKilled, setStreamKilled] = useState(false);
-  const dreamshaperState = useDreamshaper();
-  const { stream, outputPlaybackId, handleUpdate, loading, pipeline } =
-    dreamshaperState;
-  const [cameraPermissionGranted, setCameraPermissionGranted] = useState(false);
-  const [showPromptSelection, setShowPromptSelection] = useState(false);
+  // If the user is not ready, show a loading screen
+  if (!ready) {
+    return (
+      <LayoutWrapper>
+        <div className="w-full h-screen flex items-center justify-center">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        </div>
+      </LayoutWrapper>
+    );
+  }
 
-  const [pendingPrompt, setPendingPrompt] = useState<string | null>(null);
+  // If the user is not logged in, show the login screen
+  if (!user) {
+    return (
+      <LayoutWrapper>
+        <LoginScreen />
+      </LayoutWrapper>
+    );
+  }
 
-  // Get shared prompt from URL if available
-  const [sharedPrompt, setSharedPrompt] = useState<string | null>(null);
+  // If the user is logged in, show the onboarding screen and main experience
+  return (
+    <OnboardProvider hasSharedPrompt={hasSharedPrompt}>
+      <DaydreamRenderer />
+    </OnboardProvider>
+  );
+}
 
-  const { status, isLive, statusMessage, capacityReached, fullResponse } =
-    useStreamStatus(stream?.id || "", false);
+function DaydreamRenderer() {
+  const {
+    initialCameraValidation,
+    setInitialCameraValidation,
+    setCameraPermission,
+    setCurrentStep,
+  } = useOnboard();
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const urlParams = new URLSearchParams(window.location.search);
-      const sharedPromptParam = urlParams.get("shared");
-      if (sharedPromptParam) {
-        setSharedPrompt(sharedPromptParam);
-      }
-    }
-  }, []);
-
+  // Check if the user has camera permission
   useEffect(() => {
     const checkPermissions = async () => {
       try {
         if ("permissions" in navigator) {
+          const hasVisited = localStorage.getItem("hasSeenLandingPage");
           const cameraPermission = await navigator.permissions.query({
             name: "camera" as PermissionName,
           });
 
           if (cameraPermission.state === "granted") {
-            setCameraPermissionGranted(true);
-            const hasVisited = localStorage.getItem("hasSeenLandingPage");
-
+            setCameraPermission("granted");
             if (hasVisited) {
-              setShowInterstitial(false);
+              setCurrentStep("main");
             }
-          } else {
-            localStorage.removeItem("hasSelectedPrompt");
           }
         }
       } catch (err) {
         console.error("Error checking camera permission:", err);
+      } finally {
+        setInitialCameraValidation(true);
       }
     };
 
     checkPermissions();
   }, []);
 
-  useEffect(() => {
-    if (!authenticated) {
-      const timer = setTimeout(() => {
-        setStreamKilled(true);
-        setShowInterstitial(true);
-      }, UNREGISTERED_APP_TRIAL_TIMEOUT);
-      return () => clearTimeout(timer);
-    }
-  }, [authenticated]);
-
-  useEffect(() => {
-    const debugHandler = () => {
-      setStreamKilled(true);
-      setShowInterstitial(true);
-    };
-    window.addEventListener("triggerTimeoutDebug", debugHandler);
-    return () =>
-      window.removeEventListener("triggerTimeoutDebug", debugHandler);
-  }, []);
-
-  useEffect(() => {
-    const trialExpiredHandler = () => {
-      setStreamKilled(true);
-      setShowInterstitial(true);
-    };
-    window.addEventListener("trialExpired", trialExpiredHandler);
-    return () =>
-      window.removeEventListener("trialExpired", trialExpiredHandler);
-  }, []);
-
-  const handleReady = () => {
-    // Don't reset state if stream was killed due to trial expiration
-    if (!streamKilled) {
-      setShowInterstitial(false);
-      setStreamKilled(false);
-      setShowPromptSelection(false);
-    }
-  };
-
-  const handlePromptApply = (prompt: string) => {
-    setPendingPrompt(prompt);
-    localStorage.setItem("hasSelectedPrompt", "true");
-  };
-
-  const handleCameraPermissionGranted = () => {
-    setCameraPermissionGranted(true);
-
-    // Skip prompt selection if we have a shared prompt
-    if (sharedPrompt) {
-      handleReady();
-    } else {
-      // Original logic for non-shared link cases
-      const hasSelectedPrompt = localStorage.getItem("hasSelectedPrompt");
-      if (!hasSelectedPrompt) {
-        setShowPromptSelection(true);
-      } else {
-        handleReady();
-      }
-    }
-
-    localStorage.removeItem("hasSeenLandingPage");
-  };
-
-  useEffect(() => {
-    if (pendingPrompt && status === "ONLINE") {
-      if (handleUpdate) {
-        handleUpdate(pendingPrompt, { silent: true });
-      }
-      setPendingPrompt(null);
-    }
-  }, [pendingPrompt, status, handleUpdate]);
+  if (!initialCameraValidation) {
+    return (
+      <LayoutWrapper>
+        <div className="w-full h-screen flex items-center justify-center">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        </div>
+      </LayoutWrapper>
+    );
+  }
 
   return (
-    <div className="relative">
-      {cameraPermissionGranted && (
-        <div className={showInterstitial ? "hidden" : ""}>
-          <Dreamshaper
-            {...dreamshaperState}
-            streamKilled={streamKilled}
-            live={isLive}
-            statusMessage={statusMessage}
-            streamKey={stream?.stream_key}
-            streamId={stream?.id}
-            capacityReached={capacityReached}
-            status={status}
-            fullResponse={fullResponse}
-            pipeline={pipeline}
-          />
-          <ClientSideTracker eventName="home_page_view" />
-        </div>
-      )}
-
-      {showInterstitial && (
-        <Interstitial
-          streamId={stream?.id}
-          outputPlaybackId={outputPlaybackId}
-          onReady={handleReady}
-          onPromptApply={handlePromptApply}
-          showLoginPrompt={streamKilled}
-          onCameraPermissionGranted={handleCameraPermissionGranted}
-          showPromptSelection={showPromptSelection && !sharedPrompt}
-          sharedPrompt={sharedPrompt}
-        />
-      )}
-    </div>
+    <>
+      <WelcomeScreen />
+      <MainExperience />
+    </>
   );
 }
