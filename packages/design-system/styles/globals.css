@@ -167,3 +167,52 @@
     pointer-events: none !important;
   }
 }
+
+/* Persona button styles */
+.persona-button-wrapper {
+  position: relative;
+  width: 100%;
+  border-radius: 9999px;
+}
+
+.persona-button-wrapper:hover .unselected-persona::before {
+  background-position: right center;
+}
+
+.unselected-persona {
+  position: relative;
+  z-index: 1;
+  border: none;
+  transition: all 0.4s ease;
+}
+
+.unselected-persona::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: 9999px;
+  padding: 1px;
+  /* Modified gradient to ensure clear gradient in both positions */
+  background: linear-gradient(
+    to right, 
+    #83A5B5 0%, 
+    #9A9A9A 25%, 
+    #D5E0E4 50%, 
+    #9A9A9A 75%, 
+    #83A5B5 100%
+  );
+  -webkit-mask: 
+    linear-gradient(#fff 0 0) content-box, 
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  background-size: 200% auto;
+  transition: background-position 0.5s ease;
+  pointer-events: none;
+  z-index: -1;
+  background-position: 0% center;
+}
+
+.selected-persona {
+  border: 1px solid #010101;
+}
