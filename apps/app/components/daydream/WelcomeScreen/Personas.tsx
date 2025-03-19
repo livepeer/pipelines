@@ -20,6 +20,7 @@ export default function Personas() {
   };
 
   const handleContinue = async () => {
+    // TODO: Add analytics and push the personas to the database/form
     console.log("Selected personas:", selectedPersonas);
     await new Promise(resolve => setTimeout(resolve, 1000));
     setCurrentStep("camera");

@@ -1,7 +1,6 @@
-import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { useOnboard } from "../OnboardContext";
-import useScrollView from "./useScrollView";
+import useScrollView from "@/hooks/useScrollView";
 
 interface PromptOption {
   id: string;
