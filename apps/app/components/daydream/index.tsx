@@ -7,6 +7,7 @@ import { OnboardProvider, useOnboard } from "./OnboardContext";
 import { Loader2 } from "lucide-react";
 import MainExperience from "./MainExperience";
 import { useEffect } from "react";
+import LayoutWrapper from "./LayoutWrapper";
 
 export default function Daydream() {
   const { user, ready } = usePrivy();
@@ -14,15 +15,21 @@ export default function Daydream() {
   // If the user is not ready, show a loading screen
   if (!ready) {
     return (
-      <div className="w-full h-screen flex items-center justify-center">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-      </div>
+      <LayoutWrapper>
+        <div className="w-full h-screen flex items-center justify-center">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        </div>
+      </LayoutWrapper>
     );
   }
 
   // If the user is not logged in, show the login screen
   if (!user) {
-    return <LoginScreen />;
+    return (
+      <LayoutWrapper>
+        <LoginScreen />
+      </LayoutWrapper>
+    );
   }
 
   // If the user is logged in, show the onboarding screen and main experience
@@ -52,10 +59,9 @@ function DaydreamRenderer() {
 
           if (cameraPermission.state === "granted") {
             setCameraPermission("granted");
-          }
-
-          if (hasVisited) {
-            setCurrentStep("main");
+            if (hasVisited) {
+              setCurrentStep("main");
+            }
           }
         }
       } catch (err) {
@@ -70,9 +76,11 @@ function DaydreamRenderer() {
 
   if (!initialCameraValidation) {
     return (
-      <div className="w-full h-screen flex items-center justify-center">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-      </div>
+      <LayoutWrapper>
+        <div className="w-full h-screen flex items-center justify-center">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        </div>
+      </LayoutWrapper>
     );
   }
 

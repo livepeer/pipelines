@@ -1,6 +1,4 @@
 import "@repo/design-system/styles/globals.css";
-import { GlobalSidebar } from "@/components/sidebar";
-import { SidebarProvider } from "@repo/design-system/components/ui/sidebar";
 import { DesignSystemProvider } from "@repo/design-system/providers";
 import type { ReactNode } from "react";
 import type { Viewport } from "next";
@@ -49,18 +47,7 @@ const RootLayout = ({ children }: RootLayoutProperties) => (
     >
       <MixpanelProvider>
         <DesignSystemProvider defaultTheme="light" enableSystem={false}>
-          <SidebarProvider open={false}>
-            <GlobalSidebar>
-              <div>
-                <div className="flex h-screen md:h-auto md:min-h-[calc(100vh-2rem)] flex-col px-2 md:px-6">
-                  {children}
-                </div>
-                <footer className="fixed bottom-0 right-0 p-4">
-                  {/* <VersionInfo /> */}
-                </footer>
-              </div>
-            </GlobalSidebar>
-          </SidebarProvider>
+          {children}
           {<Intercom />}
           {/* TODO: REENABLE WHEN SHIH-YU IS READY FOR IT <Intercom /> */}
         </DesignSystemProvider>

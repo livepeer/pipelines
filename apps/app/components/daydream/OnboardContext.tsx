@@ -56,6 +56,8 @@ export function OnboardProvider({ children }: { children: ReactNode }) {
     ],
   );
 
+  console.log(value);
+
   return (
     <OnboardContext.Provider value={value}>{children}</OnboardContext.Provider>
   );

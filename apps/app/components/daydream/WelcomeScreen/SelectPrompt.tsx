@@ -49,7 +49,7 @@ export default function SelectPrompt() {
   return (
     <div
       ref={componentRef}
-      className="flex flex-col animate-fade-in min-h-screen py-16 scroll-mt-24"
+      className="flex flex-col animate-fade-in py-16 scroll-mt-24 scroll-mb-24"
     >
       <div className="mb-12 text-start">
         <h1 className="font-playfair font-semibold text-[24px] leading-[1.2em] text-[#1C1C1C] mb-2">

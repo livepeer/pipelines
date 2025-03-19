@@ -1,4 +1,4 @@
-import DayDreamContent from "@/components/daydream";
+import Daydream from "@/components/daydream";
 import { getSharedParams } from "./api/streams/share-params";
 import { cache } from "react";
 
@@ -31,5 +31,5 @@ export const generateMetadata = async ({
 };
 
 export default function HomePage() {
-  return <DayDreamContent />;
+  return <Daydream />;
 }
