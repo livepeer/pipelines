@@ -9,6 +9,7 @@ interface OnboardContextType {
   // Current step in the onboarding flow
   currentStep: OnboardingStep;
   // Camera permission state
+  initialCameraValidation: boolean;
   cameraPermission: CameraPermission;
   // Selected options for each step
   selectedPersonas: string[] | null;
@@ -18,6 +19,7 @@ interface OnboardContextType {
   setCameraPermission: (permission: CameraPermission) => void;
   setSelectedPersonas: (personas: string[]) => void;
   setSelectedPrompt: (prompt: string | null) => void;
+  setInitialCameraValidation: (validation: boolean) => void;
 }
 
 // Create the context with a default undefined value
@@ -30,6 +32,7 @@ export function OnboardProvider({ children }: { children: ReactNode }) {
     useState<CameraPermission>("prompt");
   const [selectedPersonas, setSelectedPersonas] = useState<string[]>([]);
   const [selectedPrompt, setSelectedPrompt] = useState<string | null>(null);
+  const [initialCameraValidation, setInitialCameraValidation] = useState(false);
 
   const value = useMemo(
     () => ({
@@ -37,12 +40,20 @@ export function OnboardProvider({ children }: { children: ReactNode }) {
       cameraPermission,
       selectedPersonas,
       selectedPrompt,
+      initialCameraValidation,
       setCurrentStep,
       setCameraPermission,
       setSelectedPersonas,
       setSelectedPrompt,
+      setInitialCameraValidation,
     }),
-    [currentStep, cameraPermission, selectedPersonas, selectedPrompt],
+    [
+      currentStep,
+      cameraPermission,
+      selectedPersonas,
+      selectedPrompt,
+      initialCameraValidation,
+    ],
   );
 
   return (

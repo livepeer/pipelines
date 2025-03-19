@@ -33,8 +33,8 @@ const promptOptions: PromptOption[] = [
 ];
 
 export default function SelectPrompt() {
-  const [selectedPrompt, setSelectedPrompt] = useState<string | null>(null);
-  const { currentStep, setCurrentStep } = useOnboard();
+  const { currentStep, setCurrentStep, selectedPrompt, setSelectedPrompt } =
+    useOnboard();
   const componentRef = useScrollView(currentStep === "prompt");
 
   if (currentStep !== "prompt") {
@@ -82,7 +82,7 @@ export default function SelectPrompt() {
                   </p>
                 </div>
               </div>
-              {selectedPrompt === prompt.id && (
+              {selectedPrompt === prompt.title && (
                 <div className="absolute inset-0 border-2 border-blue-500 rounded-[14px] pointer-events-none" />
               )}
             </div>
