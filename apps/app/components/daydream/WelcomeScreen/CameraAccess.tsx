@@ -73,7 +73,7 @@ const useMediaPermissions = () => {
 
 export default function CameraAccess() {
   const isMobile = useIsMobile();
-  const { currentStep, cameraPermission, setCurrentStep } = useOnboard();
+  const { currentStep, cameraPermission } = useOnboard();
   const requestMediaPermissions = useMediaPermissions();
 
   if (currentStep === "persona") {
@@ -108,20 +108,18 @@ export default function CameraAccess() {
               We will need access to your Camera & Microphone
             </h3>
             <p className="font-inter text-xs leading-[1.55] tracking-[-1.1%] text-[#161616]">
-              In order to transform your video we need access. Nothing is
-              recorded unless you click "record"
+              To transform your video we need access. Nothing is recorded unless
+              you click "record"
             </p>
           </div>
-          <button className="flex justify-center items-center gap-2 bg-[#EDEDED] rounded-md p-2 shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)]">
-            <div className="relative w-4 h-4 text-black flex items-center justify-center">
-              <RefreshCcwIcon className="[stroke:#7196A7] [stroke-width:1.5px] [stroke-thickness:4px]" />
-            </div>
+          <button className="bg-[#282828] rounded-[7px] px-[13px] py-[7.8px] text-[#EDEDED] font-inter text-[13px] leading-[1.21] hover:opacity-90 transition-opacity flex items-center justify-center min-w-[80px]">
+            Request
           </button>
         </div>
       </div>
       {cameraPermission === "denied" && (
         <p className="font-inter text-sm leading-[1.55] tracking-[-1.1%] text-[#161616] text-center">
-          We couldn’t load your permissions, please look into{" "}
+          We couldn't load your permissions, please look into{" "}
           <a
             className="font-semibold underline"
             href="https://pipelines.livepeer.org/docs"
