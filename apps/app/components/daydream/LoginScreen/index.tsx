@@ -26,7 +26,7 @@ export default function LoginScreen() {
         alt="Background"
         fill
         priority
-        className="object-cover z-0 rotate-180"
+        className="object-cover object-right-top z-0"
         quality={100}
       />
 
