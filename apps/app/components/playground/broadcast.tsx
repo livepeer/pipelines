@@ -47,7 +47,7 @@ const StatusMonitor = ({
   useEffect(() => {
     if (state.status === "live" && !liveEventSentRef.current) {
       liveEventSentRef.current = true;
-      
+
       const sendEvent = async () => {
         await sendKafkaEvent(
           "stream_trace",
@@ -70,7 +70,7 @@ const StatusMonitor = ({
           "server",
         );
       };
-      
+
       sendEvent();
     } else if (state.status !== "live") {
       liveEventSentRef.current = false;
@@ -152,13 +152,13 @@ export function BroadcastWithControls({
       storage={null}
     >
       {streamId && pipelineId && pipelineType && (
-        <StatusMonitor 
-          streamId={streamId} 
-          pipelineId={pipelineId} 
-          pipelineType={pipelineType} 
+        <StatusMonitor
+          streamId={streamId}
+          pipelineId={pipelineId}
+          pipelineType={pipelineType}
         />
       )}
-      
+
       <Broadcast.Container
         id={videoId}
         className={cn(
@@ -373,38 +373,38 @@ const CameraSwitchButton = () => {
   const handleSelectCamera = async (deviceId: string) => {
     try {
       setShowCameraModal(false);
-      
+
       const originalStream = state.mediaStream;
       const originalTracks = originalStream?.getVideoTracks() || [];
       const originalSettings = originalTracks[0]?.getSettings();
-      
+
       const originalConstraints = {
         deviceId: originalSettings?.deviceId || currentCameraId,
       };
-      
+
       state.mediaStream?.getTracks().forEach(track => track.stop());
-      
+
       try {
         const newStream = await navigator.mediaDevices.getUserMedia({
-          video: { deviceId: { ideal: deviceId } }
+          video: { deviceId: { ideal: deviceId } },
         });
-        
+
         state.__controlsFunctions.updateMediaStream(newStream);
       } catch (err) {
         console.error("Failed to switch to selected camera:", err);
-        
+
         try {
           const recoveryStream = await navigator.mediaDevices.getUserMedia({
-            video: originalConstraints
+            video: originalConstraints,
           });
-          
+
           state.__controlsFunctions.updateMediaStream(recoveryStream);
         } catch (recoveryErr) {
           console.error("Failed to restore original camera:", recoveryErr);
-          
+
           try {
             const fallbackStream = await navigator.mediaDevices.getUserMedia({
-              video: true
+              video: true,
             });
             state.__controlsFunctions.updateMediaStream(fallbackStream);
           } catch (fallbackErr) {
@@ -424,7 +424,7 @@ const CameraSwitchButton = () => {
         onClick={e => {
           e.preventDefault();
           e.stopPropagation();
-          
+
           if (isMobile) {
             setShowCameraModal(true);
           } else {
@@ -446,41 +446,53 @@ const CameraSwitchButton = () => {
       >
         <SwitchCamera className="w-full h-full text-white/50" />
       </button>
-      
-      {showCameraModal && createPortal(
-        <div 
-          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70" 
-          onClick={() => setShowCameraModal(false)}
-        >
-          <div className="bg-gray-900 rounded-lg p-4 w-[90%] max-w-sm" onClick={e => e.stopPropagation()}>
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-white text-lg font-medium">Select Camera</h3>
-              <button onClick={() => setShowCameraModal(false)} className="text-white/50">
-                <XIcon className="w-5 h-5" />
-              </button>
-            </div>
-            <div className="flex flex-col gap-2 max-h-[60vh] overflow-y-auto">
-              {videoDevices.map(device => (
+
+      {showCameraModal &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70"
+            onClick={() => setShowCameraModal(false)}
+          >
+            <div
+              className="bg-gray-900 rounded-lg p-4 w-[90%] max-w-sm"
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-white text-lg font-medium">
+                  Select Camera
+                </h3>
                 <button
-                  key={device.deviceId}
-                  onClick={() => handleSelectCamera(device.deviceId)}
-                  className={cn(
-                    "text-left px-3 py-2 rounded hover:bg-white/10 flex items-center gap-2",
-                    device.deviceId === currentCameraId ? "bg-white/20" : ""
-                  )}
+                  onClick={() => setShowCameraModal(false)}
+                  className="text-white/50"
                 >
-                  <Camera className="w-4 h-4 text-white/50" />
-                  <span className="text-white text-sm">{device.label || `Camera ${videoDevices.indexOf(device) + 1}`}</span>
-                  {device.deviceId === currentCameraId && (
-                    <CheckIcon className="w-4 h-4 text-white ml-auto" />
-                  )}
+                  <XIcon className="w-5 h-5" />
                 </button>
-              ))}
+              </div>
+              <div className="flex flex-col gap-2 max-h-[60vh] overflow-y-auto">
+                {videoDevices.map(device => (
+                  <button
+                    key={device.deviceId}
+                    onClick={() => handleSelectCamera(device.deviceId)}
+                    className={cn(
+                      "text-left px-3 py-2 rounded hover:bg-white/10 flex items-center gap-2",
+                      device.deviceId === currentCameraId ? "bg-white/20" : "",
+                    )}
+                  >
+                    <Camera className="w-4 h-4 text-white/50" />
+                    <span className="text-white text-sm">
+                      {device.label ||
+                        `Camera ${videoDevices.indexOf(device) + 1}`}
+                    </span>
+                    {device.deviceId === currentCameraId && (
+                      <CheckIcon className="w-4 h-4 text-white ml-auto" />
+                    )}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
-        </div>,
-        document.body
-      )}
+          </div>,
+          document.body,
+        )}
     </>
   );
 };

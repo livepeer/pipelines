@@ -673,7 +673,7 @@ export default function Dreamshaper({
         isFullscreen={isFullscreen}
         outputPlayerRef={outputPlayerRef}
         loading={loading}
-        streamId={streamId as string || ""}
+        streamId={(streamId as string) || ""}
         pipelineId={pipeline?.id || ""}
         pipelineType={pipeline?.type || ""}
       />
