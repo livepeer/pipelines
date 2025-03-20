@@ -134,17 +134,24 @@ export const useVideoClip = () => {
 
   const stopRecording = useCallback(() => {
     if (!isRecording || !recordingResources) return;
-    
-    const { mediaRecorder, progressInterval, timeoutId, isDrawing, animationFrameId } = recordingResources;
-    
+
+    const {
+      mediaRecorder,
+      progressInterval,
+      timeoutId,
+      isDrawing,
+      animationFrameId,
+    } = recordingResources;
+
     if (timeoutId) clearTimeout(timeoutId);
     if (progressInterval) clearInterval(progressInterval);
-    if (animationFrameId && isDrawing === true) cancelAnimationFrame(animationFrameId);
-    
-    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+    if (animationFrameId && isDrawing === true)
+      cancelAnimationFrame(animationFrameId);
+
+    if (mediaRecorder && mediaRecorder.state !== "inactive") {
       mediaRecorder.stop();
     }
-    
+
     setRecordingResources({});
   }, [isRecording, recordingResources]);
 
@@ -385,7 +392,7 @@ export const useVideoClip = () => {
       clearInterval(progressInterval);
       mediaRecorder.stop();
     }, CLIP_DURATION);
-    
+
     setRecordingResources({
       mediaRecorder,
       progressInterval,

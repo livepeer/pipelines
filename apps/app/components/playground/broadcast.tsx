@@ -23,9 +23,10 @@ import {
   SwitchCamera,
 } from "lucide-react";
 import React, { useState, useEffect, useRef } from "react";
-
-import { toast } from "sonner";
+import { createPortal } from "react-dom";
 import { useIsMobile } from "@repo/design-system/hooks/use-mobile";
+import { toast } from "sonner";
+
 import { sendKafkaEvent } from "@/app/api/metrics/kafka";
 import { usePrivy } from "@privy-io/react-auth";
 
@@ -46,7 +47,7 @@ const StatusMonitor = ({
   useEffect(() => {
     if (state.status === "live" && !liveEventSentRef.current) {
       liveEventSentRef.current = true;
-      
+
       const sendEvent = async () => {
         await sendKafkaEvent(
           "stream_trace",
@@ -69,7 +70,7 @@ const StatusMonitor = ({
           "server",
         );
       };
-      
+
       sendEvent();
     } else if (state.status !== "live") {
       liveEventSentRef.current = false;
@@ -143,6 +144,7 @@ export function BroadcastWithControls({
       }}
       forceEnabled={true}
       noIceGathering={true}
+      mirrored={true}
       audio={false}
       video={true}
       aspectRatio={16 / 9}
@@ -150,13 +152,13 @@ export function BroadcastWithControls({
       storage={null}
     >
       {streamId && pipelineId && pipelineType && (
-        <StatusMonitor 
-          streamId={streamId} 
-          pipelineId={pipelineId} 
-          pipelineType={pipelineType} 
+        <StatusMonitor
+          streamId={streamId}
+          pipelineId={pipelineId}
+          pipelineType={pipelineType}
         />
       )}
-      
+
       <Broadcast.Container
         id={videoId}
         className={cn(
@@ -347,6 +349,7 @@ const CameraSwitchButton = () => {
   const context = Broadcast.useBroadcastContext("CurrentSource", undefined);
   const state = Broadcast.useStore(context.store, state => state);
   const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  const [showCameraModal, setShowCameraModal] = useState(false);
 
   useEffect(() => {
     if (state.video) {
@@ -367,32 +370,63 @@ const CameraSwitchButton = () => {
     d => d.deviceId === currentCameraId,
   );
 
-  return (
-    <button
-      onClick={async e => {
-        e.preventDefault();
-        e.stopPropagation();
+  const handleSelectCamera = async (deviceId: string) => {
+    try {
+      setShowCameraModal(false);
+
+      const originalStream = state.mediaStream;
+      const originalTracks = originalStream?.getVideoTracks() || [];
+      const originalSettings = originalTracks[0]?.getSettings();
+
+      const originalConstraints = {
+        deviceId: originalSettings?.deviceId || currentCameraId,
+      };
+
+      state.mediaStream?.getTracks().forEach(track => track.stop());
+
+      try {
+        const newStream = await navigator.mediaDevices.getUserMedia({
+          video: { deviceId: { ideal: deviceId } },
+        });
+
+        state.__controlsFunctions.updateMediaStream(newStream);
+      } catch (err) {
+        console.error("Failed to switch to selected camera:", err);
 
         try {
-          if (isMobile) {
-            const currentTrack = state.mediaStream?.getVideoTracks()[0];
-            const isFrontCamera =
-              currentTrack?.getSettings()?.facingMode === "user" ||
-              currentTrack?.label?.toLowerCase().includes("front");
+          const recoveryStream = await navigator.mediaDevices.getUserMedia({
+            video: originalConstraints,
+          });
 
-            state.mediaStream?.getTracks().forEach(track => track.stop());
+          state.__controlsFunctions.updateMediaStream(recoveryStream);
+        } catch (recoveryErr) {
+          console.error("Failed to restore original camera:", recoveryErr);
 
-            const newStream = await navigator.mediaDevices.getUserMedia({
-              video: {
-                facingMode: {
-                  exact: isFrontCamera ? "environment" : "user",
-                },
-              },
+          try {
+            const fallbackStream = await navigator.mediaDevices.getUserMedia({
+              video: true,
             });
+            state.__controlsFunctions.updateMediaStream(fallbackStream);
+          } catch (fallbackErr) {
+            console.error("All camera recovery attempts failed:", fallbackErr);
+          }
+        }
+      }
+    } catch (err) {
+      console.error("Error during camera selection:", err);
+      toast.error("Failed to switch camera");
+    }
+  };
 
-            const newTrack = newStream.getVideoTracks()[0];
+  return (
+    <>
+      <button
+        onClick={e => {
+          e.preventDefault();
+          e.stopPropagation();
 
-            state.__controlsFunctions.updateMediaStream(newStream);
+          if (isMobile) {
+            setShowCameraModal(true);
           } else {
             const nextIndex =
               currentIndex === -1
@@ -407,14 +441,59 @@ const CameraSwitchButton = () => {
               );
             }
           }
-        } catch (err) {
-          console.error("Error during camera switch:", err);
-        }
-      }}
-      className="w-6 h-6 hover:scale-110 transition flex-shrink-0"
-    >
-      <SwitchCamera className="w-full h-full text-white/50" />
-    </button>
+        }}
+        className="w-6 h-6 hover:scale-110 transition flex-shrink-0"
+      >
+        <SwitchCamera className="w-full h-full text-white/50" />
+      </button>
+
+      {showCameraModal &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70"
+            onClick={() => setShowCameraModal(false)}
+          >
+            <div
+              className="bg-gray-900 rounded-lg p-4 w-[90%] max-w-sm"
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-white text-lg font-medium">
+                  Select Camera
+                </h3>
+                <button
+                  onClick={() => setShowCameraModal(false)}
+                  className="text-white/50"
+                >
+                  <XIcon className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="flex flex-col gap-2 max-h-[60vh] overflow-y-auto">
+                {videoDevices.map(device => (
+                  <button
+                    key={device.deviceId}
+                    onClick={() => handleSelectCamera(device.deviceId)}
+                    className={cn(
+                      "text-left px-3 py-2 rounded hover:bg-white/10 flex items-center gap-2",
+                      device.deviceId === currentCameraId ? "bg-white/20" : "",
+                    )}
+                  >
+                    <Camera className="w-4 h-4 text-white/50" />
+                    <span className="text-white text-sm">
+                      {device.label ||
+                        `Camera ${videoDevices.indexOf(device) + 1}`}
+                    </span>
+                    {device.deviceId === currentCameraId && (
+                      <CheckIcon className="w-4 h-4 text-white ml-auto" />
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>,
+          document.body,
+        )}
+    </>
   );
 };
 

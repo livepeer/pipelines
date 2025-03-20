@@ -14,25 +14,28 @@ const promptOptions: PromptOption[] = [
     id: "starry-night",
     title: "Van Gogh's Starry Night",
     image: "/images/starry-night.png",
-    prompt: "portrait in style of (Van Gogh) :: swirling starry night-inspired backdrop --quality 3"
+    prompt:
+      "portrait in style of (Van Gogh) :: swirling starry night-inspired backdrop --quality 3",
   },
   {
     id: "synthwave",
     title: "SynthWave Aesthetic",
     image: "/images/synthwave.png",
-    prompt: "(videogame neon 80s) sunglasses hoodie :: (((neon grid))) --quality 3"
+    prompt:
+      "(videogame neon 80s) sunglasses hoodie :: (((neon grid))) --quality 3",
   },
   {
     id: "superhero",
     title: "Comic book superhero",
     image: "/images/superhero.png",
-    prompt: "me resembling (superman) :: skycrapers --quality 3"
+    prompt: "me resembling (superman) :: skycrapers --quality 3",
   },
   {
     id: "cyberpunk",
     title: "Cyberpunk Neon City",
     image: "/images/cyberpunk.png",
-    prompt: "Cyberpunk ((cyberware)) mohawk tattoo :: futuristic metropolis backdrop --quality 3"
+    prompt:
+      "Cyberpunk ((cyberware)) mohawk tattoo :: futuristic metropolis backdrop --quality 3",
   },
 ];
 
