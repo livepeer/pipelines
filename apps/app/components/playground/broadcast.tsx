@@ -375,7 +375,7 @@ const CameraSwitchButton = () => {
         e.stopPropagation();
 
         try {
-          if (isMobile) {
+          /*if (isMobile) {
             const currentTrack = state.mediaStream?.getVideoTracks()[0];
             const isFrontCamera =
               currentTrack?.getSettings()?.facingMode === "user" ||
@@ -407,7 +407,7 @@ const CameraSwitchButton = () => {
                 toast.error("Could not switch camera. Please try again or use a different device.");
               }
             }
-          } else {
+          } else {*/
             const nextIndex =
               currentIndex === -1
                 ? 0
@@ -419,7 +419,7 @@ const CameraSwitchButton = () => {
                 nextCameraId as any,
                 "videoinput",
               );
-            }
+            //}
           }
         } catch (err) {
           console.error("Error during camera switch:", err);
