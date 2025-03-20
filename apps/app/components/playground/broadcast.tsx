@@ -383,17 +383,30 @@ const CameraSwitchButton = () => {
 
             state.mediaStream?.getTracks().forEach(track => track.stop());
 
-            const newStream = await navigator.mediaDevices.getUserMedia({
-              video: {
-                facingMode: {
-                  exact: isFrontCamera ? "environment" : "user",
+            try {
+              const newStream = await navigator.mediaDevices.getUserMedia({
+                video: {
+                  facingMode: isFrontCamera ? "environment" : "user",
                 },
-              },
-            });
+              });
 
-            const newTrack = newStream.getVideoTracks()[0];
-
-            state.__controlsFunctions.updateMediaStream(newStream);
+              const newTrack = newStream.getVideoTracks()[0];
+              state.__controlsFunctions.updateMediaStream(newStream);
+            } catch (switchError) {
+              console.warn("Primary camera switch approach failed:", switchError);
+              
+              try {
+                const fallbackStream = await navigator.mediaDevices.getUserMedia({
+                  video: true,
+                });
+                
+                state.__controlsFunctions.updateMediaStream(fallbackStream);
+                console.log("Using fallback camera approach");
+              } catch (fallbackError) {
+                console.error("Fallback camera switch also failed:", fallbackError);
+                toast.error("Could not switch camera. Please try again or use a different device.");
+              }
+            }
           } else {
             const nextIndex =
               currentIndex === -1
