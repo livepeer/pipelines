@@ -143,6 +143,7 @@ export function BroadcastWithControls({
       }}
       forceEnabled={true}
       noIceGathering={true}
+      mirrored={true}
       audio={false}
       video={true}
       aspectRatio={16 / 9}

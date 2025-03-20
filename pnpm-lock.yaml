@@ -55,8 +55,8 @@ importers:
         specifier: ^0.0.14
         version: 0.0.14
       '@livepeer/react':
-        specifier: ^4.2.10
-        version: 4.2.10(@types/react-dom@18.3.1)(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        specifier: ^4.2.11
+        version: 4.2.11(@types/react-dom@18.3.1)(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@livepeer/webrtmp-sdk':
         specifier: ^0.2.5
         version: 0.2.5
@@ -1395,14 +1395,14 @@ packages:
     peerDependencies:
       react: '>=17.0.0'
 
-  '@livepeer/core-web@5.0.1':
-    resolution: {integrity: sha512-ywG2MNDDBG5SZR0EHoGod6nbEjizn1CBK9sYtcpT6Spwbr5pEjFiDSf5FdTNs3SXY00IXYxzC++ivcN1IOeA4g==}
+  '@livepeer/core-web@5.1.0':
+    resolution: {integrity: sha512-xSYBaLY5SkEObYLUqEhsKP6gbXxXCKrD3Rq7UhgDUCB+paURhEUNCLkaFyEJkB9FutOzfrNBB5z41AHxb+6Yxw==}
 
   '@livepeer/core@3.2.8':
     resolution: {integrity: sha512-d5DcDL8WHI7NEt7iYelmQpiTuRtOJFnVc3kCgKzCTGedpHpgVmB/L1iXBg1v6Wrq8kOBZZFOkeJKxt/B6NIYfg==}
 
-  '@livepeer/react@4.2.10':
-    resolution: {integrity: sha512-8YVxdk5LXdqnjPniQfV3Nbdc2qZuzgU+gyMmaBGzbLQrMzn0DZZNC7KL+LZ9h+/CwAHNkhnY9PSKg3iRcCZsWQ==}
+  '@livepeer/react@4.2.11':
+    resolution: {integrity: sha512-EHnPjp5H2WpUjlg67onKi9pfi/xDXmMO1ZIN/rgvn09viczOLd+4MWELloKVKWXcqVFNrQ1gDsWcHO7Qtw3wXQ==}
     peerDependencies:
       react: '>=17.0.0'
       react-dom: '>=17.0.0'
@@ -7665,6 +7665,7 @@ packages:
   yaeti@0.0.6:
     resolution: {integrity: sha512-MvQa//+KcZCUkBTIC9blM+CU9J2GzuTytsOUwf2lidtvkx/6gnEp1QvJv34t9vdjhFmha/mUiNDbN0D0mJWdug==}
     engines: {node: '>=0.10.32'}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
 
   yallist@3.1.1:
     resolution: {integrity: sha512-a4UGQaWPH59mOXUYnAG2ewncQS4i4F43Tv3JoAM+s2VDAmS9NsK8GpDMLrCHPksFT7h3K6TOoUNn2pb7RoXx4g==}
@@ -8955,7 +8956,7 @@ snapshots:
       - '@types/react'
       - immer
 
-  '@livepeer/core-web@5.0.1(@types/react@18.3.12)(react@18.3.1)':
+  '@livepeer/core-web@5.1.0(@types/react@18.3.12)(react@18.3.1)':
     dependencies:
       '@livepeer/core': 3.2.8(@types/react@18.3.12)(react@18.3.1)
       hls.js: 1.5.20
@@ -8975,11 +8976,11 @@ snapshots:
       - immer
       - react
 
-  '@livepeer/react@4.2.10(@types/react-dom@18.3.1)(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+  '@livepeer/react@4.2.11(@types/react-dom@18.3.1)(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
       '@livepeer/core': 3.2.8(@types/react@18.3.12)(react@18.3.1)
       '@livepeer/core-react': 3.2.8(@types/react@18.3.12)(react@18.3.1)
-      '@livepeer/core-web': 5.0.1(@types/react@18.3.12)(react@18.3.1)
+      '@livepeer/core-web': 5.1.0(@types/react@18.3.12)(react@18.3.1)
       '@radix-ui/primitive': 1.1.1
       '@radix-ui/react-aspect-ratio': 1.1.1(@types/react-dom@18.3.1)(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@radix-ui/react-compose-refs': 1.1.1(@types/react@18.3.12)(react@18.3.1)
