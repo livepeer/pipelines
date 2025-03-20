@@ -48,25 +48,29 @@ export const LivepeerPlayer = React.memo(
     const [playbackInfo, setPlaybackInfo] = useState<PlaybackInfo | null>(null);
     const [retryCount, setRetryCount] = useState(0);
     const [key, setKey] = useState(0);
-    
-    const handleError = useCallback((error: any) => {
-      if (
-        error?.message?.includes("Failed to connect to peer") && 
-        retryCount < MAX_RETRIES
-      ) {
-        
-        const delay = Math.min(1000 * Math.pow(2, retryCount), MAX_DELAY);
-        
-        setTimeout(() => {
-          setRetryCount(prev => prev + 1);
-          setKey(prev => prev + 1); // Force Player to remount
-        }, delay);
-      } else {
-        if (retryCount >= MAX_RETRIES) {
-          console.error(`MAX RETRIES REACHED - No more remounting (${retryCount}/${MAX_RETRIES})`);
+
+    const handleError = useCallback(
+      (error: any) => {
+        if (
+          error?.message?.includes("Failed to connect to peer") &&
+          retryCount < MAX_RETRIES
+        ) {
+          const delay = Math.min(1000 * Math.pow(2, retryCount), MAX_DELAY);
+
+          setTimeout(() => {
+            setRetryCount(prev => prev + 1);
+            setKey(prev => prev + 1); // Force Player to remount
+          }, delay);
+        } else {
+          if (retryCount >= MAX_RETRIES) {
+            console.error(
+              `MAX RETRIES REACHED - No more remounting (${retryCount}/${MAX_RETRIES})`,
+            );
+          }
         }
-      }
-    }, [retryCount]);
+      },
+      [retryCount],
+    );
 
     const playerUrl = `${appConfig.whipUrl}${appConfig?.whipUrl?.endsWith("/") ? "" : "/"}${stream_key}-out/whep`;
 
