@@ -26,23 +26,91 @@ import React, { useState, useEffect } from "react";
 
 import { toast } from "sonner";
 import { useIsMobile } from "@repo/design-system/hooks/use-mobile";
+import { sendKafkaEvent } from "@/app/api/metrics/kafka";
+import { usePrivy } from "@privy-io/react-auth";
+
+const useTrackBroadcastStatus = ({
+  ingestUrl,
+  streamId,
+  pipelineId,
+  pipelineType,
+}: {
+  ingestUrl: string | null;
+  streamId: string;
+  pipelineId: string;
+  pipelineType: string;
+}) => {
+  
+  const [hasTriggeredLiveEvent, setHasTriggeredLiveEvent] = useState(false);
+  const { user } = usePrivy();
+  
+  const context = Broadcast.useBroadcastContext("StatusTracker", undefined);
+  const broadcastState = Broadcast.useStore(context.store, state => state);
+
+  useEffect(() => {
+    // Only trigger this once when we first go live
+    if (broadcastState.status === "live" && !hasTriggeredLiveEvent) {
+      setHasTriggeredLiveEvent(true);
+      console.log("DEBUG: sending app send stream request")
+      const sendEvent = async () => {
+        await sendKafkaEvent(
+          "stream_trace",
+          {
+            type: "app_send_stream_request",
+            timestamp: Date.now(),
+            user_id: user?.id || "anonymous",
+            playback_id: "",
+            stream_id: streamId,
+            pipeline: pipelineType,
+            pipeline_id: pipelineId,
+            broadcaster_info: {
+              ip: "",
+              user_agent: navigator.userAgent,
+              country: "",
+              city: "",
+            },
+          },
+          "daydream",
+          "server",
+        );
+      };
+      
+      sendEvent();
+    }
+  }, [broadcastState.status, hasTriggeredLiveEvent, streamId, pipelineId, pipelineType, user?.id]);
+
+  return broadcastState.status;
+};
 
 export function BroadcastWithControls({
   ingestUrl,
   className,
   onCollapse,
   isCollapsed,
+  streamId,
+  pipelineId,
+  pipelineType,
 }: {
   ingestUrl: string | null;
   className?: string;
   onCollapse?: (collapsed: boolean) => void;
   isCollapsed?: boolean;
+  streamId?: string;
+  pipelineId?: string;
+  pipelineType?: string;
 }) {
   const [isPiP, setIsPiP] = useState(false);
   const videoId = "live-video";
   const [localCollapsed, setLocalCollapsed] = useState(false);
   const collapsed = isCollapsed ?? localCollapsed;
   const isMobile = useIsMobile();
+
+  useTrackBroadcastStatus({
+    ingestUrl,
+    streamId: streamId || "unknown",
+    pipelineId: pipelineId || "unknown",
+    pipelineType: pipelineType || "unknown",
+  });
 
   useEffect(() => {
     const videoEl = document.getElementById(videoId) as HTMLVideoElement | null;

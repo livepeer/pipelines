@@ -267,33 +267,6 @@ const useFirstFrameLoaded = ({
   const context = Player.useMediaContext("CustomComponent", __scopeMedia);
   const state = Player.useStore(context.store);
 
-  // Send event on load
-  useEffect(() => {
-    const sendEvent = async () =>
-      await sendKafkaEvent(
-        "stream_trace",
-        {
-          type: "app_send_stream_request",
-          timestamp: startTime.current,
-          user_id: user?.id || "anonymous",
-          playback_id: playbackId,
-          stream_id: streamId,
-          pipeline: pipelineType,
-          pipeline_id: pipelineId,
-          // TODO: Get viewer info from client
-          viewer_info: {
-            ip: "",
-            user_agent: "",
-            country: "",
-            city: "",
-          },
-        },
-        "daydream",
-        "server",
-      );
-    sendEvent();
-  }, []);
-
   // Send event when the firstFrameIsLoaded
   useEffect(() => {
     if (state.hasPlayed && !firstFrameTime) {
