@@ -6,6 +6,7 @@ interface PromptOption {
   id: string;
   title: string;
   image: string;
+  prompt: string;
 }
 
 const promptOptions: PromptOption[] = [
@@ -13,21 +14,25 @@ const promptOptions: PromptOption[] = [
     id: "starry-night",
     title: "Van Gogh's Starry Night",
     image: "/images/starry-night.png",
+    prompt: "portrait in style of (Van Gogh) :: swirling starry night-inspired backdrop --quality 3"
   },
   {
     id: "synthwave",
     title: "SynthWave Aesthetic",
     image: "/images/synthwave.png",
+    prompt: "(videogame neon 80s) sunglasses hoodie :: (((neon grid))) --quality 3"
   },
   {
     id: "superhero",
     title: "Comic book superhero",
     image: "/images/superhero.png",
+    prompt: "me resembling (superman) :: skycrapers --quality 3"
   },
   {
     id: "cyberpunk",
     title: "Cyberpunk Neon City",
     image: "/images/cyberpunk.png",
+    prompt: "Cyberpunk ((cyberware)) mohawk tattoo :: futuristic metropolis backdrop --quality 3"
   },
 ];
 
@@ -64,7 +69,7 @@ export default function SelectPrompt() {
           <div
             key={prompt.id}
             className="cursor-pointer"
-            onClick={() => handleSelectPrompt(prompt.title)}
+            onClick={() => handleSelectPrompt(prompt.prompt)}
           >
             <div className="relative group">
               <div className="relative w-full h-[200px] rounded-[14px] overflow-hidden shadow-[4px_8px_12px_0px_rgba(9,28,20,0.77)]">
@@ -81,7 +86,7 @@ export default function SelectPrompt() {
                   </p>
                 </div>
               </div>
-              {selectedPrompt === prompt.title && (
+              {selectedPrompt === prompt.prompt && (
                 <div className="absolute inset-0 border-2 border-blue-500 rounded-[14px] pointer-events-none" />
               )}
             </div>
