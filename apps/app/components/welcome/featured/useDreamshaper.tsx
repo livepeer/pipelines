@@ -551,7 +551,7 @@ function getPlaybackUrl(
   gatewayHost: string | null,
   streamKey: string | null,
   searchParams: URLSearchParams,
-): string {
+): string | null {
   const customWhepServer = searchParams.get("whepServer");
 
   const app = getAppConfig(searchParams);
