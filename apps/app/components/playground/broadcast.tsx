@@ -375,39 +375,39 @@ const CameraSwitchButton = () => {
         e.stopPropagation();
 
         try {
-          /*if (isMobile) {
+          if (isMobile) {
             const currentTrack = state.mediaStream?.getVideoTracks()[0];
-            const isFrontCamera =
-              currentTrack?.getSettings()?.facingMode === "user" ||
-              currentTrack?.label?.toLowerCase().includes("front");
-
+            
+            const currentFacingMode = currentTrack?.getSettings()?.facingMode;
+            const isFrontCamera = 
+              currentFacingMode === "user" || 
+              (currentFacingMode !== "environment" && 
+               currentTrack?.label?.toLowerCase().includes("front"));
+            
             state.mediaStream?.getTracks().forEach(track => track.stop());
-
+            
             try {
               const newStream = await navigator.mediaDevices.getUserMedia({
                 video: {
-                  facingMode: isFrontCamera ? "environment" : "user",
-                },
+                  facingMode: isFrontCamera ? "environment" : "user"
+                }
               });
-
-              const newTrack = newStream.getVideoTracks()[0];
+              
               state.__controlsFunctions.updateMediaStream(newStream);
-            } catch (switchError) {
-              console.warn("Primary camera switch approach failed:", switchError);
+            } catch (err) {
+              console.error("Failed to switch camera:", err);
               
               try {
                 const fallbackStream = await navigator.mediaDevices.getUserMedia({
-                  video: true,
+                  video: true
                 });
-                
                 state.__controlsFunctions.updateMediaStream(fallbackStream);
-                console.log("Using fallback camera approach");
-              } catch (fallbackError) {
-                console.error("Fallback camera switch also failed:", fallbackError);
-                toast.error("Could not switch camera. Please try again or use a different device.");
+              } catch (fallbackErr) {
+                console.error("Fallback camera approach also failed:", fallbackErr);
+                toast.error("Could not switch camera. Please try again.");
               }
             }
-          } else {*/
+          } else {
             const nextIndex =
               currentIndex === -1
                 ? 0
@@ -419,10 +419,11 @@ const CameraSwitchButton = () => {
                 nextCameraId as any,
                 "videoinput",
               );
-            //}
+            }
           }
         } catch (err) {
           console.error("Error during camera switch:", err);
+          toast.error("Failed to switch camera");
         }
       }}
       className="w-6 h-6 hover:scale-110 transition flex-shrink-0"
