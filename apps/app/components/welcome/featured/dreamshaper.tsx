@@ -73,6 +73,7 @@ interface DreamshaperProps {
   createShareLink?: () => Promise<{ error: string | null; url: string | null }>;
   sharedPrompt?: string | null;
   pipeline: any | null;
+  playbackUrl: string | null;
 }
 
 // Define type for command options
@@ -108,6 +109,7 @@ export default function Dreamshaper({
   createShareLink,
   sharedPrompt = null,
   pipeline,
+  playbackUrl,
 }: DreamshaperProps) {
   const { lastSubmittedPrompt, setLastSubmittedPrompt } = usePrompts();
   const [inputValue, setInputValue] = useState("");
@@ -645,6 +647,7 @@ export default function Dreamshaper({
                   streamId={streamId as string}
                   pipelineId={pipeline.id}
                   pipelineType={pipeline.type}
+                  playbackUrl={playbackUrl}
                 />
                 {/* Overlay */}
                 <div className="absolute inset-x-0 top-0 h-[85%] bg-transparent" />

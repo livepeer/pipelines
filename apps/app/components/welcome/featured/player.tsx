@@ -38,10 +38,12 @@ export const LivepeerPlayer = React.memo(
     streamId,
     pipelineId,
     pipelineType,
+    playbackUrl,
   }: {
     playbackId: string;
     isMobile?: boolean;
     stream_key?: string | null;
+    playbackUrl: string | null;
   } & TrackingProps) => {
     const appConfig = useAppConfig();
 
@@ -66,7 +68,7 @@ export const LivepeerPlayer = React.memo(
       }
     }, [retryCount]);
 
-    const playerUrl = `${appConfig.whipUrl}${appConfig?.whipUrl?.endsWith("/") ? "" : "/"}${stream_key}-out/whep`;
+    const playerUrl = playbackUrl ? playbackUrl : `${appConfig.whipUrl}${appConfig?.whipUrl?.endsWith("/") ? "" : "/"}${stream_key}-out/whep`;
 
     const searchParams = useSearchParams();
     const useMediamtx =
