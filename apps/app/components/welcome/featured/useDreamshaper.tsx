@@ -566,5 +566,5 @@ function getPlaybackUrl(
 
   if (!gatewayHost) return null;
   const host = gatewayHost + (gatewayHost.endsWith("/") ? "" : "/");
-  return `${host}aiWebrtc/${key}-out/whep`;
+  return `https://${host}aiWebrtc/${key}-out/whep`;
 }
