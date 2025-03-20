@@ -555,15 +555,16 @@ function getPlaybackUrl(
   const customWhepServer = searchParams.get("whepServer");
 
   const app = getAppConfig(searchParams);
+  const key = streamKey ? streamKey : "null"
 
   if (customWhepServer) {
     if (customWhepServer.includes("<STREAM_KEY>")) {
-      return customWhepServer.replace("<STREAM_KEY>", streamKey);
+      return customWhepServer.replace("<STREAM_KEY>", key);
     }
     return customWhepServer
   }
 
   if (!gatewayHost) return null;
   const host = gatewayHost + (gatewayHost.endsWith("/") ? "" : "/");
-  return `${host}aiWebrtc/${streamKey}-out/whep`;
+  return `${host}aiWebrtc/${key}-out/whep`;
 }
