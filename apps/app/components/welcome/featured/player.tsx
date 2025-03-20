@@ -62,7 +62,9 @@ export const LivepeerPlayer = React.memo(
           setKey(prev => prev + 1); // Force Player to remount
         }, delay);
       } else {
-        console.error(`MAX RETRIES REACHED - No more remounting (${MAX_RETRIES}/${MAX_RETRIES})`);
+        if (retryCount >= MAX_RETRIES) {
+          console.error(`MAX RETRIES REACHED - No more remounting (${retryCount}/${MAX_RETRIES})`);
+        }
       }
     }, [retryCount]);
 
