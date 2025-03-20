@@ -23,9 +23,10 @@ import {
   SwitchCamera,
 } from "lucide-react";
 import React, { useState, useEffect, useRef } from "react";
-
-import { toast } from "sonner";
+import { createPortal } from "react-dom";
 import { useIsMobile } from "@repo/design-system/hooks/use-mobile";
+import { toast } from "sonner";
+
 import { sendKafkaEvent } from "@/app/api/metrics/kafka";
 import { usePrivy } from "@privy-io/react-auth";
 
@@ -373,64 +374,50 @@ const CameraSwitchButton = () => {
     try {
       setShowCameraModal(false);
       
+      const originalStream = state.mediaStream;
+      const originalTracks = originalStream?.getVideoTracks() || [];
+      const originalSettings = originalTracks[0]?.getSettings();
+      
+      const originalConstraints = {
+        deviceId: originalSettings?.deviceId || currentCameraId,
+      };
+      
       state.mediaStream?.getTracks().forEach(track => track.stop());
       
-      if (isMobile) {
+      try {
+        const newStream = await navigator.mediaDevices.getUserMedia({
+          video: { deviceId: { ideal: deviceId } }
+        });
+        
+        state.__controlsFunctions.updateMediaStream(newStream);
+      } catch (err) {
+        console.error("Failed to switch to selected camera:", err);
+        toast.error("Could not switch to selected camera. Restoring previous camera...");
+        
         try {
-          const newStream = await navigator.mediaDevices.getUserMedia({
-            video: { deviceId: { exact: deviceId } }
+          const recoveryStream = await navigator.mediaDevices.getUserMedia({
+            video: originalConstraints
           });
           
-          state.__controlsFunctions.updateMediaStream(newStream);
-        } catch (err) {
-          console.error("Failed to switch to selected camera:", err);
-          toast.error("Could not switch to selected camera");
+          state.__controlsFunctions.updateMediaStream(recoveryStream);
+        } catch (recoveryErr) {
+          console.error("Failed to restore original camera:", recoveryErr);
+          
+          try {
+            const fallbackStream = await navigator.mediaDevices.getUserMedia({
+              video: true
+            });
+            state.__controlsFunctions.updateMediaStream(fallbackStream);
+          } catch (fallbackErr) {
+            console.error("All camera recovery attempts failed:", fallbackErr);
+            toast.error("Camera switching failed. Please refresh the page.");
+          }
         }
-      } else {
-        state.__controlsFunctions.requestMediaDeviceId(
-          deviceId as any,
-          "videoinput",
-        );
       }
     } catch (err) {
-      console.error("Error selecting camera:", err);
+      console.error("Error during camera selection:", err);
       toast.error("Failed to switch camera");
     }
-  };
-
-  const CameraSelectionModal = () => {
-    if (!showCameraModal) return null;
-    
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70" onClick={() => setShowCameraModal(false)}>
-        <div className="bg-gray-900 rounded-lg p-4 w-[90%] max-w-sm" onClick={e => e.stopPropagation()}>
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-white text-lg font-medium">Select Camera</h3>
-            <button onClick={() => setShowCameraModal(false)} className="text-white/50">
-              <XIcon className="w-5 h-5" />
-            </button>
-          </div>
-          <div className="flex flex-col gap-2 max-h-[60vh] overflow-y-auto">
-            {videoDevices.map(device => (
-              <button
-                key={device.deviceId}
-                onClick={() => handleSelectCamera(device.deviceId)}
-                className={cn(
-                  "text-left px-3 py-2 rounded hover:bg-white/10 flex items-center gap-2",
-                  device.deviceId === currentCameraId ? "bg-white/20" : ""
-                )}
-              >
-                <Camera className="w-4 h-4 text-white/50" />
-                <span className="text-white text-sm">{device.label || `Camera ${videoDevices.indexOf(device) + 1}`}</span>
-                {device.deviceId === currentCameraId && (
-                  <CheckIcon className="w-4 h-4 text-white ml-auto" />
-                )}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
   };
 
   return (
@@ -461,7 +448,41 @@ const CameraSwitchButton = () => {
       >
         <SwitchCamera className="w-full h-full text-white/50" />
       </button>
-      <CameraSelectionModal />
+      
+      {showCameraModal && createPortal(
+        <div 
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70" 
+          onClick={() => setShowCameraModal(false)}
+        >
+          <div className="bg-gray-900 rounded-lg p-4 w-[90%] max-w-sm" onClick={e => e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-white text-lg font-medium">Select Camera</h3>
+              <button onClick={() => setShowCameraModal(false)} className="text-white/50">
+                <XIcon className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="flex flex-col gap-2 max-h-[60vh] overflow-y-auto">
+              {videoDevices.map(device => (
+                <button
+                  key={device.deviceId}
+                  onClick={() => handleSelectCamera(device.deviceId)}
+                  className={cn(
+                    "text-left px-3 py-2 rounded hover:bg-white/10 flex items-center gap-2",
+                    device.deviceId === currentCameraId ? "bg-white/20" : ""
+                  )}
+                >
+                  <Camera className="w-4 h-4 text-white/50" />
+                  <span className="text-white text-sm">{device.label || `Camera ${videoDevices.indexOf(device) + 1}`}</span>
+                  {device.deviceId === currentCameraId && (
+                    <CheckIcon className="w-4 h-4 text-white ml-auto" />
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
     </>
   );
 };
