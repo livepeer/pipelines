@@ -392,7 +392,6 @@ const CameraSwitchButton = () => {
         state.__controlsFunctions.updateMediaStream(newStream);
       } catch (err) {
         console.error("Failed to switch to selected camera:", err);
-        toast.error("Could not switch to selected camera. Restoring previous camera...");
         
         try {
           const recoveryStream = await navigator.mediaDevices.getUserMedia({
@@ -410,7 +409,6 @@ const CameraSwitchButton = () => {
             state.__controlsFunctions.updateMediaStream(fallbackStream);
           } catch (fallbackErr) {
             console.error("All camera recovery attempts failed:", fallbackErr);
-            toast.error("Camera switching failed. Please refresh the page.");
           }
         }
       }
