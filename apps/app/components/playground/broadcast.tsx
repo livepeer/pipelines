@@ -348,6 +348,7 @@ const CameraSwitchButton = () => {
   const context = Broadcast.useBroadcastContext("CurrentSource", undefined);
   const state = Broadcast.useStore(context.store, state => state);
   const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  const [showCameraModal, setShowCameraModal] = useState(false);
 
   useEffect(() => {
     if (state.video) {
@@ -368,45 +369,79 @@ const CameraSwitchButton = () => {
     d => d.deviceId === currentCameraId,
   );
 
-  return (
-    <button
-      onClick={async e => {
-        e.preventDefault();
-        e.stopPropagation();
-
+  const handleSelectCamera = async (deviceId: string) => {
+    try {
+      setShowCameraModal(false);
+      
+      state.mediaStream?.getTracks().forEach(track => track.stop());
+      
+      if (isMobile) {
         try {
+          const newStream = await navigator.mediaDevices.getUserMedia({
+            video: { deviceId: { exact: deviceId } }
+          });
+          
+          state.__controlsFunctions.updateMediaStream(newStream);
+        } catch (err) {
+          console.error("Failed to switch to selected camera:", err);
+          toast.error("Could not switch to selected camera");
+        }
+      } else {
+        state.__controlsFunctions.requestMediaDeviceId(
+          deviceId as any,
+          "videoinput",
+        );
+      }
+    } catch (err) {
+      console.error("Error selecting camera:", err);
+      toast.error("Failed to switch camera");
+    }
+  };
+
+  const CameraSelectionModal = () => {
+    if (!showCameraModal) return null;
+    
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70" onClick={() => setShowCameraModal(false)}>
+        <div className="bg-gray-900 rounded-lg p-4 w-[90%] max-w-sm" onClick={e => e.stopPropagation()}>
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-white text-lg font-medium">Select Camera</h3>
+            <button onClick={() => setShowCameraModal(false)} className="text-white/50">
+              <XIcon className="w-5 h-5" />
+            </button>
+          </div>
+          <div className="flex flex-col gap-2 max-h-[60vh] overflow-y-auto">
+            {videoDevices.map(device => (
+              <button
+                key={device.deviceId}
+                onClick={() => handleSelectCamera(device.deviceId)}
+                className={cn(
+                  "text-left px-3 py-2 rounded hover:bg-white/10 flex items-center gap-2",
+                  device.deviceId === currentCameraId ? "bg-white/20" : ""
+                )}
+              >
+                <Camera className="w-4 h-4 text-white/50" />
+                <span className="text-white text-sm">{device.label || `Camera ${videoDevices.indexOf(device) + 1}`}</span>
+                {device.deviceId === currentCameraId && (
+                  <CheckIcon className="w-4 h-4 text-white ml-auto" />
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <>
+      <button
+        onClick={e => {
+          e.preventDefault();
+          e.stopPropagation();
+          
           if (isMobile) {
-            const currentTrack = state.mediaStream?.getVideoTracks()[0];
-            
-            const currentFacingMode = currentTrack?.getSettings()?.facingMode;
-            const isFrontCamera = 
-              currentFacingMode === "user" || 
-              (currentFacingMode !== "environment" && 
-               currentTrack?.label?.toLowerCase().includes("front"));
-            
-            state.mediaStream?.getTracks().forEach(track => track.stop());
-            
-            try {
-              const newStream = await navigator.mediaDevices.getUserMedia({
-                video: {
-                  facingMode: isFrontCamera ? "environment" : "user"
-                }
-              });
-              
-              state.__controlsFunctions.updateMediaStream(newStream);
-            } catch (err) {
-              console.error("Failed to switch camera:", err);
-              
-              try {
-                const fallbackStream = await navigator.mediaDevices.getUserMedia({
-                  video: true
-                });
-                state.__controlsFunctions.updateMediaStream(fallbackStream);
-              } catch (fallbackErr) {
-                console.error("Fallback camera approach also failed:", fallbackErr);
-                toast.error("Could not switch camera. Please try again.");
-              }
-            }
+            setShowCameraModal(true);
           } else {
             const nextIndex =
               currentIndex === -1
@@ -421,15 +456,13 @@ const CameraSwitchButton = () => {
               );
             }
           }
-        } catch (err) {
-          console.error("Error during camera switch:", err);
-          toast.error("Failed to switch camera");
-        }
-      }}
-      className="w-6 h-6 hover:scale-110 transition flex-shrink-0"
-    >
-      <SwitchCamera className="w-full h-full text-white/50" />
-    </button>
+        }}
+        className="w-6 h-6 hover:scale-110 transition flex-shrink-0"
+      >
+        <SwitchCamera className="w-full h-full text-white/50" />
+      </button>
+      <CameraSelectionModal />
+    </>
   );
 };
 
