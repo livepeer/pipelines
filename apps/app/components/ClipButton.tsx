@@ -64,7 +64,7 @@ export const ClipButton = ({
       stopRecording();
       return;
     }
-    
+
     if (trackAnalytics) {
       trackAnalytics("daydream_clip_button_clicked", {
         is_authenticated: isAuthenticated,
@@ -104,9 +104,7 @@ export const ClipButton = ({
 
           <div className="z-20 relative flex items-center gap-2">
             {isRecording ? <Square size={16} /> : <Scissors size={16} />}
-            <span>
-              {isRecording ? "Stop Recording" : "Create Clip"}
-            </span>
+            <span>{isRecording ? "Stop Recording" : "Create Clip"}</span>
           </div>
         </Button>
       )}

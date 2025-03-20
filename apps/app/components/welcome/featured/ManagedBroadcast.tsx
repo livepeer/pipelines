@@ -11,6 +11,9 @@ interface ManagedBroadcastProps {
   isFullscreen: boolean;
   outputPlayerRef: React.RefObject<HTMLDivElement>;
   loading?: boolean;
+  streamId?: string;
+  pipelineId?: string;
+  pipelineType?: string;
 }
 
 export function ManagedBroadcast({
@@ -18,6 +21,9 @@ export function ManagedBroadcast({
   isFullscreen,
   outputPlayerRef,
   loading = false,
+  streamId,
+  pipelineId,
+  pipelineType,
 }: ManagedBroadcastProps) {
   const isMobile = useIsMobile();
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -115,6 +121,9 @@ export function ManagedBroadcast({
               "rounded-xl overflow-hidden",
               isMobile ? "w-full h-full" : "",
             )}
+            streamId={streamId}
+            pipelineId={pipelineId}
+            pipelineType={pipelineType}
           />
         </div>
       )}
