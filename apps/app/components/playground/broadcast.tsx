@@ -22,41 +22,36 @@ import {
   Camera,
   SwitchCamera,
 } from "lucide-react";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 import { toast } from "sonner";
 import { useIsMobile } from "@repo/design-system/hooks/use-mobile";
 import { sendKafkaEvent } from "@/app/api/metrics/kafka";
 import { usePrivy } from "@privy-io/react-auth";
 
-const useTrackBroadcastStatus = ({
-  ingestUrl,
+const StatusMonitor = ({
   streamId,
   pipelineId,
   pipelineType,
 }: {
-  ingestUrl: string | null;
   streamId: string;
   pipelineId: string;
   pipelineType: string;
 }) => {
-  
-  const [hasTriggeredLiveEvent, setHasTriggeredLiveEvent] = useState(false);
   const { user } = usePrivy();
-  
-  const context = Broadcast.useBroadcastContext("StatusTracker", undefined);
-  const broadcastState = Broadcast.useStore(context.store, state => state);
+  const liveEventSentRef = useRef(false);
+  const context = Broadcast.useBroadcastContext("StatusMonitor", undefined);
+  const state = Broadcast.useStore(context.store, state => state);
 
   useEffect(() => {
-    // Only trigger this once when we first go live
-    if (broadcastState.status === "live" && !hasTriggeredLiveEvent) {
-      setHasTriggeredLiveEvent(true);
-      console.log("DEBUG: sending app send stream request")
+    if (state.status === "live" && !liveEventSentRef.current) {
+      liveEventSentRef.current = true;
+      
       const sendEvent = async () => {
         await sendKafkaEvent(
           "stream_trace",
           {
-            type: "app_send_stream_request",
+            type: "app_start_broadcast_stream",
             timestamp: Date.now(),
             user_id: user?.id || "anonymous",
             playback_id: "",
@@ -76,10 +71,12 @@ const useTrackBroadcastStatus = ({
       };
       
       sendEvent();
+    } else if (state.status !== "live") {
+      liveEventSentRef.current = false;
     }
-  }, [broadcastState.status, hasTriggeredLiveEvent, streamId, pipelineId, pipelineType, user?.id]);
+  }, [state.status, streamId, pipelineId, pipelineType, user?.id]);
 
-  return broadcastState.status;
+  return null;
 };
 
 export function BroadcastWithControls({
@@ -104,13 +101,6 @@ export function BroadcastWithControls({
   const [localCollapsed, setLocalCollapsed] = useState(false);
   const collapsed = isCollapsed ?? localCollapsed;
   const isMobile = useIsMobile();
-
-  useTrackBroadcastStatus({
-    ingestUrl,
-    streamId: streamId || "unknown",
-    pipelineId: pipelineId || "unknown",
-    pipelineType: pipelineType || "unknown",
-  });
 
   useEffect(() => {
     const videoEl = document.getElementById(videoId) as HTMLVideoElement | null;
@@ -144,13 +134,13 @@ export function BroadcastWithControls({
 
   return (
     <Broadcast.Root
-      onError={error =>
-        error?.type === "permissions"
+      onError={error => {
+        return error?.type === "permissions"
           ? toast.error(
               "You must accept permissions to broadcast. Please try again.",
             )
-          : null
-      }
+          : null;
+      }}
       forceEnabled={true}
       noIceGathering={true}
       audio={false}
@@ -159,6 +149,14 @@ export function BroadcastWithControls({
       ingestUrl={ingestUrl}
       storage={null}
     >
+      {streamId && pipelineId && pipelineType && (
+        <StatusMonitor 
+          streamId={streamId} 
+          pipelineId={pipelineId} 
+          pipelineType={pipelineType} 
+        />
+      )}
+      
       <Broadcast.Container
         id={videoId}
         className={cn(
