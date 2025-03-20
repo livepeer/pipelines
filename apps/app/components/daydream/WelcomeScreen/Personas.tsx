@@ -4,10 +4,13 @@ import { Separator } from "@repo/design-system/components/ui/separator";
 import { CheckIcon, PlusIcon } from "lucide-react";
 import { useState } from "react";
 import { useOnboard } from "../OnboardContext";
+import track from "@/lib/track";
+import { usePrivy } from "@privy-io/react-auth";
 
 const personas = ["Streamer", "Content Creator", "Live Performer", "Other"];
 
 export default function Personas() {
+  const { authenticated } = usePrivy();
   const { currentStep, setCurrentStep, cameraPermission } = useOnboard();
   const [selectedPersonas, setSelectedPersonas] = useState<string[]>([]);
 
@@ -20,8 +23,10 @@ export default function Personas() {
   };
 
   const handleContinue = async () => {
-    // TODO: Add analytics and push the personas to the database/form
-    console.log("Selected personas:", selectedPersonas);
+    track("daydream_persona_selected", {
+      personas: selectedPersonas,
+      is_authenticated: authenticated,
+    });
     setCurrentStep(cameraPermission === "granted" ? "prompt" : "camera");
   };
 

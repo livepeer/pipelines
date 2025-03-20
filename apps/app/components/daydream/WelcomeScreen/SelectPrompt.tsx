@@ -14,25 +14,28 @@ const promptOptions: PromptOption[] = [
     id: "starry-night",
     title: "Van Gogh's Starry Night",
     image: "/images/starry-night.png",
-    prompt: "portrait in style of (Van Gogh) :: swirling starry night-inspired backdrop --quality 3"
+    prompt:
+      "portrait in style of (Van Gogh) :: swirling starry night-inspired backdrop --quality 3",
   },
   {
     id: "synthwave",
     title: "SynthWave Aesthetic",
     image: "/images/synthwave.png",
-    prompt: "(videogame neon 80s) sunglasses hoodie :: (((neon grid))) --quality 3"
+    prompt:
+      "(videogame neon 80s) sunglasses hoodie :: (((neon grid))) --quality 3",
   },
   {
     id: "superhero",
     title: "Comic book superhero",
     image: "/images/superhero.png",
-    prompt: "me resembling (superman) :: skycrapers --quality 3"
+    prompt: "me resembling (superman) :: skycrapers --quality 3",
   },
   {
     id: "cyberpunk",
     title: "Cyberpunk Neon City",
     image: "/images/cyberpunk.png",
-    prompt: "Cyberpunk ((cyberware)) mohawk tattoo :: futuristic metropolis backdrop --quality 3"
+    prompt:
+      "Cyberpunk ((cyberware)) mohawk tattoo :: futuristic metropolis backdrop --quality 3",
   },
 ];
 
@@ -65,28 +68,28 @@ export default function SelectPrompt() {
       </div>
 
       <div className="grid grid-cols-2 gap-[12px] w-full">
-        {promptOptions.map(prompt => (
+        {promptOptions.map(option => (
           <div
-            key={prompt.id}
+            key={option.id}
             className="cursor-pointer"
-            onClick={() => handleSelectPrompt(prompt.prompt)}
+            onClick={() => handleSelectPrompt(option.prompt)}
           >
             <div className="relative group">
               <div className="relative w-full h-[200px] rounded-[14px] overflow-hidden shadow-[4px_8px_12px_0px_rgba(9,28,20,0.77)]">
                 <Image
-                  src={prompt.image}
-                  alt={prompt.title}
+                  src={option.image}
+                  alt={option.title}
                   fill
                   className="object-cover"
                   priority
                 />
                 <div className="absolute bottom-0 left-0 right-0 py-4 bg-[rgba(28,28,28,0.25)] backdrop-blur-[24px] flex items-center justify-center">
                   <p className="font-inter font-semibold text-[14px] leading-[1em] tracking-[-1.1%] text-[#EDEDED] text-center">
-                    {prompt.title}
+                    {option.title}
                   </p>
                 </div>
               </div>
-              {selectedPrompt === prompt.prompt && (
+              {selectedPrompt === option.prompt && (
                 <div className="absolute inset-0 border-2 border-blue-500 rounded-[14px] pointer-events-none" />
               )}
             </div>
