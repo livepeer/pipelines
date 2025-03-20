@@ -22,21 +22,79 @@ import {
   Camera,
   SwitchCamera,
 } from "lucide-react";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 import { toast } from "sonner";
 import { useIsMobile } from "@repo/design-system/hooks/use-mobile";
+import { sendKafkaEvent } from "@/app/api/metrics/kafka";
+import { usePrivy } from "@privy-io/react-auth";
+
+const StatusMonitor = ({
+  streamId,
+  pipelineId,
+  pipelineType,
+}: {
+  streamId: string;
+  pipelineId: string;
+  pipelineType: string;
+}) => {
+  const { user } = usePrivy();
+  const liveEventSentRef = useRef(false);
+  const context = Broadcast.useBroadcastContext("StatusMonitor", undefined);
+  const state = Broadcast.useStore(context.store, state => state);
+
+  useEffect(() => {
+    if (state.status === "live" && !liveEventSentRef.current) {
+      liveEventSentRef.current = true;
+      
+      const sendEvent = async () => {
+        await sendKafkaEvent(
+          "stream_trace",
+          {
+            type: "app_start_broadcast_stream",
+            timestamp: Date.now(),
+            user_id: user?.id || "anonymous",
+            playback_id: "",
+            stream_id: streamId,
+            pipeline: pipelineType,
+            pipeline_id: pipelineId,
+            broadcaster_info: {
+              ip: "",
+              user_agent: navigator.userAgent,
+              country: "",
+              city: "",
+            },
+          },
+          "daydream",
+          "server",
+        );
+      };
+      
+      sendEvent();
+    } else if (state.status !== "live") {
+      liveEventSentRef.current = false;
+    }
+  }, [state.status, streamId, pipelineId, pipelineType, user?.id]);
+
+  return null;
+};
 
 export function BroadcastWithControls({
   ingestUrl,
   className,
   onCollapse,
   isCollapsed,
+  streamId,
+  pipelineId,
+  pipelineType,
 }: {
   ingestUrl: string | null;
   className?: string;
   onCollapse?: (collapsed: boolean) => void;
   isCollapsed?: boolean;
+  streamId?: string;
+  pipelineId?: string;
+  pipelineType?: string;
 }) {
   const [isPiP, setIsPiP] = useState(false);
   const videoId = "live-video";
@@ -76,13 +134,13 @@ export function BroadcastWithControls({
 
   return (
     <Broadcast.Root
-      onError={error =>
-        error?.type === "permissions"
+      onError={error => {
+        return error?.type === "permissions"
           ? toast.error(
               "You must accept permissions to broadcast. Please try again.",
             )
-          : null
-      }
+          : null;
+      }}
       forceEnabled={true}
       noIceGathering={true}
       audio={false}
@@ -91,6 +149,14 @@ export function BroadcastWithControls({
       ingestUrl={ingestUrl}
       storage={null}
     >
+      {streamId && pipelineId && pipelineType && (
+        <StatusMonitor 
+          streamId={streamId} 
+          pipelineId={pipelineId} 
+          pipelineType={pipelineType} 
+        />
+      )}
+      
       <Broadcast.Container
         id={videoId}
         className={cn(
