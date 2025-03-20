@@ -187,26 +187,26 @@ export function BroadcastWithControls({
               onCollapse?.(!collapsed) ?? setLocalCollapsed(!collapsed);
             }}
             className={cn(
-              "flex items-center cursor-pointer absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 z-50",
+              "flex items-center cursor-pointer absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 z-50 shadow-[4px_12px_16px_0px_#37373F40]",
               isMobile
-                ? "w-full h-12 pl-2 pr-4 bg-[#161616] rounded-2xl justify-between"
+                ? "w-full h-12 pl-2 pr-4 bg-grey-700 rounded-2xl justify-between bg-muted-foreground/10"
                 : "w-full h-full",
             )}
           >
             <div className="flex items-center gap-3">
               <div
                 className={cn(
-                  "flex items-center justify-center border border-grey-900 rounded-full",
+                  "flex items-center justify-center rounded-full",
                   isMobile
-                    ? "px-4 py-2 bg-[linear-gradient(120.63deg,rgba(232,232,232,0.05)_31.4%,rgba(130,130,130,0.05)_85.12%)]"
-                    : "p-2 bg-transparent",
+                    ? "px-4 py-2 bg-[linear-gradient(120.63deg,rgba(0,0,0,0.08)_31.4%,rgba(130,130,130,0.08)_85.12%)]"
+                    : "p-2 bg-[linear-gradient(120.63deg,rgba(0,0,0,0.1)_31.4%,rgba(0,0,0,0.05)_85.12%)] border-white/20 border",
                 )}
               >
                 <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse mr-1.5" />
-                <Camera className="w-4 h-4 text-black/50" />
+                <Camera className="w-4 h-4 text-zinc-700" />
               </div>
               {isMobile && (
-                <span className="text-sm text-white font-medium">
+                <span className="text-sm text-foreground font-medium">
                   Input Video
                 </span>
               )}
@@ -214,7 +214,7 @@ export function BroadcastWithControls({
             {isMobile && (
               <div className="flex items-center gap-3">
                 <CameraSwitchButton />
-                <div className="w-[1px] h-4 bg-white/10" />
+                <div className="w-[1px] h-4 bg-black/10" />
                 <button
                   onClick={e => {
                     e.preventDefault();
@@ -223,7 +223,7 @@ export function BroadcastWithControls({
                   }}
                   className="p-1"
                 >
-                  <Maximize className="w-5 h-5 text-white/50" />
+                  <Maximize className="w-5 h-5 text-muted-foreground" />
                 </button>
               </div>
             )}
@@ -444,7 +444,7 @@ const CameraSwitchButton = () => {
         }}
         className="w-6 h-6 hover:scale-110 transition flex-shrink-0"
       >
-        <SwitchCamera className="w-full h-full text-white/50" />
+        <SwitchCamera className="w-full h-full text-muted-foreground" />
       </button>
 
       {showCameraModal &&

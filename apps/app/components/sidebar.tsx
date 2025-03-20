@@ -39,11 +39,11 @@ type NavItem = {
   items?: { title: string; url: string }[];
 };
 
-const Logo = () => (
+const Logo = ({ className }: { className?: string }) => (
   <svg
     width="23"
     height="25"
-    className="fill-foreground w-4 h-4"
+    className={cn("fill-background w-4 h-4", className)}
     viewBox="0 0 23 25"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
@@ -167,7 +167,7 @@ export const GlobalSidebar = ({ children }: GlobalSidebarProperties) => {
 
   return (
     <>
-      <Sidebar collapsible="icon">
+      <Sidebar collapsible="icon" className="bg-[#3E3E3E]">
         <SidebarHeader>
           <Link
             href="/"
@@ -251,11 +251,13 @@ export const GlobalSidebar = ({ children }: GlobalSidebarProperties) => {
                 )}
               </div>
             ) : (
-              <Logo />
+              <Logo className={cn(_sidebar.openMobile && "fill-foreground")} />
             )}
           </Link>
         </SidebarHeader>
-        <SidebarContent>
+        <SidebarContent
+          className={cn("text-white", _sidebar.openMobile && "text-foreground")}
+        >
           {Object.entries(data).map(([key, items]) => (
             <SidebarGroup
               key={key}

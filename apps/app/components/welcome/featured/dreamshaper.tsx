@@ -590,7 +590,7 @@ export default function Dreamshaper({
           {/* Hide controls for mobile (TODO: when it's a react component,
           we can use the component's own controls - now it's an iframe) */}
           {isFullscreen && isMobile && (
-            <div className="absolute bottom-0 left-0 right-0 h-[10%] bg-black z-40" />
+            <div className="absolute bottom-0 left-0 right-0 h-[10%] bg-background z-40" />
           )}
 
           {/* Go full screen */}
