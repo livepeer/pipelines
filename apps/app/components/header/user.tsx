@@ -79,7 +79,11 @@ export default function User({ className }: { className?: string }) {
         </Avatar>
         <span className="text-sm truncate">{name}</span>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-72 p-3 pb-1" side="right" align="end">
+      <DropdownMenuContent
+        className="w-72 p-3 pb-1"
+        side={isMobile ? "top" : "right"}
+        align="end"
+      >
         <div>
           <div className="mb-2 flex items-center gap-2">
             <Avatar className="h-10 w-10 rounded-lg">

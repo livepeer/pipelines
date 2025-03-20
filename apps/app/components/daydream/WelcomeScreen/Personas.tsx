@@ -8,7 +8,7 @@ import { useOnboard } from "../OnboardContext";
 const personas = ["Streamer", "Content Creator", "Live Performer", "Other"];
 
 export default function Personas() {
-  const { currentStep, setCurrentStep } = useOnboard();
+  const { currentStep, setCurrentStep, cameraPermission } = useOnboard();
   const [selectedPersonas, setSelectedPersonas] = useState<string[]>([]);
 
   const togglePersona = (persona: string) => {
@@ -22,8 +22,7 @@ export default function Personas() {
   const handleContinue = async () => {
     // TODO: Add analytics and push the personas to the database/form
     console.log("Selected personas:", selectedPersonas);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    setCurrentStep("camera");
+    setCurrentStep(cameraPermission === "granted" ? "prompt" : "camera");
   };
 
   return (

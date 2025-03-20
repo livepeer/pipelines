@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { useIsMobile } from "@repo/design-system/hooks/use-mobile";
-import { CameraIcon, RefreshCcwIcon } from "lucide-react";
+import { CameraIcon, CheckIcon } from "lucide-react";
 import { useOnboard } from "../OnboardContext";
 import track from "@/lib/track";
 import { usePrivy } from "@privy-io/react-auth";
@@ -87,7 +87,10 @@ export default function CameraAccess() {
         Before we start
       </p>
       <div
-        className="flex flex-col gap-3 cursor-pointer animate-fade-in"
+        className={cn(
+          "flex flex-col gap-3 animate-fade-in",
+          currentStep === "camera" && "cursor-pointer",
+        )}
         onClick={currentStep === "camera" ? requestMediaPermissions : undefined}
       >
         <div
@@ -112,9 +115,15 @@ export default function CameraAccess() {
               you click "record"
             </p>
           </div>
-          <button className="bg-[#282828] rounded-[7px] px-[13px] py-[7.8px] text-[#EDEDED] font-inter text-[13px] leading-[1.21] hover:opacity-90 transition-opacity flex items-center justify-center min-w-[80px]">
-            Request
-          </button>
+          {cameraPermission === "granted" ? (
+            <div className="bg-green-500 rounded-[7px] px-[10px] py-[7.8px] text-white font-inter text-[13px] leading-[1.21] flex items-center justify-center animate-[bounce_0.5s_ease-in-out]">
+              <CheckIcon className="w-5 h-5" />
+            </div>
+          ) : (
+            <button className="bg-[#282828] rounded-[7px] px-[13px] py-[7.8px] text-[#EDEDED] font-inter text-[13px] leading-[1.21] hover:opacity-90 transition-opacity flex items-center justify-center min-w-[80px]">
+              Request
+            </button>
+          )}
         </div>
       </div>
       {cameraPermission === "denied" && (
