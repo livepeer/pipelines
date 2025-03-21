@@ -1,6 +1,6 @@
 import { useLoginWithOAuth } from "@privy-io/react-auth";
 import { useAuth } from "./AuthContext";
-import { track } from "mixpanel";
+import track from "@/lib/track";
 
 function DiscordIcon() {
   return (

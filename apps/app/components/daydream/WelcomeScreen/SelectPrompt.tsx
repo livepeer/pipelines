@@ -2,7 +2,7 @@ import Image from "next/image";
 import { useOnboard } from "../OnboardContext";
 import useScrollView from "@/hooks/useScrollView";
 import { useEffect } from "react";
-import { track } from "mixpanel";
+import track from "@/lib/track";
 import { usePrivy } from "@privy-io/react-auth";
 
 interface PromptOption {

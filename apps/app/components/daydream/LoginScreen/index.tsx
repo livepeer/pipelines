@@ -10,11 +10,10 @@ import { useIsMobile } from "@repo/design-system/hooks/use-mobile";
 import useMount from "@/hooks/useMount";
 import { useTheme } from "next-themes";
 import LivepeerLogo from "../LivepeerLogo";
-import { track } from "mixpanel-browser";
 import { Loader2 } from "lucide-react";
 import { useAuth } from "./AuthContext";
 import { useEffect } from "react";
-
+import track from "@/lib/track";
 export default function LoginScreen({
   isOAuthSuccessRedirect,
 }: {

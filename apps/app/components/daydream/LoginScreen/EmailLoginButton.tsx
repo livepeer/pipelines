@@ -6,7 +6,8 @@ import {
 import { useLoginWithEmail, usePrivy } from "@privy-io/react-auth";
 import { useState } from "react";
 import { useAuth } from "./AuthContext";
-import { track } from "mixpanel";
+import track from "@/lib/track";
+
 
 export default function EmailLoginButton() {
   const [email, setEmail] = useState("");
