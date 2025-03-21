@@ -135,24 +135,13 @@ export const GlobalSidebar = ({ children }: GlobalSidebarProperties) => {
       },
     ],*/
     footer: [
-      {
-        title: "Join Community",
-        url: "https://discord.com/invite/hxyNHeSzCK",
-        external: true,
-        icon: DiscordLogoIcon,
-      },
-      {
+      // Removed - Leaving in here in case we want to add sidebar elements back in in the future
+      /*{
         title: "Documentation",
         url: "https://pipelines.livepeer.org/docs/technical",
         external: true,
         icon: BookIcon,
-      },
-      {
-        title: "Feedback",
-        url: "https://livepeer.notion.site/15f0a348568781aab037c863d91b05e2",
-        external: true,
-        icon: LightbulbIcon,
-      },
+      }*/
     ],
   };
 
