@@ -525,6 +525,7 @@ export function useDreamshaper() {
     updating,
     createShareLink,
     sharedPrompt,
+    playbackUrl: getPlaybackUrl(gatewayHost, stream?.stream_key, searchParams),
   };
 }
 
@@ -544,4 +545,26 @@ function getStreamUrl(
   }
 
   return `${app.whipUrl}${streamKey}/whip`;
+}
+
+function getPlaybackUrl(
+  gatewayHost: string | null,
+  streamKey: string | null,
+  searchParams: URLSearchParams,
+): string | null {
+  const customWhepServer = searchParams.get("whepServer");
+
+  const app = getAppConfig(searchParams);
+  const key = streamKey ? streamKey : "null"
+
+  if (customWhepServer) {
+    if (customWhepServer.includes("<STREAM_KEY>")) {
+      return customWhepServer.replace("<STREAM_KEY>", key);
+    }
+    return customWhepServer
+  }
+
+  if (!gatewayHost) return null;
+  const host = gatewayHost + (gatewayHost.endsWith("/") ? "" : "/");
+  return `https://${host}aiWebrtc/${key}-out/whep`;
 }
