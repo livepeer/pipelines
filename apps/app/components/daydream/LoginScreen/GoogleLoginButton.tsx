@@ -1,10 +1,11 @@
 import { useLoginWithOAuth } from "@privy-io/react-auth";
 import { useAuth } from "./AuthContext";
+import track from "@/lib/track";
 
 function GoogleIcon() {
   return (
     <svg
-      width="16"
+      width="16"  
       height="16"
       viewBox="0 0 16 16"
       fill="none"
@@ -25,6 +26,7 @@ export default function GoogleLoginButton() {
   const { initOAuth, oAuthState } = useAuth();
 
   const handleLogin = async () => {
+    track("daydream_login_google_clicked");
     try {
       await initOAuth({ provider: "google" });
     } catch (error) {

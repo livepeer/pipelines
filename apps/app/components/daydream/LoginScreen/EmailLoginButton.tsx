@@ -6,6 +6,8 @@ import {
 import { useLoginWithEmail, usePrivy } from "@privy-io/react-auth";
 import { useState } from "react";
 import { useAuth } from "./AuthContext";
+import track from "@/lib/track";
+
 
 export default function EmailLoginButton() {
   const [email, setEmail] = useState("");
@@ -15,6 +17,7 @@ export default function EmailLoginButton() {
   const { sendCode } = useAuth();
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
+    track("daydream_login_email_clicked");
     e.preventDefault();
     e.stopPropagation();
     try {

@@ -34,16 +34,25 @@ const useMediaPermissions = () => {
 
       stream.getTracks().forEach(track => track.stop());
 
-      if (hasVideo) {
+      if (hasVideo && hasAudio) {
         setCameraPermission("granted");
-        track("daydream_camera_permission_granted", {
+        track("daydream_media_permissions_granted", {
           is_authenticated: authenticated,
+          camera: hasVideo,
+          microphone: hasAudio,
         });
-      }
-
-      if (hasAudio) {
-        track("daydream_microphone_permission_granted", {
+      } else if (hasVideo) {
+        setCameraPermission("granted");
+        track("daydream_media_permissions_granted", {
           is_authenticated: authenticated,
+          camera: true,
+          microphone: false,
+        });
+      } else if (hasAudio) {
+        track("daydream_media_permissions_granted", {
+          is_authenticated: authenticated,
+          camera: false,
+          microphone: true,
         });
       }
 

@@ -2,7 +2,7 @@
 
 import { Separator } from "@repo/design-system/components/ui/separator";
 import { CheckIcon, PlusIcon } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useOnboard } from "../OnboardContext";
 import track from "@/lib/track";
 import { usePrivy } from "@privy-io/react-auth";
@@ -10,9 +10,15 @@ import { usePrivy } from "@privy-io/react-auth";
 const personas = ["Streamer", "Content Creator", "Live Performer", "Other"];
 
 export default function Personas() {
-  const { authenticated } = usePrivy();
+  const { authenticated, user } = usePrivy();
   const { currentStep, setCurrentStep, cameraPermission } = useOnboard();
   const [selectedPersonas, setSelectedPersonas] = useState<string[]>([]);
+
+  useEffect(() => {
+    track("daydream_persona_viewed", {
+      user_id: user?.id,
+    });
+  }, []);
 
   const togglePersona = (persona: string) => {
     setSelectedPersonas(prev =>
@@ -23,9 +29,9 @@ export default function Personas() {
   };
 
   const handleContinue = async () => {
-    track("daydream_persona_selected", {
+    track("daydream_personas_selected", {
       personas: selectedPersonas,
-      is_authenticated: authenticated,
+      user_id: user?.id,
     });
     setCurrentStep(cameraPermission === "granted" ? "prompt" : "camera");
   };
