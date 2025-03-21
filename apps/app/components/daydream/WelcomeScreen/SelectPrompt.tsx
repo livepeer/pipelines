@@ -56,7 +56,7 @@ export default function SelectPrompt() {
   return (
     <div
       ref={componentRef}
-      className="flex flex-col animate-fade-in py-16 scroll-mt-24 scroll-mb-24"
+      className="flex flex-col animate-fade-in py-16 scroll-mb-24"
     >
       <div className="mb-12 text-start">
         <h1 className="font-playfair font-semibold text-[24px] leading-[1.2em] text-[#1C1C1C] mb-2">
@@ -67,29 +67,29 @@ export default function SelectPrompt() {
         </p>
       </div>
 
-      <div className="grid grid-cols-2 gap-[12px] w-full">
-        {promptOptions.map(prompt => (
+      <div className="grid grid-cols-2 gap-4 sm:gap-12 w-full">
+        {promptOptions.map(option => (
           <div
-            key={prompt.id}
+            key={option.id}
             className="cursor-pointer"
-            onClick={() => handleSelectPrompt(prompt.prompt)}
+            onClick={() => handleSelectPrompt(option.prompt)}
           >
             <div className="relative group">
-              <div className="relative w-full h-[200px] rounded-[14px] overflow-hidden shadow-[4px_8px_12px_0px_rgba(9,28,20,0.77)]">
+              <div className="relative w-full h-[131px] sm:h-[200px] rounded-[14px] overflow-hidden shadow-[4px_8px_12px_0px_rgba(9,28,20,0.77)]">
                 <Image
-                  src={prompt.image}
-                  alt={prompt.title}
+                  src={option.image}
+                  alt={option.title}
                   fill
                   className="object-cover"
                   priority
                 />
                 <div className="absolute bottom-0 left-0 right-0 py-4 bg-[rgba(28,28,28,0.25)] backdrop-blur-[24px] flex items-center justify-center">
-                  <p className="font-inter font-semibold text-[14px] leading-[1em] tracking-[-1.1%] text-[#EDEDED] text-center">
-                    {prompt.title}
+                  <p className="font-inter font-semibold text-[12px] sm:text-[14px] leading-[1em] tracking-[-1.1%] text-[#EDEDED] text-center">
+                    {option.title}
                   </p>
                 </div>
               </div>
-              {selectedPrompt === prompt.prompt && (
+              {selectedPrompt === option.prompt && (
                 <div className="absolute inset-0 border-2 border-blue-500 rounded-[14px] pointer-events-none" />
               )}
             </div>

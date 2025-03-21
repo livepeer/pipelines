@@ -66,7 +66,7 @@ export default function User({ className }: { className?: string }) {
 
   return authenticated ? (
     <DropdownMenu>
-      <DropdownMenuTrigger className={cn("flex items-center gap-2", className)}>
+      <DropdownMenuTrigger className={cn("flex items-start gap-2", className)}>
         <Avatar className="h-6 w-6">
           <AvatarImage
             src={`https://github.com/${user?.github?.username}.png`}
@@ -74,12 +74,18 @@ export default function User({ className }: { className?: string }) {
             className="rounded-lg"
           />
           <AvatarFallback className="bg-gray-300 dark:bg-gray-800">
-            <span className="capitalize">{name?.charAt(0)}</span>
+            <span className="capitalize text-foreground">
+              {name?.charAt(0)}
+            </span>
           </AvatarFallback>
         </Avatar>
         <span className="text-sm truncate">{name}</span>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-72 p-3 pb-1" side="right" align="end">
+      <DropdownMenuContent
+        className="w-72 p-3 pb-1"
+        side={isMobile ? "top" : "right"}
+        align="end"
+      >
         <div>
           <div className="mb-2 flex items-center gap-2">
             <Avatar className="h-10 w-10 rounded-lg">

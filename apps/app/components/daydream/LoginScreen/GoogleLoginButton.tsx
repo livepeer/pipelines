@@ -24,7 +24,11 @@ export default function GoogleLoginButton() {
   const { state, loading, initOAuth } = useLoginWithOAuth();
 
   const handleLogin = async () => {
-    await initOAuth({ provider: "google" });
+    try {
+      await initOAuth({ provider: "google" });
+    } catch (error) {
+      console.error("Error initializing Google OAuth:", error);
+    }
   };
 
   return (

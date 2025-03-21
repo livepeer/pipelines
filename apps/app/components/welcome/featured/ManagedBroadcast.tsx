@@ -89,7 +89,6 @@ export function ManagedBroadcast({
               width: isCollapsed ? "48px" : "250px",
               height: isCollapsed ? "48px" : "auto",
               aspectRatio: isCollapsed ? "1" : "16/9",
-              boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
               transform: "translate(0, 0)",
             }
           : {}

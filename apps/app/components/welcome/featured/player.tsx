@@ -242,21 +242,12 @@ export const LivepeerPlayer = React.memo(
           >
             <div className="flex justify-between gap-4">
               <div className="flex flex-1 items-center gap-3">
-                <Player.PlayPauseTrigger className="w-6 h-6 hover:scale-110 transition-all flex-shrink-0">
-                  <Player.PlayingIndicator asChild matcher={false}>
-                    <PlayIcon className="w-full h-full" />
-                  </Player.PlayingIndicator>
-                  <Player.PlayingIndicator asChild>
-                    <PauseIcon className="w-full h-full" />
-                  </Player.PlayingIndicator>
-                </Player.PlayPauseTrigger>
-
                 <Player.MuteTrigger className="w-6 h-6 hover:scale-110 transition-all flex-shrink-0">
                   <Player.VolumeIndicator asChild matcher={false}>
-                    <MuteIcon className="w-full h-full" />
+                    <MuteIcon className="w-full h-full text-white" />
                   </Player.VolumeIndicator>
                   <Player.VolumeIndicator asChild matcher={true}>
-                    <UnmuteIcon className="w-full h-full" />
+                    <UnmuteIcon className="w-full h-full text-white" />
                   </Player.VolumeIndicator>
                 </Player.MuteTrigger>
                 <Player.Volume className="relative mr-1 flex-1 group flex cursor-pointer items-center select-none touch-none max-w-[120px] h-5">
@@ -266,11 +257,7 @@ export const LivepeerPlayer = React.memo(
                   <Player.Thumb className="block transition-all group-hover:scale-110 w-3 h-3 bg-white rounded-full" />
                 </Player.Volume>
               </div>
-              <div className="flex sm:flex-1 md:flex-[1.5] justify-end items-center gap-2.5">
-                <Player.PictureInPictureTrigger className="w-6 h-6 hover:scale-110 transition-all flex-shrink-0">
-                  <PictureInPictureIcon className="w-full h-full" />
-                </Player.PictureInPictureTrigger>
-              </div>
+              <div className="flex sm:flex-1 md:flex-[1.5] justify-end items-center gap-2.5"></div>
             </div>
           </Player.Controls>
 

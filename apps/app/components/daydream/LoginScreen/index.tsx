@@ -34,7 +34,7 @@ export default function LoginScreen() {
       <div className="z-10 relative bg-white h-[55vh] sm:h-full p-[40px] sm:p-[60px] rounded-t-[20px] sm:rounded-none w-full sm:w-1/2 shadow-lg flex flex-col items-center justify-center">
         <h1
           className={cn(
-            "mt- font-inter text-lg md:text-xl flex flex-col uppercase font-light",
+            "font-inter text-lg md:text-xl flex flex-col uppercase font-light",
             !isMobile && "absolute top-9 left-9",
           )}
         >
@@ -78,19 +78,21 @@ export default function LoginScreen() {
           {/* Terms text */}
           <p className="text-[12px] font-inter text-[#A1A1AA] text-center mt-[24px]">
             By clicking continue, you agree to <br></br> our{" "}
-            <Link
+            <a
               href="https://www.livepeer.org/terms-of-service-p"
               className="text-[#A1A1AA] hover:text-[#71717A] underline"
+              target="_blank"
             >
               Terms of Service
-            </Link>{" "}
+            </a>{" "}
             and{" "}
-            <Link
+            <a
               href="https://www.livepeer.org/privacy-policy-p"
               className="text-[#A1A1AA] hover:text-[#71717A] underline"
+              target="_blank"
             >
               Privacy Policy
-            </Link>
+            </a>
             .
           </p>
         </div>

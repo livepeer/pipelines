@@ -8,7 +8,6 @@ import { Loader2 } from "lucide-react";
 import MainExperience from "./MainExperience";
 import { useEffect } from "react";
 import LayoutWrapper from "./LayoutWrapper";
-import { createUser } from "../header/action";
 
 export default function Daydream({
   hasSharedPrompt,

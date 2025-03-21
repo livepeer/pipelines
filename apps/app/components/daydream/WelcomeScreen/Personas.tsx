@@ -4,11 +4,14 @@ import { Separator } from "@repo/design-system/components/ui/separator";
 import { CheckIcon, PlusIcon } from "lucide-react";
 import { useState } from "react";
 import { useOnboard } from "../OnboardContext";
+import track from "@/lib/track";
+import { usePrivy } from "@privy-io/react-auth";
 
 const personas = ["Streamer", "Content Creator", "Live Performer", "Other"];
 
 export default function Personas() {
-  const { currentStep, setCurrentStep } = useOnboard();
+  const { authenticated } = usePrivy();
+  const { currentStep, setCurrentStep, cameraPermission } = useOnboard();
   const [selectedPersonas, setSelectedPersonas] = useState<string[]>([]);
 
   const togglePersona = (persona: string) => {
@@ -20,10 +23,11 @@ export default function Personas() {
   };
 
   const handleContinue = async () => {
-    // TODO: Add analytics and push the personas to the database/form
-    console.log("Selected personas:", selectedPersonas);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    setCurrentStep("camera");
+    track("daydream_persona_selected", {
+      personas: selectedPersonas,
+      is_authenticated: authenticated,
+    });
+    setCurrentStep(cameraPermission === "granted" ? "prompt" : "camera");
   };
 
   return (
@@ -60,7 +64,7 @@ export default function Personas() {
           <button
             onClick={handleContinue}
             disabled={selectedPersonas.length === 0}
-            className="bg-[#161616] disabled:bg-opacity-50 w-full sm:max-w-[187px] text-[#EDEDED] px-6 py-3 rounded-md font-inter font-semibold text-[15px] hover:bg-[#2D2D2D] transition-colors"
+            className="bg-[#161616] disabled:bg-opacity-50 w-full sm:max-w-[187px] text-[#EDEDED] px-6 py-3 rounded-md font-inter font-semibold text-[15px] hover:bg-[#2D2D2D] disabled:hover:bg-[#161616] disabled:hover:bg-opacity-50 transition-colors"
           >
             Continue
           </button>

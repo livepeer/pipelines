@@ -9,6 +9,7 @@ import SelectPrompt from "./SelectPrompt";
 import LayoutWrapper from "../LayoutWrapper";
 import useMount from "@/hooks/useMount";
 import { useTheme } from "next-themes";
+import { cn } from "@repo/design-system/lib/utils";
 
 export default function WelcomeScreen() {
   const { currentStep } = useOnboard();
@@ -33,7 +34,12 @@ export default function WelcomeScreen() {
           className="object-cover z-0 opacity-[55%]"
           quality={100}
         />
-        <div className="z-10 relative bg-[#EDEDED] p-[16px] sm:p-[24px] md:p-[56px] rounded-[23px] w-[90%] sm:w-[80%] md:max-w-[812px]">
+        <div
+          className={cn(
+            "h-[fit-content] z-10 relative bg-[#EDEDED] p-[16px] sm:p-[24px] sm:pb-4 md:p-[56px] md:pb-6 rounded-[23px] w-[90%] sm:w-[80%] md:max-w-[812px]",
+            currentStep === "prompt" && "mb-[100px]",
+          )}
+        >
           <div className="flex flex-col gap-[24px] py-[12px]">
             <div className="flex flex-col w-full gap-[8px]">
               <h1 className="font-playfair font-bold text-[30px] sm:text-[45px] md:text-[64px] leading-[1.2em] text-[#1C1C1C]">
