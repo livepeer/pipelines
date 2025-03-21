@@ -1,5 +1,6 @@
 import { useLoginWithOAuth } from "@privy-io/react-auth";
 import { useAuth } from "./AuthContext";
+import { track } from "mixpanel";
 
 function GoogleIcon() {
   return (
@@ -25,6 +26,7 @@ export default function GoogleLoginButton() {
   const { initOAuth, oAuthState } = useAuth();
 
   const handleLogin = async () => {
+    track("daydream_login_google_clicked");
     try {
       await initOAuth({ provider: "google" });
     } catch (error) {

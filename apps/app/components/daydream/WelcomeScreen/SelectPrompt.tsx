@@ -1,6 +1,9 @@
 import Image from "next/image";
 import { useOnboard } from "../OnboardContext";
 import useScrollView from "@/hooks/useScrollView";
+import { useEffect } from "react";
+import { track } from "mixpanel";
+import { usePrivy } from "@privy-io/react-auth";
 
 interface PromptOption {
   id: string;
@@ -43,6 +46,7 @@ export default function SelectPrompt() {
   const { currentStep, setCurrentStep, selectedPrompt, setSelectedPrompt } =
     useOnboard();
   const componentRef = useScrollView(currentStep === "prompt");
+  const { user } = usePrivy();
 
   if (currentStep !== "prompt") {
     return null;
@@ -52,6 +56,19 @@ export default function SelectPrompt() {
     setSelectedPrompt(prompt);
     setCurrentStep("main");
   };
+
+  useEffect(() => {
+    track("daydream_prompt_viewed", {
+      user_id: user?.id,
+    });
+  }, []);
+
+  useEffect(() => {
+    track("daydream_prompt_selected", {
+      prompt,
+      user_id: user?.id,
+    });
+  }, [selectedPrompt]);
 
   return (
     <div

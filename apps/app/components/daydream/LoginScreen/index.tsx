@@ -10,8 +10,10 @@ import { useIsMobile } from "@repo/design-system/hooks/use-mobile";
 import useMount from "@/hooks/useMount";
 import { useTheme } from "next-themes";
 import LivepeerLogo from "../LivepeerLogo";
+import { track } from "mixpanel-browser";
 import { Loader2 } from "lucide-react";
 import { useAuth } from "./AuthContext";
+import { useEffect } from "react";
 
 export default function LoginScreen({
   isOAuthSuccessRedirect,
@@ -37,6 +39,9 @@ export default function LoginScreen({
       </div>
     );
   }
+  useEffect(() => {
+    track("daydream_login_viewed");
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col-reverse sm:flex-row relative w-full h-[100vh] overflow-auto">
