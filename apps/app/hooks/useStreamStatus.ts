@@ -1,6 +1,7 @@
 import { usePrivy } from "@privy-io/react-auth";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
+import { toast } from "sonner";
 
 const BASE_POLLING_INTERVAL = 5000;
 
@@ -125,6 +126,10 @@ export const useStreamStatus = (
           orchestratorFailureCountRef.current += 1;
         } else {
           orchestratorFailureCountRef.current = 0;
+        }
+
+        if (data?.gateway_status?.last_error === "no orchestrators available") {
+            console.error("No orchestrators available");
         }
 
         failureCountRef.current = 0;
