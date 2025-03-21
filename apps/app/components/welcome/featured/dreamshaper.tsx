@@ -918,17 +918,8 @@ export default function Dreamshaper({
           isFullscreen && "hidden",
         )}
       >
-        <Link
-          target="_blank"
-          href="https://www.livepeer.org/learn-about-pipelines"
-          className="hover:text-muted-foreground/80"
-        >
-          Build a pipeline
-        </Link>
-        <Separator orientation="vertical" />
         {user?.email?.address?.endsWith("@livepeer.org") && (
           <>
-            <Separator orientation="vertical" />
             <button
               onClick={() => setDebugOpen(!debugOpen)}
               className="hover:text-muted-foreground/80"
