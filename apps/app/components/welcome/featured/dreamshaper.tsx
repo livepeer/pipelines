@@ -919,7 +919,6 @@ export default function Dreamshaper({
       >
         {user?.email?.address?.endsWith("@livepeer.org") && (
           <>
-            <Separator orientation="vertical" />
             <button
               onClick={() => setDebugOpen(!debugOpen)}
               className="hover:text-muted-foreground/80"
