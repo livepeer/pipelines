@@ -43,10 +43,26 @@ const promptOptions: PromptOption[] = [
 ];
 
 export default function SelectPrompt() {
-  const { currentStep, setCurrentStep, selectedPrompt, setSelectedPrompt } =
-    useOnboard();
+  const { currentStep, setCurrentStep, selectedPrompt, setSelectedPrompt } = useOnboard();
   const componentRef = useScrollView(currentStep === "prompt");
   const { user } = usePrivy();
+
+  useEffect(() => {
+    if (currentStep === "prompt") {
+      track("daydream_prompt_viewed", {
+        user_id: user?.id,
+      });
+    }
+  }, [currentStep, user?.id]);
+
+  useEffect(() => {
+    if (currentStep === "prompt" && selectedPrompt) {
+      track("daydream_prompt_selected", {
+        prompt: selectedPrompt,
+        user_id: user?.id,
+      });
+    }
+  }, [selectedPrompt, currentStep, user?.id]);
 
   if (currentStep !== "prompt") {
     return null;
@@ -56,19 +72,6 @@ export default function SelectPrompt() {
     setSelectedPrompt(prompt);
     setCurrentStep("main");
   };
-
-  useEffect(() => {
-    track("daydream_prompt_viewed", {
-      user_id: user?.id,
-    });
-  }, []);
-
-  useEffect(() => {
-    track("daydream_prompt_selected", {
-      prompt,
-      user_id: user?.id,
-    });
-  }, [selectedPrompt]);
 
   return (
     <div
