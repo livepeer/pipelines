@@ -3,9 +3,5 @@ export default function LayoutWrapper({
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <div className="flex h-screen md:h-auto md:min-h-[calc(100vh-2rem)] flex-col w-full">
-      {children}
-    </div>
-  );
+  return <div className="flex flex-col w-full h-full">{children}</div>;
 }

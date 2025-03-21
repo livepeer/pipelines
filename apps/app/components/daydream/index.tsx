@@ -8,17 +8,13 @@ import { Loader2 } from "lucide-react";
 import MainExperience from "./MainExperience";
 import { useEffect } from "react";
 import LayoutWrapper from "./LayoutWrapper";
-import { createUser } from "../header/action";
 
 export default function Daydream({
   hasSharedPrompt,
 }: {
   hasSharedPrompt: boolean;
 }) {
-  const { user, ready, authenticated } = usePrivy();
-
-  console.log("daydream::: authenticated", authenticated);
-  console.log("daydream::: user", user);
+  const { user, ready } = usePrivy();
 
   // If the user is not ready, show a loading screen
   if (!ready) {
