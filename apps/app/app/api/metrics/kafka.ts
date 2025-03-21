@@ -26,6 +26,9 @@ export async function sendKafkaEvent(
   app: string,
   host: string,
 ) {
+  if (process.env.DISABLE_ANALYTICS) {
+    return;
+  }
   const config = await serverConfig();
   const kafkaConfig = config.kafka;
   if (
