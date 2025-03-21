@@ -21,7 +21,7 @@ import * as React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 const MAX_RETRIES = 10;
-const MAX_DELAY = 1000;
+const MAX_DELAY = 5000;
 
 type TrackingProps = {
   playbackId: string;
@@ -48,73 +48,16 @@ export const LivepeerPlayer = React.memo(
     const [playbackInfo, setPlaybackInfo] = useState<PlaybackInfo | null>(null);
     const [retryCount, setRetryCount] = useState(0);
     const [key, setKey] = useState(0);
-    const [isActuallyPlaying, setIsActuallyPlaying] = useState(false);
-    const lastErrorRef = useRef<string | null>(null);
-
-    // DEBUG
-    useEffect(() => {
-      const checkInterval = setInterval(() => {
-        const videoElement = document.querySelector('[data-livepeer-video]') as HTMLVideoElement;
-        if (videoElement) {
-          const isPlaying = !videoElement.paused && 
-                           videoElement.currentTime > 0 && 
-                           !videoElement.ended && 
-                           videoElement.readyState > 2;
-          
-          console.log("Video playing state check:", {
-            isPlaying,
-            paused: videoElement.paused,
-            currentTime: videoElement.currentTime,
-            ended: videoElement.ended,
-            readyState: videoElement.readyState,
-            error: videoElement.error,
-            lastError: lastErrorRef.current,
-            retryCount,
-          });
-          
-          setIsActuallyPlaying(isPlaying);
-          
-          // If video isn't playing and we haven't reached max retries, retry connection
-          if (!isPlaying && retryCount < MAX_RETRIES && lastErrorRef.current) {
-            console.error("Video not playing despite tracking event, retrying connection...");
-            const delay = Math.min(1000 * Math.pow(2, retryCount), MAX_DELAY);
-            
-            setTimeout(() => {
-              setRetryCount(prev => prev + 1);
-              setKey(prev => prev + 1); // Force Player to remount
-              console.log(`Forcing retry (${retryCount + 1}/${MAX_RETRIES})...`);
-            }, delay);
-          }
-        }
-      }, 5000);
-      
-      return () => clearInterval(checkInterval);
-    }, [retryCount]);
 
     const handleError = useCallback(
       (error: any) => {
-        console.log("Player error:", {
-          message: error?.message,
-          retryCount,
-          error,
-        });
-        
-        // DEBUG
-        lastErrorRef.current = error?.message || "Unknown error";
-        
-        // DEBUG
-        const errorMessage = error?.message || "";
-        const shouldRetry = 
-          errorMessage.includes("Failed to connect to peer") 
-          //errorMessage.includes("no one is publishing") ||
-          // errorMessage.includes("404") ||
-          //errorMessage.includes("Not Found");
-        
-        if (shouldRetry && retryCount < MAX_RETRIES) {
+        if (
+          error?.message?.includes("Failed to connect to peer") &&
+          retryCount < MAX_RETRIES
+        ) {
           const delay = Math.min(1000 * Math.pow(2, retryCount), MAX_DELAY);
 
           setTimeout(() => {
-            console.log(`Retrying connection (${retryCount + 1}/${MAX_RETRIES})...`);
             setRetryCount(prev => prev + 1);
             setKey(prev => prev + 1); // Force Player to remount
           }, delay);
@@ -122,10 +65,6 @@ export const LivepeerPlayer = React.memo(
           if (retryCount >= MAX_RETRIES) {
             console.error(
               `MAX RETRIES REACHED - No more remounting (${retryCount}/${MAX_RETRIES})`,
-            );
-          } else if (!shouldRetry) {
-            console.error(
-              `Error not matched for retry: ${error?.message}`,
             );
           }
         }
@@ -269,16 +208,6 @@ export const LivepeerPlayer = React.memo(
             pipelineType={pipelineType}
           />
         </Player.Root>
-        
-        {debugMode && (
-          <div className="absolute top-4 right-4 bg-black/50 p-2 rounded text-xs text-white z-10">
-            <div>Retry count: {retryCount}/{MAX_RETRIES}</div>
-            <div>Playing: {isActuallyPlaying ? "Yes ✅" : "No ❌"}</div>
-            {lastErrorRef.current && (
-              <div className="max-w-[200px] truncate">Error: {lastErrorRef.current}</div>
-            )}
-          </div>
-        )}
       </div>
     );
   },
@@ -329,15 +258,6 @@ const useFirstFrameLoaded = ({
   const context = Player.useMediaContext("CustomComponent", __scopeMedia);
   const state = Player.useStore(context.store);
 
-  useEffect(() => {
-    console.log("DEBUG: Player state updated:", {
-      hasPlayed: state.hasPlayed,
-      playing: state.playing,
-      buffered: state.buffered,
-      error: state.error,
-    });
-  }, [state.hasPlayed, state.playing, state.error]);
-
   // Send event on load
   useEffect(() => {
     const sendEvent = async () =>
@@ -370,14 +290,6 @@ const useFirstFrameLoaded = ({
     if (state.hasPlayed && !firstFrameTime) {
       const currentTime = Date.now();
       setFirstFrameTime(((currentTime - startTime.current) / 1000).toFixed(2));
-      
-      console.log("First frame loaded according to player state!", {
-        playbackId,
-        streamId,
-        elapsedTime: ((currentTime - startTime.current) / 1000).toFixed(2),
-        hasPlayed: state.hasPlayed,
-        playing: state.playing
-      });
 
       const sendEvent = async () =>
         await sendKafkaEvent(
