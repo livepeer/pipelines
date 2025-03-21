@@ -136,12 +136,6 @@ export const GlobalSidebar = ({ children }: GlobalSidebarProperties) => {
     ],*/
     footer: [
       {
-        title: "Join Community",
-        url: "https://discord.com/invite/hxyNHeSzCK",
-        external: true,
-        icon: DiscordLogoIcon,
-      },
-      {
         title: "Documentation",
         url: "https://pipelines.livepeer.org/docs/technical",
         external: true,
