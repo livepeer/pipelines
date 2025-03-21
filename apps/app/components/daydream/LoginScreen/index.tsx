@@ -10,14 +10,33 @@ import { useIsMobile } from "@repo/design-system/hooks/use-mobile";
 import useMount from "@/hooks/useMount";
 import { useTheme } from "next-themes";
 import LivepeerLogo from "../LivepeerLogo";
+import { Loader2 } from "lucide-react";
+import { useAuth } from "./AuthContext";
 
-export default function LoginScreen() {
+export default function LoginScreen({
+  isOAuthSuccessRedirect,
+}: {
+  isOAuthSuccessRedirect: boolean;
+}) {
   const isMobile = useIsMobile();
   const { setTheme } = useTheme();
+  const { oAuthState } = useAuth();
 
   useMount(() => {
     setTheme("light");
   });
+
+  // If the user is redirected from OAuth, show a loading screen to prevent displaying login for a split second
+  if (
+    isOAuthSuccessRedirect &&
+    ["initial", "loading"].includes(oAuthState.status)
+  ) {
+    return (
+      <div className="w-full h-screen flex items-center justify-center">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col-reverse sm:flex-row relative w-full h-[100vh] overflow-auto">

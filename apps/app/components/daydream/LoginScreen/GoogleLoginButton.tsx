@@ -1,4 +1,5 @@
 import { useLoginWithOAuth } from "@privy-io/react-auth";
+import { useAuth } from "./AuthContext";
 
 function GoogleIcon() {
   return (
@@ -21,7 +22,7 @@ function GoogleIcon() {
 }
 
 export default function GoogleLoginButton() {
-  const { state, loading, initOAuth } = useLoginWithOAuth();
+  const { initOAuth, oAuthState } = useAuth();
 
   const handleLogin = async () => {
     try {
@@ -35,7 +36,7 @@ export default function GoogleLoginButton() {
     <button
       className="flex items-center justify-center h-9 gap-2 py-2.5 px-4 w-1/2 border border-[#E4E4E7] rounded-[6px] bg-white"
       onClick={handleLogin}
-      disabled={loading}
+      disabled={oAuthState.status === "loading"}
     >
       <GoogleIcon />
       <span className="text-[14px] font-inter font-medium text-[#09090B]">
