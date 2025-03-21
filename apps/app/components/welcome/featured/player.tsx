@@ -56,7 +56,7 @@ export const LivepeerPlayer = React.memo(
           retryCount < MAX_RETRIES
         ) {
           const delay = Math.min(1000 * Math.pow(2, retryCount), MAX_DELAY);
-
+          console.log("Video not playing but stream has started, retrying...");
           setTimeout(() => {
             setRetryCount(prev => prev + 1);
             setKey(prev => prev + 1); // Force Player to remount
