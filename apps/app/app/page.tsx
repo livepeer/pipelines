@@ -33,9 +33,16 @@ export const generateMetadata = async ({
 export default function HomePage({
   searchParams,
 }: {
-  searchParams: { shared: string };
+  searchParams: { shared: string; privy_oauth_code: string };
 }) {
-  const { shared } = searchParams;
+  const { shared, privy_oauth_code } = searchParams;
 
-  return <Daydream hasSharedPrompt={!!shared} />;
+  return (
+    <Daydream
+      hasSharedPrompt={!!shared}
+      isOAuthSuccessRedirect={
+        privy_oauth_code?.length > 0 && privy_oauth_code !== "error"
+      }
+    />
+  );
 }

@@ -5,13 +5,14 @@ import {
 } from "@repo/design-system/components/ui/input-otp";
 import { useLoginWithEmail, usePrivy } from "@privy-io/react-auth";
 import { useState } from "react";
+import { useAuth } from "./AuthContext";
 
 export default function EmailLoginButton() {
   const [email, setEmail] = useState("");
   const [inputState, setInputState] = useState<
     "idle" | "loading" | "success" | "error"
   >("idle");
-  const { sendCode } = useLoginWithEmail();
+  const { sendCode } = useAuth();
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

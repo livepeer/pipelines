@@ -8,11 +8,14 @@ import { Loader2 } from "lucide-react";
 import MainExperience from "./MainExperience";
 import { useEffect } from "react";
 import LayoutWrapper from "./LayoutWrapper";
+import { AuthProvider } from "./LoginScreen/AuthContext";
 
 export default function Daydream({
   hasSharedPrompt,
+  isOAuthSuccessRedirect,
 }: {
   hasSharedPrompt: boolean;
+  isOAuthSuccessRedirect: boolean;
 }) {
   const { user, ready } = usePrivy();
 
@@ -31,7 +34,9 @@ export default function Daydream({
   if (!user) {
     return (
       <LayoutWrapper>
-        <LoginScreen />
+        <AuthProvider>
+          <LoginScreen isOAuthSuccessRedirect={isOAuthSuccessRedirect} />
+        </AuthProvider>
       </LayoutWrapper>
     );
   }
