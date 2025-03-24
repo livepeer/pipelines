@@ -24,6 +24,8 @@ export default function MainExperience() {
     }
   }, [selectedPrompt, status, handleUpdate]);
 
+  const examplePrompt = selectedPrompt;
+
   return (
     <div className="relative">
       <div className={currentStep !== "main" ? "hidden" : ""}>
@@ -37,6 +39,7 @@ export default function MainExperience() {
           status={status}
           fullResponse={fullResponse}
           pipeline={pipeline}
+          sharedPrompt={dreamshaperState.sharedPrompt || examplePrompt}
         />
         <ClientSideTracker eventName="home_page_view" />
       </div>
