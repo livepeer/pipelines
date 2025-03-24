@@ -50,7 +50,7 @@ export default function Personas() {
               className={`w-full sm:max-w-none h-[30px] px-[13px] flex justify-center items-center gap-1 text-[13px] font-normal font-inter rounded-full ${
                 selectedPersonas.includes(persona)
                   ? "bg-[#95B4BE] text-[#010101] selected-persona"
-                  : "bg-white text-[#232323] unselected-persona"
+                  : "bg-white text-[#232323] animatedGradientButton"
               }`}
             >
               <span>{persona}</span>
