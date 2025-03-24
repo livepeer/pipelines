@@ -125,8 +125,8 @@ export default function CameraAccess() {
             </p>
           </div>
           {cameraPermission === "granted" ? (
-            <div className="bg-green-500 rounded-[7px] px-[10px] py-[7.8px] text-white font-inter text-[13px] leading-[1.21] flex items-center justify-center animate-[bounce_0.5s_ease-in-out]">
-              <CheckIcon className="w-5 h-5" />
+            <div className="bg-[#95B4BE] shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] rounded-md px-2 py-2 text-black font-inter text-[13px] leading-[1.21] flex items-center justify-center gap-2 animate-[bounce_0.5s_ease-in-out]">
+              <CheckIcon className="w-4 h-4 stroke-[3px]" />
             </div>
           ) : (
             <button className="bg-[#282828] rounded-[7px] px-[13px] py-[7.8px] text-[#EDEDED] font-inter text-[13px] leading-[1.21] hover:opacity-90 transition-opacity flex items-center justify-center min-w-[80px]">

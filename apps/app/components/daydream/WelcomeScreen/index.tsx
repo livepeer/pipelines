@@ -37,7 +37,7 @@ export default function WelcomeScreen() {
         <div
           className={cn(
             "h-[fit-content] z-10 relative bg-[#EDEDED] p-[16px] sm:p-[24px] sm:pb-4 md:p-[56px] md:pb-6 rounded-[23px] w-[90%] sm:w-[80%] md:max-w-[812px]",
-            currentStep === "prompt" && "mb-[100px]",
+            currentStep === "prompt" && "mb-[100px] mt-[100px]",
           )}
         >
           <div className="flex flex-col gap-[24px] py-[12px]">
