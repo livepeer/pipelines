@@ -43,7 +43,8 @@ const promptOptions: PromptOption[] = [
 ];
 
 export default function SelectPrompt() {
-  const { currentStep, setCurrentStep, selectedPrompt, setSelectedPrompt } = useOnboard();
+  const { currentStep, setCurrentStep, selectedPrompt, setSelectedPrompt } =
+    useOnboard();
   const componentRef = useScrollView(currentStep === "prompt");
   const { user } = usePrivy();
 
@@ -71,6 +72,7 @@ export default function SelectPrompt() {
   const handleSelectPrompt = (prompt: string) => {
     setSelectedPrompt(prompt);
     setCurrentStep("main");
+    window && window.scrollTo({ top: 0, behavior: "instant" });
   };
 
   return (
