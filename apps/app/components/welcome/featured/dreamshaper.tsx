@@ -665,8 +665,6 @@ export default function Dreamshaper({
                   pipelineId={pipeline.id}
                   pipelineType={pipeline.type}
                 />
-                {/* Overlay */}
-                <div className="absolute inset-x-0 top-0 h-[85%] bg-transparent" />
               </div>
               {!live || showOverlay ? (
                 <div className="absolute inset-0 bg-black flex flex-col items-center justify-center rounded-2xl">
