@@ -100,7 +100,7 @@ export default function LoginScreen({
 
           {/* Terms text */}
           <p className="text-[12px] font-inter text-[#A1A1AA] text-center mt-[24px]">
-            By clicking continue, you agree to <br></br> our{" "}
+            By signing up, you agree to <br></br> our{" "}
             <a
               href="https://www.livepeer.org/terms-of-service-p"
               className="text-[#A1A1AA] hover:text-[#71717A] underline"
