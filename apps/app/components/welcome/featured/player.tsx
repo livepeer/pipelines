@@ -16,7 +16,6 @@ import { getSrc } from "@livepeer/react/external";
 import * as Player from "@livepeer/react/player";
 import { usePrivy } from "@privy-io/react-auth";
 import { PlaybackInfo } from "livepeer/models/components";
-import { PauseIcon, PlayIcon, Maximize, Minimize } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import * as React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -39,10 +38,12 @@ export const LivepeerPlayer = React.memo(
     streamId,
     pipelineId,
     pipelineType,
+    isFullscreen = false,
   }: {
     playbackId: string;
     isMobile?: boolean;
     stream_key?: string | null;
+    isFullscreen?: boolean;
   } & TrackingProps) => {
     const appConfig = useAppConfig();
 
@@ -183,7 +184,9 @@ export const LivepeerPlayer = React.memo(
 
           <Player.Controls
             autoHide={1000}
-            className="bg-gradient-to-b gap-1 px-3 md:px-3 py-2 flex-col-reverse flex from-black/20 via-80% via-black/30 duration-1000 to-black/60 data-[visible=true]:animate-in data-[visible=false]:animate-out data-[visible=false]:fade-out-0 data-[visible=true]:fade-in-0 relative z-[10]"
+            className={isFullscreen 
+              ? "hidden" 
+              : "bg-gradient-to-b gap-1 px-3 md:px-3 py-2 flex-col-reverse flex from-black/20 via-80% via-black/30 duration-1000 to-black/60 data-[visible=true]:animate-in data-[visible=false]:animate-out data-[visible=false]:fade-out-0 data-[visible=true]:fade-in-0 relative z-[10]"}
           >
             <div className="flex justify-between gap-4">
               <div className="flex flex-1 items-center gap-3">

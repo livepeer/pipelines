@@ -664,6 +664,7 @@ export default function Dreamshaper({
                   streamId={streamId as string}
                   pipelineId={pipeline.id}
                   pipelineType={pipeline.type}
+                  isFullscreen={isFullscreen}
                 />
               </div>
               {!live || showOverlay ? (
