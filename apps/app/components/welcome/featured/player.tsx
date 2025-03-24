@@ -7,15 +7,16 @@ import { useAppConfig } from "@/hooks/useAppConfig";
 import {
   LoadingIcon,
   MuteIcon,
-  PictureInPictureIcon,
-  PrivateErrorIcon,
   UnmuteIcon,
+  EnterFullscreenIcon,
+  ExitFullscreenIcon,
+  PrivateErrorIcon,
 } from "@livepeer/react/assets";
 import { getSrc } from "@livepeer/react/external";
 import * as Player from "@livepeer/react/player";
 import { usePrivy } from "@privy-io/react-auth";
 import { PlaybackInfo } from "livepeer/models/components";
-import { PauseIcon, PlayIcon } from "lucide-react";
+import { PauseIcon, PlayIcon, Maximize, Minimize } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import * as React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -130,12 +131,17 @@ export const LivepeerPlayer = React.memo(
           lowLatency="force"
           onError={handleError}
         >
+          <div 
+            className="absolute inset-0 z-[5]" 
+            onClick={(e) => e.stopPropagation()}
+          ></div>
+          
           <Player.Video
             title="Live stream"
-            className="h-full w-full transition-all object-contain"
+            className="h-full w-full transition-all object-contain relative z-0"
           />
 
-          <Player.LoadingIndicator className="w-full relative h-full bg-black/50 backdrop-blur data-[visible=true]:animate-in data-[visible=false]:animate-out data-[visible=false]:fade-out-0 data-[visible=true]:fade-in-0">
+          <Player.LoadingIndicator className="w-full relative h-full bg-black/50 backdrop-blur data-[visible=true]:animate-in data-[visible=false]:animate-out data-[visible=false]:fade-out-0 data-[visible=true]:fade-in-0 z-[6]">
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
               <LoadingIcon className="w-8 h-8 animate-spin" />
             </div>
@@ -144,7 +150,7 @@ export const LivepeerPlayer = React.memo(
 
           <Player.ErrorIndicator
             matcher="all"
-            className="absolute select-none inset-0 text-center bg-black/80 backdrop-blur-lg flex flex-col items-center justify-center gap-4 duration-1000 data-[visible=true]:animate-in data-[visible=false]:animate-out data-[visible=false]:fade-out-0 data-[visible=true]:fade-in-0"
+            className="absolute select-none inset-0 text-center bg-black/80 backdrop-blur-lg flex flex-col items-center justify-center gap-4 duration-1000 data-[visible=true]:animate-in data-[visible=false]:animate-out data-[visible=false]:fade-out-0 data-[visible=true]:fade-in-0 z-[6]"
           >
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
               <LoadingIcon className="w-8 h-8 animate-spin" />
@@ -154,7 +160,7 @@ export const LivepeerPlayer = React.memo(
 
           <Player.ErrorIndicator
             matcher="offline"
-            className="absolute select-none animate-in fade-in-0 inset-0 text-center bg-black/80 backdrop-blur-lg flex flex-col items-center justify-center gap-4 duration-1000 data-[visible=true]:animate-in data-[visible=false]:animate-out data-[visible=false]:fade-out-0 data-[visible=true]:fade-in-0"
+            className="absolute select-none animate-in fade-in-0 inset-0 text-center bg-black/80 backdrop-blur-lg flex flex-col items-center justify-center gap-4 duration-1000 data-[visible=true]:animate-in data-[visible=false]:animate-out data-[visible=false]:fade-out-0 data-[visible=true]:fade-in-0 z-[6]"
           >
             <PlayerLoading
               title="ALMOST THERE"
@@ -164,7 +170,7 @@ export const LivepeerPlayer = React.memo(
 
           <Player.ErrorIndicator
             matcher="access-control"
-            className="absolute select-none inset-0 text-center bg-black/80 backdrop-blur-lg flex flex-col items-center justify-center gap-4 duration-1000 data-[visible=true]:animate-in data-[visible=false]:animate-out data-[visible=false]:fade-out-0 data-[visible=true]:fade-in-0"
+            className="absolute select-none inset-0 text-center bg-black/80 backdrop-blur-lg flex flex-col items-center justify-center gap-4 duration-1000 data-[visible=true]:animate-in data-[visible=false]:animate-out data-[visible=false]:fade-out-0 data-[visible=true]:fade-in-0 z-[6]"
           >
             <PrivateErrorIcon className="h-[120px] w-full sm:flex hidden" />
             <div className="flex flex-col gap-1">
@@ -177,7 +183,7 @@ export const LivepeerPlayer = React.memo(
 
           <Player.Controls
             autoHide={1000}
-            className="bg-gradient-to-b gap-1 px-3 md:px-3 py-2 flex-col-reverse flex from-black/20 via-80% via-black/30 duration-1000 to-black/60 data-[visible=true]:animate-in data-[visible=false]:animate-out data-[visible=false]:fade-out-0 data-[visible=true]:fade-in-0"
+            className="bg-gradient-to-b gap-1 px-3 md:px-3 py-2 flex-col-reverse flex from-black/20 via-80% via-black/30 duration-1000 to-black/60 data-[visible=true]:animate-in data-[visible=false]:animate-out data-[visible=false]:fade-out-0 data-[visible=true]:fade-in-0 relative z-[10]"
           >
             <div className="flex justify-between gap-4">
               <div className="flex flex-1 items-center gap-3">
@@ -196,7 +202,16 @@ export const LivepeerPlayer = React.memo(
                   <Player.Thumb className="block transition-all group-hover:scale-110 w-3 h-3 bg-white rounded-full" />
                 </Player.Volume>
               </div>
-              <div className="flex sm:flex-1 md:flex-[1.5] justify-end items-center gap-2.5"></div>
+              <div className="flex sm:flex-1 md:flex-[1.5] justify-end items-center gap-2.5">
+                <Player.FullscreenTrigger className="w-6 h-6 hover:scale-110 transition-all flex-shrink-0">
+                  <Player.FullscreenIndicator asChild>
+                    <ExitFullscreenIcon className="w-full h-full text-white" />
+                  </Player.FullscreenIndicator>
+                  <Player.FullscreenIndicator matcher={false} asChild>
+                    <EnterFullscreenIcon className="w-full h-full text-white" />
+                  </Player.FullscreenIndicator>
+                </Player.FullscreenTrigger>
+              </div>
             </div>
           </Player.Controls>
 
