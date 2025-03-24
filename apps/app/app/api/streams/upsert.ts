@@ -5,6 +5,7 @@ import { z } from "zod";
 import { newId } from "@/lib/generate-id";
 import { livepeer as livePeerEnv } from "@/lib/env";
 import { livepeerSDK } from "@/lib/core";
+import { getAppConfig } from "@/lib/env";
 
 const streamSchema = z
   .object({
@@ -20,6 +21,7 @@ const streamSchema = z
     pipeline_params: z.record(z.any()).optional().default({}),
     output_playback_id: z.string().optional(),
     output_stream_url: z.string().optional(),
+    whip_url: z.string().optional(),
     stream_key: z.string().optional(),
     created_at: z.any().optional(),
     from_playground: z.boolean().optional(),
@@ -83,6 +85,7 @@ export async function upsertStream(body: any, userId: string) {
       (livepeerStream?.streamKey
         ? `${livePeerEnv.rtmpUrl}${livepeerStream?.streamKey}`
         : ""),
+    whip_url: streamData.whip_url,
     stream_key: streamKey,
     pipeline_params: streamData.pipeline_params,
     pipeline_id: streamData.pipeline_id || streamData.pipelines?.id,
