@@ -1,6 +1,7 @@
 "use client";
 
 import { TrackedButton } from "@/components/analytics/TrackedButton";
+import { ClipButton } from "@/components/ClipButton";
 import { StreamInfo } from "@/components/footer/stream-info";
 import { StreamDebugPanel } from "@/components/stream/stream-debug-panel";
 import { useCommandSuggestions } from "@/hooks/useCommandSuggestions";
@@ -24,9 +25,10 @@ import {
   Maximize,
   Minimize,
   Send,
+  Share,
   Share2,
   SlidersHorizontal,
-  Share,
+  Users2,
 } from "lucide-react";
 import { Inter } from "next/font/google";
 import Image from "next/image";
@@ -34,13 +36,12 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import TextareaAutosize from "react-textarea-autosize";
 import { toast } from "sonner";
+import { ManagedBroadcast } from "./ManagedBroadcast";
 import { LivepeerPlayer } from "./player";
 import SettingsMenu from "./prompt-settings";
 import { ShareModal } from "./ShareModal";
 import { UpdateOptions } from "./useDreamshaper";
 import { MAX_PROMPT_LENGTH, useValidateInput } from "./useValidateInput";
-import { ClipButton } from "@/components/ClipButton";
-import { ManagedBroadcast } from "./ManagedBroadcast";
 
 const PROMPT_PLACEHOLDER = "Describe the style to transform your stream...";
 const MAX_STREAM_TIMEOUT_MS = 300000; // 5 minutes
@@ -548,7 +549,7 @@ export default function Dreamshaper({
       </div>
 
       {isMobile && (
-        <div className="absolute top-4 right-4 z-50 flex gap-2">
+        <div className="z-50 flex gap-2 justify-end px-4 mt-2">
           {/* Mobile clip button - only show when live */}
           {live && outputPlaybackId && streamUrl && (
             <ClipButton
@@ -570,6 +571,16 @@ export default function Dreamshaper({
               <Share2 className="h-4 w-4" />
             </Button>
           )}
+
+          <Link target="_blank" href="https://discord.com/invite/hxyNHeSzCK">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="p-0 m-0 bg-transparent border-none hover:bg-transparent focus:outline-none"
+            >
+              <Users2 className="h-4 w-4" />
+            </Button>
+          </Link>
         </div>
       )}
 
