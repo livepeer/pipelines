@@ -12,40 +12,30 @@ export async function submitToHubspot(user: PrivyUser) {
       {
         name: "email",
         value:
-          user.google?.email ||
-          user.email?.address ||
-          user.discord?.email ||
-          user.github?.email ||
+          user?.email?.address ||
+          user?.google?.email ||
+          user?.discord?.email ||
+          (user.discord && `${user?.id}-discord-user@livepeer.org`) ||
           "",
       },
       {
         name: "firstname",
         value:
           user.google?.name ||
-          user.email?.address?.split("@")[0] ||
-          user?.github?.name ||
           user?.discord?.username ||
+          user.email?.address?.split("@")[0] ||
+          (user.discord && `${user?.id}-discord-user`) ||
           "",
       },
       { name: "user_id", value: user?.id || "" },
       {
         name: "signup_method",
-        value: user?.google
-          ? "Google"
-          : user?.discord
-            ? "Discord"
-            : user?.github
-              ? "GitHub"
-              : "Email",
+        value: user?.google ? "Google" : user?.discord ? "Discord" : "Email",
       },
     ];
 
     if (user?.discord?.username) {
       fields.push({ name: "discord_username", value: user.discord.username });
-    }
-
-    if (user?.github?.username) {
-      fields.push({ name: "github_username", value: user.github.username });
     }
 
     const response = await fetch("/api/hubspot/contact", {
