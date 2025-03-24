@@ -216,3 +216,66 @@
 .selected-persona {
   border: 1px solid #010101;
 }
+
+@property --gradient-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
+.animatedGradientButton {
+  position: relative;
+  border-radius: 9999px;
+  overflow: visible;
+  border: 1.5px solid transparent; 
+}
+
+.animatedGradientButton::before {
+  content: "";
+  position: absolute;
+  inset: -1.5px; 
+  border-radius: 9999px;
+  padding: 1.5px; 
+  background: conic-gradient(
+    from var(--gradient-angle),
+    #83A5B5 0deg,
+    #9A9A9A 50deg,
+    #333333 70deg,
+    #9A9A9A 90deg,
+    #83A5B5 210deg,
+    #ffffff 240deg,
+    #83A5B5 280deg
+  );
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  opacity: 1;
+  z-index: 0;
+  pointer-events: none;
+  
+  animation: rotate-gradient 3s linear infinite;
+  animation-play-state: paused;
+}
+
+.animatedGradientButton:hover::before {
+  animation-play-state: running;
+}
+
+.animatedGradientButton > * {
+  position: relative;
+  z-index: 2;
+}
+
+@keyframes rotate-gradient {
+  0% {
+    --gradient-angle: 0deg;
+  }
+  100% {
+    --gradient-angle: 360deg;
+  }
+}
