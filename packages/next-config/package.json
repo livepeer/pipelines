@@ -4,7 +4,7 @@
   "private": true,
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",
-    "next": "15.0.3"
+    "next": "^15.2.3"
   },
   "dependencies": {
     "@logtail/next": "^0.1.5",

@@ -55,7 +55,7 @@ export default function WelcomeScreen() {
 
             <div className="flex flex-col gap-[16px]">
               <p className="font-open-sans text-base sm:text-lg leading-[1.35em] text-[#232323]">
-                Daydream is a <span className="font-black">limitless</span>{" "}
+                Daydream is a <span className="font-bold">limitless</span>{" "}
                 portal for transforming your video 🚀
               </p>
               <p className="font-open-sans text-base sm:text-lg leading-[1.35em] text-[#232323]">
