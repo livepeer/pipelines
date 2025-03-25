@@ -144,37 +144,37 @@ export default function WelcomeScreen() {
           }
           
           #cloud1 {
-            background-image: url('/clouds/back_1.png');
+            background-image: url('/clouds/back_1-min.png');
             opacity: 0.5;
             z-index: 1;
           }
           
           #cloud2 {
-            background-image: url('/clouds/back_2.png');
+            background-image: url('/clouds/back_2-min.png');
             opacity: 0.5;
             z-index: 2;
           }
           
           #cloud3 {
-            background-image: url('/clouds/back_3.png');
+            background-image: url('/clouds/back_3-min.png');
             opacity: 0.5;
             z-index: 4;
           }
           
           #cloud4 {
-            background-image: url('/clouds/back_1_proc.png');
+            background-image: url('/clouds/back_1_proc-min.png');
             opacity: 0.3;
             z-index: 2;
           }
 
           #cloud5 {
-            background-image: url('/clouds/back_4_proc.png');
+            background-image: url('/clouds/back_4_proc-min.png');
             opacity: 0.3;
             z-index: 3;
           }
 
           #cloud6 {
-            background-image: url('/clouds/back_3_proc.png');
+            background-image: url('/clouds/back_3_proc-min.png');
             opacity: 0.3;
             z-index: 1;
           }
