@@ -58,8 +58,16 @@ export default function WelcomeScreen() {
     
     const baseLayerIndex = layerIndex % 3;
     
-    const moveX = mousePosition.x * (5 + baseLayerIndex * 3); 
-    const moveY = mousePosition.y * (5 + baseLayerIndex * 3);
+    let moveX = mousePosition.x * (5 + baseLayerIndex * 3);
+    let moveY = mousePosition.y * (5 + baseLayerIndex * 3);
+    
+    if (layerIndex % 2 === 1) {
+      moveX = -moveX;
+    }
+    
+    if (layerIndex % 3 === 0) {
+      moveY = -moveY * 0.7;
+    }
     
     return `translate(${moveX}px, ${moveY}px) scale(${zoomFactor})`;
   };
