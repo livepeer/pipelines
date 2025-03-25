@@ -86,7 +86,7 @@ export default function Personas() {
           type="text"
           value={customPersona}
           onChange={e => setCustomPersona(e.target.value)}
-          placeholder="Please specify your persona"
+          placeholder="Tell us more about you!"
           className="w-full p-3 rounded-md border border-[#D2D2D2] font-inter text-[15px] focus:outline-none focus:ring-2 focus:ring-[#95B4BE]"
           required
         />
