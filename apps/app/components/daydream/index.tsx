@@ -63,8 +63,11 @@ function DaydreamRenderer() {
     const checkPermissions = async () => {
       try {
         if ("permissions" in navigator) {
-          const hasVisited = localStorage.getItem(
+          const hasVisitedMainPage = localStorage.getItem(
             `hasSeenLandingPage-${user?.id}`,
+          );
+          const hasVisitedSelectPrompt = localStorage.getItem(
+            `hasSeenSelectPrompt-${user?.id}`,
           );
           const cameraPermission = await navigator.permissions.query({
             name: "camera" as PermissionName,
@@ -72,8 +75,11 @@ function DaydreamRenderer() {
 
           if (cameraPermission.state === "granted") {
             setCameraPermission("granted");
-            if (hasVisited) {
+            if (hasVisitedMainPage) {
               setCurrentStep("main");
+            } else if (hasVisitedSelectPrompt) {
+              // If the user has visited the select prompt and not the main page, user is still in onboarding
+              setCurrentStep("prompt");
             }
           }
         }

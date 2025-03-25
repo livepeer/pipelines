@@ -4,6 +4,7 @@ import useScrollView from "@/hooks/useScrollView";
 import { useEffect } from "react";
 import track from "@/lib/track";
 import { usePrivy } from "@privy-io/react-auth";
+import useMount from "@/hooks/useMount";
 
 interface PromptOption {
   id: string;
@@ -47,6 +48,10 @@ export default function SelectPrompt() {
     useOnboard();
   const componentRef = useScrollView(currentStep === "prompt");
   const { user } = usePrivy();
+
+  useMount(() => {
+    localStorage.setItem(`hasSeenSelectPrompt-${user?.id}`, "true");
+  });
 
   useEffect(() => {
     if (currentStep === "prompt") {
