@@ -605,22 +605,31 @@ export default function Dreamshaper({
           )}
 
           {/* Go full screen */}
-          <TrackedButton
-            trackingEvent="daydream_fullscreen_button_clicked"
-            trackingProperties={{
-              is_authenticated: authenticated,
-            }}
-            variant="ghost"
-            size="icon"
-            className="absolute top-4 right-4 z-50 bg-transparent hover:bg-transparent focus:outline-none focus-visible:ring-0 active:bg-transparent"
-            onClick={toggleFullscreen}
-          >
-            {isFullscreen ? (
-              <Minimize className="h-4 w-4" />
-            ) : (
-              <Maximize className="h-4 w-4" />
-            )}
-          </TrackedButton>
+          <Tooltip delayDuration={0}>
+            <TooltipTrigger asChild>
+              <div className="absolute top-4 right-4 z-50">
+                <TrackedButton
+                  trackingEvent="daydream_fullscreen_button_clicked"
+                  trackingProperties={{
+                    is_authenticated: authenticated,
+                  }}
+                  variant="ghost"
+                  size="icon"
+                  className="bg-transparent hover:bg-transparent focus:outline-none focus-visible:ring-0 active:bg-transparent"
+                  onClick={toggleFullscreen}
+                >
+                  {isFullscreen ? (
+                    <Minimize className="h-4 w-4" />
+                  ) : (
+                    <Maximize className="h-4 w-4" />
+                  )}
+                </TrackedButton>
+              </div>
+            </TooltipTrigger>
+            <TooltipContent side="top" sideOffset={5} className="bg-white text-black border border-gray-200 shadow-md dark:bg-zinc-900 dark:text-white dark:border-zinc-700">
+              {isFullscreen ? "Exit fullscreen" : "Expand screen"}
+            </TooltipContent>
+          </Tooltip>
 
           {/* Live indicator*/}
           {live && (
@@ -726,28 +735,35 @@ export default function Dreamshaper({
             >
               <span>{lastSubmittedPrompt || PROMPT_PLACEHOLDER}</span>
               {isInputHovered && lastSubmittedPrompt && (
-                <button
-                  onClick={e => {
-                    e.stopPropagation();
-                    restoreLastPrompt();
-                  }}
-                  className="ml-2 text-muted-foreground hover:text-foreground transition-colors flex items-center justify-center relative z-20"
-                  aria-label="Restore last prompt"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="h-3.5 w-3.5"
-                  >
-                    <path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-                    <path d="m15 5 4 4" />
-                  </svg>
-                </button>
+                <Tooltip delayDuration={0}>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={e => {
+                        e.stopPropagation();
+                        restoreLastPrompt();
+                      }}
+                      className="ml-2 text-muted-foreground hover:text-foreground transition-colors flex items-center justify-center relative z-20"
+                      aria-label="Restore last prompt"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="h-3.5 w-3.5"
+                      >
+                        <path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                        <path d="m15 5 4 4" />
+                      </svg>
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" sideOffset={5} className="bg-white text-black border border-gray-200 shadow-md dark:bg-zinc-900 dark:text-white dark:border-zinc-700">
+                    Edit prompt
+                  </TooltipContent>
+                </Tooltip>
               )}
             </div>
           )}
@@ -852,17 +868,24 @@ export default function Dreamshaper({
         {/* Settings button */}
         {!isMobile && (
           <div className="relative">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 rounded-full hidden md:flex"
-              onClick={e => {
-                e.preventDefault();
-                setSettingsOpen(!settingsOpen);
-              }}
-            >
-              <SlidersHorizontal className="h-4 w-4 text-muted-foreground" />
-            </Button>
+            <Tooltip delayDuration={50}>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 rounded-full hidden md:flex"
+                  onClick={e => {
+                    e.preventDefault();
+                    setSettingsOpen(!settingsOpen);
+                  }}
+                >
+                  <SlidersHorizontal className="h-4 w-4 text-muted-foreground" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="bg-white text-black border border-gray-200 shadow-md dark:bg-zinc-900 dark:text-white dark:border-zinc-700">
+                Adjustments
+              </TooltipContent>
+            </Tooltip>
 
             {settingsOpen && (
               <SettingsMenu
@@ -877,30 +900,34 @@ export default function Dreamshaper({
 
         {!isMobile && <Separator orientation="vertical" className="h-6 mr-2" />}
 
-        <Tooltip>
+        <Tooltip delayDuration={50}>
           <TooltipTrigger asChild>
-            <Button
-              disabled={
-                updating || !inputValue || profanity || exceedsMaxLength
-              }
-              onClick={e => {
-                e.preventDefault();
-                submitPrompt();
-              }}
-              className={cn(
-                "border-none w-36 items-center justify-center font-semibold text-xs bg-[#00EB88] flex",
-                updating && "bg-muted text-muted-foreground",
-                isMobile ? "w-12 rounded-lg" : "w-12 rounded-lg",
-              )}
-            >
-              {updating ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Send className="h-4 w-4 stroke-[3]" />
-              )}
-            </Button>
+            <div className="relative inline-block">
+              <Button
+                disabled={
+                  updating || !inputValue || profanity || exceedsMaxLength
+                }
+                onClick={e => {
+                  e.preventDefault();
+                  submitPrompt();
+                }}
+                className={cn(
+                  "border-none w-36 items-center justify-center font-semibold text-xs bg-[#00EB88] flex",
+                  updating && "bg-muted text-muted-foreground",
+                  isMobile ? "w-12 rounded-lg" : "w-12 rounded-lg",
+                )}
+              >
+                {updating ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Send className="h-4 w-4 stroke-[3]" />
+                )}
+              </Button>
+            </div>
           </TooltipTrigger>
-          <TooltipContent>Press Enter</TooltipContent>
+          <TooltipContent side="top" className="bg-white text-black border border-gray-200 shadow-md dark:bg-zinc-900 dark:text-white dark:border-zinc-700">
+            Prompt <span className="text-gray-400 dark:text-gray-500">Enter</span>
+          </TooltipContent>
         </Tooltip>
 
         {(profanity || exceedsMaxLength) && (
