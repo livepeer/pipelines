@@ -54,12 +54,12 @@ export default function WelcomeScreen() {
   }
 
   const getCloudTransform = (layerIndex: number) => {
-    const zoomFactor = 1 + stepIndex * (0.02 + layerIndex * 0.01);
+    const zoomFactor = 1 + stepIndex * (0.05 + layerIndex * 0.02);
     
     const baseLayerIndex = layerIndex % 3;
     
-    let moveX = mousePosition.x * (5 + baseLayerIndex * 3);
-    let moveY = mousePosition.y * (5 + baseLayerIndex * 3);
+    let moveX = mousePosition.x * (2 + baseLayerIndex * 1.5);
+    let moveY = mousePosition.y * (2 + baseLayerIndex * 1.5);
     
     if (layerIndex % 2 === 1) {
       moveX = -moveX;
@@ -69,7 +69,10 @@ export default function WelcomeScreen() {
       moveY = -moveY * 0.7;
     }
     
-    return `translate(${moveX}px, ${moveY}px) scale(${zoomFactor})`;
+    const stepShiftX = layerIndex % 2 === 0 ? stepIndex * 1.5 : stepIndex * -1.5;
+    const stepShiftY = layerIndex % 3 === 0 ? stepIndex * 1 : stepIndex * -0.5;
+    
+    return `translate(${moveX + stepShiftX}px, ${moveY + stepShiftY}px) scale(${zoomFactor})`;
   };
 
   return (
