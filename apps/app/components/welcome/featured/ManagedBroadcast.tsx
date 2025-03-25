@@ -45,21 +45,46 @@ export function ManagedBroadcast({
         });
       };
 
-      updatePlayerPosition();
+      const broadcastPositioning = () => {
+        updatePlayerPosition();
+        
+        const delays = [50, 100, 300, 500, 1000];
+        const timeouts = delays.map(delay => 
+          setTimeout(updatePlayerPosition, delay)
+        );
+        
+        return () => timeouts.forEach(clearTimeout);
+      };
+      
+      const cleanupInitialPositioning = broadcastPositioning();
 
       window.addEventListener("resize", updatePlayerPosition);
       window.addEventListener("scroll", updatePlayerPosition);
+      document.addEventListener("DOMContentLoaded", updatePlayerPosition);
+      window.addEventListener("load", updatePlayerPosition);
 
       const resizeObserver = new ResizeObserver(() => {
         updatePlayerPosition();
       });
 
       resizeObserver.observe(outputPlayerRef.current);
+      
+      const bodyObserver = new MutationObserver(updatePlayerPosition);
+      bodyObserver.observe(document.body, { 
+        childList: true, 
+        subtree: true,
+        attributes: true,
+        attributeFilter: ['class', 'style']
+      });
 
       return () => {
+        cleanupInitialPositioning();
         window.removeEventListener("resize", updatePlayerPosition);
         window.removeEventListener("scroll", updatePlayerPosition);
+        document.removeEventListener("DOMContentLoaded", updatePlayerPosition);
+        window.removeEventListener("load", updatePlayerPosition);
         resizeObserver.disconnect();
+        bodyObserver.disconnect();
       };
     }
   }, [isMobile, outputPlayerRef]);
