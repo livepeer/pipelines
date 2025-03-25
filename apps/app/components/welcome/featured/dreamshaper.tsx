@@ -24,7 +24,7 @@ import {
   Loader2,
   Maximize,
   Minimize,
-  Send,
+  WandSparkles,
   Share,
   Share2,
   SlidersHorizontal,
@@ -664,12 +664,11 @@ export default function Dreamshaper({
                   streamId={streamId as string}
                   pipelineId={pipeline.id}
                   pipelineType={pipeline.type}
+                  isFullscreen={isFullscreen}
                 />
-                {/* Overlay */}
-                <div className="absolute inset-x-0 top-0 h-[85%] bg-transparent" />
               </div>
               {!live || showOverlay ? (
-                <div className="absolute inset-0 bg-black flex flex-col items-center justify-center rounded-2xl">
+                <div className="absolute inset-0 bg-black flex flex-col items-center justify-center rounded-2xl z-[6]">
                   <Loader2 className="h-8 w-8 animate-spin text-white" />
                   {statusMessage && (
                     <span className="mt-4 text-white text-sm">
@@ -912,15 +911,14 @@ export default function Dreamshaper({
                   submitPrompt();
                 }}
                 className={cn(
-                  "border-none w-36 items-center justify-center font-semibold text-xs bg-[#00EB88] flex",
-                  updating && "bg-muted text-muted-foreground",
-                  isMobile ? "w-12 rounded-lg" : "w-12 rounded-lg",
+                  "border-none items-center justify-center font-semibold text-xs bg-[#000000] flex disabled:bg-[#000000] disabled:opacity-80",
+                  isMobile ? "w-auto h-9 aspect-square rounded-md" : "w-auto h-9 aspect-square rounded-md",
                 )}
               >
                 {updating ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
-                  <Send className="h-4 w-4 stroke-[3]" />
+                  <WandSparkles className="h-4 w-4 stroke-[2]" />
                 )}
               </Button>
             </div>
