@@ -1,5 +1,6 @@
 "use client";
 
+// Remove the invalid declaration
 import { sendKafkaEvent } from "@/app/api/metrics/kafka";
 import { getStreamPlaybackInfo } from "@/app/api/streams/get";
 import { LPPLayer } from "@/components/playground/player";
@@ -19,6 +20,19 @@ import { PlaybackInfo } from "livepeer/models/components";
 import { useSearchParams } from "next/navigation";
 import * as React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import dynamic from 'next/dynamic';
+
+const VideoJSPlayer = dynamic(() => import("./videojs-player"), { 
+  ssr: false,
+  loading: () => (
+    <div className="w-full relative h-full bg-black/50 backdrop-blur">
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+        <LoadingIcon className="w-8 h-8 animate-spin" />
+      </div>
+      <PlayerLoading />
+    </div>
+  )
+});
 
 const MAX_RETRIES = 10;
 const MAX_DELAY = 5000;
@@ -83,9 +97,10 @@ export const LivepeerPlayer = React.memo(
     const debugMode = searchParams.get("debugMode") === "true";
     const iframePlayerFallback =
       process.env.NEXT_PUBLIC_IFRAME_PLAYER_FALLBACK === "true";
+    const useVideoJS = searchParams.get("livepeerPlayer") !== "true";
 
     useEffect(() => {
-      if (useMediamtx || iframePlayerFallback) {
+      if (useMediamtx || iframePlayerFallback || useVideoJS) {
         return;
       }
       const fetchPlaybackInfo = async () => {
@@ -93,7 +108,7 @@ export const LivepeerPlayer = React.memo(
         setPlaybackInfo(info);
       };
       fetchPlaybackInfo();
-    }, [playbackId, useMediamtx, iframePlayerFallback]);
+    }, [playbackId, useMediamtx, iframePlayerFallback, useVideoJS]);
 
     if (iframePlayerFallback) {
       return (
@@ -101,6 +116,19 @@ export const LivepeerPlayer = React.memo(
           output_playback_id={playbackId}
           stream_key={stream_key || null}
           isMobile={isMobile}
+        />
+      );
+    }
+
+    if (useVideoJS) {
+      return (
+        <VideoJSPlayer 
+          src={playerUrl}
+          isMobile={isMobile}
+          playbackId={playbackId}
+          streamId={streamId}
+          pipelineId={pipelineId}
+          pipelineType={pipelineType}
         />
       );
     }
