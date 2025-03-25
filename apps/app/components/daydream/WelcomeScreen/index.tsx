@@ -42,7 +42,7 @@ export default function WelcomeScreen() {
         >
           <div className="flex flex-col gap-[24px] py-[12px]">
             <div className="flex flex-col w-full gap-[8px]">
-              <h1 className="font-playfair font-bold text-[30px] sm:text-[45px] md:text-[64px] leading-[1.2em] text-[#1C1C1C]">
+              <h1 className="font-playfair font-bold text-[30px] sm:text-[45px] lg:text-[64px] leading-[1.2em] text-[#1C1C1C]">
                 Welcome to Daydream
               </h1>
 
