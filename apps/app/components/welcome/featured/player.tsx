@@ -68,9 +68,11 @@ export const LivepeerPlayer = React.memo(
         console.log("Switching to VideoJS fallback player for playbackId:", playbackId);
       }
     }, [useFallbackVideoJSPlayer, playbackId]);
-
+    
     const handleError = useCallback(
       (error: any) => {
+        console.log("Livepeer player error received:", JSON.stringify(error, null, 2));
+        
         if (error?.message?.includes("Failed to connect to peer")) {
           console.log("Livepeer player error: Failed to connect to peer. Switching to VideoJS fallback player.");
           setUseFallbackPlayer(true);
@@ -91,6 +93,14 @@ export const LivepeerPlayer = React.memo(
     const iframePlayerFallback =
       process.env.NEXT_PUBLIC_IFRAME_PLAYER_FALLBACK === "true";
     const useVideoJS = searchParams.get("videoJS") === "true" || useFallbackVideoJSPlayer;
+
+    useEffect(() => {
+      console.log("Current state:", { 
+        useVideoJS, 
+        useFallbackVideoJSPlayer, 
+        src: getSrc(useMediamtx ? playerUrl : playbackInfo)
+      });
+    }, [useVideoJS, useFallbackVideoJSPlayer, useMediamtx, playerUrl, playbackInfo]);
 
     useEffect(() => {
       if (useMediamtx || iframePlayerFallback || useVideoJS) {
@@ -380,3 +390,4 @@ const DebugTimer = (
     </div>
   );
 };
+
