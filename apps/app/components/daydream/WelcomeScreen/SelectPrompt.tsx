@@ -6,6 +6,7 @@ import track from "@/lib/track";
 import { usePrivy } from "@privy-io/react-auth";
 import useMount from "@/hooks/useMount";
 import { Separator } from "@repo/design-system/components/ui/separator";
+import { InfoIcon } from "lucide-react";
 
 interface PromptOption {
   id: string;
@@ -122,11 +123,14 @@ export default function SelectPrompt() {
                     className="object-cover"
                     priority
                   />
-                  <div className="absolute bottom-0 left-0 right-0 py-4 bg-[rgba(28,28,28,0.25)] backdrop-blur-[24px] flex flex-col items-center justify-center gap-1">
-                    <p className="font-inter font-semibold text-[12px] sm:text-[14px] leading-[1em] tracking-[-1.1%] text-[#EDEDED] text-center">
-                      {option.title}
-                    </p>
-                    <p className="group-hover:opacity-100 group-hover:block transition-opacity duration-300 hidden font-mono text-[10px] leading-[1em] text-[#EDEDED] text-center opacity-75 px-2">
+                  <div className="absolute bottom-0 left-0 right-0 py-2 group-hover:py-4 bg-[rgba(28,28,28,0.25)] backdrop-blur-[24px] flex flex-col items-center justify-center gap-1 transition-all duration-300 ease-out">
+                    <div className="flex items-center gap-2">
+                      <p className="font-inter font-semibold text-[12px] sm:text-[14px] leading-[1em] tracking-[-1.1%] text-[#EDEDED] text-center">
+                        {option.title}
+                      </p>
+                      <InfoIcon className="w-3 h-3 hidden sm:block text-[#EDEDED]" />
+                    </div>
+                    <p className="font-mono text-[8px] sm:text-[10px] leading-[1em] text-[#EDEDED] text-center h-0 group-hover:h-[2em] opacity-0 group-hover:opacity-75 overflow-hidden transition-all duration-300 ease-out px-2">
                       {option.prompt}
                     </p>
                   </div>
