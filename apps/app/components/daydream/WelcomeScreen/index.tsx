@@ -8,6 +8,7 @@ import { useOnboard } from "../OnboardContext";
 import SelectPrompt from "./SelectPrompt";
 import LayoutWrapper from "../LayoutWrapper";
 import useMount from "@/hooks/useMount";
+import useCloudAnimation from "@/hooks/useCloudAnimation";
 import { useTheme } from "next-themes";
 import { cn } from "@repo/design-system/lib/utils";
 import { useRef, useState, useEffect } from "react";
@@ -15,28 +16,10 @@ import { useRef, useState, useEffect } from "react";
 export default function WelcomeScreen() {
   const { currentStep, isFadingOut } = useOnboard();
   const { setTheme } = useTheme();
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const containerRef = useRef<HTMLDivElement>(null);
 
   useMount(() => {
     setTheme("light");
   });
-
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      if (containerRef.current) {
-        const rect = containerRef.current.getBoundingClientRect();
-        const x = ((e.clientX - rect.left) / rect.width - 0.5) * 4; // -1 to 1
-        const y = ((e.clientY - rect.top) / rect.height - 0.5) * 4; // -1 to 1
-        setMousePosition({ x, y });
-      }
-    };
-
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-    };
-  }, []);
 
   const getStepIndex = () => {
     switch (currentStep) {
@@ -48,32 +31,11 @@ export default function WelcomeScreen() {
   };
 
   const stepIndex = getStepIndex();
+  const { containerRef, getCloudTransform } = useCloudAnimation(stepIndex);
 
   if (currentStep === "main") {
     return null;
   }
-
-  const getCloudTransform = (layerIndex: number) => {
-    const zoomFactor = 1 + stepIndex * (0.05 + layerIndex * 0.02);
-    
-    const baseLayerIndex = layerIndex % 3;
-    
-    let moveX = mousePosition.x * (2 + baseLayerIndex * 1.5);
-    let moveY = mousePosition.y * (2 + baseLayerIndex * 1.5);
-    
-    if (layerIndex % 2 === 1) {
-      moveX = -moveX;
-    }
-    
-    if (layerIndex % 3 === 0) {
-      moveY = -moveY * 0.7;
-    }
-    
-    const stepShiftX = layerIndex % 2 === 0 ? stepIndex * 1.5 : stepIndex * -1.5;
-    const stepShiftY = layerIndex % 3 === 0 ? stepIndex * 1 : stepIndex * -0.5;
-    
-    return `translate(${moveX + stepShiftX}px, ${moveY + stepShiftY}px) scale(${zoomFactor})`;
-  };
 
   return (
     <LayoutWrapper>
@@ -131,66 +93,6 @@ export default function WelcomeScreen() {
           </div>
         </div>
         <Footer isFadingOut={isFadingOut} />
-
-        <style jsx>{`
-          .cloud-container {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            background-color: #e0f0ff;
-            overflow: hidden;
-          }
-          
-          .cloud-layer {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            transition: transform 2s ease-out;
-            will-change: transform;
-          }
-          
-          #cloud1 {
-            background-image: url('/clouds/back_1-min.png');
-            opacity: 0.5;
-            z-index: 1;
-          }
-          
-          #cloud2 {
-            background-image: url('/clouds/back_2-min.png');
-            opacity: 0.5;
-            z-index: 2;
-          }
-          
-          #cloud3 {
-            background-image: url('/clouds/back_3-min.png');
-            opacity: 0.5;
-            z-index: 4;
-          }
-          
-          #cloud4 {
-            background-image: url('/clouds/back_1_proc-min.png');
-            opacity: 0.3;
-            z-index: 2;
-          }
-
-          #cloud5 {
-            background-image: url('/clouds/back_4_proc-min.png');
-            opacity: 0.3;
-            z-index: 3;
-          }
-
-          #cloud6 {
-            background-image: url('/clouds/back_3_proc-min.png');
-            opacity: 0.3;
-            z-index: 1;
-          }
-          
-        `}</style>
       </div>
     </LayoutWrapper>
   );
