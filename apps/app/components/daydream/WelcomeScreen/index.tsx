@@ -43,16 +43,15 @@ export default function WelcomeScreen() {
 
   return (
     <LayoutWrapper>
-      <div
-        ref={containerRef}
-        className="min-h-screen flex flex-col items-center justify-center relative overflow-y-auto"
-      >
+      <div className="fixed top-0 left-0 w-full h-screen z-0">
+        {/* Cloud container */}
         <div
           className={cn(
-            "cloud-container absolute inset-0 z-0",
+            "cloud-container absolute inset-0 w-full h-full",
             isFadingOut ? "opacity-0" : "opacity-100",
             "transition-opacity duration-1000",
           )}
+          ref={containerRef}
         >
           <div
             className="cloud-layer"
@@ -86,6 +85,11 @@ export default function WelcomeScreen() {
           ></div>
           <div className="bg-gradient-to-b from-transparent to-[rgba(0,0,0,0.2)] absolute inset-0 z-[7] opacity-[55%]"></div>
         </div>
+      </div>
+      
+      <div
+        className="min-h-screen flex flex-col items-center justify-center relative overflow-y-auto"
+      >
         <div
           className={cn(
             "h-[fit-content] z-10 relative bg-[#EDEDED] p-[16px] sm:p-[24px] sm:pb-4 md:p-[56px] md:pb-6 rounded-[23px] w-[90%] sm:w-[80%] md:max-w-[812px]",
