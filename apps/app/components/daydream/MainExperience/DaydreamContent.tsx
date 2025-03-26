@@ -2,7 +2,7 @@
 
 import ClientSideTracker from "@/components/analytics/ClientSideTracker";
 import Dreamshaper from "@/components/welcome/featured/dreamshaper";
-import { ReactElement, useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useDreamshaper } from "@/components/welcome/featured/useDreamshaper";
 import { useStreamStatus } from "@/hooks/useStreamStatus";
 import { useOnboard } from "../OnboardContext";

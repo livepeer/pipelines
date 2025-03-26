@@ -1,6 +1,10 @@
 import LivepeerLogo from "../LivepeerLogo";
 
-export default function Footer() {
+export default function Footer({ isFadingOut }: { isFadingOut: boolean }) {
+  if (isFadingOut) {
+    return null;
+  }
+
   return (
     <>
       <div className="absolute bottom-0 left-0 right-0 w-full bg-white backdrop-blur-lg opacity-25 h-12 flex items-center justify-center gap-2"></div>
