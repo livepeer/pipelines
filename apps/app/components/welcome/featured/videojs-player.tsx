@@ -133,6 +133,10 @@ const VideoJSStyles = () => (
     .video-js .vjs-picture-in-picture-control {
       display: none;
     }
+
+    .vjs-modal-dialog-content {
+      display: none !important;
+    }
   `}</style>
 );
 
