@@ -8,12 +8,14 @@ import EmailLoginButton from "./EmailLoginButton";
 import { cn } from "@repo/design-system/lib/utils";
 import { useIsMobile } from "@repo/design-system/hooks/use-mobile";
 import useMount from "@/hooks/useMount";
+import useCloudAnimation from "@/hooks/useCloudAnimation";
 import { useTheme } from "next-themes";
 import LivepeerLogo from "../LivepeerLogo";
 import { Loader2 } from "lucide-react";
 import { useAuth } from "./AuthContext";
 import { useEffect } from "react";
 import track from "@/lib/track";
+
 export default function LoginScreen({
   isOAuthSuccessRedirect,
 }: {
@@ -22,6 +24,7 @@ export default function LoginScreen({
   const isMobile = useIsMobile();
   const { setTheme } = useTheme();
   const { oAuthState } = useAuth();
+  const { containerRef, getCloudTransform } = useCloudAnimation(0);
 
   useMount(() => {
     setTheme("light");
@@ -38,20 +41,50 @@ export default function LoginScreen({
       </div>
     );
   }
+
   useEffect(() => {
     track("daydream_login_viewed");
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col-reverse sm:flex-row relative w-full h-[100vh] overflow-auto">
-      <Image
-        src="/background.png"
-        alt="Background"
-        fill
-        priority
-        className="object-cover object-right-top z-0"
-        quality={100}
-      />
+    <div
+      ref={containerRef}
+      className="min-h-screen flex flex-col-reverse sm:flex-row relative w-full h-[100vh] overflow-auto"
+    >
+      {/* Cloud background */}
+      <div className="cloud-container absolute inset-0 z-0">
+        <div
+          className="cloud-layer"
+          id="cloud1"
+          style={{ transform: getCloudTransform(0) }}
+        ></div>
+        <div
+          className="cloud-layer"
+          id="cloud2"
+          style={{ transform: getCloudTransform(1) }}
+        ></div>
+        <div
+          className="cloud-layer"
+          id="cloud3"
+          style={{ transform: getCloudTransform(2) }}
+        ></div>
+        <div
+          className="cloud-layer"
+          id="cloud4"
+          style={{ transform: getCloudTransform(3) }}
+        ></div>
+        <div
+          className="cloud-layer"
+          id="cloud5"
+          style={{ transform: getCloudTransform(4) }}
+        ></div>
+        <div
+          className="cloud-layer"
+          id="cloud6"
+          style={{ transform: getCloudTransform(5) }}
+        ></div>
+        <div className="bg-gradient-to-b from-transparent to-[rgba(0,0,0,0.2)] absolute inset-0 z-[7] opacity-[55%]"></div>
+      </div>
 
       {/* Login container */}
       <div className="z-10 relative bg-white h-[55vh] sm:h-full p-[40px] sm:p-[60px] rounded-t-[20px] sm:rounded-none w-full sm:w-1/2 shadow-lg flex flex-col items-center justify-center">
