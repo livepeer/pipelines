@@ -61,7 +61,8 @@ export const LivepeerPlayer = React.memo(
     const [playbackInfo, setPlaybackInfo] = useState<PlaybackInfo | null>(null);
     const [key, setKey] = useState(0);
     const [useFallbackVideoJSPlayer, setUseFallbackPlayer] = useState(false);
-
+    const lastErrorTimeRef = useRef<number | null>(null);
+    
     useEffect(() => {
       if (useFallbackVideoJSPlayer) {
         console.warn("Switching to VideoJS fallback player for playbackId:", playbackId);
@@ -70,15 +71,34 @@ export const LivepeerPlayer = React.memo(
     
     const handleError = useCallback(
       (error: any) => {
+        console.warn("Livepeer player error:", error?.message || error);
+        
+        const currentTime = Date.now();
+        lastErrorTimeRef.current = currentTime;
+        
         if (error?.message?.includes("Failed to connect to peer")) {
           console.warn("Livepeer player error: Failed to connect to peer. Switching to VideoJS fallback player.");
           setUseFallbackPlayer(true);
-        } else if (error) {
-          // We don't switch to fallback for non connection errors
+          return;
         }
       },
       [],
     );
+
+    useEffect(() => {
+      if (useFallbackVideoJSPlayer || !lastErrorTimeRef.current) return;
+      
+      const checkInterval = setInterval(() => {
+        const currentTime = Date.now();
+        if (lastErrorTimeRef.current && (currentTime - lastErrorTimeRef.current > 10000)) {
+          console.warn("No errors since 10 seconds. Switching to VideoJS fallback player.");
+          setUseFallbackPlayer(true);
+          clearInterval(checkInterval);
+        }
+      }, 1000);
+      
+      return () => clearInterval(checkInterval);
+    }, [useFallbackVideoJSPlayer]);
 
     const playerUrl = `${appConfig.whipUrl}${appConfig?.whipUrl?.endsWith("/") ? "" : "/"}${stream_key}-out/whep`;
 
