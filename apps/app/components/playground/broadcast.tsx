@@ -29,6 +29,7 @@ import { toast } from "sonner";
 
 import { sendKafkaEvent } from "@/app/api/metrics/kafka";
 import { usePrivy } from "@privy-io/react-auth";
+import { hostname } from "os";
 
 const StatusMonitor = ({
   streamId,
@@ -49,7 +50,7 @@ const StatusMonitor = ({
       liveEventSentRef.current = true;
 
       const sendEvent = async () => {
-        await sendKafkaEvent(
+        const result = await sendKafkaEvent(
           "stream_trace",
           {
             type: "app_start_broadcast_stream",
@@ -59,6 +60,7 @@ const StatusMonitor = ({
             stream_id: streamId,
             pipeline: pipelineType,
             pipeline_id: pipelineId,
+            hostname: window.location.hostname,
             broadcaster_info: {
               ip: "",
               user_agent: navigator.userAgent,
@@ -69,6 +71,7 @@ const StatusMonitor = ({
           "daydream",
           "server",
         );
+        console.log("sendKafkaEvent result", result);
       };
 
       sendEvent();

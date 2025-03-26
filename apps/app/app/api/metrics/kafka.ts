@@ -26,8 +26,8 @@ export async function sendKafkaEvent(
   app: string,
   host: string,
 ) {
-  if (process.env.DISABLE_ANALYTICS) {
-    return;
+  if (process.env.DISABLE_ANALYTICS  === "true") {
+    return "Analytics disabled";
   }
   const config = await serverConfig();
   const kafkaConfig = config.kafka;
@@ -37,7 +37,7 @@ export async function sendKafkaEvent(
     !kafkaConfig?.password
   ) {
     console.log("[Kafka Event] Missing configuration, aborting event send");
-    return;
+    return "Missing configuration";
   }
 
   const kafka = new Kafka({
@@ -92,4 +92,5 @@ export async function sendKafkaEvent(
     await producer.disconnect();
     console.log("[Kafka Event] Producer disconnected");
   }
+  return "Event sent successfully";
 }
