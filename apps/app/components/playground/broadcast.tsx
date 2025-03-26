@@ -50,7 +50,7 @@ const StatusMonitor = ({
       liveEventSentRef.current = true;
 
       const sendEvent = async () => {
-        const result = await sendKafkaEvent(
+        await sendKafkaEvent(
           "stream_trace",
           {
             type: "app_start_broadcast_stream",
@@ -71,7 +71,6 @@ const StatusMonitor = ({
           "daydream",
           "server",
         );
-        console.log("sendKafkaEvent result", result);
       };
 
       sendEvent();

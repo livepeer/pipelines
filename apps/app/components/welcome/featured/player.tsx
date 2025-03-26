@@ -291,7 +291,7 @@ const useFirstFrameLoaded = ({
   // Send event on load
   useEffect(() => {
     const sendEvent = async () => {
-      const result = await sendKafkaEvent(
+      await sendKafkaEvent(
         "stream_trace",
         {
           type: "app_send_stream_request",
@@ -314,7 +314,6 @@ const useFirstFrameLoaded = ({
         "daydream",
         "server",
       );
-      console.log("sendKafkaEvent result", result);
     };
     sendEvent();
   }, []);

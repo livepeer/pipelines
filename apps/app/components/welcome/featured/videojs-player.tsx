@@ -211,7 +211,7 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
 
   useEffect(() => {
     const sendInitialEvent = async () => {
-      const result = await sendKafkaEvent(
+      await sendKafkaEvent(
         "stream_trace",
         {
           type: "app_send_stream_request",
@@ -233,7 +233,6 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
         "daydream",
         "server",
       );
-      console.log("sendKafkaEvent result app_send_stream_request", result);
     };
     sendInitialEvent();
   }, [playbackId, streamId, pipelineId, pipelineType, user]);
@@ -243,7 +242,7 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
     setFirstFrameTime(((currentTime - startTimeRef.current) / 1000).toFixed(2));
 
     const sendFirstFrameEvent = async () => {
-      const result = await sendKafkaEvent(
+      await sendKafkaEvent(
         "stream_trace",
         {
           type: "app_receive_first_segment",
@@ -265,7 +264,6 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
         "daydream",
         "server",
       );
-      console.log(`sendKafkaEvent result app_receive_first_segment `, result);
     };
     sendFirstFrameEvent();
   };
