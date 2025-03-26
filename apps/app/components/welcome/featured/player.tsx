@@ -61,7 +61,7 @@ export const LivepeerPlayer = React.memo(
     const [playbackInfo, setPlaybackInfo] = useState<PlaybackInfo | null>(null);
     const [retryCount, setRetryCount] = useState(0);
     const [key, setKey] = useState(0);
-    const [useFallbackVideoJSPlayer, setUseFallbackPlayer] = useState(false);
+    const [useFallbackVideoJSPlayer, setUseFallbackPlayer] = useState(true);
 
     const handleError = useCallback(
       (error: any) => {

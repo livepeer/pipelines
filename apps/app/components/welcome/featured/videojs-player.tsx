@@ -70,9 +70,11 @@ const VideoJSStyles = () => (
     }
     
     .video-js .vjs-control-bar {
-      background: linear-gradient(to top, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.3) 80%, rgba(0, 0, 0, 0.2) 100%);
+      background: linear-gradient(to top, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.3) 60%, rgba(0, 0, 0, 0) 100%);
       height: 3em;
       padding: 0 10px;
+      display: flex;
+      justify-content: space-between;
     }
     
     .video-js .vjs-big-play-button {
@@ -102,36 +104,30 @@ const VideoJSStyles = () => (
       text-shadow: none;
     }
     
-    .video-js .vjs-progress-control:hover .vjs-progress-holder {
-      font-size: 1.2em;
+    /* Hide progress control (seekbar) */
+    .video-js .vjs-progress-control {
+      display: none !important;
     }
     
-    .video-js .vjs-progress-holder {
-      height: 0.3em;
-      margin: 0;
+    /* Hide time display */
+    .video-js .vjs-time-control {
+      display: none !important;
     }
     
-    .video-js .vjs-play-progress {
-      background-color: white;
+    /* Hide LIVE indicator */
+    .video-js .vjs-live-control {
+      display: none !important;
     }
     
-    .video-js .vjs-progress-holder .vjs-load-progress,
-    .video-js .vjs-progress-holder .vjs-load-progress div {
-      background: rgba(255, 255, 255, 0.3);
+    /* Position fullscreen button on the far right */
+    .video-js .vjs-fullscreen-control {
+      margin-left: auto;
+      order: 99;
     }
     
-    .video-js .vjs-time-tooltip {
-      background-color: rgba(0, 0, 0, 0.7);
-    }
-    
-    .vjs-live .vjs-progress-control {
-      display: flex !important;
-    }
-    
-    .video-js.vjs-live .vjs-time-control.vjs-current-time,
-    .video-js.vjs-live .vjs-time-control.vjs-duration,
-    .video-js.vjs-live .vjs-time-control.vjs-time-divider {
-      display: block;
+    /* Hide any other controls except volume and fullscreen */
+    .video-js .vjs-control:not(.vjs-volume-panel):not(.vjs-fullscreen-control):not(.vjs-mute-control) {
+      display: none !important;
     }
     
     .video-js .vjs-picture-in-picture-control {
