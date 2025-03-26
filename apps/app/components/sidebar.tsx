@@ -156,7 +156,7 @@ export const GlobalSidebar = ({ children }: GlobalSidebarProperties) => {
 
   return (
     <>
-      <Sidebar collapsible="icon" className="bg-sidebar">
+      <Sidebar collapsible="icon">
         <SidebarHeader>
           <Link
             href="/"
