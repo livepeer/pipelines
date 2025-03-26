@@ -87,11 +87,11 @@ export default function LoginScreen({
       </div>
 
       {/* Login container */}
-      <div className="z-10 relative bg-white h-[55vh] sm:h-full p-[40px] sm:p-[60px] rounded-t-[20px] sm:rounded-none w-full sm:w-1/2 shadow-lg flex flex-col items-center justify-center">
+      <div className="z-10 relative bg-white h-[55vh] sm:h-full p-6 rounded-t-[20px] sm:rounded-none w-full sm:w-1/2 shadow-lg flex flex-col items-center justify-center">
         <h1
           className={cn(
             "font-inter text-lg md:text-xl flex flex-col uppercase font-light",
-            !isMobile && "absolute top-9 left-9",
+            !isMobile && "absolute top-10 left-9",
           )}
         >
           Daydream

@@ -43,7 +43,7 @@ import { ShareModal } from "./ShareModal";
 import { UpdateOptions } from "./useDreamshaper";
 import { MAX_PROMPT_LENGTH, useValidateInput } from "./useValidateInput";
 
-const PROMPT_PLACEHOLDER = "Describe the style to transform your stream...";
+const PROMPT_PLACEHOLDER = "Enter your prompt...";
 const MAX_STREAM_TIMEOUT_MS = 300000; // 5 minutes
 
 // Rotate through prompts every 4 seconds

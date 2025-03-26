@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Personas from "./Personas";
 import CameraAccess from "./CameraAccess";
 import Footer from "./Footer";
@@ -11,7 +10,6 @@ import useMount from "@/hooks/useMount";
 import useCloudAnimation from "@/hooks/useCloudAnimation";
 import { useTheme } from "next-themes";
 import { cn } from "@repo/design-system/lib/utils";
-import { useRef, useState, useEffect } from "react";
 
 export default function WelcomeScreen() {
   const { currentStep, isFadingOut } = useOnboard();
@@ -140,13 +138,12 @@ export default function WelcomeScreen() {
 
             <div className="flex flex-col gap-[16px]">
               <p className="font-open-sans text-base sm:text-lg leading-[1.35em] text-[#232323]">
-                Daydream is a <span className="font-black">limitless</span>{" "}
-                portal for transforming your video 🚀
+                Come experience the magic of Daydream 🎭
               </p>
               <p className="font-open-sans text-base sm:text-lg leading-[1.35em] text-[#232323]">
-                Whether you're crafting stories, building experiences, or
-                experimenting with something entirely new, this is your
-                playground.
+                Create without limits. Whether you're crafting stories, building
+                experiences, or experimenting with something entirely new, this
+                is your playground!
               </p>
             </div>
 
