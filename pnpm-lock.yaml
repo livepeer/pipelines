@@ -55,8 +55,8 @@ importers:
         specifier: ^0.0.14
         version: 0.0.14
       '@livepeer/react':
-        specifier: ^4.2.11
-        version: 4.2.11(@types/react-dom@18.3.1)(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        specifier: ^4.3.0
+        version: 4.3.0(@types/react-dom@18.3.1)(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@livepeer/webrtmp-sdk':
         specifier: ^0.2.5
         version: 0.2.5
@@ -1399,19 +1399,19 @@ packages:
   '@lit/reactive-element@1.6.3':
     resolution: {integrity: sha512-QuTgnG52Poic7uM1AN5yJ09QMe0O28e10XzSvWDz02TJiiKee4stsiownEIadWm8nYzyDAyT+gKzUoZmiWQtsQ==}
 
-  '@livepeer/core-react@3.2.8':
-    resolution: {integrity: sha512-co8fc+9wdA2vthmIB3Gy8GJXR1PM8e1E2HmWGW4Dm8oSITqGg3RZHZnfTxioBFQjza8WIXfbmS+ZPTKVhyithQ==}
+  '@livepeer/core-react@3.2.9':
+    resolution: {integrity: sha512-66TEUAhur4Z/yoC/Z+g5oz+Joyary0eeKsOh7v9XBUrr7e80AB23M9msmves7nPpHj7Z0WHm07SphcwxeATdEA==}
     peerDependencies:
       react: '>=17.0.0'
 
-  '@livepeer/core-web@5.1.0':
-    resolution: {integrity: sha512-xSYBaLY5SkEObYLUqEhsKP6gbXxXCKrD3Rq7UhgDUCB+paURhEUNCLkaFyEJkB9FutOzfrNBB5z41AHxb+6Yxw==}
+  '@livepeer/core-web@5.2.0':
+    resolution: {integrity: sha512-1wpYbNNAxYEEkWKnqOevN3ss+cEPi9r4iY+NAVbB1YCPiDSoYuP6mAcO0c0z2EfYeu6yoUSUNLEcZykGvb1lhg==}
 
-  '@livepeer/core@3.2.8':
-    resolution: {integrity: sha512-d5DcDL8WHI7NEt7iYelmQpiTuRtOJFnVc3kCgKzCTGedpHpgVmB/L1iXBg1v6Wrq8kOBZZFOkeJKxt/B6NIYfg==}
+  '@livepeer/core@3.3.0':
+    resolution: {integrity: sha512-T3O2MBhQokTaEHoGurrjEZl5bXCW0QgSmcatq8gKMsbo9RDvRitGnILzJTmOT/u+Cllu4VVpOY3mI997YcTeqQ==}
 
-  '@livepeer/react@4.2.11':
-    resolution: {integrity: sha512-EHnPjp5H2WpUjlg67onKi9pfi/xDXmMO1ZIN/rgvn09viczOLd+4MWELloKVKWXcqVFNrQ1gDsWcHO7Qtw3wXQ==}
+  '@livepeer/react@4.3.0':
+    resolution: {integrity: sha512-4dcx3ZmjqXcD1YzLd2CItltx1kD+aI8/dx4EyfLkexVab5SBE4h4xFfbhhbBuHg2d6DQ6tQ1xSO0LQzQFZTmMA==}
     peerDependencies:
       react: '>=17.0.0'
       react-dom: '>=17.0.0'
@@ -9116,18 +9116,18 @@ snapshots:
     dependencies:
       '@lit-labs/ssr-dom-shim': 1.3.0
 
-  '@livepeer/core-react@3.2.8(@types/react@18.3.12)(react@18.3.1)':
+  '@livepeer/core-react@3.2.9(@types/react@18.3.12)(react@18.3.1)':
     dependencies:
-      '@livepeer/core': 3.2.8(@types/react@18.3.12)(react@18.3.1)
+      '@livepeer/core': 3.3.0(@types/react@18.3.12)(react@18.3.1)
       react: 18.3.1
       zustand: 4.5.6(@types/react@18.3.12)(react@18.3.1)
     transitivePeerDependencies:
       - '@types/react'
       - immer
 
-  '@livepeer/core-web@5.1.0(@types/react@18.3.12)(react@18.3.1)':
+  '@livepeer/core-web@5.2.0(@types/react@18.3.12)(react@18.3.1)':
     dependencies:
-      '@livepeer/core': 3.2.8(@types/react@18.3.12)(react@18.3.1)
+      '@livepeer/core': 3.3.0(@types/react@18.3.12)(react@18.3.1)
       hls.js: 1.5.20
       zustand: 4.5.6(@types/react@18.3.12)(react@18.3.1)
     transitivePeerDependencies:
@@ -9135,7 +9135,7 @@ snapshots:
       - immer
       - react
 
-  '@livepeer/core@3.2.8(@types/react@18.3.12)(react@18.3.1)':
+  '@livepeer/core@3.3.0(@types/react@18.3.12)(react@18.3.1)':
     dependencies:
       multiformats: 13.3.2
       nanoid: 5.0.9
@@ -9145,11 +9145,11 @@ snapshots:
       - immer
       - react
 
-  '@livepeer/react@4.2.11(@types/react-dom@18.3.1)(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+  '@livepeer/react@4.3.0(@types/react-dom@18.3.1)(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
-      '@livepeer/core': 3.2.8(@types/react@18.3.12)(react@18.3.1)
-      '@livepeer/core-react': 3.2.8(@types/react@18.3.12)(react@18.3.1)
-      '@livepeer/core-web': 5.1.0(@types/react@18.3.12)(react@18.3.1)
+      '@livepeer/core': 3.3.0(@types/react@18.3.12)(react@18.3.1)
+      '@livepeer/core-react': 3.2.9(@types/react@18.3.12)(react@18.3.1)
+      '@livepeer/core-web': 5.2.0(@types/react@18.3.12)(react@18.3.1)
       '@radix-ui/primitive': 1.1.1
       '@radix-ui/react-aspect-ratio': 1.1.1(@types/react-dom@18.3.1)(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@radix-ui/react-compose-refs': 1.1.1(@types/react@18.3.12)(react@18.3.1)
