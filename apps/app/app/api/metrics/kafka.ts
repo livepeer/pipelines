@@ -86,11 +86,12 @@ export async function sendKafkaEvent(
       timeout: KAFKA_REQUEST_TIMEOUT,
     });
     console.log("[Kafka Event] Event sent successfully");
+    return "Event sent successfully";
   } catch (error) {
     console.error("[Kafka Event] Error sending event", error);
+    return "Error sending event: " + (error instanceof Error ? error.message : String(error));
   } finally {
     await producer.disconnect();
     console.log("[Kafka Event] Producer disconnected");
   }
-  return "Event sent successfully";
 }
