@@ -62,6 +62,7 @@ export const LivepeerPlayer = React.memo(
     const [key, setKey] = useState(0);
     const [useFallbackVideoJSPlayer, setUseFallbackPlayer] = useState(false);
     const lastErrorTimeRef = useRef<number | null>(null);
+    const errorIntervalRef = useRef<NodeJS.Timeout | null>(null);
     
     useEffect(() => {
       if (useFallbackVideoJSPlayer) {
@@ -71,50 +72,68 @@ export const LivepeerPlayer = React.memo(
     
     const handleError = useCallback(
       (error: any) => {
-        console.warn("Livepeer player error:", error?.message || error);
+        const errorMessage = typeof error?.message === 'string' ? error.message : 
+                           typeof error === 'string' ? error : 
+                           JSON.stringify(error);
+                           
+        console.warn("Livepeer player error:", errorMessage);
         
         const currentTime = Date.now();
         lastErrorTimeRef.current = currentTime;
         
-        if (error?.message?.includes("Failed to connect to peer")) {
+        if (errorMessage.includes("Failed to connect to peer")) {
           console.warn("Livepeer player error: Failed to connect to peer. Switching to VideoJS fallback player.");
           setUseFallbackPlayer(true);
           return;
         }
-      },
-      [],
-    );
-
-    useEffect(() => {
-      console.log("Setting up error check interval, lastErrorTime:", 
-                  lastErrorTimeRef.current ? new Date(lastErrorTimeRef.current).toISOString() : "null",
-                  "fallback:", useFallbackVideoJSPlayer);
-      
-      if (useFallbackVideoJSPlayer || !lastErrorTimeRef.current) {
-        console.log("Skipping interval setup because:", 
-                    useFallbackVideoJSPlayer ? "already using fallback" : "no errors yet");
-        return;
-      }
-      
-      const checkInterval = setInterval(() => {
-        const currentTime = Date.now();
-        console.log("Checking error timeout:", 
-                    "current:", new Date(currentTime).toISOString(),
-                    "lastError:", new Date(lastErrorTimeRef.current!).toISOString(),
-                    "diff:", (currentTime - lastErrorTimeRef.current!) / 1000, "seconds");
         
-        if (lastErrorTimeRef.current && (currentTime - lastErrorTimeRef.current > 10000)) {
-          console.warn("No errors since 10 seconds. Switching to VideoJS fallback player.");
-          setUseFallbackPlayer(true);
-          clearInterval(checkInterval);
+        if (!errorIntervalRef.current && !useFallbackVideoJSPlayer) {
+          console.warn("Starting error check interval at", new Date(currentTime).toISOString());
+          
+          if (errorIntervalRef.current) {
+            clearInterval(errorIntervalRef.current);
+          }
+          
+          errorIntervalRef.current = setInterval(() => {
+            const now = Date.now();
+            const lastErrorTime = lastErrorTimeRef.current || 0;
+            const timeSinceLastError = now - lastErrorTime;
+            
+            console.warn("Error check:", 
+                      "current:", new Date(now).toISOString(),
+                      "lastError:", lastErrorTime ? new Date(lastErrorTime).toISOString() : "none",
+                      "diff:", timeSinceLastError / 1000, "seconds");
+            
+            if (timeSinceLastError > 10000) {
+              console.warn("No errors for 10+ seconds after previous errors. Switching to VideoJS fallback player.");
+              setUseFallbackPlayer(true);
+              
+              if (errorIntervalRef.current) {
+                clearInterval(errorIntervalRef.current);
+                errorIntervalRef.current = null;
+              }
+            }
+          }, 1000);
         }
-      }, 1000);
-      
+      },
+      [useFallbackVideoJSPlayer],
+    );
+    
+    useEffect(() => {
       return () => {
-        console.log("Clearing error check interval");
-        clearInterval(checkInterval);
+        if (errorIntervalRef.current) {
+          clearInterval(errorIntervalRef.current);
+          errorIntervalRef.current = null;
+        }
       };
-    }, [useFallbackVideoJSPlayer, lastErrorTimeRef.current]);
+    }, []);
+    
+    useEffect(() => {
+      if (useFallbackVideoJSPlayer && errorIntervalRef.current) {
+        clearInterval(errorIntervalRef.current);
+        errorIntervalRef.current = null;
+      }
+    }, [useFallbackVideoJSPlayer]);
 
     const playerUrl = `${appConfig.whipUrl}${appConfig?.whipUrl?.endsWith("/") ? "" : "/"}${stream_key}-out/whep`;
 
