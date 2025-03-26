@@ -130,13 +130,21 @@ export const LivepeerPlayer = React.memo(
           backoffMax={1000}
           timeout={300000}
           lowLatency="force"
+          iceServers={{
+            urls: [
+              "stun:stun.l.google.com:19302",
+              "stun:global.stun.twilio.com:3478",
+              "stun:stun.cloudflare.com:3478",
+              "stun:stun.services.mozilla.com:3478",
+            ],
+          }}
           onError={handleError}
         >
-          <div 
-            className="absolute inset-0 z-[5]" 
-            onClick={(e) => e.stopPropagation()}
+          <div
+            className="absolute inset-0 z-[5]"
+            onClick={e => e.stopPropagation()}
           ></div>
-          
+
           <Player.Video
             title="Live stream"
             className="h-full w-full transition-all object-contain relative z-0"
@@ -184,9 +192,11 @@ export const LivepeerPlayer = React.memo(
 
           <Player.Controls
             autoHide={1000}
-            className={isFullscreen 
-              ? "hidden" 
-              : "bg-gradient-to-b gap-1 px-3 md:px-3 py-2 flex-col-reverse flex from-black/20 via-80% via-black/30 duration-1000 to-black/60 data-[visible=true]:animate-in data-[visible=false]:animate-out data-[visible=false]:fade-out-0 data-[visible=true]:fade-in-0 relative z-[10]"}
+            className={
+              isFullscreen
+                ? "hidden"
+                : "bg-gradient-to-b gap-1 px-3 md:px-3 py-2 flex-col-reverse flex from-black/20 via-80% via-black/30 duration-1000 to-black/60 data-[visible=true]:animate-in data-[visible=false]:animate-out data-[visible=false]:fade-out-0 data-[visible=true]:fade-in-0 relative z-[10]"
+            }
           >
             <div className="flex justify-between gap-4">
               <div className="flex flex-1 items-center gap-3">
