@@ -15,6 +15,7 @@ import 'videojs-resolution-switcher/lib/videojs-resolution-switcher.css';
 // @ts-ignore 
 videojs.registerPlugin('MillicastWhepPlugin', MillicastWhepPlugin);
 
+// Making CSS inline since this is just a temporary fallback player to be removed
 const VideoJSStyles = () => (
   <style jsx global>{`
     /* Custom VideoJS skin to match Livepeer player */
@@ -161,7 +162,6 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
   const [firstFrameTime, setFirstFrameTime] = useState<string | null>(null);
   const startTimeRef = useRef(Date.now());
   const { user } = usePrivy();
-  const appConfig = useAppConfig();
   const searchParams = useSearchParams();
   const debugMode = searchParams.get("debugMode") === "true";
   
@@ -179,6 +179,7 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
           stream_id: streamId,
           pipeline: pipelineType,
           pipeline_id: pipelineId,
+          player: "videojs",
           hostname: window.location.hostname,
           viewer_info: {
             ip: "",
@@ -209,6 +210,7 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
           stream_id: streamId,
           pipeline: pipelineType,
           pipeline_id: pipelineId,
+          player: "videojs",
           hostname: window.location.hostname,
           viewer_info: {
             ip: "",
@@ -285,9 +287,7 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
       player.on('loadedmetadata', applyCustomStyles);
       player.on('resize', applyCustomStyles);
 
-      if (isWHEP) {
-        console.log('Using WHEP plugin with URL:', src);
-        
+      if (isWHEP) {       
         setTimeout(() => {
           try {
             player.MillicastWhepPlugin({ 

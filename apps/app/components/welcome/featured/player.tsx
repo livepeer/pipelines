@@ -34,9 +34,6 @@ const VideoJSPlayer = dynamic(() => import("./videojs-player"), {
   )
 });
 
-const MAX_RETRIES = 10;
-const MAX_DELAY = 5000;
-
 type TrackingProps = {
   playbackId: string;
   streamId: string;
@@ -64,25 +61,12 @@ export const LivepeerPlayer = React.memo(
     const [playbackInfo, setPlaybackInfo] = useState<PlaybackInfo | null>(null);
     const [retryCount, setRetryCount] = useState(0);
     const [key, setKey] = useState(0);
+    const [useFallbackVideoJSPlayer, setUseFallbackPlayer] = useState(false);
 
     const handleError = useCallback(
       (error: any) => {
-        if (
-          error?.message?.includes("Failed to connect to peer") &&
-          retryCount < MAX_RETRIES
-        ) {
-          const delay = Math.min(1000 * Math.pow(2, retryCount), MAX_DELAY);
-          console.log("Video not playing but stream has started, retrying...");
-          setTimeout(() => {
-            setRetryCount(prev => prev + 1);
-            setKey(prev => prev + 1); // Force Player to remount
-          }, delay);
-        } else {
-          if (retryCount >= MAX_RETRIES) {
-            console.error(
-              `MAX RETRIES REACHED - No more remounting (${retryCount}/${MAX_RETRIES})`,
-            );
-          }
+        if (error?.message?.includes("Failed to connect to peer")) {
+          setUseFallbackPlayer(true);
         }
       },
       [retryCount],
@@ -97,7 +81,7 @@ export const LivepeerPlayer = React.memo(
     const debugMode = searchParams.get("debugMode") === "true";
     const iframePlayerFallback =
       process.env.NEXT_PUBLIC_IFRAME_PLAYER_FALLBACK === "true";
-    const useVideoJS = searchParams.get("livepeerPlayer") !== "true";
+    const useVideoJS = searchParams.get("videoJS") === "true" || useFallbackVideoJSPlayer;
 
     useEffect(() => {
       if (useMediamtx || iframePlayerFallback || useVideoJS) {
@@ -317,6 +301,8 @@ const useFirstFrameLoaded = ({
           stream_id: streamId,
           pipeline: pipelineType,
           pipeline_id: pipelineId,
+          player: "livepeer",
+          hostname: window.location.hostname,
           // TODO: Get viewer info from client
           viewer_info: {
             ip: "",
@@ -348,6 +334,8 @@ const useFirstFrameLoaded = ({
             stream_id: streamId,
             pipeline: pipelineType,
             pipeline_id: pipelineId,
+            player: "livepeer",
+            hostname: window.location.hostname,
             // TODO: Get viewer info from client
             viewer_info: {
               ip: "",
