@@ -15,12 +15,15 @@ interface OnboardContextType {
   // Selected options for each step
   selectedPersonas: string[] | null;
   selectedPrompt: string | null;
+  // When a prompt is selected, we fade out the welcome screen
+  isFadingOut: boolean;
   // Methods to update state
   setCurrentStep: (step: OnboardingStep) => void;
   setCameraPermission: (permission: CameraPermission) => void;
   setSelectedPersonas: (personas: string[]) => void;
   setSelectedPrompt: (prompt: string | null) => void;
   setInitialCameraValidation: (validation: boolean) => void;
+  setFadingOut: (fadingOut: boolean) => void;
 }
 
 // Create the context with a default undefined value
@@ -40,6 +43,7 @@ export function OnboardProvider({
   const [selectedPersonas, setSelectedPersonas] = useState<string[]>([]);
   const [selectedPrompt, setSelectedPrompt] = useState<string | null>(null);
   const [initialCameraValidation, setInitialCameraValidation] = useState(false);
+  const [isFadingOut, setFadingOut] = useState(false);
 
   const value = useMemo(
     () => ({
@@ -48,11 +52,13 @@ export function OnboardProvider({
       selectedPersonas,
       selectedPrompt,
       initialCameraValidation,
+      isFadingOut,
       setCurrentStep,
       setCameraPermission,
       setSelectedPersonas,
       setSelectedPrompt,
       setInitialCameraValidation,
+      setFadingOut,
       hasSharedPrompt,
     }),
     [
@@ -61,6 +67,7 @@ export function OnboardProvider({
       selectedPersonas,
       selectedPrompt,
       initialCameraValidation,
+      isFadingOut,
       hasSharedPrompt,
     ],
   );

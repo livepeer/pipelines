@@ -10,9 +10,10 @@ import LayoutWrapper from "../LayoutWrapper";
 import useMount from "@/hooks/useMount";
 import { useTheme } from "next-themes";
 import { cn } from "@repo/design-system/lib/utils";
+import { useState } from "react";
 
 export default function WelcomeScreen() {
-  const { currentStep } = useOnboard();
+  const { currentStep, isFadingOut } = useOnboard();
   const { setTheme } = useTheme();
 
   useMount(() => {
@@ -31,13 +32,17 @@ export default function WelcomeScreen() {
           alt="Background"
           fill
           priority
-          className="object-cover z-0 opacity-[55%]"
+          className={cn(
+            "object-cover z-0 opacity-[55%] transition-opacity duration-1000",
+            isFadingOut ? "opacity-0" : "opacity-100",
+          )}
           quality={100}
         />
         <div
           className={cn(
             "h-[fit-content] z-10 relative bg-[#EDEDED] p-[16px] sm:p-[24px] sm:pb-4 md:p-[56px] md:pb-6 rounded-[23px] w-[90%] sm:w-[80%] md:max-w-[812px]",
             currentStep === "prompt" && "mb-[100px] mt-[100px]",
+            isFadingOut && "hidden",
           )}
         >
           <div className="flex flex-col gap-[24px] py-[12px]">
@@ -76,7 +81,7 @@ export default function WelcomeScreen() {
             <SelectPrompt />
           </div>
         </div>
-        <Footer />
+        <Footer isFadingOut={isFadingOut} />
       </div>
     </LayoutWrapper>
   );
