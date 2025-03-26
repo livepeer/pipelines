@@ -626,7 +626,11 @@ export default function Dreamshaper({
                 </TrackedButton>
               </div>
             </TooltipTrigger>
-            <TooltipContent side="top" sideOffset={5} className="bg-white text-black border border-gray-200 shadow-md dark:bg-zinc-900 dark:text-white dark:border-zinc-700">
+            <TooltipContent
+              side="top"
+              sideOffset={5}
+              className="bg-white text-black border border-gray-200 shadow-md dark:bg-zinc-900 dark:text-white dark:border-zinc-700"
+            >
               {isFullscreen ? "Exit fullscreen" : "Expand screen"}
             </TooltipContent>
           </Tooltip>
@@ -759,7 +763,11 @@ export default function Dreamshaper({
                       </svg>
                     </button>
                   </TooltipTrigger>
-                  <TooltipContent side="top" sideOffset={5} className="bg-white text-black border border-gray-200 shadow-md dark:bg-zinc-900 dark:text-white dark:border-zinc-700">
+                  <TooltipContent
+                    side="top"
+                    sideOffset={5}
+                    className="bg-white text-black border border-gray-200 shadow-md dark:bg-zinc-900 dark:text-white dark:border-zinc-700"
+                  >
                     Edit prompt
                   </TooltipContent>
                 </Tooltip>
@@ -881,7 +889,10 @@ export default function Dreamshaper({
                   <SlidersHorizontal className="h-4 w-4 text-muted-foreground" />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent side="top" className="bg-white text-black border border-gray-200 shadow-md dark:bg-zinc-900 dark:text-white dark:border-zinc-700">
+              <TooltipContent
+                side="top"
+                className="bg-white text-black border border-gray-200 shadow-md dark:bg-zinc-900 dark:text-white dark:border-zinc-700"
+              >
                 Adjustments
               </TooltipContent>
             </Tooltip>
@@ -912,7 +923,9 @@ export default function Dreamshaper({
                 }}
                 className={cn(
                   "border-none items-center justify-center font-semibold text-xs bg-[#000000] flex disabled:bg-[#000000] disabled:opacity-80",
-                  isMobile ? "w-auto h-9 aspect-square rounded-md" : "w-auto h-9 aspect-square rounded-md",
+                  isMobile
+                    ? "w-auto h-9 aspect-square rounded-md"
+                    : "w-auto h-9 aspect-square rounded-md",
                 )}
               >
                 {updating ? (
@@ -923,8 +936,12 @@ export default function Dreamshaper({
               </Button>
             </div>
           </TooltipTrigger>
-          <TooltipContent side="top" className="bg-white text-black border border-gray-200 shadow-md dark:bg-zinc-900 dark:text-white dark:border-zinc-700">
-            Prompt <span className="text-gray-400 dark:text-gray-500">Enter</span>
+          <TooltipContent
+            side="top"
+            className="bg-white text-black border border-gray-200 shadow-md dark:bg-zinc-900 dark:text-white dark:border-zinc-700"
+          >
+            Prompt{" "}
+            <span className="text-gray-400 dark:text-gray-500">Enter</span>
           </TooltipContent>
         </Tooltip>
 

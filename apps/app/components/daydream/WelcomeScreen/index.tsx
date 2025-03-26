@@ -23,10 +23,14 @@ export default function WelcomeScreen() {
 
   const getStepIndex = () => {
     switch (currentStep) {
-      case "persona": return 1;
-      case "camera": return 2;
-      case "prompt": return 3;
-      default: return 0;
+      case "persona":
+        return 1;
+      case "camera":
+        return 2;
+      case "prompt":
+        return 3;
+      default:
+        return 0;
     }
   };
 
@@ -39,14 +43,47 @@ export default function WelcomeScreen() {
 
   return (
     <LayoutWrapper>
-      <div ref={containerRef} className="min-h-screen flex flex-col items-center justify-center relative overflow-y-auto">
-        <div className={cn("cloud-container absolute inset-0 z-0", isFadingOut ? "opacity-0" : "opacity-100", "transition-opacity duration-1000")}>
-          <div className="cloud-layer" id="cloud1" style={{ transform: getCloudTransform(0) }}></div>
-          <div className="cloud-layer" id="cloud2" style={{ transform: getCloudTransform(1) }}></div>
-          <div className="cloud-layer" id="cloud3" style={{ transform: getCloudTransform(2) }}></div>
-          <div className="cloud-layer" id="cloud4" style={{ transform: getCloudTransform(3) }}></div>
-          <div className="cloud-layer" id="cloud5" style={{ transform: getCloudTransform(4) }}></div>
-          <div className="cloud-layer" id="cloud6" style={{ transform: getCloudTransform(5) }}></div>
+      <div
+        ref={containerRef}
+        className="min-h-screen flex flex-col items-center justify-center relative overflow-y-auto"
+      >
+        <div
+          className={cn(
+            "cloud-container absolute inset-0 z-0",
+            isFadingOut ? "opacity-0" : "opacity-100",
+            "transition-opacity duration-1000",
+          )}
+        >
+          <div
+            className="cloud-layer"
+            id="cloud1"
+            style={{ transform: getCloudTransform(0) }}
+          ></div>
+          <div
+            className="cloud-layer"
+            id="cloud2"
+            style={{ transform: getCloudTransform(1) }}
+          ></div>
+          <div
+            className="cloud-layer"
+            id="cloud3"
+            style={{ transform: getCloudTransform(2) }}
+          ></div>
+          <div
+            className="cloud-layer"
+            id="cloud4"
+            style={{ transform: getCloudTransform(3) }}
+          ></div>
+          <div
+            className="cloud-layer"
+            id="cloud5"
+            style={{ transform: getCloudTransform(4) }}
+          ></div>
+          <div
+            className="cloud-layer"
+            id="cloud6"
+            style={{ transform: getCloudTransform(5) }}
+          ></div>
           <div className="bg-gradient-to-b from-transparent to-[rgba(0,0,0,0.2)] absolute inset-0 z-[7] opacity-[55%]"></div>
         </div>
         <div

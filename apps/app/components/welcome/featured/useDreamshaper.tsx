@@ -323,28 +323,29 @@ export function useDreamshaper() {
 
         if (!isMounted) return;
         setStream(stream);
-        
+
         if (stream && stream.stream_key) {
           const whipUrl = getStreamUrl(stream.stream_key, searchParams);
-          
+
           if (!stream.whip_url || stream.whip_url !== whipUrl) {
             const updatedStream = {
               ...stream,
               whip_url: whipUrl,
               name: stream.name || "",
-              from_playground: false
+              from_playground: false,
             };
-            
-            const { data: updatedStreamData, error: updateError } = await upsertStream(
-              updatedStream,
-              currentUserId
-            );
-                        
+
+            const { data: updatedStreamData, error: updateError } =
+              await upsertStream(updatedStream, currentUserId);
+
             if (updateError) {
-              console.error("Error updating stream with WHIP URL:", updateError);
+              console.error(
+                "Error updating stream with WHIP URL:",
+                updateError,
+              );
             } else if (updatedStreamData && isMounted) {
               setStream(updatedStreamData);
-              console.log('Stream state updated with new data');
+              console.log("Stream state updated with new data");
             }
           }
         }
@@ -542,7 +543,9 @@ export function useDreamshaper() {
   return {
     stream,
     outputPlaybackId: stream?.output_playback_id,
-    streamUrl: stream ? getStreamUrl(stream.stream_key, searchParams, stream.whip_url) : null,
+    streamUrl: stream
+      ? getStreamUrl(stream.stream_key, searchParams, stream.whip_url)
+      : null,
     pipeline,
     handleUpdate,
     loading,
@@ -556,7 +559,7 @@ export function useDreamshaper() {
 function getStreamUrl(
   streamKey: string,
   searchParams: URLSearchParams,
-  storedWhipUrl?: string | null
+  storedWhipUrl?: string | null,
 ): string {
   const customWhipServer = searchParams.get("whipServer");
 

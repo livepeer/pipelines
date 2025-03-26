@@ -8,7 +8,6 @@ import { useState } from "react";
 import { useAuth } from "./AuthContext";
 import track from "@/lib/track";
 
-
 export default function EmailLoginButton() {
   const [email, setEmail] = useState("");
   const [inputState, setInputState] = useState<

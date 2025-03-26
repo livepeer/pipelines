@@ -47,15 +47,15 @@ export function ManagedBroadcast({
 
       const broadcastPositioning = () => {
         updatePlayerPosition();
-        
+
         const delays = [50, 100, 300, 500, 1000];
-        const timeouts = delays.map(delay => 
-          setTimeout(updatePlayerPosition, delay)
+        const timeouts = delays.map(delay =>
+          setTimeout(updatePlayerPosition, delay),
         );
-        
+
         return () => timeouts.forEach(clearTimeout);
       };
-      
+
       const cleanupInitialPositioning = broadcastPositioning();
 
       window.addEventListener("resize", updatePlayerPosition);
@@ -68,13 +68,13 @@ export function ManagedBroadcast({
       });
 
       resizeObserver.observe(outputPlayerRef.current);
-      
+
       const bodyObserver = new MutationObserver(updatePlayerPosition);
-      bodyObserver.observe(document.body, { 
-        childList: true, 
+      bodyObserver.observe(document.body, {
+        childList: true,
         subtree: true,
         attributes: true,
-        attributeFilter: ['class', 'style']
+        attributeFilter: ["class", "style"],
       });
 
       return () => {
