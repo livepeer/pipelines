@@ -5,6 +5,7 @@ import { sendKafkaEvent } from "@/app/api/metrics/kafka";
 import { getStreamPlaybackInfo } from "@/app/api/streams/get";
 import { LPPLayer } from "@/components/playground/player";
 import { useAppConfig } from "@/hooks/useAppConfig";
+import { useFallbackDetection } from "@/hooks/useFallbackDetection";
 import {
   LoadingIcon,
   MuteIcon,
@@ -57,83 +58,11 @@ export const LivepeerPlayer = React.memo(
     isFullscreen?: boolean;
   } & TrackingProps) => {
     const appConfig = useAppConfig();
-
     const [playbackInfo, setPlaybackInfo] = useState<PlaybackInfo | null>(null);
     const [key, setKey] = useState(0);
-    const [useFallbackVideoJSPlayer, setUseFallbackPlayer] = useState(false);
-    const lastErrorTimeRef = useRef<number | null>(null);
-    const errorIntervalRef = useRef<NodeJS.Timeout | null>(null);
     
-    useEffect(() => {
-      if (useFallbackVideoJSPlayer) {
-        console.warn("Switching to VideoJS fallback player for playbackId:", playbackId);
-      }
-    }, [useFallbackVideoJSPlayer, playbackId]);
-    
-    const handleError = useCallback(
-      (error: any) => {
-        const errorMessage = typeof error?.message === 'string' ? error.message : 
-                           typeof error === 'string' ? error : 
-                           JSON.stringify(error);
-                           
-        console.warn("Livepeer player error:", errorMessage);
-        
-        const currentTime = Date.now();
-        lastErrorTimeRef.current = currentTime;
-        
-        if (errorMessage.includes("Failed to connect to peer")) {
-          console.warn("Livepeer player error: Failed to connect to peer. Switching to VideoJS fallback player.");
-          setUseFallbackPlayer(true);
-          return;
-        }
-        
-        if (!errorIntervalRef.current && !useFallbackVideoJSPlayer) {
-          console.warn("Starting error check interval at", new Date(currentTime).toISOString());
-          
-          if (errorIntervalRef.current) {
-            clearInterval(errorIntervalRef.current);
-          }
-          
-          errorIntervalRef.current = setInterval(() => {
-            const now = Date.now();
-            const lastErrorTime = lastErrorTimeRef.current || 0;
-            const timeSinceLastError = now - lastErrorTime;
-            
-            console.warn("Error check:", 
-                      "current:", new Date(now).toISOString(),
-                      "lastError:", lastErrorTime ? new Date(lastErrorTime).toISOString() : "none",
-                      "diff:", timeSinceLastError / 1000, "seconds");
-            
-            if (timeSinceLastError > 10000) {
-              console.warn("No errors for 10+ seconds after previous errors. Switching to VideoJS fallback player.");
-              setUseFallbackPlayer(true);
-              
-              if (errorIntervalRef.current) {
-                clearInterval(errorIntervalRef.current);
-                errorIntervalRef.current = null;
-              }
-            }
-          }, 1000);
-        }
-      },
-      [useFallbackVideoJSPlayer],
-    );
-    
-    useEffect(() => {
-      return () => {
-        if (errorIntervalRef.current) {
-          clearInterval(errorIntervalRef.current);
-          errorIntervalRef.current = null;
-        }
-      };
-    }, []);
-    
-    useEffect(() => {
-      if (useFallbackVideoJSPlayer && errorIntervalRef.current) {
-        clearInterval(errorIntervalRef.current);
-        errorIntervalRef.current = null;
-      }
-    }, [useFallbackVideoJSPlayer]);
+    const { useFallbackPlayer: useFallbackVideoJSPlayer, handleError } = 
+      useFallbackDetection(playbackId);
 
     const playerUrl = `${appConfig.whipUrl}${appConfig?.whipUrl?.endsWith("/") ? "" : "/"}${stream_key}-out/whep`;
 
