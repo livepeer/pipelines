@@ -134,8 +134,50 @@ const VideoJSStyles = () => (
       display: none;
     }
 
-    .vjs-modal-dialog-content {
-      display: none !important;
+    .video-js .vjs-modal-dialog-content {
+      position: relative !important;
+      color: transparent !important; /* Make text transparent */
+    }
+    
+    .video-js .vjs-modal-dialog-content::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 40px;
+      height: 40px;
+      margin-top: -20px;
+      margin-left: -20px;
+      border-radius: 50%;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-top-color: white;
+      animation: vjs-spinner-spin 1s infinite linear;
+    }
+    
+    @keyframes vjs-spinner-spin {
+      0% {
+        transform: rotate(0deg);
+      }
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+    
+    .video-js .vjs-modal-dialog-content::after {
+      content: '';
+      position: absolute;
+      top: 60%;
+      left: 0;
+      right: 0;
+      text-align: center;
+      color: white;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    
+    .video-js .vjs-error-display {
+      background-color: rgba(0, 0, 0, 0.8) !important;
+      height: 100% !important;
     }
   `}</style>
 );

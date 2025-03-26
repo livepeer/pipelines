@@ -59,25 +59,22 @@ export const LivepeerPlayer = React.memo(
     const appConfig = useAppConfig();
 
     const [playbackInfo, setPlaybackInfo] = useState<PlaybackInfo | null>(null);
-    const [retryCount, setRetryCount] = useState(0);
     const [key, setKey] = useState(0);
     const [useFallbackVideoJSPlayer, setUseFallbackPlayer] = useState(false);
 
     useEffect(() => {
       if (useFallbackVideoJSPlayer) {
-        console.log("Switching to VideoJS fallback player for playbackId:", playbackId);
+        console.warn("Switching to VideoJS fallback player for playbackId:", playbackId);
       }
     }, [useFallbackVideoJSPlayer, playbackId]);
     
     const handleError = useCallback(
       (error: any) => {
-        console.log("Livepeer player error received:", JSON.stringify(error, null, 2));
-        
         if (error?.message?.includes("Failed to connect to peer")) {
-          console.log("Livepeer player error: Failed to connect to peer. Switching to VideoJS fallback player.");
+          console.warn("Livepeer player error: Failed to connect to peer. Switching to VideoJS fallback player.");
           setUseFallbackPlayer(true);
         } else if (error) {
-          console.error("Livepeer player error:", error);
+          // We don't switch to fallback for non connection errors
         }
       },
       [],
