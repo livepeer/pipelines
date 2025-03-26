@@ -7,7 +7,16 @@ import { useOnboard } from "../OnboardContext";
 import track from "@/lib/track";
 import { usePrivy } from "@privy-io/react-auth";
 
-const personas = ["Streamer", "Content Creator", "Live Performer", "Other"];
+const personas = [
+  "Personal Use",
+  "Content Creator",
+  "Streamer",
+  "AI Film Maker",
+  "Performer",
+  "Musician",
+  "Engineer",
+  "Other",
+];
 
 export default function Personas() {
   const { user } = usePrivy();
@@ -87,7 +96,7 @@ export default function Personas() {
           value={customPersona}
           onChange={e => setCustomPersona(e.target.value)}
           placeholder="Tell us more about you!"
-          className="w-full p-3 rounded-md border border-[#D2D2D2] font-inter text-[15px] focus:outline-none focus:ring-2 focus:ring-[#95B4BE]"
+          className="w-full bg-[#F5F5F5] border border-[#DFDEDE] rounded-[24px] px-[16px] py-[16px] font-inter text-[13px] leading-[1.21] placeholder-[#A0A0A0] focus:outline-none focus:ring-2 focus:ring-[#95B4BE] shadow-[8px_12px_24px_0px_rgba(13,19,30,0.15)]"
           required
         />
       )}

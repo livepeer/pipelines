@@ -25,7 +25,7 @@ export default function WelcomeScreen() {
 
   return (
     <LayoutWrapper>
-      <div className="min-h-screen flex flex-col items-center justify-center relative overflow-y-auto">
+      <div className="min-h-screen h-full flex flex-col items-center justify-center relative overflow-y-auto">
         <Image
           src="/background.png"
           alt="Background"
@@ -55,13 +55,12 @@ export default function WelcomeScreen() {
 
             <div className="flex flex-col gap-[16px]">
               <p className="font-open-sans text-base sm:text-lg leading-[1.35em] text-[#232323]">
-                Daydream is a <span className="font-black">limitless</span>{" "}
-                portal for transforming your video 🚀
+                Come experience the magic of Daydream 🎭
               </p>
               <p className="font-open-sans text-base sm:text-lg leading-[1.35em] text-[#232323]">
-                Whether you're crafting stories, building experiences, or
-                experimenting with something entirely new, this is your
-                playground.
+                Create without limits. Whether you're crafting stories, building
+                experiences, or experimenting with something entirely new, this
+                is your playground!
               </p>
             </div>
 

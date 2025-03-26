@@ -8,7 +8,6 @@ import { useState } from "react";
 import { useAuth } from "./AuthContext";
 import track from "@/lib/track";
 
-
 export default function EmailLoginButton() {
   const [email, setEmail] = useState("");
   const [inputState, setInputState] = useState<
@@ -31,14 +30,14 @@ export default function EmailLoginButton() {
   };
 
   return inputState === "success" ? (
-    <InputOTPControlled />
+    <InputOTPControlled email={email} />
   ) : (
     <form onSubmit={handleLogin} className="w-full flex flex-col gap-4">
       {/* Email input */}
       <input
         type="email"
         placeholder="name@example.com"
-        className="w-full h-[44px] px-4 py-2.5 border border-[#E4E4E7] rounded-[6px] text-[14px] font-inter text-[#71717A] outline-none bg-inherit placeholder:opacity-90"
+        className="w-full h-[44px] px-4 py-2.5 border border-[#E4E4E7] rounded-[6px] text-[14px] font-inter text-black outline-none bg-inherit placeholder:opacity-90 placeholder:text-[#71717A]"
         value={email}
         onChange={e => setEmail(e.target.value)}
       />
@@ -54,13 +53,13 @@ export default function EmailLoginButton() {
         className="w-full h-[44px] py-[10px] bg-[#18181B] rounded-[6px] text-[14px] font-inter font-medium text-white"
         type="submit"
       >
-        Sign up with Email
+        Sign up for Beta
       </button>
     </form>
   );
 }
 
-export function InputOTPControlled() {
+export function InputOTPControlled({ email }: { email: string }) {
   const [value, setValue] = useState("");
   const [otpState, setOtpState] = useState<
     "idle" | "loading" | "success" | "error"
@@ -102,7 +101,8 @@ export function InputOTPControlled() {
       </InputOTP>
       {otpState === "idle" && (
         <div className="text-center text-sm text-[#71717A]">
-          Enter your one-time password.
+          We've emailed a one-time passcode to {email}. Please enter it to
+          continue.
         </div>
       )}
       {otpState === "loading" && (

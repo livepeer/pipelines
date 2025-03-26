@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import track from "@/lib/track";
 import { usePrivy } from "@privy-io/react-auth";
 import useMount from "@/hooks/useMount";
+import { Separator } from "@repo/design-system/components/ui/separator";
 
 interface PromptOption {
   id: string;
@@ -81,48 +82,54 @@ export default function SelectPrompt() {
   };
 
   return (
-    <div
-      ref={componentRef}
-      className="flex flex-col animate-fade-in py-16 scroll-mb-24"
-    >
-      <div className="mb-12 text-start">
-        <h1 className="font-playfair font-semibold text-[24px] leading-[1.2em] text-[#1C1C1C] mb-2">
-          Experience preview
-        </h1>
-        <p className="font-opensans text-[14px] sm:text-[18px] leading-[1.55em] text-[#232323]">
-          Select one of the options for your first prompt
-        </p>
-      </div>
+    <>
+      <Separator className="bg-[#D2D2D2]" />
+      <div
+        ref={componentRef}
+        className="flex flex-col animate-fade-in py-16 pt-4 scroll-mb-24"
+      >
+        <div className="mb-12 text-start">
+          <h1 className="font-playfair font-semibold text-[24px] leading-[1.2em] text-[#1C1C1C] mb-2">
+            Pick a prompt for your first video
+          </h1>
+          <p className="font-opensans text-[14px] sm:text-[18px] leading-[1.55em] text-[#232323]">
+            Select one of the options for your first prompt
+          </p>
+        </div>
 
-      <div className="grid grid-cols-2 gap-4 sm:gap-12 w-full">
-        {promptOptions.map(option => (
-          <div
-            key={option.id}
-            className="cursor-pointer"
-            onClick={() => handleSelectPrompt(option.prompt)}
-          >
-            <div className="relative group">
-              <div className="relative w-full h-[131px] sm:h-[200px] rounded-[14px] overflow-hidden shadow-[4px_8px_12px_0px_rgba(9,28,20,0.77)]">
-                <Image
-                  src={option.image}
-                  alt={option.title}
-                  fill
-                  className="object-cover"
-                  priority
-                />
-                <div className="absolute bottom-0 left-0 right-0 py-4 bg-[rgba(28,28,28,0.25)] backdrop-blur-[24px] flex items-center justify-center">
-                  <p className="font-inter font-semibold text-[12px] sm:text-[14px] leading-[1em] tracking-[-1.1%] text-[#EDEDED] text-center">
-                    {option.title}
-                  </p>
+        <div className="grid grid-cols-2 gap-4 sm:gap-12 w-full">
+          {promptOptions.map(option => (
+            <div
+              key={option.id}
+              className="cursor-pointer"
+              onClick={() => handleSelectPrompt(option.prompt)}
+            >
+              <div className="relative group">
+                <div className="relative w-full h-[131px] sm:h-[200px] rounded-[14px] overflow-hidden shadow-[4px_8px_12px_0px_rgba(9,28,20,0.77)]">
+                  <Image
+                    src={option.image}
+                    alt={option.title}
+                    fill
+                    className="object-cover"
+                    priority
+                  />
+                  <div className="absolute bottom-0 left-0 right-0 py-4 bg-[rgba(28,28,28,0.25)] backdrop-blur-[24px] flex flex-col items-center justify-center gap-1">
+                    <p className="font-inter font-semibold text-[12px] sm:text-[14px] leading-[1em] tracking-[-1.1%] text-[#EDEDED] text-center">
+                      {option.title}
+                    </p>
+                    <p className="group-hover:opacity-100 group-hover:block transition-opacity duration-300 hidden font-mono text-[10px] leading-[1em] text-[#EDEDED] text-center opacity-75 px-2">
+                      {option.prompt}
+                    </p>
+                  </div>
                 </div>
+                {selectedPrompt === option.prompt && (
+                  <div className="absolute inset-0 border-2 border-blue-500 rounded-[14px] pointer-events-none" />
+                )}
               </div>
-              {selectedPrompt === option.prompt && (
-                <div className="absolute inset-0 border-2 border-blue-500 rounded-[14px] pointer-events-none" />
-              )}
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
-    </div>
+    </>
   );
 }
