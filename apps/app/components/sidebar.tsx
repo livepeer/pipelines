@@ -43,7 +43,7 @@ const Logo = ({ className }: { className?: string }) => (
   <svg
     width="23"
     height="25"
-    className={cn("fill-background w-4 h-4", className)}
+    className={cn("fill-foreground w-4 h-4", className)}
     viewBox="0 0 23 25"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
@@ -156,7 +156,7 @@ export const GlobalSidebar = ({ children }: GlobalSidebarProperties) => {
 
   return (
     <>
-      <Sidebar collapsible="icon" className="bg-[#3E3E3E]">
+      <Sidebar collapsible="icon">
         <SidebarHeader>
           <Link
             href="/"
