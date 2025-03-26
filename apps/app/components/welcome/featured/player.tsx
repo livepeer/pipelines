@@ -86,10 +86,23 @@ export const LivepeerPlayer = React.memo(
     );
 
     useEffect(() => {
-      if (useFallbackVideoJSPlayer || !lastErrorTimeRef.current) return;
+      console.log("Setting up error check interval, lastErrorTime:", 
+                  lastErrorTimeRef.current ? new Date(lastErrorTimeRef.current).toISOString() : "null",
+                  "fallback:", useFallbackVideoJSPlayer);
+      
+      if (useFallbackVideoJSPlayer || !lastErrorTimeRef.current) {
+        console.log("Skipping interval setup because:", 
+                    useFallbackVideoJSPlayer ? "already using fallback" : "no errors yet");
+        return;
+      }
       
       const checkInterval = setInterval(() => {
         const currentTime = Date.now();
+        console.log("Checking error timeout:", 
+                    "current:", new Date(currentTime).toISOString(),
+                    "lastError:", new Date(lastErrorTimeRef.current!).toISOString(),
+                    "diff:", (currentTime - lastErrorTimeRef.current!) / 1000, "seconds");
+        
         if (lastErrorTimeRef.current && (currentTime - lastErrorTimeRef.current > 10000)) {
           console.warn("No errors since 10 seconds. Switching to VideoJS fallback player.");
           setUseFallbackPlayer(true);
@@ -97,8 +110,11 @@ export const LivepeerPlayer = React.memo(
         }
       }, 1000);
       
-      return () => clearInterval(checkInterval);
-    }, [useFallbackVideoJSPlayer]);
+      return () => {
+        console.log("Clearing error check interval");
+        clearInterval(checkInterval);
+      };
+    }, [useFallbackVideoJSPlayer, lastErrorTimeRef.current]);
 
     const playerUrl = `${appConfig.whipUrl}${appConfig?.whipUrl?.endsWith("/") ? "" : "/"}${stream_key}-out/whep`;
 
