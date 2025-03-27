@@ -60,9 +60,11 @@ export default function Dreamshaper() {
   const { status, live } = useStreamStatus(stream?.id, false);
   const { currentStep, selectedPrompt, setSelectedPrompt } = useOnboard();
   const { setLastSubmittedPrompt, setHasSubmittedPrompt } = usePromptStore();
-  const { authenticated } = usePrivy();
+  const { user, authenticated } = usePrivy();
 
   const outputPlayerRef = useRef<HTMLDivElement>(null);
+
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
     track("daydream_page_view", {
@@ -79,6 +81,83 @@ export default function Dreamshaper() {
       });
     }
   }, [stream, live]);
+
+  useEffect(() => {
+    let pageLoadTime = Date.now();
+
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      setIsRefreshing(true);
+
+      const eventData = {
+        type: "app_user_page_unload",
+        user_id: user?.id || "anonymous",
+        is_authenticated: authenticated,
+        stream_id: stream?.id,
+        playback_id: stream?.output_playback_id,
+        session_duration_ms: Date.now() - pageLoadTime,
+        event_type: "unload",
+      };
+
+      if (navigator.sendBeacon) {
+        const blob = new Blob(
+          [
+            JSON.stringify({
+              eventType: "stream_trace",
+              data: eventData,
+              app: "daydream",
+              host: window.location.hostname,
+            }),
+          ],
+          { type: "application/json" },
+        );
+
+        navigator.sendBeacon("/api/metrics/beacon", blob);
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "hidden" && !isRefreshing) {
+        // Commented for now - if we ever want to track page leave events
+        /*const eventData = {
+          type: "app_user_page_leave",
+          user_id: user?.id || "anonymous",
+          is_authenticated: authenticated,
+          stream_id: streamId,
+          playback_id: outputPlaybackId,
+          session_duration_ms: Date.now() - pageLoadTime,
+          event_type: "leave",
+        };
+        if (navigator.sendBeacon) {
+          const blob = new Blob([JSON.stringify({
+            eventType: "stream_trace",
+            data: eventData,
+            app: "daydream",
+            host: window.location.hostname,
+          })], { type: "application/json" });
+          
+          navigator.sendBeacon("/api/metrics/beacon", blob);
+        }*/
+      }
+
+      if (document.visibilityState === "visible") {
+        setIsRefreshing(false);
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [
+    authenticated,
+    user,
+    stream?.id,
+    stream?.output_playback_id,
+    isRefreshing,
+  ]);
 
   useEffect(() => {
     if (selectedPrompt && status === "ONLINE") {

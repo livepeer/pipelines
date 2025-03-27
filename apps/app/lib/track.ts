@@ -94,7 +94,7 @@ const track = async (
   const now = Date.now();
   const lastTracked = lastTrackedEvents[eventName] || 0;
 
-  if (process.env.DISABLE_ANALYTICS) {
+  if (process.env.DISABLE_ANALYTICS === "true") {
     return;
   }
 

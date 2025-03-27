@@ -533,6 +533,7 @@ export function useInitialization() {
             user?.email?.address?.endsWith("@livepeer.org") ?? false,
             stream.stream_key,
             searchParams,
+            stream.whip_url,
           );
 
           if (!stream.whip_url || stream.whip_url !== whipUrl) {
