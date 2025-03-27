@@ -325,7 +325,7 @@ export function useDreamshaper() {
         setStream(stream);
 
         if (stream && stream.stream_key) {
-          const whipUrl = getStreamUrl(stream.stream_key, searchParams);
+          const whipUrl = getStreamUrl(user?.email?.address?.endsWith("@livepeer.org") ?? false, stream.stream_key, searchParams, stream.whip_url);
 
           if (!stream.whip_url || stream.whip_url !== whipUrl) {
             const updatedStream = {
@@ -544,7 +544,7 @@ export function useDreamshaper() {
     stream,
     outputPlaybackId: stream?.output_playback_id,
     streamUrl: stream
-      ? getStreamUrl(stream.stream_key, searchParams, stream.whip_url)
+      ? getStreamUrl(user?.email?.address?.endsWith("@livepeer.org") ?? false, stream.stream_key, searchParams, stream.whip_url)
       : null,
     pipeline,
     handleUpdate,
@@ -557,6 +557,7 @@ export function useDreamshaper() {
 }
 
 function getStreamUrl(
+  isAdmin: boolean,
   streamKey: string,
   searchParams: URLSearchParams,
   storedWhipUrl?: string | null,
@@ -570,6 +571,14 @@ function getStreamUrl(
       return customWhipServer.replace("<STREAM_KEY>", streamKey);
     }
     return `${customWhipServer}${streamKey}/whip`;
+  }
+
+  if (isAdmin) {
+    const baseUrl = process.env.NEXT_PUBLIC_AI_GATEWAY_API_BASE_URL;
+    if (!baseUrl) {
+      return `${app.whipUrl}${streamKey}/whip`;
+    }
+    return `${baseUrl}${streamKey}/whip`;
   }
 
   return `${app.whipUrl}${streamKey}/whip`;
