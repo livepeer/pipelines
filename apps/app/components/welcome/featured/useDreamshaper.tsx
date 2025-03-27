@@ -325,7 +325,7 @@ export function useDreamshaper() {
         setStream(stream);
 
         if (stream && stream.stream_key) {
-          const whipUrl = getStreamUrl(stream.stream_key, searchParams);
+          const whipUrl = getStreamUrl(user?.email?.address?.endsWith("@livepeer.org") ?? false, stream.stream_key, searchParams, stream.whip_url);
 
           if (!stream.whip_url || stream.whip_url !== whipUrl) {
             const updatedStream = {
@@ -544,7 +544,7 @@ export function useDreamshaper() {
     stream,
     outputPlaybackId: stream?.output_playback_id,
     streamUrl: stream
-      ? getStreamUrl(stream.stream_key, searchParams, stream.whip_url)
+      ? getStreamUrl(user?.email?.address?.endsWith("@livepeer.org") ?? false, stream.stream_key, searchParams, stream.whip_url)
       : null,
     pipeline,
     handleUpdate,
@@ -557,6 +557,7 @@ export function useDreamshaper() {
 }
 
 function getStreamUrl(
+  isAdmin: boolean,
   streamKey: string,
   searchParams: URLSearchParams,
   storedWhipUrl?: string | null,
@@ -570,6 +571,15 @@ function getStreamUrl(
       return customWhipServer.replace("<STREAM_KEY>", streamKey);
     }
     return `${customWhipServer}${streamKey}/whip`;
+  }
+
+  // If is admin, use the fixed whip server
+  if (isAdmin) {
+    const baseUrl = process.env.NEXT_PUBLIC_STREAM_STATUS_ENDPOINT_URL;
+    if (!baseUrl) {
+      throw new Error("NEXT_PUBLIC_STREAM_STATUS_ENDPOINT_URL is not set");
+    }
+    return `${baseUrl}${streamKey}/whip`;
   }
 
   return `${app.whipUrl}${streamKey}/whip`;
