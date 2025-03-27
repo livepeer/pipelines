@@ -9,7 +9,6 @@ import MainExperience from "./MainExperience";
 import { useEffect } from "react";
 import LayoutWrapper from "./LayoutWrapper";
 import { AuthProvider } from "./LoginScreen/AuthContext";
-import { useInitialization } from "@/hooks/useDreamshaper";
 
 export default function Daydream({
   hasSharedPrompt,

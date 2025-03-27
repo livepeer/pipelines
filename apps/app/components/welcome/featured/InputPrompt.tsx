@@ -19,12 +19,12 @@ import { cn } from "@repo/design-system/lib/utils";
 import { Loader2, SlidersHorizontal, WandSparkles } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import TextareaAutosize from "react-textarea-autosize";
-import SettingsMenu from "./prompt-settings";
-import { MAX_PROMPT_LENGTH, useValidateInput } from "./useValidateInput";
 import {
   useDreamshaperStore,
   useStreamUpdates,
 } from "../../../hooks/useDreamshaper";
+import SettingsMenu from "./prompt-settings";
+import { MAX_PROMPT_LENGTH, useValidateInput } from "./useValidateInput";
 
 const PROMPT_PLACEHOLDER = "Enter your prompt...";
 
@@ -45,7 +45,7 @@ type PipelineParam = {
 };
 
 export const InputPrompt = () => {
-  const { loading, pipeline, stream, updating } = useDreamshaperStore();
+  const { pipeline, stream, updating } = useDreamshaperStore();
   const { handleStreamUpdate } = useStreamUpdates();
   const { isFullscreen } = useFullscreenStore();
   const { isMobile } = useMobileStore();
