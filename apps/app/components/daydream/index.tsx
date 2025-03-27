@@ -18,7 +18,6 @@ export default function Daydream({
   hasSharedPrompt: boolean;
   isOAuthSuccessRedirect: boolean;
 }) {
-  useInitialization();
   const { user, ready } = usePrivy();
 
   // If the user is not ready, show a loading screen

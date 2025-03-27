@@ -37,6 +37,7 @@ import { forwardRef, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
   useDreamshaperStore,
+  useInitialization,
   useParamsHandling,
   useStreamUpdates,
 } from "../../../hooks/useDreamshaper";
@@ -50,8 +51,7 @@ const MAX_STREAM_TIMEOUT_MS = 300000; // 5 minutes
 const inter = Inter({ subsets: ["latin"] });
 
 export default function Dreamshaper() {
-  // TODO: Initialize earlier
-
+  useInitialization();
   useParamsHandling();
   useCapacityMonitor();
 
