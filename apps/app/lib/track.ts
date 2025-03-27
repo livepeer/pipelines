@@ -94,6 +94,10 @@ const track = async (
   const now = Date.now();
   const lastTracked = lastTrackedEvents[eventName] || 0;
 
+  if (process.env.DISABLE_ANALYTICS === "true") {
+    return;
+  }
+
   // Skip if event was tracked less than DEBOUNCE_TIME ago
   if (now - lastTracked < DEBOUNCE_TIME) {
     console.log(
