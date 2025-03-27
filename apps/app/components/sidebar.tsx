@@ -16,15 +16,14 @@ import {
   useSidebar,
 } from "@repo/design-system/components/ui/sidebar";
 import { useIsMobile } from "@repo/design-system/hooks/use-mobile";
-import { BookIcon, LightbulbIcon } from "lucide-react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 import { usePrivy } from "@privy-io/react-auth";
-import { DiscordLogoIcon } from "@radix-ui/react-icons";
 import User from "components/header/user";
 import { cn } from "@repo/design-system/lib/utils";
 import { useAppConfig } from "@/hooks/useAppConfig";
+import SystemStatus, { STATUS_PAGE_URL } from "./daydream/SystemStatus";
 
 type GlobalSidebarProperties = {
   readonly children: ReactNode;
@@ -294,18 +293,43 @@ export const GlobalSidebar = ({ children }: GlobalSidebarProperties) => {
                   </SidebarMenuItem>
                 ))}
                 {key === "footer" && (
-                  <SidebarMenuItem key="My Account" className="w-full">
-                    <SidebarMenuButton
-                      className={cn(
-                        "hover:bg-muted cursor-pointer",
-                        isMobile && _sidebar.openMobile && "ml-4",
-                      )}
-                      asChild
-                      tooltip="My Account"
-                    >
-                      <User />
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
+                  <>
+                    <SidebarMenuItem key="System Status" className="w-full">
+                      <SidebarMenuButton
+                        className={cn(
+                          "hover:bg-muted cursor-pointer",
+                          isMobile && _sidebar.openMobile && "ml-4",
+                        )}
+                        asChild
+                        tooltip="System Status"
+                        onClick={() => window.open(STATUS_PAGE_URL, "_blank")}
+                      >
+                        <div>
+                          <SystemStatus />
+                          <span
+                            className={cn(
+                              "hidden ml-1.5",
+                              _sidebar.openMobile && "block",
+                            )}
+                          >
+                            System Status
+                          </span>
+                        </div>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                    <SidebarMenuItem key="My Account" className="w-full">
+                      <SidebarMenuButton
+                        className={cn(
+                          "hover:bg-muted cursor-pointer",
+                          isMobile && _sidebar.openMobile && "ml-4",
+                        )}
+                        asChild
+                        tooltip="My Account"
+                      >
+                        <User />
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  </>
                 )}
               </SidebarMenu>
             </SidebarGroup>
