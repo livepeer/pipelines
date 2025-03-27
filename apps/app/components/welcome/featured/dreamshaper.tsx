@@ -2,19 +2,17 @@
 
 import { TrackedButton } from "@/components/analytics/TrackedButton";
 import { ClipButton } from "@/components/ClipButton";
+import { useOnboard } from "@/components/daydream/OnboardContext";
 import { StreamInfo } from "@/components/footer/stream-info";
 import { StreamDebugPanel } from "@/components/stream/stream-debug-panel";
-import { useCommandSuggestions } from "@/hooks/useCommandSuggestions";
 import useFullscreenStore from "@/hooks/useFullscreenStore";
 import useMobileStore from "@/hooks/useMobileStore";
 import { usePromptStore } from "@/hooks/usePromptStore";
-import { usePromptVersionStore } from "@/hooks/usePromptVersionStore";
-import { StreamStatus } from "@/hooks/useStreamStatus";
+import { useStreamStatus } from "@/hooks/useStreamStatus";
 import { useTrialTimer } from "@/hooks/useTrialTimer";
 import track from "@/lib/track";
 import { usePrivy } from "@privy-io/react-auth";
 import { Button } from "@repo/design-system/components/ui/button";
-import { Input } from "@repo/design-system/components/ui/input";
 import { Separator } from "@repo/design-system/components/ui/separator";
 import { SidebarTrigger } from "@repo/design-system/components/ui/sidebar";
 import {
@@ -29,86 +27,63 @@ import {
   Minimize,
   Share,
   Share2,
-  SlidersHorizontal,
   Users2,
-  WandSparkles,
 } from "lucide-react";
 import { Inter } from "next/font/google";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
-import TextareaAutosize from "react-textarea-autosize";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import {
+  getStreamUrl,
+  useDreamshaperStore,
+  useInitialization,
+  useParamsHandling,
+  useStreamUpdates,
+} from "../../../hooks/useDreamshaper";
+import { InputPrompt } from "./InputPrompt";
 import { ManagedBroadcast } from "./ManagedBroadcast";
 import { LivepeerPlayer } from "./player";
-import SettingsMenu from "./prompt-settings";
-import { ShareModal } from "./ShareModal";
-import { UpdateOptions } from "./useDreamshaper";
-import { MAX_PROMPT_LENGTH, useValidateInput } from "./useValidateInput";
+import { ShareModalContent, useShareModal } from "./ShareModal";
+import { Dialog } from "@repo/design-system/components/ui/dialog";
 
-const PROMPT_PLACEHOLDER = "Enter your prompt...";
 const MAX_STREAM_TIMEOUT_MS = 300000; // 5 minutes
 
 const inter = Inter({ subsets: ["latin"] });
 
-interface DreamshaperProps {
-  outputPlaybackId: string | null;
-  streamKey: string | null;
-  streamId: string | null;
-  streamUrl: string | null;
-  handleUpdate: (prompt: string, options?: UpdateOptions) => void;
-  loading: boolean;
-  streamKilled?: boolean;
-  fullResponse?: any;
-  updating: boolean;
-  live: boolean;
-  statusMessage: string;
-  capacityReached: boolean;
-  status: StreamStatus | null;
-  createShareLink?: () => Promise<{ error: string | null; url: string | null }>;
-  sharedPrompt?: string | null;
-  pipeline: any | null;
-}
+export default function Dreamshaper() {
+  useInitialization();
+  useParamsHandling();
 
-// Define type for command options
-type CommandOption = {
-  id: string;
-  label: string;
-  type: string;
-  description: string;
-};
+  const { handleStreamUpdate } = useStreamUpdates();
+  const { stream, pipeline, updating, loading, sharedPrompt } =
+    useDreamshaperStore();
 
-// Define type for pipeline parameters
-type PipelineParam = {
-  name: string;
-  description?: string;
-  widget?: string;
-  // Add other fields if needed
-};
+  const {
+    status,
+    isLive: live,
+    statusMessage,
+    capacityReached,
+  } = useStreamStatus(stream?.id, false);
 
-export default function Dreamshaper({
-  outputPlaybackId,
-  streamKey,
-  streamId,
-  streamUrl,
-  handleUpdate,
-  loading,
-  streamKilled = false,
-  fullResponse,
-  updating,
-  live,
-  statusMessage,
-  capacityReached,
-  status,
-  createShareLink,
-  sharedPrompt = null,
-  pipeline,
-}: DreamshaperProps) {
+  const { currentStep, selectedPrompt, setSelectedPrompt } = useOnboard();
+
+  useEffect(() => {
+    if (selectedPrompt && status === "ONLINE") {
+      if (handleStreamUpdate) {
+        handleStreamUpdate(selectedPrompt, { silent: true });
+      }
+      setSelectedPrompt(null);
+    }
+  }, [selectedPrompt, status, handleStreamUpdate]);
+
   const { setLastSubmittedPrompt, hasSubmittedPrompt, setHasSubmittedPrompt } =
     usePromptStore();
 
   const { isMobile } = useMobileStore();
   const outputPlayerRef = useRef<HTMLDivElement>(null);
+  const searchParams = useSearchParams();
 
   const { authenticated, user } = usePrivy();
   const { timeRemaining, formattedTime } = useTrialTimer();
@@ -117,9 +92,25 @@ export default function Dreamshaper({
   const [timeoutReached, setTimeoutReached] = useState(false);
   const [showOverlay, setShowOverlay] = useState(true);
   const [debugOpen, setDebugOpen] = useState(false);
-  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+
+  const { open, setOpen, openModal } = useShareModal();
 
   const toastShownRef = useRef(false);
+  const [streamUrl, setStreamUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!stream || !stream.stream_key) {
+      return;
+    }
+    setStreamUrl(
+      getStreamUrl(
+        user?.email?.address?.endsWith("@livepeer.org") ?? false,
+        stream?.stream_key,
+        searchParams,
+        stream.whip_url,
+      ),
+    );
+  }, [stream]);
 
   useEffect(() => {
     const setVh = () => {
@@ -142,16 +133,16 @@ export default function Dreamshaper({
     if (live) {
       track("daydream_stream_started", {
         is_authenticated: authenticated,
-        playback_id: outputPlaybackId,
-        stream_id: streamId,
+        playback_id: stream?.output_playback_id,
+        stream_id: stream?.id,
       });
     }
-  }, [live]);
+  }, [stream, live]);
 
   const showCapacityToast = () => {
     track("capacity_reached", {
       is_authenticated: authenticated,
-      stream_id: streamId,
+      stream_id: stream?.id,
     });
     toast("Platform at full capacity", {
       description: (
@@ -202,12 +193,12 @@ export default function Dreamshaper({
       track("daydream_capacity_reached", {
         is_authenticated: authenticated,
         reason,
-        stream_id: streamId,
+        stream_id: stream?.id,
       });
       showCapacityToast();
       toastShownRef.current = true;
     }
-  }, [capacityReached, timeoutReached, live]);
+  }, [capacityReached, timeoutReached, live, stream]);
 
   useEffect(() => {
     if (live) {
@@ -236,766 +227,251 @@ export default function Dreamshaper({
   }, [pipeline]);
 
   return (
-    <div className="relative flex flex-col min-h-screen overflow-y-auto">
-      {/* Header section */}
-      <div
-        className={cn(
-          "flex items-start mt-4 w-full max-w-[calc(min(100%,calc((100vh-16rem)*16/9)))] mx-auto relative",
-          isFullscreen && "hidden",
-          isMobile ? "justify-center px-3 py-3" : "justify-between py-3",
-        )}
-      >
-        {isMobile && (
-          <div className="absolute flex items-center left-2 top-7">
-            <SidebarTrigger />
-            <Separator orientation="vertical" className="mr-2 h-4" />
-          </div>
-        )}
-        <div
-          className={cn(
-            "flex flex-col gap-2",
-            isMobile ? "text-center items-center" : "text-left items-start",
-          )}
-        >
-          <h1
+    <div className="relative">
+      <div className={currentStep !== "main" ? "hidden" : ""}>
+        <div className="relative flex flex-col min-h-screen overflow-y-auto">
+          {/* Header section */}
+          <div
             className={cn(
-              inter.className,
-              "text-lg md:text-xl flex flex-col uppercase font-light",
-              isMobile ? "items-center" : "items-start",
+              "flex items-start mt-4 w-full max-w-[calc(min(100%,calc((100vh-16rem)*16/9)))] mx-auto relative",
+              isFullscreen && "hidden",
+              isMobile ? "justify-center px-3 py-3" : "justify-between py-3",
             )}
           >
-            Daydream
-            <div className="flex items-center gap-2 text-xs">
-              <span className="uppercase text-xs">by</span>
-              <span className="w-16">
-                <Image
-                  src="https://mintlify.s3.us-west-1.amazonaws.com/livepeer-ai/logo/light.svg"
-                  alt="Livepeer logo"
-                  width={100}
-                  height={100}
-                />
-              </span>
+            {isMobile && (
+              <div className="absolute flex items-center left-2 top-7">
+                <SidebarTrigger />
+                <Separator orientation="vertical" className="mr-2 h-4" />
+              </div>
+            )}
+            <div
+              className={cn(
+                "flex flex-col gap-2",
+                isMobile ? "text-center items-center" : "text-left items-start",
+              )}
+            >
+              <h1
+                className={cn(
+                  inter.className,
+                  "text-lg md:text-xl flex flex-col uppercase font-light",
+                  isMobile ? "items-center" : "items-start",
+                )}
+              >
+                Daydream
+                <div className="flex items-center gap-2 text-xs">
+                  <span className="uppercase text-xs">by</span>
+                  <span className="w-16">
+                    <Image
+                      src="https://mintlify.s3.us-west-1.amazonaws.com/livepeer-ai/logo/light.svg"
+                      alt="Livepeer logo"
+                      width={100}
+                      height={100}
+                    />
+                  </span>
+                </div>
+              </h1>
+              <p className="text-xs md:text-sm text-muted-foreground max-w-[280px] md:max-w-none">
+                Transform your video in real-time with AI
+              </p>
             </div>
-          </h1>
-          <p className="text-xs md:text-sm text-muted-foreground max-w-[280px] md:max-w-none">
-            Transform your video in real-time with AI
-          </p>
-        </div>
 
-        {/* Header buttons */}
-        {!isMobile && !isFullscreen && (
-          <div className="absolute bottom-3 right-0 flex gap-2">
-            <div className="flex items-center gap-2">
-              {/* Only show clip button when stream is live */}
-              {live && outputPlaybackId && streamUrl && (
+            {/* Header buttons */}
+            {!isMobile && !isFullscreen && (
+              <div className="absolute bottom-3 right-0 flex gap-2">
+                <div className="flex items-center gap-2">
+                  {/* Only show clip button when stream is live */}
+                  {live && stream?.output_playback_id && streamUrl && (
+                    <ClipButton
+                      disabled={!stream?.output_playback_id || !streamUrl}
+                      className="mr-2"
+                      trackAnalytics={track}
+                      isAuthenticated={authenticated}
+                    />
+                  )}
+                  <TrackedButton
+                    trackingEvent="daydream_share_button_clicked"
+                    trackingProperties={{
+                      is_authenticated: authenticated,
+                    }}
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 gap-2"
+                    onClick={openModal}
+                  >
+                    <Share className="h-4 w-4" />
+                    <span>Share</span>
+                  </TrackedButton>
+                </div>
+
+                <Link
+                  target="_blank"
+                  href="https://discord.com/invite/hxyNHeSzCK"
+                  className="bg-transparent hover:bg-black/10 border border-muted-foreground/30 text-foreground px-3 py-1 text-xs rounded-lg font-semibold h-[36px] flex items-center"
+                >
+                  Join Community
+                </Link>
+              </div>
+            )}
+          </div>
+
+          {isMobile && (
+            <div className="z-50 flex gap-2 justify-end px-4 mt-2">
+              {/* Mobile clip button - only show when live */}
+              {live && stream?.output_playback_id && streamUrl && (
                 <ClipButton
-                  disabled={!outputPlaybackId || !streamUrl}
-                  className="mr-2"
+                  disabled={!stream?.output_playback_id || !streamUrl}
                   trackAnalytics={track}
                   isAuthenticated={authenticated}
+                  isMobile={true}
                 />
               )}
 
-              {createShareLink && (
-                <TrackedButton
-                  trackingEvent="daydream_share_button_clicked"
-                  trackingProperties={{
-                    is_authenticated: authenticated,
-                  }}
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 gap-2"
-                  onClick={() => setIsShareModalOpen(true)}
-                >
-                  <Share className="h-4 w-4" />
-                  <span>Share</span>
-                </TrackedButton>
-              )}
-            </div>
-
-            <Link
-              target="_blank"
-              href="https://discord.com/invite/hxyNHeSzCK"
-              className="bg-transparent hover:bg-black/10 border border-muted-foreground/30 text-foreground px-3 py-1 text-xs rounded-lg font-semibold h-[36px] flex items-center"
-            >
-              Join Community
-            </Link>
-          </div>
-        )}
-      </div>
-
-      {isMobile && (
-        <div className="z-50 flex gap-2 justify-end px-4 mt-2">
-          {/* Mobile clip button - only show when live */}
-          {live && outputPlaybackId && streamUrl && (
-            <ClipButton
-              disabled={!outputPlaybackId || !streamUrl}
-              trackAnalytics={track}
-              isAuthenticated={authenticated}
-              isMobile={true}
-            />
-          )}
-
-          {/* Mobile share button */}
-          {createShareLink && hasSubmittedPrompt && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="p-0 m-0 bg-transparent border-none hover:bg-transparent focus:outline-none"
-              onClick={() => setIsShareModalOpen(true)}
-            >
-              <Share2 className="h-4 w-4" />
-            </Button>
-          )}
-
-          <Link target="_blank" href="https://discord.com/invite/hxyNHeSzCK">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="p-0 m-0 bg-transparent border-none hover:bg-transparent focus:outline-none"
-            >
-              <Users2 className="h-4 w-4" />
-            </Button>
-          </Link>
-        </div>
-      )}
-
-      {/* Main content area */}
-      <div
-        className={cn(
-          "px-4 my-4 flex items-center justify-center md:mb-0 md:my-2 mb-5",
-          isFullscreen && "fixed inset-0 z-[9999] p-0 m-0",
-        )}
-      >
-        <div
-          ref={outputPlayerRef}
-          className={cn(
-            "w-full max-w-[calc(min(100%,calc((100vh-16rem)*16/9)))] mx-auto md:aspect-video aspect-square bg-sidebar rounded-2xl overflow-hidden relative",
-            isFullscreen && "w-full h-full max-w-none rounded-none",
-          )}
-        >
-          {/* Hide controls for mobile (TODO: when it's a react component,
-          we can use the component's own controls - now it's an iframe) */}
-          {isFullscreen && isMobile && (
-            <div className="absolute bottom-0 left-0 right-0 h-[10%] bg-background z-40" />
-          )}
-
-          {/* Go full screen */}
-          <Tooltip delayDuration={0}>
-            <TooltipTrigger asChild>
-              <div className="absolute top-4 right-4 z-50">
-                <TrackedButton
-                  trackingEvent="daydream_fullscreen_button_clicked"
-                  trackingProperties={{
-                    is_authenticated: authenticated,
-                  }}
+              {/* Mobile share button */}
+              {hasSubmittedPrompt && (
+                <Button
                   variant="ghost"
                   size="icon"
-                  className="bg-transparent hover:bg-transparent focus:outline-none focus-visible:ring-0 active:bg-transparent"
-                  onClick={toggleFullscreen}
+                  className="p-0 m-0 bg-transparent border-none hover:bg-transparent focus:outline-none"
+                  onClick={openModal}
                 >
-                  {isFullscreen ? (
-                    <Minimize className="h-4 w-4" />
-                  ) : (
-                    <Maximize className="h-4 w-4" />
-                  )}
-                </TrackedButton>
-              </div>
-            </TooltipTrigger>
-            <TooltipContent
-              side="top"
-              sideOffset={5}
-              className="bg-white text-black border border-gray-200 shadow-md dark:bg-zinc-900 dark:text-white dark:border-zinc-700"
-            >
-              {isFullscreen ? "Exit fullscreen" : "Expand screen"}
-            </TooltipContent>
-          </Tooltip>
+                  <Share2 className="h-4 w-4" />
+                </Button>
+              )}
 
-          {/* Live indicator*/}
-          {live && (
-            <div className="absolute top-4 left-4 bg-neutral-800 text-gray-400 px-5 py-1 text-xs rounded-full border border-gray-500">
-              <span className="inline-block w-2 h-2 bg-red-500 rounded-full mr-2"></span>
-              <span className="text-white font-bold">Live</span>
+              <Link
+                target="_blank"
+                href="https://discord.com/invite/hxyNHeSzCK"
+              >
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="p-0 m-0 bg-transparent border-none hover:bg-transparent focus:outline-none"
+                >
+                  <Users2 className="h-4 w-4" />
+                </Button>
+              </Link>
             </div>
           )}
 
-          {/* Timer overlay */}
-          {!authenticated && timeRemaining !== null && (
-            <div className="absolute top-5 right-16 bg-neutral-800/30 text-gray-400 px-5 py-1 text-xs rounded-full border border-gray-500 z-50">
-              <span className="text-[10px] mr-2">left</span> {formattedTime}
-            </div>
-          )}
-
-          {loading ? (
-            <div className="w-full h-full flex items-center justify-center">
-              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-            </div>
-          ) : streamKilled ? (
-            <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-              Thank you for trying out Livepeer's AI pipelines.
-            </div>
-          ) : outputPlaybackId ? (
-            <>
-              <div className="relative w-full h-full">
-                <LivepeerPlayer
-                  playbackId={outputPlaybackId}
-                  isMobile={isMobile}
-                  stream_key={streamKey}
-                  streamId={streamId as string}
-                  pipelineId={pipeline.id}
-                  pipelineType={pipeline.type}
-                  isFullscreen={isFullscreen}
-                />
-              </div>
-              {!live || showOverlay ? (
-                <div className="absolute inset-0 bg-black flex flex-col items-center justify-center rounded-2xl z-[6]">
-                  <Loader2 className="h-8 w-8 animate-spin text-white" />
-                  {statusMessage && (
-                    <span className="mt-4 text-white text-sm">
-                      {statusMessage}
-                    </span>
-                  )}
-                </div>
-              ) : null}
-            </>
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-              Waiting for stream to start...
-            </div>
-          )}
-        </div>
-      </div>
-
-      <ManagedBroadcast
-        streamUrl={streamUrl}
-        isFullscreen={isFullscreen}
-        outputPlayerRef={outputPlayerRef}
-        loading={loading}
-        streamId={(streamId as string) || ""}
-        pipelineId={pipeline?.id || ""}
-        pipelineType={pipeline?.type || ""}
-      />
-
-      {/* Input prompt */}
-      <InputPrompt
-        pipeline={pipeline}
-        streamId={streamId}
-        updating={updating}
-        handleUpdate={handleUpdate}
-      />
-
-      <div
-        className={cn(
-          "mx-auto flex items-center justify-center gap-4 text-xs capitalize text-muted-foreground mt-2 mb-4",
-          isFullscreen && "hidden",
-        )}
-      >
-        {user?.email?.address?.endsWith("@livepeer.org") && (
-          <>
-            <button
-              onClick={() => setDebugOpen(!debugOpen)}
-              className="hover:text-muted-foreground/80"
-            >
-              Debug Panel
-            </button>
-          </>
-        )}
-      </div>
-
-      {user?.email?.address?.endsWith("@livepeer.org") && (
-        <>
-          {debugOpen && (
-            <StreamDebugPanel
-              streamId={streamId}
-              streamKey={streamKey}
-              status={status}
-              fullResponse={fullResponse}
-              onClose={() => setDebugOpen(false)}
-            />
-          )}
-        </>
-      )}
-
-      {streamId && (
-        <StreamInfo
-          streamId={streamId}
-          streamKey={streamKey}
-          isFullscreen={isFullscreen}
-        />
-      )}
-
-      {createShareLink && (
-        <ShareModal
-          isOpen={isShareModalOpen}
-          onClose={() => setIsShareModalOpen(false)}
-          createShareLink={createShareLink}
-          streamId={streamId}
-        />
-      )}
-    </div>
-  );
-}
-
-const InputPrompt = ({
-  pipeline,
-  streamId,
-  updating,
-  handleUpdate,
-}: {
-  pipeline: any;
-  streamId: string | null;
-  updating: boolean;
-  handleUpdate: (prompt: string, options?: UpdateOptions) => void;
-}) => {
-  const { isFullscreen } = useFullscreenStore();
-  const { isMobile } = useMobileStore();
-  const { lastSubmittedPrompt, setLastSubmittedPrompt, setHasSubmittedPrompt } =
-    usePromptStore();
-  const { promptVersion, incrementPromptVersion } = usePromptVersionStore();
-
-  const { authenticated } = usePrivy();
-
-  const [inputValue, setInputValue] = useState("");
-  const [isInputHovered, setInputHovered] = useState(false);
-  const [settingsOpened, setSettingsOpened] = useState(false);
-  const ref = useRef<HTMLInputElement | HTMLTextAreaElement>();
-
-  const { profanity, exceedsMaxLength } = useValidateInput(inputValue);
-
-  const commandOptions = useMemo<CommandOption[]>(() => {
-    if (!pipeline?.prioritized_params) return [];
-
-    return pipeline.prioritized_params.map((param: PipelineParam) => ({
-      id: param.name.toLowerCase().replace(/\s+/g, "-"),
-      label: param.name,
-      type: param.widget || "string",
-      description: param.description || param.name,
-    }));
-  }, [pipeline?.prioritized_params]);
-
-  const restoreLastPrompt = () => {
-    if (lastSubmittedPrompt) {
-      setInputValue(lastSubmittedPrompt);
-      setTimeout(() => {
-        if (ref && typeof ref !== "function" && ref.current) {
-          ref.current.focus();
-
-          if ("setSelectionRange" in ref.current) {
-            const length = lastSubmittedPrompt.length;
-            ref.current.setSelectionRange(length, length);
-          }
-        }
-      }, 0);
-    }
-  };
-
-  const {
-    commandMenuOpen,
-    filteredOptions,
-    handleSelectOption,
-    handleKeyDown: handleCommandKeyDown,
-    caretRef,
-    selectedOptionIndex,
-  } = useCommandSuggestions({
-    options: commandOptions,
-    inputValue,
-    setInputValue,
-    inputRef: ref as React.RefObject<HTMLInputElement | HTMLTextAreaElement>,
-  });
-
-  const formatInputWithHighlights = () => {
-    if (!inputValue) return null;
-
-    const commandRegex = /--([a-zA-Z0-9_-]+)(?:\s+(?:"([^"]*)"|([\S]*)))/g;
-
-    const parts = [];
-    let lastIndex = 0;
-    let match: RegExpExecArray | null;
-
-    while ((match = commandRegex.exec(inputValue)) !== null) {
-      if (match.index > lastIndex) {
-        parts.push({
-          text: inputValue.substring(lastIndex, match.index),
-          isCommand: false,
-          isValue: false,
-        });
-      }
-
-      const commandName = `--${match![1]}`;
-      const isValidCommand = commandOptions.some(
-        option => option.id === match![1],
-      );
-
-      parts.push({
-        text: commandName,
-        isCommand: true,
-        isValid: isValidCommand,
-        isValue: false,
-      });
-
-      parts.push({
-        text: " ",
-        isCommand: false,
-        isValue: false,
-      });
-
-      const value =
-        match![2] !== undefined ? `"${match![2]}"` : match![3] || "";
-      parts.push({
-        text: value,
-        isCommand: false,
-        isValue: true,
-        isValidCommand: isValidCommand,
-      });
-
-      lastIndex = match.index + match[0].length;
-    }
-
-    if (lastIndex < inputValue.length) {
-      parts.push({
-        text: inputValue.substring(lastIndex),
-        isCommand: false,
-        isValue: false,
-      });
-    }
-
-    return (
-      <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-        <pre className="text-sm font-sans whitespace-pre-wrap overflow-hidden w-full m-0 p-0 pl-3">
-          {parts.map((part, i) => (
-            <span
-              key={i}
-              className={
-                part.isCommand && part.isValid
-                  ? "text-green-500 font-medium"
-                  : part.isValue && part.isValidCommand
-                    ? "text-foreground font-bold"
-                    : ""
-              }
-            >
-              {part.text}
-            </span>
-          ))}
-        </pre>
-      </div>
-    );
-  };
-
-  useEffect(() => {
-    if (!isMobile) {
-      if (ref && typeof ref !== "function" && ref.current) {
-        ref.current.focus();
-      }
-    }
-  }, [isMobile]);
-
-  const submitPrompt = () => {
-    if (inputValue) {
-      if (isMobile && document.activeElement instanceof HTMLElement) {
-        document.activeElement.blur();
-      }
-
-      track("daydream_prompt_submitted", {
-        is_authenticated: authenticated,
-        prompt: inputValue,
-        stream_id: streamId,
-      });
-
-      handleUpdate(inputValue, { silent: true });
-      setLastSubmittedPrompt(inputValue); // Store the submitted prompt
-      setHasSubmittedPrompt(true);
-      setInputValue("");
-      incrementPromptVersion(promptVersion + 1);
-    } else {
-      console.error("No input value to submit");
-    }
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (commandMenuOpen) {
-      handleCommandKeyDown(e);
-      return;
-    }
-
-    if (e.key === "ArrowUp" && !inputValue && lastSubmittedPrompt) {
-      e.preventDefault();
-      restoreLastPrompt();
-      return;
-    }
-
-    if (
-      !updating &&
-      !profanity &&
-      !exceedsMaxLength &&
-      e.key === "Enter" &&
-      !(e.metaKey || e.ctrlKey || e.shiftKey)
-    ) {
-      e.preventDefault();
-      submitPrompt();
-    }
-  };
-
-  return (
-    <div
-      className={cn(
-        "-translate-y-16 shadow-prompt z-50 relative mx-auto flex justify-center items-center gap-2 h-14 md:h-auto md:min-h-14 md:gap-2 mt-4 mb-2 dark:bg-[#1A1A1A] bg-neutral-100 md:rounded-xl py-2.5 px-3 md:py-1.5 md:px-3 w-[calc(100%-2rem)] md:w-[calc(min(100%,800px))] border-2 border-muted-foreground/10",
-        isFullscreen
-          ? isMobile
-            ? "fixed left-1/2 bottom-[calc(env(safe-area-inset-bottom)+16px)] -translate-x-1/2 z-[10000] w-[600px] max-w-[calc(100%-2rem)] max-h-16 rounded-2xl"
-            : "fixed left-1/2 bottom-0 -translate-x-1/2 z-[10000] w-[600px] max-w-[calc(100%-2rem)] max-h-16 rounded-[100px]"
-          : isMobile
-            ? "rounded-2xl shadow-[4px_12px_16px_0px_#37373F40]"
-            : "rounded-[100px]",
-        (profanity || exceedsMaxLength) && "dark:border-red-700 border-red-600",
-      )}
-    >
-      <div
-        className="flex-1 relative flex items-center"
-        onMouseEnter={() => setInputHovered(true)}
-        onMouseLeave={() => setInputHovered(false)}
-      >
-        {!inputValue && (
+          {/* Main content area */}
           <div
-            key={lastSubmittedPrompt}
             className={cn(
-              "absolute inset-y-0 left-3 md:left-3 flex items-center text-muted-foreground/50 text-xs w-full z-10",
-              isInputHovered ? "pointer-events-auto" : "pointer-events-none",
+              "px-4 my-4 flex items-center justify-center md:mb-0 md:my-2 mb-5",
+              isFullscreen && "fixed inset-0 z-[9999] p-0 m-0",
             )}
-            onClick={e => {
-              if ((e.target as HTMLElement).closest("button")) {
-                return;
-              }
-              if (ref && typeof ref !== "function" && ref.current) {
-                ref.current.focus();
-              }
-            }}
           >
-            <span>{lastSubmittedPrompt || PROMPT_PLACEHOLDER}</span>
-            {isInputHovered && lastSubmittedPrompt && (
+            <div
+              ref={outputPlayerRef}
+              className={cn(
+                "w-full max-w-[calc(min(100%,calc((100vh-16rem)*16/9)))] mx-auto md:aspect-video aspect-square bg-sidebar rounded-2xl overflow-hidden relative",
+                isFullscreen && "w-full h-full max-w-none rounded-none",
+              )}
+            >
+              {/* Hide controls for mobile (TODO: when it's a react component,
+          we can use the component's own controls - now it's an iframe) */}
+              {isFullscreen && isMobile && (
+                <div className="absolute bottom-0 left-0 right-0 h-[10%] bg-background z-40" />
+              )}
+
+              {/* Go full screen */}
               <Tooltip delayDuration={0}>
                 <TooltipTrigger asChild>
-                  <button
-                    onClick={e => {
-                      e.stopPropagation();
-                      restoreLastPrompt();
-                    }}
-                    className="ml-2 text-muted-foreground hover:text-foreground transition-colors flex items-center justify-center relative z-20"
-                    aria-label="Restore last prompt"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="h-3.5 w-3.5"
+                  <div className="absolute top-4 right-4 z-50">
+                    <TrackedButton
+                      trackingEvent="daydream_fullscreen_button_clicked"
+                      trackingProperties={{
+                        is_authenticated: authenticated,
+                      }}
+                      variant="ghost"
+                      size="icon"
+                      className="bg-transparent hover:bg-transparent focus:outline-none focus-visible:ring-0 active:bg-transparent"
+                      onClick={toggleFullscreen}
                     >
-                      <path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-                      <path d="m15 5 4 4" />
-                    </svg>
-                  </button>
+                      {isFullscreen ? (
+                        <Minimize className="h-4 w-4" />
+                      ) : (
+                        <Maximize className="h-4 w-4" />
+                      )}
+                    </TrackedButton>
+                  </div>
                 </TooltipTrigger>
                 <TooltipContent
                   side="top"
                   sideOffset={5}
                   className="bg-white text-black border border-gray-200 shadow-md dark:bg-zinc-900 dark:text-white dark:border-zinc-700"
                 >
-                  Edit prompt
+                  {isFullscreen ? "Exit fullscreen" : "Expand screen"}
                 </TooltipContent>
               </Tooltip>
-            )}
-          </div>
-        )}
 
-        {/* Input wrapper with highlighting */}
-        <div
-          className="relative w-full flex items-center"
-          style={{ height: "auto" }}
-        >
-          {formatInputWithHighlights()}
-          {isMobile ? (
-            <Input
-              ref={ref as React.RefObject<HTMLInputElement>}
-              className="w-full shadow-none border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-sm outline-none bg-transparent py-3 font-sans"
-              value={inputValue}
-              onChange={e => setInputValue(e.target.value)}
-              onFocus={() => {
-                window.scrollTo({
-                  top: document.body.scrollHeight,
-                  behavior: "smooth",
-                });
-              }}
-              onKeyDown={handleKeyDown}
-              style={{
-                color: "transparent",
-                caretColor: "black",
-                paddingLeft: "12px",
-              }}
-            />
-          ) : (
-            <TextareaAutosize
-              ref={ref as React.RefObject<HTMLTextAreaElement>}
-              minRows={1}
-              maxRows={5}
-              className="text-black w-full shadow-none border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-sm outline-none bg-transparent py-3 break-all font-sans pl-3"
-              value={inputValue}
-              onChange={e => setInputValue(e.target.value)}
-              onKeyDown={handleKeyDown}
-              style={{
-                resize: "none",
-                color: "transparent",
-                caretColor: "black",
-              }}
-            />
-          )}
-        </div>
+              {/* Live indicator*/}
+              {live && (
+                <div className="absolute top-4 left-4 bg-neutral-800 text-gray-400 px-5 py-1 text-xs rounded-full border border-gray-500">
+                  <span className="inline-block w-2 h-2 bg-red-500 rounded-full mr-2"></span>
+                  <span className="text-white font-bold">Live</span>
+                </div>
+              )}
 
-        {/* Command menu popover - Positioned ABOVE the input */}
-        {commandMenuOpen && filteredOptions.length > 0 && (
-          <div
-            className="absolute z-50 bottom-full mb-2 w-60 bg-popover rounded-md border shadow-md"
-            style={{
-              left: caretRef.current?.left ?? 0,
-            }}
-          >
-            <div className="p-1">
-              {filteredOptions.map((option, index) => (
-                <button
-                  key={option.id}
-                  className={`flex w-full items-start gap-2 rounded-sm px-2 py-1.5 text-left text-sm ${
-                    index === selectedOptionIndex
-                      ? "bg-accent"
-                      : "hover:bg-accent"
-                  } focus:outline-none`}
-                  onClick={() => handleSelectOption(option)}
-                >
-                  <div className="flex flex-col">
-                    <div className="font-medium flex items-center">
-                      <span>--{option.id}</span>
-                      {option.type && (
-                        <span className="ml-1.5 text-muted-foreground opacity-70 text-xs">
-                          {option.type}
+              {/* Timer overlay */}
+              {!authenticated && timeRemaining !== null && (
+                <div className="absolute top-5 right-16 bg-neutral-800/30 text-gray-400 px-5 py-1 text-xs rounded-full border border-gray-500 z-50">
+                  <span className="text-[10px] mr-2">left</span> {formattedTime}
+                </div>
+              )}
+
+              {loading ? (
+                <div className="w-full h-full flex items-center justify-center">
+                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                </div>
+              ) : stream?.output_playback_id ? (
+                <>
+                  <div className="relative w-full h-full">
+                    <LivepeerPlayer
+                      playbackId={stream?.output_playback_id}
+                      isMobile={isMobile}
+                      stream_key={stream?.stream_key}
+                      streamId={stream?.id as string}
+                      pipelineId={pipeline.id}
+                      pipelineType={pipeline.type}
+                      isFullscreen={isFullscreen}
+                    />
+                  </div>
+                  {!live || showOverlay ? (
+                    <div className="absolute inset-0 bg-black flex flex-col items-center justify-center rounded-2xl z-[6]">
+                      <Loader2 className="h-8 w-8 animate-spin text-white" />
+                      {statusMessage && (
+                        <span className="mt-4 text-white text-sm">
+                          {statusMessage}
                         </span>
                       )}
                     </div>
-                    {option.description && (
-                      <span className="text-xs text-muted-foreground">
-                        {option.description}
-                      </span>
-                    )}
-                  </div>
-                </button>
-              ))}
+                  ) : null}
+                </>
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+                  Waiting for stream to start...
+                </div>
+              )}
             </div>
           </div>
-        )}
+
+          <ManagedBroadcast
+            streamUrl={streamUrl}
+            outputPlayerRef={outputPlayerRef}
+          />
+
+          {/* Input prompt */}
+          <InputPrompt />
+
+          <StreamDebugPanel />
+
+          <StreamInfo />
+
+          <Dialog open={open} onOpenChange={setOpen}>
+            <ShareModalContent />
+          </Dialog>
+        </div>
       </div>
-      {inputValue && (
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 rounded-full"
-          onClick={e => {
-            e.preventDefault();
-            setInputValue("");
-          }}
-        >
-          <span className="text-muted-foreground text-lg">×</span>
-        </Button>
-      )}
-
-      {/* Settings button */}
-      {!isMobile && (
-        <div className="relative">
-          <Tooltip delayDuration={50}>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 rounded-full hidden md:flex"
-                onClick={e => {
-                  e.preventDefault();
-                  setSettingsOpened(!settingsOpened);
-                }}
-              >
-                <SlidersHorizontal className="h-4 w-4 text-muted-foreground" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent
-              side="top"
-              className="bg-white text-black border border-gray-200 shadow-md dark:bg-zinc-900 dark:text-white dark:border-zinc-700"
-            >
-              Adjustments
-            </TooltipContent>
-          </Tooltip>
-
-          {settingsOpened && (
-            <SettingsMenu
-              pipeline={pipeline}
-              inputValue={inputValue}
-              setInputValue={setInputValue}
-              onClose={() => setSettingsOpened(false)}
-            />
-          )}
-        </div>
-      )}
-
-      {!isMobile && <Separator orientation="vertical" className="h-6 mr-2" />}
-
-      <Tooltip delayDuration={50}>
-        <TooltipTrigger asChild>
-          <div className="relative inline-block">
-            <Button
-              disabled={
-                updating || !inputValue || profanity || exceedsMaxLength
-              }
-              onClick={e => {
-                e.preventDefault();
-                submitPrompt();
-              }}
-              className={cn(
-                "border-none items-center justify-center font-semibold text-xs bg-[#000000] flex disabled:bg-[#000000] disabled:opacity-80",
-                isMobile
-                  ? "w-auto h-9 aspect-square rounded-md"
-                  : "w-auto h-9 aspect-square rounded-md",
-              )}
-            >
-              {updating ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <WandSparkles className="h-4 w-4 stroke-[2]" />
-              )}
-            </Button>
-          </div>
-        </TooltipTrigger>
-        <TooltipContent
-          side="top"
-          className="bg-white text-black border border-gray-200 shadow-md dark:bg-zinc-900 dark:text-white dark:border-zinc-700"
-        >
-          Prompt <span className="text-gray-400 dark:text-gray-500">Enter</span>
-        </TooltipContent>
-      </Tooltip>
-
-      {(profanity || exceedsMaxLength) && (
-        <div
-          className={cn(
-            "absolute -top-10 left-0 mx-auto flex items-center justify-center gap-4 text-xs text-muted-foreground mt-4",
-            isMobile && "-top-8 text-[9px] left-auto",
-          )}
-        >
-          {exceedsMaxLength ? (
-            <span className="text-red-600">
-              {`Please fix your prompt as it exceeds the maximum length of ${MAX_PROMPT_LENGTH} characters`}
-            </span>
-          ) : (
-            <span className="text-red-600">
-              Please fix your prompt as it may contain harmful words
-            </span>
-          )}
-        </div>
-      )}
     </div>
   );
-};
+}

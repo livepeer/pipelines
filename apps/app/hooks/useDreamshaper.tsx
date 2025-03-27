@@ -1,17 +1,18 @@
-import { type ReactElement, useCallback, useEffect, useState } from "react";
-import { usePrivy } from "@privy-io/react-auth";
 import { getPipeline } from "@/app/api/pipelines/get";
-import { upsertStream } from "@/app/api/streams/upsert";
-import { toast } from "sonner";
-import { updateParams } from "@/app/api/streams/update-params";
 import { getStream } from "@/app/api/streams/get";
 import {
   createSharedParams,
   getSharedParams,
 } from "@/app/api/streams/share-params";
-import { useSearchParams, usePathname } from "next/navigation";
+import { updateParams } from "@/app/api/streams/update-params";
+import { Stream, upsertStream } from "@/app/api/streams/upsert";
 import { useGatewayHost } from "@/hooks/useGatewayHost";
-import { getAppConfig, isProduction } from "@/lib/env";
+import { getAppConfig } from "@/lib/env";
+import { usePrivy } from "@privy-io/react-auth";
+import { usePathname, useSearchParams } from "next/navigation";
+import { useCallback, useEffect } from "react";
+import { toast } from "sonner";
+import { create } from "zustand";
 
 const DEFAULT_PIPELINE_ID = "pip_DRQREDnSei4HQyC8"; // Staging Dreamshaper ID
 const DUMMY_USER_ID_FOR_NON_AUTHENTICATED_USERS =
@@ -31,6 +32,34 @@ const createDefaultValues = (pipeline: any) => {
   }, {});
 };
 
+export const getStreamUrl = (
+  isAdmin: boolean,
+  streamKey: string,
+  searchParams: URLSearchParams,
+  storedWhipUrl?: string | null,
+): string => {
+  const customWhipServer = searchParams.get("whipServer");
+
+  const app = getAppConfig(searchParams);
+
+  if (customWhipServer) {
+    if (customWhipServer.includes("<STREAM_KEY>")) {
+      return customWhipServer.replace("<STREAM_KEY>", streamKey);
+    }
+    return `${customWhipServer}${streamKey}/whip`;
+  }
+
+  if (isAdmin) {
+    const baseUrl = process.env.NEXT_PUBLIC_AI_GATEWAY_API_BASE_URL;
+    if (!baseUrl) {
+      return `${app.whipUrl}${streamKey}/whip`;
+    }
+    return `${baseUrl}${streamKey}/whip`;
+  }
+
+  return `${app.whipUrl}${streamKey}/whip`;
+};
+
 const processInputValues = (inputValues: any) => {
   return Object.fromEntries(
     Object.entries(inputValues).map(([key, value]) => {
@@ -42,10 +71,6 @@ const processInputValues = (inputValues: any) => {
     }),
   );
 };
-
-export interface UpdateOptions {
-  silent?: boolean;
-}
 
 const extractCommands = (promptText: string) => {
   // First, collect all commands and their values
@@ -85,70 +110,84 @@ const extractCommands = (promptText: string) => {
   return { cleanedPrompt, commands };
 };
 
-export function useDreamshaper() {
-  const { user, ready } = usePrivy();
+const storeParamsInLocalStorage = (params: any, pipelineVersion: string) => {
+  try {
+    localStorage.setItem(
+      DREAMSHAPER_PARAMS_STORAGE_KEY,
+      JSON.stringify(params),
+    );
+    localStorage.setItem(DREAMSHAPER_PARAMS_VERSION_KEY, pipelineVersion);
+  } catch (error) {
+    console.error("Error storing parameters in localStorage:", error);
+  }
+};
+
+const getParamsFromLocalStorage = (currentPipelineVersion: string) => {
+  try {
+    const storedVersion = localStorage.getItem(DREAMSHAPER_PARAMS_VERSION_KEY);
+    const storedParams = localStorage.getItem(DREAMSHAPER_PARAMS_STORAGE_KEY);
+
+    // If versions don't match or stored version doesn't exist, clear storage and return null
+    if (!storedVersion || storedVersion !== currentPipelineVersion) {
+      localStorage.removeItem(DREAMSHAPER_PARAMS_STORAGE_KEY);
+      localStorage.removeItem(DREAMSHAPER_PARAMS_VERSION_KEY);
+      return null;
+    }
+
+    return storedParams ? JSON.parse(storedParams) : null;
+  } catch (error) {
+    console.error("Error retrieving parameters from localStorage:", error);
+    return null;
+  }
+};
+
+interface DreamshaperState {
+  loading: boolean;
+  updating: boolean;
+  stream: Stream | null;
+  pipeline: any | null;
+  sharedParamsApplied: boolean;
+  sharedPrompt: string | null;
+
+  setLoading: (loading: boolean) => void;
+  setUpdating: (updating: boolean) => void;
+  setStream: (stream: Stream) => void;
+  setPipeline: (pipeline: any) => void;
+  setSharedParamsApplied: (applied: boolean) => void;
+  setSharedPrompt: (prompt: string | null) => void;
+}
+
+export const useDreamshaperStore = create<DreamshaperState>(set => ({
+  loading: true,
+  updating: false,
+  stream: null,
+  pipeline: null,
+  sharedParamsApplied: false,
+  sharedPrompt: null,
+
+  setLoading: loading => set({ loading }),
+  setUpdating: updating => set({ updating }),
+  setStream: stream => set({ stream }),
+  setPipeline: pipeline => set({ pipeline }),
+  setSharedParamsApplied: applied => set({ sharedParamsApplied: applied }),
+  setSharedPrompt: prompt => set({ sharedPrompt: prompt }),
+}));
+
+export function useParamsHandling() {
   const searchParams = useSearchParams();
-  const pathname = usePathname();
-
-  const pipelineId =
-    searchParams.get("pipeline_id") ||
-    process.env.NEXT_PUBLIC_SHOWCASE_PIPELINE_ID ||
-    DEFAULT_PIPELINE_ID;
-
-  const [loading, setLoading] = useState(true);
-  const [updating, setUpdating] = useState(false);
-  const [stream, setStream] = useState<any>(null);
-  const [pipeline, setPipeline] = useState<any>(null);
-  const [inputValues, setInputValues] = useState<any>(null);
-  const [fullResponse, setFullResponse] = useState<any>(null);
-  const [sharedParamsApplied, setSharedParamsApplied] = useState(false);
-  const [sharedPrompt, setSharedPrompt] = useState<string | null>(null);
+  const {
+    stream,
+    pipeline,
+    sharedParamsApplied,
+    setSharedParamsApplied,
+    setSharedPrompt,
+  } = useDreamshaperStore();
 
   const { gatewayHost, ready: gatewayHostReady } = useGatewayHost(
     stream?.id || null,
   );
 
-  const storeParamsInLocalStorage = useCallback(
-    (params: any, pipelineVersion: string) => {
-      try {
-        localStorage.setItem(
-          DREAMSHAPER_PARAMS_STORAGE_KEY,
-          JSON.stringify(params),
-        );
-        localStorage.setItem(DREAMSHAPER_PARAMS_VERSION_KEY, pipelineVersion);
-      } catch (error) {
-        console.error("Error storing parameters in localStorage:", error);
-      }
-    },
-    [],
-  );
-
-  const getParamsFromLocalStorage = useCallback(
-    (currentPipelineVersion: string) => {
-      try {
-        const storedVersion = localStorage.getItem(
-          DREAMSHAPER_PARAMS_VERSION_KEY,
-        );
-        const storedParams = localStorage.getItem(
-          DREAMSHAPER_PARAMS_STORAGE_KEY,
-        );
-
-        // If versions don't match or stored version doesn't exist, clear storage and return null
-        if (!storedVersion || storedVersion !== currentPipelineVersion) {
-          localStorage.removeItem(DREAMSHAPER_PARAMS_STORAGE_KEY);
-          localStorage.removeItem(DREAMSHAPER_PARAMS_VERSION_KEY);
-          return null;
-        }
-
-        return storedParams ? JSON.parse(storedParams) : null;
-      } catch (error) {
-        console.error("Error retrieving parameters from localStorage:", error);
-        return null;
-      }
-    },
-    [],
-  );
-
+  // Shared params handling
   useEffect(() => {
     const applySharedParams = async () => {
       const sharedId = searchParams.get("shared");
@@ -214,7 +253,6 @@ export function useDreamshaper() {
 
           if (response.status == 200 || response.status == 201) {
             storeParamsInLocalStorage(sharedParams, pipeline.version);
-            setInputValues(sharedParams);
           }
 
           setSharedParamsApplied(true);
@@ -231,12 +269,12 @@ export function useDreamshaper() {
     searchParams,
     stream,
     sharedParamsApplied,
-    storeParamsInLocalStorage,
     gatewayHostReady,
     gatewayHost,
     pipeline,
   ]);
 
+  // Local storage params handling
   useEffect(() => {
     if (
       searchParams.get("shared") ||
@@ -266,8 +304,6 @@ export function useDreamshaper() {
         });
 
         if (response.status == 200 || response.status == 201) {
-          setInputValues(storedParams);
-
           if (storedParams?.prompt?.["5"]?.inputs?.text) {
             setSharedPrompt(storedParams.prompt["5"].inputs.text);
           }
@@ -284,89 +320,17 @@ export function useDreamshaper() {
     stream,
     searchParams,
     sharedParamsApplied,
-    getParamsFromLocalStorage,
     gatewayHostReady,
     gatewayHost,
     pipeline,
   ]);
+}
 
-  useEffect(() => {
-    if (!ready) return;
+export function useStreamUpdates() {
+  const { stream, pipeline, setUpdating } = useDreamshaperStore();
 
-    let isMounted = true;
-
-    const fetchData = async () => {
-      try {
-        const pipeline = await getPipeline(pipelineId);
-        if (!isMounted) return;
-        setPipeline(pipeline);
-
-        const inputValues = createDefaultValues(pipeline);
-        const processedInputValues = processInputValues(inputValues);
-        setInputValues(processedInputValues);
-
-        const currentUserId =
-          user?.id ?? DUMMY_USER_ID_FOR_NON_AUTHENTICATED_USERS;
-
-        const { data: stream, error } = await upsertStream(
-          {
-            pipeline_id: pipeline.id,
-            pipeline_params: processedInputValues,
-          },
-          currentUserId,
-        );
-
-        if (error) {
-          toast.error(`Error creating stream for playback ${error}`);
-          return;
-        }
-
-        if (!isMounted) return;
-        setStream(stream);
-
-        if (stream && stream.stream_key) {
-          const whipUrl = getStreamUrl(stream.stream_key, searchParams);
-
-          if (!stream.whip_url || stream.whip_url !== whipUrl) {
-            const updatedStream = {
-              ...stream,
-              whip_url: whipUrl,
-              name: stream.name || "",
-              from_playground: false,
-            };
-
-            const { data: updatedStreamData, error: updateError } =
-              await upsertStream(updatedStream, currentUserId);
-
-            if (updateError) {
-              console.error(
-                "Error updating stream with WHIP URL:",
-                updateError,
-              );
-            } else if (updatedStreamData && isMounted) {
-              setStream(updatedStreamData);
-              console.log("Stream state updated with new data");
-            }
-          }
-        }
-      } catch (error) {
-        console.error(error);
-      } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
-      }
-    };
-
-    fetchData();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [pathname, ready, user, searchParams]);
-
-  const handleUpdate = useCallback(
-    async (prompt: string, options?: UpdateOptions) => {
+  const handleStreamUpdate = useCallback(
+    async (prompt: string, options?: { silent?: boolean }) => {
       if (!stream) {
         console.error("No stream found, aborting update");
         if (!options?.silent) {
@@ -376,16 +340,20 @@ export function useDreamshaper() {
       }
 
       setUpdating(true);
-      const streamId = stream.id;
-      const streamKey = stream.stream_key;
+
       let toastId;
       if (!options?.silent) {
         toastId = toast.loading("Updating the stream with prompt...");
       }
 
       try {
-        const { data: streamData, error: streamError } =
-          await getStream(streamId);
+        if (!stream.id || !stream.stream_key) {
+          console.error("No stream Found");
+          return;
+        }
+        const { data: streamData, error: streamError } = await getStream(
+          stream.id,
+        );
 
         if (streamError) {
           console.error("Error fetching stream:", streamError);
@@ -469,7 +437,6 @@ export function useDreamshaper() {
         }
 
         storeParamsInLocalStorage(updatedInputValues, freshPipeline.version);
-        setInputValues(updatedInputValues);
 
         if (!streamData?.gateway_host) {
           console.error("No gateway host found in stream data");
@@ -482,7 +449,7 @@ export function useDreamshaper() {
         const response = await updateParams({
           body: updatedInputValues,
           host: streamData?.gateway_host as string,
-          streamKey: streamKey as string,
+          streamKey: stream.stream_key,
         });
 
         if (response.status == 200 || response.status == 201) {
@@ -495,19 +462,120 @@ export function useDreamshaper() {
           }
         }
       } catch (error) {
-        console.error("Error in handleUpdate:", error);
+        console.error("Error updating stream with prompt:", error);
         if (!options?.silent) {
-          toast.error("An unexpected error occurred", { id: toastId });
+          toast.error("Error updating stream with prompt", {
+            id: toastId,
+          });
         }
       } finally {
         setUpdating(false);
       }
     },
-    [stream, pipeline, storeParamsInLocalStorage],
+    [stream, setUpdating],
   );
 
+  return { handleStreamUpdate };
+}
+
+export function useInitialization() {
+  const { user, ready } = usePrivy();
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+
+  const { setLoading, setStream, setPipeline } = useDreamshaperStore();
+
+  const pipelineId =
+    searchParams.get("pipeline_id") ||
+    process.env.NEXT_PUBLIC_SHOWCASE_PIPELINE_ID ||
+    DEFAULT_PIPELINE_ID;
+
+  useEffect(() => {
+    if (!ready) return;
+
+    let isMounted = true;
+
+    const fetchData = async () => {
+      try {
+        const pipeline = await getPipeline(pipelineId);
+        if (!isMounted) return;
+        setPipeline(pipeline);
+
+        const inputValues = createDefaultValues(pipeline);
+        const processedInputValues = processInputValues(inputValues);
+
+        const currentUserId =
+          user?.id ?? DUMMY_USER_ID_FOR_NON_AUTHENTICATED_USERS;
+
+        const { data: stream, error } = await upsertStream(
+          {
+            pipeline_id: pipeline.id,
+            pipeline_params: processedInputValues,
+          },
+          currentUserId,
+        );
+
+        if (error) {
+          toast.error(`Error creating stream for playback ${error}`);
+          return;
+        }
+
+        if (!isMounted) return;
+        setStream(stream);
+
+        if (stream && stream.stream_key) {
+          const whipUrl = getStreamUrl(
+            user?.email?.address?.endsWith("@livepeer.org") ?? false,
+            stream.stream_key,
+            searchParams,
+          );
+
+          if (!stream.whip_url || stream.whip_url !== whipUrl) {
+            const updatedStream = {
+              ...stream,
+              whip_url: whipUrl,
+              name: stream.name || "",
+              from_playground: false,
+            };
+
+            const { data: updatedStreamData, error: updateError } =
+              await upsertStream(updatedStream, currentUserId);
+
+            if (updateError) {
+              console.error(
+                "Error updating stream with WHIP URL:",
+                updateError,
+              );
+            } else if (updatedStreamData && isMounted) {
+              setStream(updatedStreamData);
+              console.log("Stream state updated with new data");
+            }
+          }
+        }
+      } catch (error) {
+        console.error(error);
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [pathname, ready, user, searchParams]);
+}
+
+export const useShareLink = () => {
+  const { stream, pipeline } = useDreamshaperStore();
+  const { user } = usePrivy();
+  const { ready: gatewayHostReady } = useGatewayHost(stream?.id || null);
+
   const createShareLink = useCallback(async () => {
-    if (!stream) {
+    if (!stream || !pipeline || !gatewayHostReady) {
       console.error("No stream found, cannot create share link");
       return { error: "No stream found", url: null };
     }
@@ -538,39 +606,7 @@ export function useDreamshaper() {
       console.error("Error in createShareLink:", error);
       return { error: String(error), url: null };
     }
-  }, [stream, user, pipeline, getParamsFromLocalStorage]);
+  }, [stream, user, pipeline, gatewayHostReady]);
 
-  return {
-    stream,
-    outputPlaybackId: stream?.output_playback_id,
-    streamUrl: stream
-      ? getStreamUrl(stream.stream_key, searchParams, stream.whip_url)
-      : null,
-    pipeline,
-    handleUpdate,
-    loading,
-    fullResponse,
-    updating,
-    createShareLink,
-    sharedPrompt,
-  };
-}
-
-function getStreamUrl(
-  streamKey: string,
-  searchParams: URLSearchParams,
-  storedWhipUrl?: string | null,
-): string {
-  const customWhipServer = searchParams.get("whipServer");
-
-  const app = getAppConfig(searchParams);
-
-  if (customWhipServer) {
-    if (customWhipServer.includes("<STREAM_KEY>")) {
-      return customWhipServer.replace("<STREAM_KEY>", streamKey);
-    }
-    return `${customWhipServer}${streamKey}/whip`;
-  }
-
-  return `${app.whipUrl}${streamKey}/whip`;
-}
+  return { createShareLink };
+};
