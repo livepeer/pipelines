@@ -1,6 +1,4 @@
 "use client";
-
-// Remove the invalid declaration
 import { sendKafkaEvent } from "@/app/api/metrics/kafka";
 import { getStreamPlaybackInfo } from "@/app/api/streams/get";
 import { LPPLayer } from "@/components/playground/player";
@@ -74,14 +72,6 @@ export const LivepeerPlayer = React.memo(
     const iframePlayerFallback =
       process.env.NEXT_PUBLIC_IFRAME_PLAYER_FALLBACK === "true";
     const useVideoJS = searchParams.get("videoJS") === "true" || useFallbackVideoJSPlayer;
-
-    useEffect(() => {
-      console.log("Current state:", { 
-        useVideoJS, 
-        useFallbackVideoJSPlayer, 
-        src: getSrc(useMediamtx ? playerUrl : playbackInfo)
-      });
-    }, [useVideoJS, useFallbackVideoJSPlayer, useMediamtx, playerUrl, playbackInfo]);
 
     useEffect(() => {
       if (useMediamtx || iframePlayerFallback || useVideoJS) {

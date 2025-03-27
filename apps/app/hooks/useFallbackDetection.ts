@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
+const TIME_TO_FALLBACK_VIDEOJS_MS = 10000;
 /**
  * This hook tracks errors and determines when to switch to the VideoJS fallback player
  * based on error patterns and video playback status.
@@ -9,17 +10,17 @@ export const useFallbackDetection = (playbackId: string) => {
   const lastErrorTimeRef = useRef<number | null>(null);
   const errorIntervalRef = useRef<NodeJS.Timeout | null>(null);
   
-  useEffect(() => {
-    if (useFallbackPlayer) {
-      console.warn("Switching to VideoJS fallback player for playbackId:", playbackId);
-    }
-  }, [useFallbackPlayer, playbackId]);
-  
   const handleError = useCallback(
     (error: any) => {
-      const errorMessage = typeof error?.message === 'string' ? error.message : 
-                         typeof error === 'string' ? error : 
-                         JSON.stringify(error);                            
+      let errorMessage;
+      try {
+        errorMessage = typeof error?.message === 'string' ? error.message : 
+                       typeof error === 'string' ? error : 
+                       JSON.stringify(error);
+      } catch (e) {
+        errorMessage = "Unserializable error object";
+      }
+      
       const currentTime = Date.now();
       lastErrorTimeRef.current = currentTime;
       
@@ -46,7 +47,7 @@ export const useFallbackDetection = (playbackId: string) => {
                            playerElement.currentTime > 0 &&
                            !playerElement.ended;
           
-          if (timeSinceLastError > 10000 && !isPlaying) {
+          if (timeSinceLastError > TIME_TO_FALLBACK_VIDEOJS_MS && !isPlaying) {
             console.warn("Switching to VideoJS fallback player.");
             setUseFallbackPlayer(true);
             
@@ -74,13 +75,6 @@ export const useFallbackDetection = (playbackId: string) => {
       }
     };
   }, []);
-  
-  useEffect(() => {
-    if (useFallbackPlayer && errorIntervalRef.current) {
-      clearInterval(errorIntervalRef.current);
-      errorIntervalRef.current = null;
-    }
-  }, [useFallbackPlayer]);
   
   return { useFallbackPlayer, handleError };
 }; 

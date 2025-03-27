@@ -29,7 +29,6 @@ import { toast } from "sonner";
 
 import { sendKafkaEvent } from "@/app/api/metrics/kafka";
 import { usePrivy } from "@privy-io/react-auth";
-import { hostname } from "os";
 
 const StatusMonitor = ({
   streamId,
