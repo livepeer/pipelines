@@ -144,6 +144,9 @@ importers:
       zod:
         specifier: ^3.24.1
         version: 3.24.1
+      zustand:
+        specifier: ^5.0.3
+        version: 5.0.3(@types/react@18.3.12)(react@18.3.1)(use-sync-external-store@1.4.0(react@18.3.1))
     devDependencies:
       '@repo/typescript-config':
         specifier: workspace:*

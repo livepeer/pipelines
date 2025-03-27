@@ -13,14 +13,14 @@ import { Input } from "@repo/design-system/components/ui/input";
 import { Copy, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import track from "@/lib/track";
+import { usePromptVersionStore } from "@/hooks/usePromptVersionStore";
+import { usePrivy } from "@privy-io/react-auth";
 
 interface ShareModalProps {
   isOpen: boolean;
   onClose: () => void;
   createShareLink: () => Promise<{ error: string | null; url: string | null }>;
   streamId?: string | null;
-  isAuthenticated: boolean;
-  promptVersion?: number;
 }
 
 export function ShareModal({
@@ -28,9 +28,9 @@ export function ShareModal({
   onClose,
   createShareLink,
   streamId,
-  isAuthenticated,
-  promptVersion = 0,
 }: ShareModalProps) {
+  const { promptVersion } = usePromptVersionStore();
+  const { authenticated } = usePrivy();
   const [isCreating, setIsCreating] = useState(false);
   const [shareUrl, setShareUrl] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -49,7 +49,7 @@ export function ShareModal({
       } else if (result.url) {
         setShareUrl(result.url);
         track("daydream_share_link_created", {
-          is_authenticated: isAuthenticated,
+          is_authenticated: authenticated,
           stream_id: streamId,
         });
       }
@@ -66,7 +66,7 @@ export function ShareModal({
       navigator.clipboard.writeText(shareUrl);
       toast.success("Link copied to clipboard!");
       track("daydream_share_link_copied", {
-        is_authenticated: isAuthenticated,
+        is_authenticated: authenticated,
         stream_id: streamId,
       });
     }
