@@ -59,6 +59,7 @@ const StatusMonitor = ({
             stream_id: streamId,
             pipeline: pipelineType,
             pipeline_id: pipelineId,
+            hostname: window.location.hostname,
             broadcaster_info: {
               ip: "",
               user_agent: navigator.userAgent,

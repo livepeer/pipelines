@@ -1,9 +1,9 @@
 "use client";
-
 import { sendKafkaEvent } from "@/app/api/metrics/kafka";
 import { getStreamPlaybackInfo } from "@/app/api/streams/get";
 import { LPPLayer } from "@/components/playground/player";
 import { useAppConfig } from "@/hooks/useAppConfig";
+import { useFallbackDetection } from "@/hooks/useFallbackDetection";
 import {
   LoadingIcon,
   MuteIcon,
@@ -19,9 +19,19 @@ import { PlaybackInfo } from "livepeer/models/components";
 import { useSearchParams } from "next/navigation";
 import * as React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import dynamic from 'next/dynamic';
 
-const MAX_RETRIES = 10;
-const MAX_DELAY = 5000;
+const VideoJSPlayer = dynamic(() => import("./videojs-player"), { 
+  ssr: false,
+  loading: () => (
+    <div className="w-full relative h-full bg-black/50 backdrop-blur">
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+        <LoadingIcon className="w-8 h-8 animate-spin" />
+      </div>
+      <PlayerLoading />
+    </div>
+  )
+});
 
 type TrackingProps = {
   playbackId: string;
@@ -46,33 +56,11 @@ export const LivepeerPlayer = React.memo(
     isFullscreen?: boolean;
   } & TrackingProps) => {
     const appConfig = useAppConfig();
-
     const [playbackInfo, setPlaybackInfo] = useState<PlaybackInfo | null>(null);
-    const [retryCount, setRetryCount] = useState(0);
     const [key, setKey] = useState(0);
-
-    const handleError = useCallback(
-      (error: any) => {
-        if (
-          error?.message?.includes("Failed to connect to peer") &&
-          retryCount < MAX_RETRIES
-        ) {
-          const delay = Math.min(1000 * Math.pow(2, retryCount), MAX_DELAY);
-          console.log("Video not playing but stream has started, retrying...");
-          setTimeout(() => {
-            setRetryCount(prev => prev + 1);
-            setKey(prev => prev + 1); // Force Player to remount
-          }, delay);
-        } else {
-          if (retryCount >= MAX_RETRIES) {
-            console.error(
-              `MAX RETRIES REACHED - No more remounting (${retryCount}/${MAX_RETRIES})`,
-            );
-          }
-        }
-      },
-      [retryCount],
-    );
+    
+    const { useFallbackPlayer: useFallbackVideoJSPlayer, handleError } = 
+      useFallbackDetection(playbackId);
 
     const playerUrl = `${appConfig.whipUrl}${appConfig?.whipUrl?.endsWith("/") ? "" : "/"}${stream_key}-out/whep`;
 
@@ -83,9 +71,10 @@ export const LivepeerPlayer = React.memo(
     const debugMode = searchParams.get("debugMode") === "true";
     const iframePlayerFallback =
       process.env.NEXT_PUBLIC_IFRAME_PLAYER_FALLBACK === "true";
+    const useVideoJS = searchParams.get("videoJS") === "true" || useFallbackVideoJSPlayer;
 
     useEffect(() => {
-      if (useMediamtx || iframePlayerFallback) {
+      if (useMediamtx || iframePlayerFallback || useVideoJS) {
         return;
       }
       const fetchPlaybackInfo = async () => {
@@ -93,7 +82,7 @@ export const LivepeerPlayer = React.memo(
         setPlaybackInfo(info);
       };
       fetchPlaybackInfo();
-    }, [playbackId, useMediamtx, iframePlayerFallback]);
+    }, [playbackId, useMediamtx, iframePlayerFallback, useVideoJS]);
 
     if (iframePlayerFallback) {
       return (
@@ -101,6 +90,19 @@ export const LivepeerPlayer = React.memo(
           output_playback_id={playbackId}
           stream_key={stream_key || null}
           isMobile={isMobile}
+        />
+      );
+    }
+
+    if (useVideoJS) {
+      return (
+        <VideoJSPlayer 
+          src={playerUrl}
+          isMobile={isMobile}
+          playbackId={playbackId}
+          streamId={streamId}
+          pipelineId={pipelineId}
+          pipelineType={pipelineType}
         />
       );
     }
@@ -280,7 +282,7 @@ const useFirstFrameLoaded = ({
 
   // Send event on load
   useEffect(() => {
-    const sendEvent = async () =>
+    const sendEvent = async () => {
       await sendKafkaEvent(
         "stream_trace",
         {
@@ -291,6 +293,8 @@ const useFirstFrameLoaded = ({
           stream_id: streamId,
           pipeline: pipelineType,
           pipeline_id: pipelineId,
+          player: "livepeer",
+          hostname: window.location.hostname,
           // TODO: Get viewer info from client
           viewer_info: {
             ip: "",
@@ -302,6 +306,7 @@ const useFirstFrameLoaded = ({
         "daydream",
         "server",
       );
+    };
     sendEvent();
   }, []);
 
@@ -322,6 +327,8 @@ const useFirstFrameLoaded = ({
             stream_id: streamId,
             pipeline: pipelineType,
             pipeline_id: pipelineId,
+            player: "livepeer",
+            hostname: window.location.hostname,
             // TODO: Get viewer info from client
             viewer_info: {
               ip: "",
@@ -357,3 +364,4 @@ const DebugTimer = (
     </div>
   );
 };
+
