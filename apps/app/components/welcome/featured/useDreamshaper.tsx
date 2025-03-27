@@ -573,11 +573,10 @@ function getStreamUrl(
     return `${customWhipServer}${streamKey}/whip`;
   }
 
-  // If is admin, use the fixed whip server
   if (isAdmin) {
-    const baseUrl = process.env.NEXT_PUBLIC_STREAM_STATUS_ENDPOINT_URL;
+    const baseUrl = process.env.NEXT_PUBLIC_AI_GATEWAY_API_BASE_URL;
     if (!baseUrl) {
-      throw new Error("NEXT_PUBLIC_STREAM_STATUS_ENDPOINT_URL is not set");
+      return `${app.whipUrl}${streamKey}/whip`;
     }
     return `${baseUrl}${streamKey}/whip`;
   }
