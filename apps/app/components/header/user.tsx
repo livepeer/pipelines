@@ -1,7 +1,10 @@
 "use client";
 
+import useMobileStore from "@/hooks/useMobileStore";
+import { submitToHubspot } from "@/lib/analytics/hubspot";
+import { identifyUser } from "@/lib/analytics/mixpanel";
 import track from "@/lib/track";
-import { usePrivy, User as PrivyUser } from "@privy-io/react-auth";
+import { User as PrivyUser, usePrivy } from "@privy-io/react-auth";
 import {
   Avatar,
   AvatarFallback,
@@ -15,17 +18,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@repo/design-system/components/ui/dropdown-menu";
-import { createUser } from "./action";
+import { cn } from "@repo/design-system/lib/utils";
 import { LogOut, UserIcon } from "lucide-react";
 import { useEffect } from "react";
-import { cn } from "@repo/design-system/lib/utils";
-import { useIsMobile } from "@repo/design-system/hooks/use-mobile";
-import { identifyUser } from "@/lib/analytics/mixpanel";
-import { submitToHubspot } from "@/lib/analytics/hubspot";
+import { createUser } from "./action";
 
 export default function User({ className }: { className?: string }) {
   const { ready, authenticated, user, login, logout } = usePrivy();
-  const isMobile = useIsMobile();
+  const { isMobile } = useMobileStore();
 
   const name =
     user?.discord?.username || user?.google?.name || user?.email?.address;

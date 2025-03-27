@@ -74,7 +74,7 @@ export const useStreamStatus = (
   const loading = !error && !fullResponse;
   const capacityReached = orchestratorFailureCountRef.current >= 5;
 
-  const isLive =
+  const live =
     [
       StreamStatus.Online,
       StreamStatus.DegradedInference,
@@ -121,7 +121,7 @@ export const useStreamStatus = (
     fullResponse,
     loading,
     error: error?.message || null,
-    isLive,
+    live,
     statusMessage: getStatusMessage(),
     capacityReached,
   };

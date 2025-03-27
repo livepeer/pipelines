@@ -145,6 +145,7 @@ interface DreamshaperState {
   loading: boolean;
   updating: boolean;
   stream: Stream | null;
+  streamUrl: string | null;
   pipeline: any | null;
   sharedParamsApplied: boolean;
   sharedPrompt: string | null;
@@ -152,6 +153,7 @@ interface DreamshaperState {
   setLoading: (loading: boolean) => void;
   setUpdating: (updating: boolean) => void;
   setStream: (stream: Stream) => void;
+  setStreamUrl: (url: string) => void;
   setPipeline: (pipeline: any) => void;
   setSharedParamsApplied: (applied: boolean) => void;
   setSharedPrompt: (prompt: string | null) => void;
@@ -161,6 +163,7 @@ export const useDreamshaperStore = create<DreamshaperState>(set => ({
   loading: true,
   updating: false,
   stream: null,
+  streamUrl: null,
   pipeline: null,
   sharedParamsApplied: false,
   sharedPrompt: null,
@@ -168,6 +171,7 @@ export const useDreamshaperStore = create<DreamshaperState>(set => ({
   setLoading: loading => set({ loading }),
   setUpdating: updating => set({ updating }),
   setStream: stream => set({ stream }),
+  setStreamUrl: streamUrl => set({ streamUrl }),
   setPipeline: pipeline => set({ pipeline }),
   setSharedParamsApplied: applied => set({ sharedParamsApplied: applied }),
   setSharedPrompt: prompt => set({ sharedPrompt: prompt }),
@@ -483,7 +487,8 @@ export function useInitialization() {
   const searchParams = useSearchParams();
   const pathname = usePathname();
 
-  const { setLoading, setStream, setPipeline } = useDreamshaperStore();
+  const { stream, setStreamUrl, setLoading, setStream, setPipeline } =
+    useDreamshaperStore();
 
   const pipelineId =
     searchParams.get("pipeline_id") ||
@@ -567,6 +572,20 @@ export function useInitialization() {
       isMounted = false;
     };
   }, [pathname, ready, user, searchParams]);
+
+  useEffect(() => {
+    if (!stream || !stream.stream_key) {
+      return;
+    }
+    setStreamUrl(
+      getStreamUrl(
+        user?.email?.address?.endsWith("@livepeer.org") ?? false,
+        stream?.stream_key,
+        searchParams,
+        stream.whip_url,
+      ),
+    );
+  }, [stream]);
 }
 
 export const useShareLink = () => {

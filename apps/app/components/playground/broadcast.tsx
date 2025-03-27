@@ -1,7 +1,5 @@
 import {
-  DisableAudioIcon,
   DisableVideoIcon,
-  EnableAudioIcon,
   EnableVideoIcon,
   LoadingIcon,
   OfflineErrorIcon,
@@ -14,20 +12,20 @@ import * as Broadcast from "@livepeer/react/broadcast";
 import * as Popover from "@radix-ui/react-popover";
 import { cn } from "@repo/design-system/lib/utils";
 import {
+  Camera,
   CheckIcon,
   ChevronDownIcon,
-  XIcon,
-  Minimize2,
   Maximize,
-  Camera,
+  Minimize2,
   SwitchCamera,
+  XIcon,
 } from "lucide-react";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { useIsMobile } from "@repo/design-system/hooks/use-mobile";
 import { toast } from "sonner";
 
 import { sendKafkaEvent } from "@/app/api/metrics/kafka";
+import useMobileStore from "@/hooks/useMobileStore";
 import { usePrivy } from "@privy-io/react-auth";
 
 const StatusMonitor = ({
@@ -101,7 +99,7 @@ export function BroadcastWithControls({
   const videoId = "live-video";
   const [localCollapsed, setLocalCollapsed] = useState(false);
   const collapsed = isCollapsed ?? localCollapsed;
-  const isMobile = useIsMobile();
+  const { isMobile } = useMobileStore();
 
   useEffect(() => {
     const videoEl = document.getElementById(videoId) as HTMLVideoElement | null;

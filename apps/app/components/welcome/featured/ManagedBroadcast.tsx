@@ -1,28 +1,21 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
 import { BroadcastWithControls } from "@/components/playground/broadcast";
-import { Loader2 } from "lucide-react";
-import { cn } from "@repo/design-system/lib/utils";
-import { useIsMobile } from "@repo/design-system/hooks/use-mobile";
-import useMobileStore from "@/hooks/useMobileStore";
-import useFullscreenStore from "@/hooks/useFullscreenStore";
 import { useDreamshaperStore } from "@/hooks/useDreamshaper";
+import useFullscreenStore from "@/hooks/useFullscreenStore";
+import useMobileStore from "@/hooks/useMobileStore";
+import { cn } from "@repo/design-system/lib/utils";
+import { Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface ManagedBroadcastProps {
-  streamUrl: string | null;
   outputPlayerRef: React.RefObject<HTMLDivElement>;
-  pipelineType?: string;
 }
 
-export function ManagedBroadcast({
-  streamUrl,
-  outputPlayerRef,
-  pipelineType,
-}: ManagedBroadcastProps) {
+export function ManagedBroadcast({ outputPlayerRef }: ManagedBroadcastProps) {
   const { isMobile } = useMobileStore();
   const { isFullscreen } = useFullscreenStore();
-  const { stream, pipeline, loading } = useDreamshaperStore();
+  const { stream, streamUrl, pipeline, loading } = useDreamshaperStore();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [playerPosition, setPlayerPosition] = useState({ bottom: 0, right: 0 });
 

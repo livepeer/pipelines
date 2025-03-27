@@ -1,10 +1,9 @@
-import Image from "next/image";
-import { useIsMobile } from "@repo/design-system/hooks/use-mobile";
-import { CameraIcon, CheckIcon } from "lucide-react";
-import { useOnboard } from "../OnboardContext";
+import useMobileStore from "@/hooks/useMobileStore";
 import track from "@/lib/track";
 import { usePrivy } from "@privy-io/react-auth";
 import { cn } from "@repo/design-system/lib/utils";
+import { CameraIcon, CheckIcon } from "lucide-react";
+import { useOnboard } from "../OnboardContext";
 
 const useMediaPermissions = () => {
   const { setCameraPermission, setCurrentStep, hasSharedPrompt } = useOnboard();
@@ -81,7 +80,7 @@ const useMediaPermissions = () => {
 };
 
 export default function CameraAccess() {
-  const isMobile = useIsMobile();
+  const { isMobile } = useMobileStore();
   const { currentStep, cameraPermission } = useOnboard();
   const requestMediaPermissions = useMediaPermissions();
 
