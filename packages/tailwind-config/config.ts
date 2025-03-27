@@ -21,9 +21,6 @@ export const config: Config = {
       },
     },
     extend: {
-      boxShadow: {
-        prompt: "8px 12px 24px rgba(13, 19, 30, 0.15)",
-      },
       colors: {
         border: "hsl(var(--border) / <alpha-value>)",
         input: "hsl(var(--input) / <alpha-value>)",
