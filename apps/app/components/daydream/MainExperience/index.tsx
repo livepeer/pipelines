@@ -5,15 +5,30 @@ import { SidebarProvider } from "@repo/design-system/components/ui/sidebar";
 import { cn } from "@repo/design-system/lib/utils";
 import { useEffect, useState } from "react";
 import { usePrivy } from "@privy-io/react-auth";
+import { useMediaPermissions } from "../WelcomeScreen/CameraAccess";
 
 export default function MainExperience() {
-  const { cameraPermission, currentStep } = useOnboard();
+  const { currentStep, cameraPermission, setCameraPermission } = useOnboard();
   const { user } = usePrivy();
   const [isVisible, setIsVisible] = useState(false);
+  const { requestMediaPermissions } = useMediaPermissions();
+
+  // Request camera permission if not granted
+  useEffect(() => {
+    const requestCameraPermission = async () => {
+      const hasAllowedCamera = await requestMediaPermissions();
+      if (!hasAllowedCamera) {
+        setCameraPermission("denied");
+      }
+    };
+
+    if (currentStep === "main" && cameraPermission === "prompt") {
+      requestCameraPermission();
+    }
+  }, [currentStep, cameraPermission, requestMediaPermissions]);
 
   useEffect(() => {
     if (currentStep === "main") {
-      localStorage.setItem(`hasSeenLandingPage-${user?.id}`, "true");
       // Add a small delay to ensure the fade-in starts after the welcome screen fades out
       setTimeout(() => {
         setIsVisible(true);
@@ -23,7 +38,7 @@ export default function MainExperience() {
     }
   }, [currentStep, user?.id]);
 
-  return cameraPermission === "granted" ? (
+  return (
     <SidebarProvider
       open={false}
       className={cn(
@@ -38,5 +53,5 @@ export default function MainExperience() {
         </div>
       </GlobalSidebar>
     </SidebarProvider>
-  ) : null;
+  );
 }

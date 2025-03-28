@@ -7,9 +7,10 @@ export type CameraPermission = "prompt" | "granted" | "denied";
 
 interface OnboardContextType {
   // Current step in the onboarding flow
+  initialStep: OnboardingStep;
   currentStep: OnboardingStep;
-  // Camera permission state
-  initialCameraValidation: boolean;
+  // Initialization of user and camera permissions
+  isInitializing: boolean;
   hasSharedPrompt: boolean;
   cameraPermission: CameraPermission;
   // Selected options for each step
@@ -22,7 +23,7 @@ interface OnboardContextType {
   setCameraPermission: (permission: CameraPermission) => void;
   setSelectedPersonas: (personas: string[]) => void;
   setSelectedPrompt: (prompt: string | null) => void;
-  setInitialCameraValidation: (validation: boolean) => void;
+  setIsInitializing: (initializing: boolean) => void;
   setFadingOut: (fadingOut: boolean) => void;
 }
 
@@ -42,31 +43,38 @@ export function OnboardProvider({
     useState<CameraPermission>("prompt");
   const [selectedPersonas, setSelectedPersonas] = useState<string[]>([]);
   const [selectedPrompt, setSelectedPrompt] = useState<string | null>(null);
-  const [initialCameraValidation, setInitialCameraValidation] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(true);
   const [isFadingOut, setFadingOut] = useState(false);
+  const [initialStep, _] = useState<OnboardingStep>(() => {
+    // TODO: Persist this step in DB and move away from local storage
+    const step = localStorage.getItem("daydream_onboarding_step");
+    return step ? (step as OnboardingStep) : "persona";
+  });
 
   const value = useMemo(
     () => ({
+      initialStep,
       currentStep,
       cameraPermission,
       selectedPersonas,
       selectedPrompt,
-      initialCameraValidation,
+      isInitializing,
       isFadingOut,
       setCurrentStep,
       setCameraPermission,
       setSelectedPersonas,
       setSelectedPrompt,
-      setInitialCameraValidation,
+      setIsInitializing,
       setFadingOut,
       hasSharedPrompt,
     }),
     [
+      initialStep,
       currentStep,
       cameraPermission,
       selectedPersonas,
       selectedPrompt,
-      initialCameraValidation,
+      isInitializing,
       isFadingOut,
       hasSharedPrompt,
     ],

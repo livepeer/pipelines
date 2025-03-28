@@ -1,4 +1,5 @@
 const config = {
+  reactStrictMode: false,
   images: {
     remotePatterns: [
       {

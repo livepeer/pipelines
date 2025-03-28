@@ -7,7 +7,7 @@ import { useDreamshaper } from "@/components/welcome/featured/useDreamshaper";
 import { useStreamStatus } from "@/hooks/useStreamStatus";
 import { useOnboard } from "../OnboardContext";
 
-export default function MainExperience() {
+export default function DaydreamContent() {
   const dreamshaperState = useDreamshaper();
   const { stream, handleUpdate, pipeline } = dreamshaperState;
   const { status, isLive, statusMessage, capacityReached, fullResponse } =
@@ -24,8 +24,6 @@ export default function MainExperience() {
     }
   }, [selectedPrompt, status, handleUpdate]);
 
-  const examplePrompt = selectedPrompt;
-
   return (
     <div className="relative">
       <div className={currentStep !== "main" ? "hidden" : ""}>
@@ -39,7 +37,7 @@ export default function MainExperience() {
           status={status}
           fullResponse={fullResponse}
           pipeline={pipeline}
-          sharedPrompt={dreamshaperState.sharedPrompt || examplePrompt}
+          sharedPrompt={dreamshaperState.sharedPrompt || selectedPrompt}
         />
         <ClientSideTracker eventName="home_page_view" />
       </div>

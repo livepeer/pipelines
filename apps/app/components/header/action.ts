@@ -3,6 +3,34 @@
 import { User } from "@privy-io/react-auth";
 import { createServerClient } from "@repo/supabase";
 
+export async function updateUserPersonas(user: User, personas: string[]) {
+  const supabase = await createServerClient();
+  const { data } = await supabase
+    .from("users")
+    .select("*")
+    .eq("id", user?.id)
+    .single();
+
+  if (!data) {
+    console.error("updateUserPersonas: User not found");
+    return { success: false };
+  }
+
+  const { error: updateError } = await supabase
+    .from("users")
+    .update({
+      additional_details: { ...data.additional_details, personas },
+    })
+    .eq("id", user?.id);
+
+  if (updateError) {
+    console.error(updateError);
+    return { success: false };
+  }
+
+  return { success: true };
+}
+
 export async function createUser(user: User) {
   //  check if the user exists in supabase, if not, create them
   const supabase = await createServerClient();
