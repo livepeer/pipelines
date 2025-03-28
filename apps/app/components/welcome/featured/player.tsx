@@ -132,6 +132,14 @@ export const LivepeerPlayer = React.memo(
           backoffMax={1000}
           timeout={300000}
           lowLatency="force"
+          iceServers={{
+            urls: [
+              "stun:stun.l.google.com:19302",
+              "stun:global.stun.twilio.com:3478",
+              "stun:stun.cloudflare.com:3478",
+              "stun:stun.services.mozilla.com:3478",
+            ],
+          }}
           onError={handleError}
         >
           <div
