@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { useOnboard } from "../OnboardContext";
 import track from "@/lib/track";
 import { usePrivy } from "@privy-io/react-auth";
-import { updateUserPersonas } from "@/components/header/action";
+import { updateUserAdditionalDetails } from "@/app/actions/user";
 
 const personas = [
   "Personal Use",
@@ -49,8 +49,11 @@ export default function Personas() {
       user_id: user?.id,
     });
     setCurrentStep(cameraPermission === "granted" ? "prompt" : "camera");
-    await updateUserPersonas(user!, selectedPersonas);
-    localStorage.setItem("daydream_onboarding_step", "camera");
+    await updateUserAdditionalDetails(user!, {
+      next_onboarding_step: "camera",
+      personas: selectedPersonas,
+      custom_persona: customPersona,
+    });
   };
 
   const isButtonDisabled =

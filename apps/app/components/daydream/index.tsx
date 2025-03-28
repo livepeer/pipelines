@@ -9,7 +9,7 @@ import MainExperience from "./MainExperience";
 import { useEffect } from "react";
 import LayoutWrapper from "./LayoutWrapper";
 import { AuthProvider } from "./LoginScreen/AuthContext";
-import { createUser } from "@/components/header/action";
+import { createUser } from "@/app/actions/user";
 import { identifyUser } from "@/lib/analytics/mixpanel";
 import { submitToHubspot } from "@/lib/analytics/hubspot";
 import track from "@/lib/track";
@@ -59,7 +59,6 @@ function DaydreamRenderer() {
     setIsInitializing,
     setCameraPermission,
     setCurrentStep,
-    initialStep,
     currentStep,
   } = useOnboard();
   const { user } = usePrivy();
@@ -70,7 +69,7 @@ function DaydreamRenderer() {
         if (!user?.id) {
           return;
         }
-        const { isNewUser } = await createUser(user);
+        const { isNewUser, user: dbUserData } = await createUser(user);
         const distinctId = localStorage.getItem("mixpanel_distinct_id");
         localStorage.setItem("mixpanel_user_id", user.id);
 
@@ -84,9 +83,11 @@ function DaydreamRenderer() {
           user_id: user.id,
           distinct_id: distinctId,
         });
-        if (isNewUser) {
-          setCurrentStep(initialStep);
-        } else {
+
+        const initialStep =
+          dbUserData?.additional_details?.next_onboarding_step ?? "persona";
+        // If the user is in main experience, check for camera permissions initially
+        if (initialStep === "main") {
           try {
             if ("permissions" in navigator) {
               const cameraPermission = await navigator.permissions.query({
@@ -100,8 +101,8 @@ function DaydreamRenderer() {
           } catch (err) {
             console.error("Error checking camera permission:", err);
           }
-          setCurrentStep("main");
         }
+        setCurrentStep(initialStep);
       } catch (err) {
         console.error("Error initializing user:", err);
       } finally {

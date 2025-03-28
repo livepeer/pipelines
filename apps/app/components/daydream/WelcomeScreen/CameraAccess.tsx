@@ -1,10 +1,10 @@
-import Image from "next/image";
 import { useIsMobile } from "@repo/design-system/hooks/use-mobile";
 import { CameraIcon, CheckIcon } from "lucide-react";
 import { useOnboard } from "../OnboardContext";
 import track from "@/lib/track";
 import { usePrivy } from "@privy-io/react-auth";
 import { cn } from "@repo/design-system/lib/utils";
+import { updateUserAdditionalDetails } from "@/app/actions/user";
 
 export const useMediaPermissions = () => {
   const { setCameraPermission } = useOnboard();
@@ -84,6 +84,7 @@ export const useMediaPermissions = () => {
 
 export default function CameraAccess() {
   const isMobile = useIsMobile();
+  const { user } = usePrivy();
   const { currentStep, cameraPermission, setCurrentStep, hasSharedPrompt } =
     useOnboard();
   const { requestMediaPermissions } = useMediaPermissions();
@@ -96,7 +97,9 @@ export default function CameraAccess() {
     const hasPermissions = await requestMediaPermissions();
     if (hasPermissions) {
       setCurrentStep(hasSharedPrompt ? "main" : "prompt");
-      localStorage.setItem("daydream_onboarding_step", "prompt");
+      await updateUserAdditionalDetails(user!, {
+        next_onboarding_step: hasSharedPrompt ? "main" : "prompt",
+      });
     }
   };
 
