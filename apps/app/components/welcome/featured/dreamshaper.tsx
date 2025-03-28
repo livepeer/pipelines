@@ -492,15 +492,15 @@ export default function Dreamshaper({
 
     const handleVisibilityChange = () => {
       if (document.visibilityState === "hidden" && !isRefreshing) {
-        // Commented for now - if we ever want to track page leave events
-        /*const eventData = {
-          type: "app_user_page_leave",
+        
+        const eventData = {
+          type: "app_user_page_visibility_change",
           user_id: user?.id || "anonymous",
           is_authenticated: authenticated,
           stream_id: streamId,
           playback_id: outputPlaybackId,
           session_duration_ms: Date.now() - pageLoadTime,
-          event_type: "leave",
+          event_type: "visibility_change",
         };
 
         if (navigator.sendBeacon) {
@@ -512,7 +512,7 @@ export default function Dreamshaper({
           })], { type: "application/json" });
           
           navigator.sendBeacon("/api/metrics/beacon", blob);
-        }*/
+        }
       }
 
       if (document.visibilityState === "visible") {
