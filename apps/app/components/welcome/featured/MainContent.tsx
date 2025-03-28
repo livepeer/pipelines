@@ -98,15 +98,7 @@ export const MainContent = () => {
       ) : stream?.output_playback_id ? (
         <>
           <div className="relative w-full h-full">
-            <LivepeerPlayer
-              playbackId={stream?.output_playback_id}
-              isMobile={isMobile}
-              stream_key={stream?.stream_key}
-              streamId={stream?.id as string}
-              pipelineId={pipeline.id}
-              pipelineType={pipeline.type}
-              isFullscreen={isFullscreen}
-            />
+            <LivepeerPlayer />
           </div>
           {!live || showOverlay ? (
             <div className="absolute inset-0 bg-black flex flex-col items-center justify-center rounded-2xl z-[6]">
