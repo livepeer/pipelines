@@ -56,10 +56,6 @@ export default function SelectPrompt() {
   const componentRef = useScrollView(currentStep === "prompt");
   const { user } = usePrivy();
 
-  useMount(() => {
-    localStorage.setItem(`hasSeenSelectPrompt-${user?.id}`, "true");
-  });
-
   useEffect(() => {
     if (currentStep === "prompt") {
       track("daydream_prompt_viewed", {
@@ -84,6 +80,7 @@ export default function SelectPrompt() {
   const handleSelectPrompt = (prompt: string) => {
     setFadingOut(true);
     setSelectedPrompt(prompt);
+    localStorage.setItem("daydream_onboarding_step", "main");
     // Wait for the fade out to complete before setting the current step to main
     setTimeout(() => {
       setCurrentStep("main");

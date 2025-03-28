@@ -6,8 +6,8 @@ import track from "@/lib/track";
 import { usePrivy } from "@privy-io/react-auth";
 import { cn } from "@repo/design-system/lib/utils";
 
-const useMediaPermissions = () => {
-  const { setCameraPermission, setCurrentStep, hasSharedPrompt } = useOnboard();
+export const useMediaPermissions = () => {
+  const { setCameraPermission } = useOnboard();
   const { authenticated } = usePrivy();
 
   const requestMediaPermissions = async () => {
@@ -56,7 +56,7 @@ const useMediaPermissions = () => {
         });
       }
 
-      setCurrentStep(hasSharedPrompt ? "main" : "prompt");
+      return hasVideo && hasAudio;
     } catch (err) {
       if (
         err instanceof Error &&
@@ -74,20 +74,31 @@ const useMediaPermissions = () => {
           "Please ensure camera and microphone permissions are enabled in your browser settings.",
         );
       }
+
+      return false;
     }
   };
 
-  return requestMediaPermissions;
+  return { requestMediaPermissions };
 };
 
 export default function CameraAccess() {
   const isMobile = useIsMobile();
-  const { currentStep, cameraPermission } = useOnboard();
-  const requestMediaPermissions = useMediaPermissions();
+  const { currentStep, cameraPermission, setCurrentStep, hasSharedPrompt } =
+    useOnboard();
+  const { requestMediaPermissions } = useMediaPermissions();
 
   if (currentStep === "persona") {
     return null;
   }
+
+  const handleRequestMediaPermissions = async () => {
+    const hasPermissions = await requestMediaPermissions();
+    if (hasPermissions) {
+      setCurrentStep(hasSharedPrompt ? "main" : "prompt");
+      localStorage.setItem("daydream_onboarding_step", "prompt");
+    }
+  };
 
   return (
     <>
@@ -100,7 +111,9 @@ export default function CameraAccess() {
           "flex flex-col gap-3 animate-fade-in",
           currentStep === "camera" && "cursor-pointer",
         )}
-        onClick={currentStep === "camera" ? requestMediaPermissions : undefined}
+        onClick={
+          currentStep === "camera" ? handleRequestMediaPermissions : undefined
+        }
       >
         <div
           className={cn(

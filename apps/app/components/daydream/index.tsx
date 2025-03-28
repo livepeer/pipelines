@@ -9,6 +9,10 @@ import MainExperience from "./MainExperience";
 import { useEffect } from "react";
 import LayoutWrapper from "./LayoutWrapper";
 import { AuthProvider } from "./LoginScreen/AuthContext";
+import { createUser } from "@/components/header/action";
+import { identifyUser } from "@/lib/analytics/mixpanel";
+import { submitToHubspot } from "@/lib/analytics/hubspot";
+import track from "@/lib/track";
 
 export default function Daydream({
   hasSharedPrompt,
@@ -51,49 +55,64 @@ export default function Daydream({
 
 function DaydreamRenderer() {
   const {
-    initialCameraValidation,
-    setInitialCameraValidation,
+    isInitializing,
+    setIsInitializing,
     setCameraPermission,
     setCurrentStep,
+    initialStep,
+    currentStep,
   } = useOnboard();
   const { user } = usePrivy();
 
-  // Check if the user has camera permission
   useEffect(() => {
-    const checkPermissions = async () => {
+    const initUser = async () => {
       try {
-        if ("permissions" in navigator) {
-          const hasVisitedMainPage = localStorage.getItem(
-            `hasSeenLandingPage-${user?.id}`,
-          );
-          const hasVisitedSelectPrompt = localStorage.getItem(
-            `hasSeenSelectPrompt-${user?.id}`,
-          );
-          const cameraPermission = await navigator.permissions.query({
-            name: "camera" as PermissionName,
-          });
+        if (!user?.id) {
+          return;
+        }
+        const { isNewUser } = await createUser(user);
+        const distinctId = localStorage.getItem("mixpanel_distinct_id");
+        localStorage.setItem("mixpanel_user_id", user.id);
 
-          if (cameraPermission.state === "granted") {
-            setCameraPermission("granted");
-            if (hasVisitedMainPage) {
-              setCurrentStep("main");
-            } else if (hasVisitedSelectPrompt) {
-              // If the user has visited the select prompt and not the main page, user is still in onboarding
-              setCurrentStep("prompt");
+        await Promise.all([
+          identifyUser(user.id, distinctId || "", user),
+          // TODO: only submit to Hubspot on production
+          isNewUser ? submitToHubspot(user) : Promise.resolve(),
+        ]);
+
+        track("user_logged_in", {
+          user_id: user.id,
+          distinct_id: distinctId,
+        });
+        if (isNewUser) {
+          setCurrentStep(initialStep);
+        } else {
+          try {
+            if ("permissions" in navigator) {
+              const cameraPermission = await navigator.permissions.query({
+                name: "camera" as PermissionName,
+              });
+
+              if (cameraPermission.state === "granted") {
+                setCameraPermission("granted");
+              }
             }
+          } catch (err) {
+            console.error("Error checking camera permission:", err);
           }
+          setCurrentStep("main");
         }
       } catch (err) {
-        console.error("Error checking camera permission:", err);
+        console.error("Error initializing user:", err);
       } finally {
-        setInitialCameraValidation(true);
+        setIsInitializing(false);
       }
     };
 
-    checkPermissions();
+    initUser();
   }, []);
 
-  if (!initialCameraValidation) {
+  if (isInitializing) {
     return (
       <LayoutWrapper>
         <div className="w-full h-screen flex items-center justify-center">
@@ -106,7 +125,7 @@ function DaydreamRenderer() {
   return (
     <>
       <WelcomeScreen />
-      <MainExperience />
+      {["main", "prompt"].includes(currentStep) && <MainExperience />}
     </>
   );
 }
