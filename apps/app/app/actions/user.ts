@@ -3,7 +3,10 @@
 import { User } from "@privy-io/react-auth";
 import { createServerClient } from "@repo/supabase";
 
-export async function updateUserPersonas(user: User, personas: string[]) {
+export async function updateUserAdditionalDetails(
+  user: User,
+  newDetails: Record<string, any>,
+) {
   const supabase = await createServerClient();
   const { data } = await supabase
     .from("users")
@@ -12,19 +15,19 @@ export async function updateUserPersonas(user: User, personas: string[]) {
     .single();
 
   if (!data) {
-    console.error("updateUserPersonas: User not found");
+    console.error("updateUserAdditionalDetails: User not found");
     return { success: false };
   }
 
-  const { error: updateError } = await supabase
+  const { error } = await supabase
     .from("users")
     .update({
-      additional_details: { ...data.additional_details, personas },
+      additional_details: { ...data.additional_details, ...newDetails },
     })
     .eq("id", user?.id);
 
-  if (updateError) {
-    console.error(updateError);
+  if (error) {
+    console.error(error);
     return { success: false };
   }
 
@@ -44,11 +47,12 @@ export async function createUser(user: User) {
   }
 
   const isNewUser = data?.length === 0;
+  let userData = data?.[0];
 
   if (isNewUser) {
     console.log("user not found, creating");
 
-    const { error } = await supabase.from("users").insert({
+    const newUser = {
       id: user?.id,
       email:
         user?.email?.address ||
@@ -61,11 +65,25 @@ export async function createUser(user: User) {
         user.email?.address?.split("@")[0] ||
         (user.discord && `${user?.id}-discord-user`),
       provider: user?.google ? "google" : user?.discord ? "discord" : "email",
-    });
+      additional_details: {
+        next_onboarding_step: "persona",
+        personas: [],
+        custom_persona: "",
+      },
+    };
+
+    const { data: createdUser, error } = await supabase
+      .from("users")
+      .insert(newUser)
+      .select()
+      .single();
+
     if (error) {
       console.error(error);
+    } else {
+      userData = createdUser;
     }
   }
 
-  return { isNewUser };
+  return { isNewUser, user: userData };
 }

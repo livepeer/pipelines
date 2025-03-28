@@ -7,6 +7,7 @@ import { usePrivy } from "@privy-io/react-auth";
 import useMount from "@/hooks/useMount";
 import { Separator } from "@repo/design-system/components/ui/separator";
 import { InfoIcon } from "lucide-react";
+import { updateUserAdditionalDetails } from "@/app/actions/user";
 
 interface PromptOption {
   id: string;
@@ -77,15 +78,17 @@ export default function SelectPrompt() {
     return null;
   }
 
-  const handleSelectPrompt = (prompt: string) => {
+  const handleSelectPrompt = async (prompt: string) => {
     setFadingOut(true);
     setSelectedPrompt(prompt);
-    localStorage.setItem("daydream_onboarding_step", "main");
     // Wait for the fade out to complete before setting the current step to main
     setTimeout(() => {
       setCurrentStep("main");
       window && window.scrollTo({ top: 0, behavior: "instant" });
     }, 1000);
+    await updateUserAdditionalDetails(user!, {
+      next_onboarding_step: "main",
+    });
   };
 
   return (

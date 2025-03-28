@@ -7,7 +7,6 @@ export type CameraPermission = "prompt" | "granted" | "denied";
 
 interface OnboardContextType {
   // Current step in the onboarding flow
-  initialStep: OnboardingStep;
   currentStep: OnboardingStep;
   // Initialization of user and camera permissions
   isInitializing: boolean;
@@ -45,15 +44,9 @@ export function OnboardProvider({
   const [selectedPrompt, setSelectedPrompt] = useState<string | null>(null);
   const [isInitializing, setIsInitializing] = useState(true);
   const [isFadingOut, setFadingOut] = useState(false);
-  const [initialStep, _] = useState<OnboardingStep>(() => {
-    // TODO: Persist this step in DB and move away from local storage
-    const step = localStorage.getItem("daydream_onboarding_step");
-    return step ? (step as OnboardingStep) : "persona";
-  });
 
   const value = useMemo(
     () => ({
-      initialStep,
       currentStep,
       cameraPermission,
       selectedPersonas,
@@ -69,7 +62,6 @@ export function OnboardProvider({
       hasSharedPrompt,
     }),
     [
-      initialStep,
       currentStep,
       cameraPermission,
       selectedPersonas,
