@@ -123,7 +123,7 @@ export default function SelectPrompt() {
                     className="object-cover"
                     priority
                   />
-                  <div className="absolute bottom-0 left-0 right-0 py-2 group-hover:py-4 bg-[rgba(28,28,28,0.25)] backdrop-blur-[24px] flex flex-col items-center justify-center gap-1 transition-all duration-300 ease-out">
+                  <div className="absolute bottom-0 left-0 right-0 py-2 group-hover:py-4 bg-[rgba(28,28,28,0.25)] backdrop-blur-[24px] flex flex-col items-center justify-center gap-2 transition-all duration-300 ease-out">
                     <div className="flex items-center gap-2">
                       <p className="font-inter font-semibold text-[12px] sm:text-[14px] leading-[1em] tracking-[-1.1%] text-[#EDEDED] text-center">
                         {option.title}

@@ -13,14 +13,18 @@ interface OnboardContextType {
   hasSharedPrompt: boolean;
   cameraPermission: CameraPermission;
   // Selected options for each step
-  selectedPersonas: string[] | null;
+  selectedPersonas: string[];
+  customPersona: string;
   selectedPrompt: string | null;
   // When a prompt is selected, we fade out the welcome screen
   isFadingOut: boolean;
   // Methods to update state
   setCurrentStep: (step: OnboardingStep) => void;
   setCameraPermission: (permission: CameraPermission) => void;
-  setSelectedPersonas: (personas: string[]) => void;
+  setSelectedPersonas: (
+    personas: string[] | ((prev: string[]) => string[]),
+  ) => void;
+  setCustomPersona: (persona: string) => void;
   setSelectedPrompt: (prompt: string | null) => void;
   setIsInitializing: (initializing: boolean) => void;
   setFadingOut: (fadingOut: boolean) => void;
@@ -41,6 +45,7 @@ export function OnboardProvider({
   const [cameraPermission, setCameraPermission] =
     useState<CameraPermission>("prompt");
   const [selectedPersonas, setSelectedPersonas] = useState<string[]>([]);
+  const [customPersona, setCustomPersona] = useState<string>("");
   const [selectedPrompt, setSelectedPrompt] = useState<string | null>(null);
   const [isInitializing, setIsInitializing] = useState(true);
   const [isFadingOut, setFadingOut] = useState(false);
@@ -50,12 +55,14 @@ export function OnboardProvider({
       currentStep,
       cameraPermission,
       selectedPersonas,
+      customPersona,
       selectedPrompt,
       isInitializing,
       isFadingOut,
       setCurrentStep,
       setCameraPermission,
       setSelectedPersonas,
+      setCustomPersona,
       setSelectedPrompt,
       setIsInitializing,
       setFadingOut,
@@ -65,6 +72,7 @@ export function OnboardProvider({
       currentStep,
       cameraPermission,
       selectedPersonas,
+      customPersona,
       selectedPrompt,
       isInitializing,
       isFadingOut,

@@ -21,9 +21,15 @@ const personas = [
 
 export default function Personas() {
   const { user } = usePrivy();
-  const { currentStep, setCurrentStep, cameraPermission } = useOnboard();
-  const [selectedPersonas, setSelectedPersonas] = useState<string[]>([]);
-  const [customPersona, setCustomPersona] = useState("");
+  const {
+    currentStep,
+    setCurrentStep,
+    cameraPermission,
+    selectedPersonas,
+    setSelectedPersonas,
+    customPersona,
+    setCustomPersona,
+  } = useOnboard();
 
   useEffect(() => {
     track("daydream_persona_viewed", {

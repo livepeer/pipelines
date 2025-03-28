@@ -60,6 +60,8 @@ function DaydreamRenderer() {
     setCameraPermission,
     setCurrentStep,
     currentStep,
+    setSelectedPersonas,
+    setCustomPersona,
   } = useOnboard();
   const { user } = usePrivy();
 
@@ -69,24 +71,19 @@ function DaydreamRenderer() {
         if (!user?.id) {
           return;
         }
-        const { isNewUser, user: dbUserData } = await createUser(user);
-        const distinctId = localStorage.getItem("mixpanel_distinct_id");
-        localStorage.setItem("mixpanel_user_id", user.id);
 
-        await Promise.all([
-          identifyUser(user.id, distinctId || "", user),
-          // TODO: only submit to Hubspot on production
-          isNewUser ? submitToHubspot(user) : Promise.resolve(),
-        ]);
-
-        track("user_logged_in", {
-          user_id: user.id,
-          distinct_id: distinctId,
-        });
+        // 1. Create or fetch the user from DB
+        const {
+          isNewUser,
+          user: { additional_details },
+        } = await createUser(user);
 
         const initialStep =
-          dbUserData?.additional_details?.next_onboarding_step ?? "persona";
-        // If the user is in main experience, check for camera permissions initially
+          additional_details.next_onboarding_step ?? "persona";
+        const initialPersonas = additional_details.personas ?? [];
+        const initialCustomPersona = additional_details.custom_persona ?? "";
+
+        // 2. If the user is in main experience, check for camera permissions initially
         if (initialStep === "main") {
           try {
             if ("permissions" in navigator) {
@@ -102,10 +99,28 @@ function DaydreamRenderer() {
             console.error("Error checking camera permission:", err);
           }
         }
+
+        setSelectedPersonas(initialPersonas);
+        setCustomPersona(initialCustomPersona);
         setCurrentStep(initialStep);
+        setIsInitializing(false);
+
+        // 3. Handle tracking after initialization
+        const distinctId = localStorage.getItem("mixpanel_distinct_id");
+        localStorage.setItem("mixpanel_user_id", user.id);
+
+        await Promise.all([
+          identifyUser(user.id, distinctId || "", user),
+          // TODO: only submit to Hubspot on production
+          isNewUser ? submitToHubspot(user) : Promise.resolve(),
+        ]);
+
+        track("user_logged_in", {
+          user_id: user.id,
+          distinct_id: distinctId,
+        });
       } catch (err) {
         console.error("Error initializing user:", err);
-      } finally {
         setIsInitializing(false);
       }
     };
