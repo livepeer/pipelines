@@ -12,7 +12,11 @@ const ERROR_MESSAGES = {
 
 export async function POST(request: Request) {
   try {
-    const userId = "did:privy:cm4x2cuiw007lh8fcj34919fu"; // Dummy user id (infra email)
+    var userId = "did:privy:cm4x2cuiw007lh8fcj34919fu"; // Dummy user id (infra email)
+    const apiKey = request.headers.get("x-api-key")
+    if (apiKey == "e2e") {
+      userId = "did:privy:cm867tdd3004alsgbenpnzov1"; // User ID for Infra E2E email, to distinguish in data
+    }
 
     const body = await request.json().catch(() => null);
     if (!body) {
