@@ -1,0 +1,273 @@
+"use client";
+
+import { useOnboard } from "@/components/daydream/OnboardContext";
+import { StreamInfo } from "@/components/footer/stream-info";
+import { StreamDebugPanel } from "@/components/stream/stream-debug-panel";
+import useFullscreenStore from "@/hooks/useFullscreenStore";
+import { usePromptStore } from "@/hooks/usePromptStore";
+import { useStreamStatus } from "@/hooks/useStreamStatus";
+import track from "@/lib/track";
+import { usePrivy } from "@privy-io/react-auth";
+import { cn } from "@repo/design-system/lib/utils";
+import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
+import {
+  useDreamshaperStore,
+  useInitialization,
+  useParamsHandling,
+  useStreamUpdates,
+} from "../../../hooks/useDreamshaper";
+import { InputPrompt } from "./InputPrompt";
+import { MainContent } from "./MainContent";
+import { ManagedBroadcast } from "./ManagedBroadcast";
+import { Header } from "./Header";
+
+export default function Dreamshaper() {
+  useInitialization();
+  useParamsHandling();
+  useCapacityMonitor();
+
+  const { handleStreamUpdate } = useStreamUpdates();
+  const { stream, pipeline, sharedPrompt } = useDreamshaperStore();
+  const { status, live } = useStreamStatus(stream?.id, false);
+  const { currentStep, selectedPrompt, setSelectedPrompt } = useOnboard();
+  const { setLastSubmittedPrompt, setHasSubmittedPrompt } = usePromptStore();
+  const { user, authenticated } = usePrivy();
+  const { isFullscreen } = useFullscreenStore();
+
+  const outputPlayerRef = useRef<HTMLDivElement>(null);
+
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  useEffect(() => {
+    track("daydream_page_view", {
+      is_authenticated: authenticated,
+    });
+  }, []);
+
+  useEffect(() => {
+    if (live) {
+      track("daydream_stream_started", {
+        is_authenticated: authenticated,
+        playback_id: stream?.output_playback_id,
+        stream_id: stream?.id,
+      });
+    }
+  }, [stream, live]);
+
+  useEffect(() => {
+    let pageLoadTime = Date.now();
+
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      setIsRefreshing(true);
+
+      const eventData = {
+        type: "app_user_page_unload",
+        user_id: user?.id || "anonymous",
+        is_authenticated: authenticated,
+        stream_id: stream?.id,
+        playback_id: stream?.output_playback_id,
+        session_duration_ms: Date.now() - pageLoadTime,
+        event_type: "unload",
+      };
+
+      if (navigator.sendBeacon) {
+        const blob = new Blob(
+          [
+            JSON.stringify({
+              eventType: "stream_trace",
+              data: eventData,
+              app: "daydream",
+              host: window.location.hostname,
+            }),
+          ],
+          { type: "application/json" },
+        );
+
+        navigator.sendBeacon("/api/metrics/beacon", blob);
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "hidden" && !isRefreshing) {
+        // Commented for now - if we ever want to track page leave events
+        /*const eventData = {
+          type: "app_user_page_leave",
+          user_id: user?.id || "anonymous",
+          is_authenticated: authenticated,
+          stream_id: streamId,
+          playback_id: outputPlaybackId,
+          session_duration_ms: Date.now() - pageLoadTime,
+          event_type: "leave",
+        };
+        if (navigator.sendBeacon) {
+          const blob = new Blob([JSON.stringify({
+            eventType: "stream_trace",
+            data: eventData,
+            app: "daydream",
+            host: window.location.hostname,
+          })], { type: "application/json" });
+          
+          navigator.sendBeacon("/api/metrics/beacon", blob);
+        }*/
+      }
+
+      if (document.visibilityState === "visible") {
+        setIsRefreshing(false);
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [
+    authenticated,
+    user,
+    stream?.id,
+    stream?.output_playback_id,
+    isRefreshing,
+  ]);
+
+  useEffect(() => {
+    if (selectedPrompt && status === "ONLINE") {
+      if (handleStreamUpdate) {
+        handleStreamUpdate(selectedPrompt, { silent: true });
+      }
+      setSelectedPrompt(null);
+    }
+  }, [selectedPrompt, status, handleStreamUpdate]);
+
+  useEffect(() => {
+    const setVh = () => {
+      const vh = window.innerHeight * 0.01;
+      document.documentElement.style.setProperty("--vh", `${vh}px`);
+    };
+
+    setVh();
+    window.addEventListener("resize", setVh);
+    return () => window.removeEventListener("resize", setVh);
+  }, []);
+
+  useEffect(() => {
+    if (sharedPrompt) {
+      setLastSubmittedPrompt(sharedPrompt);
+      setHasSubmittedPrompt(true);
+    }
+  }, [sharedPrompt, setLastSubmittedPrompt]);
+
+  useEffect(() => {
+    if (pipeline?.prioritized_params) {
+      console.log("Pipeline prioritized params:", pipeline.prioritized_params);
+    } else {
+      console.log("No pipeline prioritized params");
+    }
+  }, [pipeline]);
+
+  return (
+    <div className="relative">
+      <div className={currentStep !== "main" ? "hidden" : ""}>
+        <div className="relative flex flex-col min-h-screen overflow-y-auto">
+          <div
+            className={cn(
+              "px-4 my-4 flex items-center justify-center md:mb-0 md:my-2 mb-5",
+              isFullscreen && "fixed inset-0 z-[9999] p-0 m-0",
+            )}
+          >
+            <Header />
+          </div>
+
+          <div
+            ref={outputPlayerRef}
+            className={cn(
+              "w-full max-w-[calc(min(100%,calc((100vh-16rem)*16/9)))] mx-auto md:aspect-video aspect-square bg-sidebar rounded-2xl overflow-hidden relative",
+              isFullscreen && "w-full h-full max-w-none rounded-none",
+            )}
+          >
+            <MainContent />
+          </div>
+
+          <ManagedBroadcast outputPlayerRef={outputPlayerRef} />
+          <InputPrompt />
+          <StreamDebugPanel />
+          <StreamInfo />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const MAX_STREAM_TIMEOUT_MS = 300000; // 5 minutes
+
+export const useCapacityMonitor = () => {
+  const { authenticated } = usePrivy();
+  const { stream } = useDreamshaperStore();
+  const { live, capacityReached } = useStreamStatus(stream?.id, false);
+
+  const [timeoutReached, setTimeoutReached] = useState(false);
+  const toastShownRef = useRef(false);
+
+  const showCapacityToast = () => {
+    track("capacity_reached", {
+      is_authenticated: authenticated,
+      stream_id: stream?.id,
+    });
+    toast("Platform at full capacity", {
+      description: (
+        <div className="flex flex-col gap-2">
+          <p>
+            We are currently at capacity, join the waitlist to use the platform
+            in the future
+          </p>
+          <a
+            href="https://www.livepeer.org/daydream-waitlist"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary hover:underline font-medium"
+          >
+            Join the waitlist
+          </a>
+        </div>
+      ),
+      duration: 1000000,
+    });
+  };
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (!live) {
+        setTimeoutReached(true);
+      }
+    }, MAX_STREAM_TIMEOUT_MS);
+
+    return () => clearTimeout(timer);
+  }, [live]);
+
+  useEffect(() => {
+    if (
+      (capacityReached || (timeoutReached && !live)) &&
+      !toastShownRef.current
+    ) {
+      const reason = capacityReached
+        ? "capacity_reached"
+        : "timeout_reached_not_live";
+
+      console.error("Capacity reached, reason:", reason, {
+        capacityReached,
+        timeoutReached,
+        live,
+      });
+
+      track("daydream_capacity_reached", {
+        is_authenticated: authenticated,
+        reason,
+        stream_id: stream?.id,
+      });
+      showCapacityToast();
+      toastShownRef.current = true;
+    }
+  }, [capacityReached, timeoutReached, live, stream]);
+};

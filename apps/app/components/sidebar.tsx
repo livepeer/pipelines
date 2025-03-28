@@ -3,6 +3,9 @@
 import { isProduction } from "@/lib/env";
 import { Badge } from "@repo/design-system/components/ui/badge";
 
+import { useAppConfig } from "@/hooks/useAppConfig";
+import useMobileStore from "@/hooks/useMobileStore";
+import { usePrivy } from "@privy-io/react-auth";
 import {
   Sidebar,
   SidebarContent,
@@ -15,14 +18,11 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@repo/design-system/components/ui/sidebar";
-import { useIsMobile } from "@repo/design-system/hooks/use-mobile";
+import { cn } from "@repo/design-system/lib/utils";
+import User from "components/header/user";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
-import { usePrivy } from "@privy-io/react-auth";
-import User from "components/header/user";
-import { cn } from "@repo/design-system/lib/utils";
-import { useAppConfig } from "@/hooks/useAppConfig";
 import SystemStatus, { STATUS_PAGE_URL } from "./daydream/SystemStatus";
 
 type GlobalSidebarProperties = {
@@ -77,7 +77,7 @@ const Logo = ({ className }: { className?: string }) => (
 export const GlobalSidebar = ({ children }: GlobalSidebarProperties) => {
   const _sidebar = useSidebar();
   const router = useRouter();
-  const isMobile = useIsMobile();
+  const { isMobile } = useMobileStore();
 
   const { user } = usePrivy();
   // TODO: remove non-admin restriction as soon as pre-validation is available

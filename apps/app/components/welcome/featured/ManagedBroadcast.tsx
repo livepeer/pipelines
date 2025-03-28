@@ -1,31 +1,21 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
 import { BroadcastWithControls } from "@/components/playground/broadcast";
-import { Loader2 } from "lucide-react";
+import { useDreamshaperStore } from "@/hooks/useDreamshaper";
+import useFullscreenStore from "@/hooks/useFullscreenStore";
+import useMobileStore from "@/hooks/useMobileStore";
 import { cn } from "@repo/design-system/lib/utils";
-import { useIsMobile } from "@repo/design-system/hooks/use-mobile";
+import { Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface ManagedBroadcastProps {
-  streamUrl: string | null;
-  isFullscreen: boolean;
   outputPlayerRef: React.RefObject<HTMLDivElement>;
-  loading?: boolean;
-  streamId?: string;
-  pipelineId?: string;
-  pipelineType?: string;
 }
 
-export function ManagedBroadcast({
-  streamUrl,
-  isFullscreen,
-  outputPlayerRef,
-  loading = false,
-  streamId,
-  pipelineId,
-  pipelineType,
-}: ManagedBroadcastProps) {
-  const isMobile = useIsMobile();
+export function ManagedBroadcast({ outputPlayerRef }: ManagedBroadcastProps) {
+  const { isMobile } = useMobileStore();
+  const { isFullscreen } = useFullscreenStore();
+  const { stream, streamUrl, pipeline, loading } = useDreamshaperStore();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [playerPosition, setPlayerPosition] = useState({ bottom: 0, right: 0 });
 
@@ -146,9 +136,9 @@ export function ManagedBroadcast({
               "rounded-xl overflow-hidden",
               isMobile ? "w-full h-full" : "",
             )}
-            streamId={streamId}
-            pipelineId={pipelineId}
-            pipelineType={pipelineType}
+            streamId={stream?.id}
+            pipelineId={pipeline?.id}
+            pipelineType={pipeline?.type}
           />
         </div>
       )}
