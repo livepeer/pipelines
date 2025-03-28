@@ -19,7 +19,8 @@ const useMobileStore = create<IsMobileState>(set => {
     };
 
     mql.addEventListener("change", onChange);
-    set({ isMobile: window.innerWidth < MOBILE_BREAKPOINT });
+    console.log("onChangeCalled", window.innerWidth, MOBILE_BREAKPOINT);
+    onChange();
 
     listenerInitialized = true;
   };
@@ -29,7 +30,7 @@ const useMobileStore = create<IsMobileState>(set => {
   }
 
   return {
-    isMobile: false,
+    isMobile: window.innerWidth < MOBILE_BREAKPOINT,
   };
 });
 

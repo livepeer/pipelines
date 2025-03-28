@@ -1,6 +1,9 @@
 "use client";
 
-import { BroadcastWithControls } from "@/components/playground/broadcast";
+import {
+  BroadcastWithControls,
+  useBroadcastUIStore,
+} from "@/components/playground/broadcast";
 import { useDreamshaperStore } from "@/hooks/useDreamshaper";
 import useFullscreenStore from "@/hooks/useFullscreenStore";
 import useMobileStore from "@/hooks/useMobileStore";
@@ -14,9 +17,10 @@ interface ManagedBroadcastProps {
 
 export function ManagedBroadcast({ outputPlayerRef }: ManagedBroadcastProps) {
   const { isMobile } = useMobileStore();
+  const { loading, streamUrl } = useDreamshaperStore();
   const { isFullscreen } = useFullscreenStore();
-  const { stream, streamUrl, pipeline, loading } = useDreamshaperStore();
-  const [isCollapsed, setIsCollapsed] = useState(false);
+
+  const { collapsed, setCollapsed } = useBroadcastUIStore();
   const [playerPosition, setPlayerPosition] = useState({ bottom: 0, right: 0 });
 
   useEffect(() => {
@@ -80,7 +84,7 @@ export function ManagedBroadcast({ outputPlayerRef }: ManagedBroadcastProps) {
   }, [isMobile, outputPlayerRef]);
 
   useEffect(() => {
-    setIsCollapsed(isMobile);
+    setCollapsed(isMobile);
   }, [isMobile]);
 
   if (!streamUrl) return null;
@@ -97,13 +101,13 @@ export function ManagedBroadcast({ outputPlayerRef }: ManagedBroadcastProps) {
               position: "fixed",
               bottom: isFullscreen
                 ? "80px"
-                : `${window.innerHeight - playerPosition.bottom + 40}px`,
+                : `${window.innerHeight - playerPosition.bottom + 120}px`,
               right: isFullscreen
                 ? "16px"
-                : `${window.innerWidth - playerPosition.right + 20}px`,
-              width: isCollapsed ? "48px" : "250px",
-              height: isCollapsed ? "48px" : "auto",
-              aspectRatio: isCollapsed ? "1" : "16/9",
+                : `calc(${window.innerWidth - playerPosition.right}px + 1.5rem)`,
+              width: collapsed ? "48px" : "250px",
+              height: collapsed ? "48px" : "auto",
+              aspectRatio: collapsed ? "1" : "16/9",
               transform: "translate(0, 0)",
             }
           : {}
@@ -120,25 +124,19 @@ export function ManagedBroadcast({ outputPlayerRef }: ManagedBroadcastProps) {
             isMobile
               ? cn(
                   "flex-shrink-0 [&>div]:!pb-0 [&>div]:h-full",
-                  isCollapsed ? "h-8" : "h-64",
+                  collapsed ? "h-8" : "h-64",
                 )
               : cn(
                   "rounded-xl overflow-hidden",
-                  isCollapsed ? "w-12 h-12" : "w-full aspect-video",
+                  collapsed ? "w-12 h-12" : "w-full aspect-video",
                 ),
           )}
         >
           <BroadcastWithControls
-            ingestUrl={streamUrl}
-            isCollapsed={isCollapsed}
-            onCollapse={setIsCollapsed}
             className={cn(
               "rounded-xl overflow-hidden",
               isMobile ? "w-full h-full" : "",
             )}
-            streamId={stream?.id}
-            pipelineId={pipeline?.id}
-            pipelineType={pipeline?.type}
           />
         </div>
       )}

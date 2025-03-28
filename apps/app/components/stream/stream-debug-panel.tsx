@@ -16,8 +16,7 @@ interface ErrorHistoryItem {
 export const StreamDebugPanel = () => {
   const [errorHistory, setErrorHistory] = useState<ErrorHistoryItem[]>([]);
   const [debugOpen, setDebugOpen] = useState(false);
-  const { stream, pipeline, updating, loading, sharedPrompt } =
-    useDreamshaperStore();
+  const { stream } = useDreamshaperStore();
 
   const { fullResponse } = useStreamStatus(stream?.id, false);
   const { user } = usePrivy();

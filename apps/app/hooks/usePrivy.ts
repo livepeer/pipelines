@@ -1,5 +1,4 @@
 import { usePrivy as _usePrivy, PrivyInterface } from "@privy-io/react-auth";
-import { useMemo } from "react";
 import { DUMMY_USER_ID_FOR_NON_AUTHENTICATED_USERS } from "./useDreamshaper";
 
 const mockPrivy = {
@@ -7,6 +6,7 @@ const mockPrivy = {
   ready: true,
   user: {
     id: DUMMY_USER_ID_FOR_NON_AUTHENTICATED_USERS,
+    email: { address: "dummy@livepeer.org" },
     createdAt: new Date(),
     isGuest: true,
     linkedAccounts: [],

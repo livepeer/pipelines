@@ -11,6 +11,7 @@ import {
   useStreamUpdates,
 } from "@/hooks/useDreamshaper";
 import useFullscreenStore from "@/hooks/useFullscreenStore";
+import { usePrivy } from "@/hooks/usePrivy";
 import { usePromptStore } from "@/hooks/usePromptStore";
 import { useStreamStatus } from "@/hooks/useStreamStatus";
 import track from "@/lib/track";
@@ -20,7 +21,7 @@ import { Header } from "./Header";
 import { InputPrompt } from "./InputPrompt";
 import { MainContent } from "./MainContent";
 import { ManagedBroadcast } from "./ManagedBroadcast";
-import { usePrivy } from "@/hooks/usePrivy";
+import useMobileStore from "@/hooks/useMobileStore";
 
 export default function Dreamshaper() {
   useInitialization();
@@ -34,6 +35,7 @@ export default function Dreamshaper() {
   const { setLastSubmittedPrompt, setHasSubmittedPrompt } = usePromptStore();
   const { user, authenticated } = usePrivy();
   const { isFullscreen } = useFullscreenStore();
+  const { isMobile } = useMobileStore();
 
   const outputPlayerRef = useRef<HTMLDivElement>(null);
 
@@ -169,31 +171,49 @@ export default function Dreamshaper() {
 
   return (
     <div className="relative">
-      <div className={currentStep !== "main" ? "hidden" : ""}>
+      <div className={currentStep !== "main" ? "hidden" : "block"}>
         <div className="relative flex flex-col min-h-screen overflow-y-auto">
+          <Header />
+
           <div
             className={cn(
               "px-4 my-4 flex items-center justify-center md:mb-0 md:my-2 mb-5",
               isFullscreen && "fixed inset-0 z-[9999] p-0 m-0",
             )}
           >
-            <Header />
+            <div
+              ref={outputPlayerRef}
+              className={cn(
+                "w-full max-w-[calc(min(100%,calc((100vh-16rem)*16/9)))] mx-auto md:aspect-video aspect-square bg-sidebar rounded-2xl overflow-hidden relative",
+                isFullscreen && "w-full h-full max-w-none rounded-none",
+              )}
+            >
+              <MainContent />
+            </div>
           </div>
 
-          <div
-            ref={outputPlayerRef}
-            className={cn(
-              "w-full max-w-[calc(min(100%,calc((100vh-16rem)*16/9)))] mx-auto md:aspect-video aspect-square bg-sidebar rounded-2xl overflow-hidden relative",
-              isFullscreen && "w-full h-full max-w-none rounded-none",
-            )}
-          >
-            <MainContent />
+          {/* Input and Broadcast Section */}
+          <div>
+            <ManagedBroadcast outputPlayerRef={outputPlayerRef} />
           </div>
 
-          <ManagedBroadcast outputPlayerRef={outputPlayerRef} />
+          <div className={cn("px-4", !isFullscreen && "z-50")}>
+            <div
+              className={cn(
+                "space-y-5 md:space-y-8 mt-4",
+                "w-full md:max-w-[calc(min(100%,calc((100vh-16rem)*16/9)))] md:px-6 mx-auto mb-0",
 
-          <div className="-translate-y-8 z-50">
-            <InputPrompt />
+                isFullscreen && "z-[10000] fixed left-1/2 -translate-x-1/2",
+                isFullscreen &&
+                  isMobile &&
+                  "bottom-[calc(env(safe-area-inset-bottom)+16px)]",
+                isFullscreen && !isMobile && "bottom-0",
+
+                !isFullscreen && "md:-translate-y-24 md:mt-0",
+              )}
+            >
+              <InputPrompt />
+            </div>
           </div>
 
           <StreamDebugPanel />
