@@ -1,5 +1,5 @@
 import useSWR from "swr";
-import { usePrivy } from "@privy-io/react-auth";
+import { usePrivy } from "@/hooks/usePrivy";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
 

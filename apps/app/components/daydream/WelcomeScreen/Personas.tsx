@@ -5,7 +5,7 @@ import { CheckIcon, PlusIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useOnboard } from "../OnboardContext";
 import track from "@/lib/track";
-import { usePrivy } from "@privy-io/react-auth";
+import { usePrivy } from "@/hooks/usePrivy";
 
 const personas = [
   "Personal Use",

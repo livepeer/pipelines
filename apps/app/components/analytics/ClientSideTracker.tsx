@@ -1,6 +1,6 @@
 "use client";
 import { useEffect } from "react";
-import { usePrivy } from "@privy-io/react-auth";
+import { usePrivy } from "@/hooks/usePrivy";
 import track from "@/lib/track";
 
 interface ClientSideTrackerProps {

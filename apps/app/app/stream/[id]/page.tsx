@@ -7,7 +7,7 @@ import LoggedOutComponent from "@/components/modals/logged-out";
 import StreamForm from "@/components/stream/stream-form";
 import { getStream } from "@/app/api/streams/get";
 import { upsertStream } from "@/app/api/streams/upsert";
-import { usePrivy } from "@privy-io/react-auth";
+import { usePrivy } from "@/hooks/usePrivy";
 import { ExternalToast, toast } from "sonner";
 import { useRouter } from "next/navigation";
 import Modals from "@/components/modals";

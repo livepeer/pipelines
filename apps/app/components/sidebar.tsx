@@ -5,7 +5,7 @@ import { Badge } from "@repo/design-system/components/ui/badge";
 
 import { useAppConfig } from "@/hooks/useAppConfig";
 import useMobileStore from "@/hooks/useMobileStore";
-import { usePrivy } from "@privy-io/react-auth";
+import { usePrivy } from "@/hooks/usePrivy";
 import {
   Sidebar,
   SidebarContent,

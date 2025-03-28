@@ -4,7 +4,7 @@ import useMobileStore from "@/hooks/useMobileStore";
 import { submitToHubspot } from "@/lib/analytics/hubspot";
 import { identifyUser } from "@/lib/analytics/mixpanel";
 import track from "@/lib/track";
-import { User as PrivyUser, usePrivy } from "@privy-io/react-auth";
+import { User as PrivyUser } from "@privy-io/react-auth";
 import {
   Avatar,
   AvatarFallback,
@@ -22,6 +22,7 @@ import { cn } from "@repo/design-system/lib/utils";
 import { LogOut, UserIcon } from "lucide-react";
 import { useEffect } from "react";
 import { createUser } from "./action";
+import { usePrivy } from "@/hooks/usePrivy";
 
 export default function User({ className }: { className?: string }) {
   const { ready, authenticated, user, login, logout } = usePrivy();

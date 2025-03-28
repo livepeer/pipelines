@@ -3,7 +3,7 @@ import { Copy } from "lucide-react";
 import { StreamStatus, useStreamStatus } from "@/hooks/useStreamStatus";
 import { useState, useEffect, useMemo } from "react";
 import { useDreamshaperStore } from "@/hooks/useDreamshaper";
-import { usePrivy } from "@privy-io/react-auth";
+import { usePrivy } from "@/hooks/usePrivy";
 import useFullscreenStore from "@/hooks/useFullscreenStore";
 import { cn } from "@repo/design-system/lib/utils";
 

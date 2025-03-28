@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Copy, Check } from "lucide-react";
-import { usePrivy } from "@privy-io/react-auth";
+import { usePrivy } from "@/hooks/usePrivy";
 
 export function VersionInfo() {
   const [copied, setCopied] = useState(false);

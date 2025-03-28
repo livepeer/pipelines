@@ -2,7 +2,7 @@
 
 import { usePromptVersionStore } from "@/hooks/usePromptVersionStore";
 import track from "@/lib/track";
-import { usePrivy } from "@privy-io/react-auth";
+import { usePrivy } from "@/hooks/usePrivy";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
   Dialog,

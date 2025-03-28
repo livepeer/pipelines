@@ -7,7 +7,7 @@ import useMobileStore from "@/hooks/useMobileStore";
 import { usePromptStore } from "@/hooks/usePromptStore";
 import { useStreamStatus } from "@/hooks/useStreamStatus";
 import track from "@/lib/track";
-import { usePrivy } from "@privy-io/react-auth";
+import { usePrivy } from "@/hooks/usePrivy";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Dialog } from "@repo/design-system/components/ui/dialog";
 import { Separator } from "@repo/design-system/components/ui/separator";

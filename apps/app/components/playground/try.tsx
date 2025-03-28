@@ -11,7 +11,7 @@ import {
 } from "@repo/design-system/components/ui/select";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
 import { upsertStream } from "@/app/api/streams/upsert";
-import { usePrivy } from "@privy-io/react-auth";
+import { usePrivy } from "@/hooks/usePrivy";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Switch } from "@repo/design-system/components/ui/switch";
 import { Slider } from "@repo/design-system/components/ui/slider";

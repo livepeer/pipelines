@@ -3,7 +3,7 @@
 import { editPipelineFromFormData } from "@/app/api/pipelines/edit";
 import LoggedOutComponent from "@/components/modals/logged-out";
 import { PipelineSchema } from "@/lib/types";
-import { usePrivy } from "@privy-io/react-auth";
+import { usePrivy } from "@/hooks/usePrivy";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";

@@ -5,7 +5,7 @@ import Modals from "@/components/modals";
 import Form from "@/components/playground/form";
 import Output from "@/components/playground/output";
 import track from "@/lib/track";
-import { usePrivy } from "@privy-io/react-auth";
+import { usePrivy } from "@/hooks/usePrivy";
 import { ScrollArea } from "@repo/design-system/components/ui/scroll-area";
 import { useEffect, useState } from "react";
 

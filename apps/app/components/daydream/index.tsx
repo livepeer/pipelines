@@ -1,6 +1,5 @@
 "use client";
 
-import { usePrivy } from "@privy-io/react-auth";
 import LoginScreen from "./LoginScreen";
 import WelcomeScreen from "./WelcomeScreen";
 import { OnboardProvider, useOnboard } from "./OnboardContext";
@@ -9,6 +8,7 @@ import MainExperience from "./MainExperience";
 import { useEffect } from "react";
 import LayoutWrapper from "./LayoutWrapper";
 import { AuthProvider } from "./LoginScreen/AuthContext";
+import { usePrivy } from "@/hooks/usePrivy";
 
 export default function Daydream({
   hasSharedPrompt,

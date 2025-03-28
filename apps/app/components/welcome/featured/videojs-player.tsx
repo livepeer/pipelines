@@ -2,18 +2,18 @@
 
 import { sendKafkaEvent } from "@/app/api/metrics/kafka";
 import { useAppConfig } from "@/hooks/useAppConfig";
-import { usePrivy } from "@privy-io/react-auth";
+import { usePrivy } from "@/hooks/usePrivy";
 import { useSearchParams } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
 import videojs from "video.js";
 import type Player from "video.js/dist/types/player";
-import 'video.js/dist/video-js.css';
+import "video.js/dist/video-js.css";
 
-import MillicastWhepPlugin from '@millicast/videojs-whep-plugin';
-import 'videojs-resolution-switcher/lib/videojs-resolution-switcher.css';
+import MillicastWhepPlugin from "@millicast/videojs-whep-plugin";
+import "videojs-resolution-switcher/lib/videojs-resolution-switcher.css";
 
-// @ts-ignore 
-videojs.registerPlugin('MillicastWhepPlugin', MillicastWhepPlugin);
+// @ts-ignore
+videojs.registerPlugin("MillicastWhepPlugin", MillicastWhepPlugin);
 
 // Making CSS inline since this is just a temporary fallback player to be removed
 const VideoJSStyles = () => (
@@ -27,7 +27,7 @@ const VideoJSStyles = () => (
       max-width: 100%;
       max-height: 100%;
     }
-    
+
     /* Remove padding from VideoJS container */
     .vjs-video-container > div,
     .vjs-video-container > .video-js,
@@ -39,7 +39,7 @@ const VideoJSStyles = () => (
       margin: 0 !important;
       background: #eeeeee !important;
     }
-    
+
     /* Maintain aspect ratio while filling container */
     .video-js video,
     .vjs-tech {
@@ -50,7 +50,7 @@ const VideoJSStyles = () => (
       top: 0;
       left: 0;
     }
-    
+
     /* Container styling */
     .vjs-video-container {
       position: relative;
@@ -59,7 +59,7 @@ const VideoJSStyles = () => (
       overflow: hidden;
       padding: 0 !important;
     }
-    
+
     .video-js .vjs-tech {
       position: absolute;
       top: 0;
@@ -68,15 +68,20 @@ const VideoJSStyles = () => (
       height: 100%;
       object-fit: contain;
     }
-    
+
     .video-js .vjs-control-bar {
-      background: linear-gradient(to top, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.3) 60%, rgba(0, 0, 0, 0) 100%);
+      background: linear-gradient(
+        to top,
+        rgba(0, 0, 0, 0.6) 0%,
+        rgba(0, 0, 0, 0.3) 60%,
+        rgba(0, 0, 0, 0) 100%
+      );
       height: 3em;
       padding: 0 10px;
       display: flex;
       justify-content: space-between;
     }
-    
+
     .video-js .vjs-big-play-button {
       background-color: rgba(0, 0, 0, 0.45);
       border: none;
@@ -88,48 +93,51 @@ const VideoJSStyles = () => (
       margin-top: -1em;
       transition: all 0.3s ease;
     }
-    
+
     .video-js:hover .vjs-big-play-button {
       background-color: rgba(0, 0, 0, 0.7);
       transform: scale(1.1);
     }
-    
+
     .video-js .vjs-loading-spinner {
       border-color: rgba(255, 255, 255, 0.7);
     }
-    
+
     .video-js .vjs-control:focus:before,
     .video-js .vjs-control:hover:before,
     .video-js .vjs-control:focus {
       text-shadow: none;
     }
-    
+
     /* Hide progress control (seekbar) */
     .video-js .vjs-progress-control {
       display: none !important;
     }
-    
+
     /* Hide time display */
     .video-js .vjs-time-control {
       display: none !important;
     }
-    
+
     /* Hide LIVE indicator */
     .video-js .vjs-live-control {
       display: none !important;
     }
-    
+
     /* Position fullscreen button on the far right */
     .video-js .vjs-fullscreen-control {
       margin-left: auto;
       order: 99;
     }
-    
+
     /* Hide any other controls except volume and fullscreen */
-    .video-js .vjs-control:not(.vjs-volume-panel):not(.vjs-fullscreen-control):not(.vjs-mute-control) {
+    .video-js
+      .vjs-control:not(.vjs-volume-panel):not(.vjs-fullscreen-control):not(
+        .vjs-mute-control
+      ) {
       display: none !important;
     }
-    
+
     .video-js .vjs-picture-in-picture-control {
       display: none;
     }
@@ -138,9 +146,9 @@ const VideoJSStyles = () => (
       position: relative !important;
       color: transparent !important; /* Make text transparent */
     }
-    
+
     .video-js .vjs-modal-dialog-content::before {
-      content: '';
+      content: "";
       position: absolute;
       top: 50%;
       left: 50%;
@@ -153,7 +161,7 @@ const VideoJSStyles = () => (
       border-top-color: white;
       animation: vjs-spinner-spin 1s infinite linear;
     }
-    
+
     @keyframes vjs-spinner-spin {
       0% {
         transform: rotate(0deg);
@@ -162,9 +170,9 @@ const VideoJSStyles = () => (
         transform: rotate(360deg);
       }
     }
-    
+
     .video-js .vjs-modal-dialog-content::after {
-      content: '';
+      content: "";
       position: absolute;
       top: 60%;
       left: 0;
@@ -174,7 +182,7 @@ const VideoJSStyles = () => (
       font-size: 14px;
       font-weight: 500;
     }
-    
+
     .video-js .vjs-error-display {
       background-color: rgba(0, 0, 0, 0.8) !important;
       height: 100% !important;
@@ -206,8 +214,8 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
   const { user } = usePrivy();
   const searchParams = useSearchParams();
   const debugMode = searchParams.get("debugMode") === "true";
-  
-  const isWHEP = src.includes('/whep');
+
+  const isWHEP = src.includes("/whep");
 
   useEffect(() => {
     const sendInitialEvent = async () => {
@@ -273,17 +281,18 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
 
     const setupVideoJS = () => {
       const videoElement = document.createElement("video");
-      videoElement.className = "video-js vjs-default-skin vjs-big-play-centered";
+      videoElement.className =
+        "video-js vjs-default-skin vjs-big-play-centered";
       videoElement.id = `video-js-${playbackId}`;
-      
+
       if (videoRef.current) {
-        videoRef.current.innerHTML = '';
+        videoRef.current.innerHTML = "";
         videoRef.current.appendChild(videoElement);
-        
-        videoRef.current.classList.add('no-padding-container');
+
+        videoRef.current.classList.add("no-padding-container");
       }
 
-      // @ts-ignore 
+      // @ts-ignore
       const player = videojs(videoElement, {
         controls: true,
         autoplay: true,
@@ -292,114 +301,114 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
         liveui: true,
         muted: true,
         fill: true,
-        className: 'no-padding-player'
+        className: "no-padding-player",
       });
 
-      player.on('loadeddata', () => {
+      player.on("loadeddata", () => {
         if (!firstFrameTime) {
           handleFirstFrame();
         }
       });
 
-      player.on('error', (error: unknown) => {
-        console.error('VideoJS error:', player.error());
+      player.on("error", (error: unknown) => {
+        console.error("VideoJS error:", player.error());
       });
 
       const applyCustomStyles = () => {
-        const videoEl = player.el().querySelector('video');
+        const videoEl = player.el().querySelector("video");
         if (videoEl) {
-          videoEl.style.objectFit = 'contain';
-          videoEl.style.width = '100%';
-          videoEl.style.height = '100%';
+          videoEl.style.objectFit = "contain";
+          videoEl.style.width = "100%";
+          videoEl.style.height = "100%";
         }
-        
+
         const containerDiv = player.el();
         if (containerDiv) {
-          containerDiv.style.padding = '0';
-          containerDiv.style.margin = '0';
-          
+          containerDiv.style.padding = "0";
+          containerDiv.style.margin = "0";
+
           const parentEl = containerDiv.parentElement;
           if (parentEl) {
-            parentEl.style.padding = '0';
-            parentEl.style.margin = '0';
+            parentEl.style.padding = "0";
+            parentEl.style.margin = "0";
           }
         }
       };
-      
-      player.on('loadedmetadata', applyCustomStyles);
-      player.on('resize', applyCustomStyles);
 
-      if (isWHEP) {       
+      player.on("loadedmetadata", applyCustomStyles);
+      player.on("resize", applyCustomStyles);
+
+      if (isWHEP) {
         setTimeout(() => {
           try {
-            player.MillicastWhepPlugin({ 
+            player.MillicastWhepPlugin({
               url: src,
               debug: false,
-              disableModalDialogs: true 
+              disableModalDialogs: true,
             });
           } catch (error) {
-            console.error('Error initializing WHEP plugin:', error);
-            
+            console.error("Error initializing WHEP plugin:", error);
+
             const fallbackToWebRTC = async () => {
               try {
                 const pc = new RTCPeerConnection({
-                  iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+                  iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
                 });
-                
-                pc.ontrack = (event) => {
+
+                pc.ontrack = event => {
                   if (player.tech().el().srcObject !== event.streams[0]) {
                     player.tech().el().srcObject = event.streams[0];
                     const videoEl = player.tech().el();
                     if (videoEl) {
-                      videoEl.style.objectFit = 'contain';
-                      videoEl.style.width = '100%';
-                      videoEl.style.height = '100%';
+                      videoEl.style.objectFit = "contain";
+                      videoEl.style.width = "100%";
+                      videoEl.style.height = "100%";
                     }
                   }
                 };
-                
+
                 const offer = await pc.createOffer({
                   offerToReceiveAudio: true,
-                  offerToReceiveVideo: true
+                  offerToReceiveVideo: true,
                 });
                 await pc.setLocalDescription(offer);
-                
+
                 const response = await fetch(src, {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/sdp' },
-                  body: pc.localDescription?.sdp
+                  method: "POST",
+                  headers: { "Content-Type": "application/sdp" },
+                  body: pc.localDescription?.sdp,
                 });
-                
+
                 if (response.ok) {
                   const sdpAnswer = await response.text();
-                  await pc.setRemoteDescription({ 
-                    type: 'answer', 
-                    sdp: sdpAnswer 
+                  await pc.setRemoteDescription({
+                    type: "answer",
+                    sdp: sdpAnswer,
                   });
                 }
               } catch (rtcError) {
-                console.error('WebRTC fallback failed:', rtcError);
+                console.error("WebRTC fallback failed:", rtcError);
               }
             };
-            
+
             fallbackToWebRTC();
           }
         }, 100);
       } else {
         player.src({
           src,
-          type: "application/x-mpegURL"
+          type: "application/x-mpegURL",
         });
       }
 
       return player;
     };
-    
+
     if (playerRef.current) {
       playerRef.current.dispose();
       playerRef.current = null;
     }
-    
+
     playerRef.current = setupVideoJS();
 
     return () => {
@@ -413,7 +422,10 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
   return (
     <div className={isMobile ? "w-full h-full" : "aspect-video"}>
       <VideoJSStyles />
-      <div ref={videoRef} className="h-full w-full relative vjs-video-container">
+      <div
+        ref={videoRef}
+        className="h-full w-full relative vjs-video-container"
+      >
         {/* VideoJS */}
       </div>
       {debugMode && firstFrameTime && (
@@ -427,4 +439,4 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
   );
 };
 
-export default VideoJSPlayer; 
+export default VideoJSPlayer;

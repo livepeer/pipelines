@@ -3,24 +3,24 @@
 import { useOnboard } from "@/components/daydream/OnboardContext";
 import { StreamInfo } from "@/components/footer/stream-info";
 import { StreamDebugPanel } from "@/components/stream/stream-debug-panel";
-import useFullscreenStore from "@/hooks/useFullscreenStore";
-import { usePromptStore } from "@/hooks/usePromptStore";
-import { useStreamStatus } from "@/hooks/useStreamStatus";
-import track from "@/lib/track";
-import { usePrivy } from "@privy-io/react-auth";
-import { cn } from "@repo/design-system/lib/utils";
-import { useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
 import {
+  useCapacityMonitor,
   useDreamshaperStore,
   useInitialization,
   useParamsHandling,
   useStreamUpdates,
-} from "../../../hooks/useDreamshaper";
+} from "@/hooks/useDreamshaper";
+import useFullscreenStore from "@/hooks/useFullscreenStore";
+import { usePromptStore } from "@/hooks/usePromptStore";
+import { useStreamStatus } from "@/hooks/useStreamStatus";
+import track from "@/lib/track";
+import { cn } from "@repo/design-system/lib/utils";
+import { useEffect, useRef, useState } from "react";
+import { Header } from "./Header";
 import { InputPrompt } from "./InputPrompt";
 import { MainContent } from "./MainContent";
 import { ManagedBroadcast } from "./ManagedBroadcast";
-import { Header } from "./Header";
+import { usePrivy } from "@/hooks/usePrivy";
 
 export default function Dreamshaper() {
   useInitialization();
@@ -191,7 +191,11 @@ export default function Dreamshaper() {
           </div>
 
           <ManagedBroadcast outputPlayerRef={outputPlayerRef} />
-          <InputPrompt />
+
+          <div className="-translate-y-8 z-50">
+            <InputPrompt />
+          </div>
+
           <StreamDebugPanel />
           <StreamInfo />
         </div>
@@ -199,75 +203,3 @@ export default function Dreamshaper() {
     </div>
   );
 }
-
-const MAX_STREAM_TIMEOUT_MS = 300000; // 5 minutes
-
-export const useCapacityMonitor = () => {
-  const { authenticated } = usePrivy();
-  const { stream } = useDreamshaperStore();
-  const { live, capacityReached } = useStreamStatus(stream?.id, false);
-
-  const [timeoutReached, setTimeoutReached] = useState(false);
-  const toastShownRef = useRef(false);
-
-  const showCapacityToast = () => {
-    track("capacity_reached", {
-      is_authenticated: authenticated,
-      stream_id: stream?.id,
-    });
-    toast("Platform at full capacity", {
-      description: (
-        <div className="flex flex-col gap-2">
-          <p>
-            We are currently at capacity, join the waitlist to use the platform
-            in the future
-          </p>
-          <a
-            href="https://www.livepeer.org/daydream-waitlist"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-primary hover:underline font-medium"
-          >
-            Join the waitlist
-          </a>
-        </div>
-      ),
-      duration: 1000000,
-    });
-  };
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (!live) {
-        setTimeoutReached(true);
-      }
-    }, MAX_STREAM_TIMEOUT_MS);
-
-    return () => clearTimeout(timer);
-  }, [live]);
-
-  useEffect(() => {
-    if (
-      (capacityReached || (timeoutReached && !live)) &&
-      !toastShownRef.current
-    ) {
-      const reason = capacityReached
-        ? "capacity_reached"
-        : "timeout_reached_not_live";
-
-      console.error("Capacity reached, reason:", reason, {
-        capacityReached,
-        timeoutReached,
-        live,
-      });
-
-      track("daydream_capacity_reached", {
-        is_authenticated: authenticated,
-        reason,
-        stream_id: stream?.id,
-      });
-      showCapacityToast();
-      toastShownRef.current = true;
-    }
-  }, [capacityReached, timeoutReached, live, stream]);
-};

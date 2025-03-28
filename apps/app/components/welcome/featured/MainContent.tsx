@@ -5,7 +5,7 @@ import useFullscreenStore from "@/hooks/useFullscreenStore";
 import useMobileStore from "@/hooks/useMobileStore";
 import { useStreamStatus } from "@/hooks/useStreamStatus";
 import { useTrialTimer } from "@/hooks/useTrialTimer";
-import { usePrivy } from "@privy-io/react-auth";
+import { usePrivy } from "@/hooks/usePrivy";
 import {
   Tooltip,
   TooltipContent,
@@ -17,7 +17,7 @@ import { useDreamshaperStore } from "../../../hooks/useDreamshaper";
 import { LivepeerPlayer } from "./player";
 
 export const MainContent = () => {
-  const { stream, pipeline, loading } = useDreamshaperStore();
+  const { stream, loading } = useDreamshaperStore();
   const { live, statusMessage } = useStreamStatus(stream?.id, false);
   const { isMobile } = useMobileStore();
   const { authenticated } = usePrivy();

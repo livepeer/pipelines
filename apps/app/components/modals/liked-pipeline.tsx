@@ -4,9 +4,9 @@ import React, { useEffect } from "react";
 import { XIcon } from "lucide-react";
 import { Label } from "@repo/design-system/components/ui/label";
 import LoggedOutComponent from "./logged-out";
-import { usePrivy, User } from "@privy-io/react-auth";
 import { useRouter, useSearchParams } from "next/navigation";
 import track from "@/lib/track";
+import { usePrivy } from "@/hooks/usePrivy";
 
 const PIPELINE_ICONS = {
   image: {

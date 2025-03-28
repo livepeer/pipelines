@@ -26,7 +26,7 @@ import { toast } from "sonner";
 
 import { sendKafkaEvent } from "@/app/api/metrics/kafka";
 import useMobileStore from "@/hooks/useMobileStore";
-import { usePrivy } from "@privy-io/react-auth";
+import { usePrivy } from "@/hooks/usePrivy";
 
 const StatusMonitor = ({
   streamId,

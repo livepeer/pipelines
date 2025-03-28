@@ -17,7 +17,7 @@ import {
 } from "@livepeer/react/assets";
 import { getSrc } from "@livepeer/react/external";
 import * as Player from "@livepeer/react/player";
-import { usePrivy } from "@privy-io/react-auth";
+import { usePrivy } from "@/hooks/usePrivy";
 import { PlaybackInfo } from "livepeer/models/components";
 import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";

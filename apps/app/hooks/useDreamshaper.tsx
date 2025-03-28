@@ -8,14 +8,16 @@ import { updateParams } from "@/app/api/streams/update-params";
 import { Stream, upsertStream } from "@/app/api/streams/upsert";
 import { useGatewayHost } from "@/hooks/useGatewayHost";
 import { getAppConfig } from "@/lib/env";
-import { usePrivy } from "@privy-io/react-auth";
+import { usePrivy } from "@/hooks/usePrivy";
 import { usePathname, useSearchParams } from "next/navigation";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { create } from "zustand";
+import { useStreamStatus } from "./useStreamStatus";
+import track from "@/lib/track";
 
-const DEFAULT_PIPELINE_ID = "pip_DRQREDnSei4HQyC8"; // Staging Dreamshaper ID
-const DUMMY_USER_ID_FOR_NON_AUTHENTICATED_USERS =
+export const DEFAULT_PIPELINE_ID = "pip_DRQREDnSei4HQyC8"; // Staging Dreamshaper ID
+export const DUMMY_USER_ID_FOR_NON_AUTHENTICATED_USERS =
   "did:privy:cm4x2cuiw007lh8fcj34919fu"; // Infra Email User ID
 
 const DREAMSHAPER_PARAMS_STORAGE_KEY = "dreamshaper_latest_params";
@@ -629,4 +631,76 @@ export const useShareLink = () => {
   }, [stream, user, pipeline, gatewayHostReady]);
 
   return { createShareLink };
+};
+
+const MAX_STREAM_TIMEOUT_MS = 300000; // 5 minutes
+
+export const useCapacityMonitor = () => {
+  const { authenticated } = usePrivy();
+  const { stream } = useDreamshaperStore();
+  const { live, capacityReached } = useStreamStatus(stream?.id, false);
+
+  const [timeoutReached, setTimeoutReached] = useState(false);
+  const toastShownRef = useRef(false);
+
+  const showCapacityToast = () => {
+    track("capacity_reached", {
+      is_authenticated: authenticated,
+      stream_id: stream?.id,
+    });
+    toast("Platform at full capacity", {
+      description: (
+        <div className="flex flex-col gap-2">
+          <p>
+            We are currently at capacity, join the waitlist to use the platform
+            in the future
+          </p>
+          <a
+            href="https://www.livepeer.org/daydream-waitlist"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary hover:underline font-medium"
+          >
+            Join the waitlist
+          </a>
+        </div>
+      ),
+      duration: 1000000,
+    });
+  };
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (!live) {
+        setTimeoutReached(true);
+      }
+    }, MAX_STREAM_TIMEOUT_MS);
+
+    return () => clearTimeout(timer);
+  }, [live]);
+
+  useEffect(() => {
+    if (
+      (capacityReached || (timeoutReached && !live)) &&
+      !toastShownRef.current
+    ) {
+      const reason = capacityReached
+        ? "capacity_reached"
+        : "timeout_reached_not_live";
+
+      console.error("Capacity reached, reason:", reason, {
+        capacityReached,
+        timeoutReached,
+        live,
+      });
+
+      track("daydream_capacity_reached", {
+        is_authenticated: authenticated,
+        reason,
+        stream_id: stream?.id,
+      });
+      showCapacityToast();
+      toastShownRef.current = true;
+    }
+  }, [capacityReached, timeoutReached, live, stream]);
 };

@@ -20,7 +20,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ChevronRight, Plus } from "lucide-react";
 import { useState } from "react";
 import FeaturedPipelines from "./featured";
-import { usePrivy } from "@privy-io/react-auth";
+import { usePrivy } from "@/hooks/usePrivy";
 import { cn } from "@repo/design-system/lib/utils";
 import track from "@/lib/track";
 import { useRouter, useSearchParams } from "next/navigation";

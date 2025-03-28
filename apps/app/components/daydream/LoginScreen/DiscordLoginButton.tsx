@@ -1,4 +1,3 @@
-import { useLoginWithOAuth } from "@privy-io/react-auth";
 import { useAuth } from "./AuthContext";
 import track from "@/lib/track";
 

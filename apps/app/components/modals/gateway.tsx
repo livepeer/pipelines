@@ -25,7 +25,7 @@ import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
 import track from "@/lib/track";
 import { Label } from "@repo/design-system/components/ui/label";
-import { usePrivy } from "@privy-io/react-auth";
+import { usePrivy } from "@/hooks/usePrivy";
 
 export default function Gateway() {
   const { user } = usePrivy();

@@ -6,7 +6,7 @@ import ConfirmDialog from "@/components/modals/confirm";
 import LoggedOutComponent from "@/components/modals/logged-out";
 import StreamStatusIndicator from "@/components/stream/stream-status-indicator";
 import track from "@/lib/track";
-import { usePrivy } from "@privy-io/react-auth";
+import { usePrivy } from "@/hooks/usePrivy";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
   Dialog,

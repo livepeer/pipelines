@@ -1,6 +1,6 @@
 "use client";
 
-import { usePrivy, User } from "@privy-io/react-auth";
+import { User } from "@privy-io/react-auth";
 import LoggedOutComponent from "@/components/modals/logged-out";
 import { useFetch } from "@/hooks/useFetch";
 import { getPipelinesByUser } from "../api/pipelines/get";
@@ -12,7 +12,6 @@ import {
 } from "lucide-react";
 import { useCallback, useState } from "react";
 import { Button } from "@repo/design-system/components/ui/button";
-import track from "@/lib/track";
 import { useRouter } from "next/navigation";
 import {
   Tooltip,
@@ -32,6 +31,7 @@ import Link from "next/link";
 import { deletePipeline } from "../api/pipelines/delete";
 import { toast } from "sonner";
 import ConfirmDialog from "@/components/modals/confirm";
+import { usePrivy } from "@/hooks/usePrivy";
 
 const EmptyState = ({ user }: { user: User | null }) => {
   const router = useRouter();

@@ -3,10 +3,11 @@ import {
   InputOTPGroup,
   InputOTPSlot,
 } from "@repo/design-system/components/ui/input-otp";
-import { useLoginWithEmail, usePrivy } from "@privy-io/react-auth";
+import { useLoginWithEmail } from "@privy-io/react-auth";
 import { useState } from "react";
 import { useAuth } from "./AuthContext";
 import track from "@/lib/track";
+import { usePrivy } from "@/hooks/usePrivy";
 
 export default function EmailLoginButton() {
   const [email, setEmail] = useState("");

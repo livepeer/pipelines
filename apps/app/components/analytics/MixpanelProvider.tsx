@@ -3,7 +3,7 @@
 import { ReactNode, useEffect } from "react";
 import mixpanel from "mixpanel-browser";
 import { mixpanel as mixpanelConfig } from "@/lib/env";
-import { usePrivy } from "@privy-io/react-auth";
+import { usePrivy } from "@/hooks/usePrivy";
 import {
   handleDistinctId,
   handleSessionId,

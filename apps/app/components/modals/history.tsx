@@ -5,7 +5,7 @@ import { XIcon } from "lucide-react";
 import { Label } from "@repo/design-system/components/ui/label";
 import LoggedOutComponent from "./logged-out";
 import { PipelineCard } from "./liked-pipeline";
-import { usePrivy } from "@privy-io/react-auth";
+import { usePrivy } from "@/hooks/usePrivy";
 import { useRouter, useSearchParams } from "next/navigation";
 import track from "@/lib/track";
 

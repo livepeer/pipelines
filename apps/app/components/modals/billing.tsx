@@ -26,7 +26,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
 import track from "@/lib/track";
-import { usePrivy } from "@privy-io/react-auth";
+import { usePrivy } from "@/hooks/usePrivy";
 export default function Billing() {
   const [selectedCredits, setSelectedCredits] = useState<null | number>(null);
   const [showBilling, setShowBilling] = React.useState(false);

@@ -1,7 +1,7 @@
 "use client";
 
 import LoggedOutComponent from "@/components/modals/logged-out";
-import { usePrivy } from "@privy-io/react-auth";
+import { usePrivy } from "@/hooks/usePrivy";
 import { Input } from "@repo/design-system/components/ui/input";
 import { ScrollArea } from "@repo/design-system/components/ui/scroll-area";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
