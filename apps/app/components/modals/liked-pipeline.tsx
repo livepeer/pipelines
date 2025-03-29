@@ -113,14 +113,11 @@ const groupPipelinesByDate = (pipelines: Pipeline[]) => {
   );
 };
 
-export const LikedPipelines = ({ open }: { open: boolean }) => {
-  if (!open) return null;
-
+export const LikedPipelines = () => {
   // @ts-expect-error - TODO: Fix this
   const groupedPipelines = groupPipelinesByDate(MOCK_DATA);
   const { authenticated, user } = usePrivy();
   const router = useRouter();
-  console.log("liked pipelines user", user);
   const searchParams = useSearchParams();
 
   const closeModal = () => {

@@ -130,11 +130,8 @@ const PipelineList = ({ groupedPipelines }: PipelineListProps) => (
   </div>
 );
 
-export const HistoryPipelines = ({ open }: { open: boolean }) => {
-  const { user } = usePrivy();
-  if (!open) return null;
-
-  const { authenticated } = usePrivy();
+export const HistoryPipelines = () => {
+  const { authenticated, user } = usePrivy();
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -144,6 +141,13 @@ export const HistoryPipelines = ({ open }: { open: boolean }) => {
     router.replace(`${window.location.pathname}?${newParams}`);
   };
 
+  // @ts-expect-error - TODO: Fix this
+  const groupedPipelines = groupPipelinesByDate(MOCK_HISTORY_DATA);
+
+  useEffect(() => {
+    track("history_pipelines_modal_opened", undefined, user || undefined);
+  }, [user]);
+
   if (!authenticated) {
     return (
       <div className="p-4">
@@ -152,13 +156,6 @@ export const HistoryPipelines = ({ open }: { open: boolean }) => {
       </div>
     );
   }
-
-  // @ts-expect-error - TODO: Fix this
-  const groupedPipelines = groupPipelinesByDate(MOCK_HISTORY_DATA);
-
-  useEffect(() => {
-    track("history_pipelines_modal_opened", undefined, user || undefined);
-  }, [user]);
 
   return (
     <div className="p-4">

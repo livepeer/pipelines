@@ -19,9 +19,9 @@ import { PlaybackInfo } from "livepeer/models/components";
 import { useSearchParams } from "next/navigation";
 import * as React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import dynamic from 'next/dynamic';
+import dynamic from "next/dynamic";
 
-const VideoJSPlayer = dynamic(() => import("./videojs-player"), { 
+const VideoJSPlayer = dynamic(() => import("./videojs-player"), {
   ssr: false,
   loading: () => (
     <div className="w-full relative h-full bg-black/50 backdrop-blur">
@@ -30,7 +30,7 @@ const VideoJSPlayer = dynamic(() => import("./videojs-player"), {
       </div>
       <PlayerLoading />
     </div>
-  )
+  ),
 });
 
 type TrackingProps = {
@@ -58,8 +58,8 @@ export const LivepeerPlayer = React.memo(
     const appConfig = useAppConfig();
     const [playbackInfo, setPlaybackInfo] = useState<PlaybackInfo | null>(null);
     const [key, setKey] = useState(0);
-    
-    const { useFallbackPlayer: useFallbackVideoJSPlayer, handleError } = 
+
+    const { useFallbackPlayer: useFallbackVideoJSPlayer, handleError } =
       useFallbackDetection(playbackId);
 
     const playerUrl = `${appConfig.whipUrl}${appConfig?.whipUrl?.endsWith("/") ? "" : "/"}${stream_key}-out/whep`;
@@ -71,7 +71,8 @@ export const LivepeerPlayer = React.memo(
     const debugMode = searchParams.get("debugMode") === "true";
     const iframePlayerFallback =
       process.env.NEXT_PUBLIC_IFRAME_PLAYER_FALLBACK === "true";
-    const useVideoJS = searchParams.get("videoJS") === "true" || useFallbackVideoJSPlayer;
+    const useVideoJS =
+      searchParams.get("videoJS") === "true" || useFallbackVideoJSPlayer;
 
     useEffect(() => {
       if (useMediamtx || iframePlayerFallback || useVideoJS) {
@@ -96,7 +97,7 @@ export const LivepeerPlayer = React.memo(
 
     if (useVideoJS) {
       return (
-        <VideoJSPlayer 
+        <VideoJSPlayer
           src={playerUrl}
           isMobile={isMobile}
           playbackId={playbackId}
@@ -179,7 +180,8 @@ export const LivepeerPlayer = React.memo(
             <div className="flex flex-col gap-1">
               <div className="text-2xl font-bold">Stream is private</div>
               <div className="text-sm text-gray-100">
-                It looks like you don't have permission to view this content
+                It looks like you don&apos;t have permission to view this
+                content
               </div>
             </div>
           </Player.ErrorIndicator>
@@ -234,6 +236,8 @@ export const LivepeerPlayer = React.memo(
     );
   },
 );
+
+LivepeerPlayer.displayName = "LivepeerPlayer";
 
 export const PlayerLoading = ({
   title,
@@ -364,4 +368,3 @@ const DebugTimer = (
     </div>
   );
 };
-

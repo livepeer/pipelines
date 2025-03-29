@@ -141,14 +141,14 @@ export default function WelcomeScreen() {
                 Come experience the magic of Daydream 🎭
               </p>
               <p className="font-open-sans text-base sm:text-lg leading-[1.35em] text-[#232323]">
-                Create without limits. Whether you're crafting stories, building
-                experiences, or experimenting with something entirely new, this
-                is your playground!
+                Create without limits. Whether you&apos;re crafting stories,
+                building experiences, or experimenting with something entirely
+                new, this is your playground!
               </p>
             </div>
 
             <p className="font-playfair font-semibold text-[18px] sm:text-xl md:text-2xl text-[#1C1C1C]">
-              But first, let's get to know you!
+              But first, let&apos;s get to know you!
             </p>
 
             <Personas />

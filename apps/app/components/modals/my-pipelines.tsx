@@ -25,16 +25,11 @@ const Header = ({ onClick }: { onClick: () => void }) => (
   </div>
 );
 
-export const MyPipelines = ({ open }: { open: boolean }) => {
-  const { user } = usePrivy();
-  if (!open) return null;
-
-  const { authenticated } = usePrivy();
+export const MyPipelines = () => {
+  const { authenticated, user } = usePrivy();
 
   const router = useRouter();
   const searchParams = useSearchParams();
-  const pipeline = searchParams.get("pipeline");
-  const tab = searchParams.get("activeTab");
 
   const closeModal = () => {
     const { tab, ...params } = Object.fromEntries(searchParams.entries());

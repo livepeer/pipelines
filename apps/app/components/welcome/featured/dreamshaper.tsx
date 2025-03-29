@@ -479,20 +479,24 @@ export default function Dreamshaper({
       };
 
       if (navigator.sendBeacon) {
-        const blob = new Blob([JSON.stringify({
-          eventType: "stream_trace",
-          data: eventData,
-          app: "daydream",
-          host: window.location.hostname,
-        })], { type: "application/json" });
-        
+        const blob = new Blob(
+          [
+            JSON.stringify({
+              eventType: "stream_trace",
+              data: eventData,
+              app: "daydream",
+              host: window.location.hostname,
+            }),
+          ],
+          { type: "application/json" },
+        );
+
         navigator.sendBeacon("/api/metrics/beacon", blob);
       }
     };
 
     const handleVisibilityChange = () => {
       if (document.visibilityState === "hidden" && !isRefreshing) {
-        
         const eventData = {
           type: "app_user_page_visibility_change",
           user_id: user?.id || "anonymous",
@@ -504,13 +508,18 @@ export default function Dreamshaper({
         };
 
         if (navigator.sendBeacon) {
-          const blob = new Blob([JSON.stringify({
-            eventType: "stream_trace",
-            data: eventData,
-            app: "daydream",
-            host: window.location.hostname,
-          })], { type: "application/json" });
-          
+          const blob = new Blob(
+            [
+              JSON.stringify({
+                eventType: "stream_trace",
+                data: eventData,
+                app: "daydream",
+                host: window.location.hostname,
+              }),
+            ],
+            { type: "application/json" },
+          );
+
           navigator.sendBeacon("/api/metrics/beacon", blob);
         }
       }
@@ -726,7 +735,7 @@ export default function Dreamshaper({
             </div>
           ) : streamKilled ? (
             <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-              Thank you for trying out Livepeer's AI pipelines.
+              Thank you for trying out Livepeer&apos;s AI pipelines.
             </div>
           ) : outputPlaybackId ? (
             <>

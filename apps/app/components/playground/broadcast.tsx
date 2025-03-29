@@ -565,7 +565,7 @@ export const Settings = React.forwardRef(
                   className="text-xs text-white/90 font-medium"
                   htmlFor="cameraSource"
                 >
-                  Camera ('c' to rotate)
+                  Camera (&apos;c&apos; to rotate)
                 </label>
                 <SourceSelectComposed name="cameraSource" type="videoinput" />
               </div>
@@ -583,6 +583,8 @@ export const Settings = React.forwardRef(
     );
   },
 );
+
+Settings.displayName = "Settings";
 
 export const SourceSelectComposed = React.forwardRef(
   (
@@ -641,6 +643,8 @@ export const SourceSelectComposed = React.forwardRef(
   ),
 );
 
+SourceSelectComposed.displayName = "SourceSelectComposed";
+
 const RateSelectItem = React.forwardRef<
   HTMLDivElement,
   Broadcast.SelectItemProps
@@ -661,3 +665,5 @@ const RateSelectItem = React.forwardRef<
     </Broadcast.SelectItem>
   );
 });
+
+RateSelectItem.displayName = "RateSelectItem";
