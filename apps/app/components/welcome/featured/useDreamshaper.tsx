@@ -325,7 +325,12 @@ export function useDreamshaper() {
         setStream(stream);
 
         if (stream && stream.stream_key) {
-          const whipUrl = getStreamUrl(user?.email?.address?.endsWith("@livepeer.org") ?? false, stream.stream_key, searchParams, stream.whip_url);
+          const whipUrl = getStreamUrl(
+            user?.email?.address?.endsWith("@livepeer.org") ?? false,
+            stream.stream_key,
+            searchParams,
+            stream.whip_url,
+          );
 
           if (!stream.whip_url || stream.whip_url !== whipUrl) {
             const updatedStream = {
@@ -544,7 +549,12 @@ export function useDreamshaper() {
     stream,
     outputPlaybackId: stream?.output_playback_id,
     streamUrl: stream
-      ? getStreamUrl(user?.email?.address?.endsWith("@livepeer.org") ?? false, stream.stream_key, searchParams, stream.whip_url)
+      ? getStreamUrl(
+          user?.email?.address?.endsWith("@livepeer.org") ?? false,
+          stream.stream_key,
+          searchParams,
+          stream.whip_url,
+        )
       : null,
     pipeline,
     handleUpdate,
