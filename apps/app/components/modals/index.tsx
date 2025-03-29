@@ -23,10 +23,10 @@ export default function Modals({
           }}
           className="fixed  left-0 top-[4rem] md:left-[15rem] md:top-[4rem] w-full md:w-[27rem] h-full bg-background border-r border-border overflow-y-auto z-20"
         >
-          <LikedPipelines open={tab === "liked"} />
-          <HistoryPipelines open={tab === "history"} />
-          <MyPipelines open={tab === "my"} />
-          <APIKeys open={tab === "api-keys"} />
+          {tab === "liked" && <LikedPipelines />}
+          {tab === "history" && <HistoryPipelines />}
+          {tab === "my" && <MyPipelines />}
+          {tab === "api-keys" && <APIKeys />}
         </div>
       )}
     </>

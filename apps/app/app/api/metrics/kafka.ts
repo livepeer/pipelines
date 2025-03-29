@@ -26,7 +26,7 @@ export async function sendKafkaEvent(
   app: string,
   host: string,
 ) {
-  if (process.env.DISABLE_ANALYTICS  === "true") {
+  if (process.env.DISABLE_ANALYTICS === "true") {
     return "Analytics disabled";
   }
   const config = await serverConfig();
@@ -89,7 +89,10 @@ export async function sendKafkaEvent(
     return "Event sent successfully";
   } catch (error) {
     console.error("[Kafka Event] Error sending event", error);
-    return "Error sending event: " + (error instanceof Error ? error.message : String(error));
+    return (
+      "Error sending event: " +
+      (error instanceof Error ? error.message : String(error))
+    );
   } finally {
     await producer.disconnect();
     console.log("[Kafka Event] Producer disconnected");

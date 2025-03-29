@@ -349,4 +349,5 @@ const StreamForm = forwardRef(
   },
 );
 
+StreamForm.displayName = "StreamForm";
 export default StreamForm;

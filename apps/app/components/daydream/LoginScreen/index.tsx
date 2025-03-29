@@ -1,20 +1,17 @@
 "use client";
 
-import Image from "next/image";
-import Link from "next/link";
-import GoogleLoginButton from "./GoogleLoginButton";
-import DiscordLoginButton from "./DiscordLoginButton";
-import EmailLoginButton from "./EmailLoginButton";
-import { cn } from "@repo/design-system/lib/utils";
-import { useIsMobile } from "@repo/design-system/hooks/use-mobile";
-import useMount from "@/hooks/useMount";
 import useCloudAnimation from "@/hooks/useCloudAnimation";
+import useMount from "@/hooks/useMount";
+import track from "@/lib/track";
+import { useIsMobile } from "@repo/design-system/hooks/use-mobile";
+import { cn } from "@repo/design-system/lib/utils";
+import { Loader2 } from "lucide-react";
 import { useTheme } from "next-themes";
 import LivepeerLogo from "../LivepeerLogo";
-import { Loader2 } from "lucide-react";
 import { useAuth } from "./AuthContext";
-import { useEffect } from "react";
-import track from "@/lib/track";
+import DiscordLoginButton from "./DiscordLoginButton";
+import EmailLoginButton from "./EmailLoginButton";
+import GoogleLoginButton from "./GoogleLoginButton";
 
 export default function LoginScreen({
   isOAuthSuccessRedirect,
@@ -28,6 +25,7 @@ export default function LoginScreen({
 
   useMount(() => {
     setTheme("light");
+    track("daydream_login_viewed");
   });
 
   // If the user is redirected from OAuth, show a loading screen to prevent displaying login for a split second
@@ -41,10 +39,6 @@ export default function LoginScreen({
       </div>
     );
   }
-
-  useEffect(() => {
-    track("daydream_login_viewed");
-  }, []);
 
   return (
     <div

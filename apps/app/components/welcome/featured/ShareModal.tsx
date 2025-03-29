@@ -81,7 +81,7 @@ export function ShareModal({
             Your personalization, prompt, and parameters will be shared.
             <br />
             <br />
-            Anyone with this link will see the exact same experience you've
+            Anyone with this link will see the exact same experience you&apos;ve
             created.
           </DialogDescription>
         </DialogHeader>
