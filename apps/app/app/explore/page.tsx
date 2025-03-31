@@ -37,7 +37,7 @@ export default async function Explore({
             </div>
             <div className="mt-6 grid grid-cols-1  md:grid-cols-2 gap-6 lg:grid-cols-3 w-full">
               {allPipelines.map((pipeline, index) => (
-                <PipelineTile pipeline={pipeline} />
+                <PipelineTile pipeline={pipeline} key={index} />
               ))}
             </div>
           </div>
@@ -96,7 +96,7 @@ const FeaturedPipelines = ({ pipelines }: { pipelines: any[] }) => {
 
       <div className="flex md:flex-row flex-col md:space-x-4  mt-2 overflow-x-auto">
         {featuredPipelines.map((pipeline, index) => (
-          <PipelineTile pipeline={pipeline} />
+          <PipelineTile pipeline={pipeline} key={index} />
         ))}
       </div>
     </div>

@@ -27,9 +27,7 @@ const Header = ({ onClick }: { onClick: () => void }) => (
   </div>
 );
 
-export const APIKeys = ({ open }: { open: boolean }) => {
-  if (!open) return null;
-
+export const APIKeys = () => {
   const { authenticated, user } = usePrivy();
   const [showCreateAPIKey, setShowCreateAPIKey] = useState(false);
   const [apiKeys, setApiKeys] = useState<any[]>([]);
@@ -94,18 +92,19 @@ export const APIKeys = ({ open }: { open: boolean }) => {
 
   useEffect(() => {
     track("my_pipelines_modal_opened", undefined, user || undefined);
+
+    const fetchAPIKeys = async () => {
+      const apiKeys = await getAPIKeys(user?.id);
+      setApiKeys(apiKeys);
+    };
+
     fetchAPIKeys();
   }, [user]);
 
-  const fetchAPIKeys = async () => {
-    const apiKeys = await getAPIKeys(user?.id);
-    setApiKeys(apiKeys);
-  };
-
   const RenderAPIKeys = () => (
     <div className="mt-2">
-      {apiKeys.map(apiKey => (
-        <div className="flex items-center justify-between">
+      {apiKeys.map((apiKey, index) => (
+        <div className="flex items-center justify-between" key={index}>
           <div>{apiKey.name}</div>
           <div className="text-sm text-muted-foreground">********</div>
         </div>

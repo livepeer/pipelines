@@ -137,7 +137,7 @@ export default function CameraAccess() {
             </h3>
             <p className="font-inter text-xs leading-[1.55] tracking-[-1.1%] text-[#161616]">
               To transform your video we need access. Nothing is recorded unless
-              you click "record"
+              you click &quot;record&quot;
             </p>
           </div>
           {cameraPermission === "granted" || currentStep === "prompt" ? (
@@ -153,7 +153,7 @@ export default function CameraAccess() {
       </div>
       {cameraPermission === "denied" && (
         <p className="font-inter text-sm leading-[1.55] tracking-[-1.1%] text-[#161616] text-center">
-          We couldn't load your permissions, please look into{" "}
+          We could&apos;t load your permissions, please look into{" "}
           <a
             className="font-semibold underline"
             href="https://pipelines.livepeer.org/docs"

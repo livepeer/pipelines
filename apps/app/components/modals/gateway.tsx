@@ -1,5 +1,7 @@
 "use client";
 
+import track from "@/lib/track";
+import { usePrivy } from "@privy-io/react-auth";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,9 +25,6 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
-import track from "@/lib/track";
-import { Label } from "@repo/design-system/components/ui/label";
-import { usePrivy } from "@privy-io/react-auth";
 
 export default function Gateway() {
   const { user } = usePrivy();
@@ -87,7 +86,7 @@ export default function Gateway() {
   );
 }
 
-const _CreditSelection = ({
+const CreditSelection = ({
   onSelect,
 }: {
   onSelect: (value: null | number) => void;
