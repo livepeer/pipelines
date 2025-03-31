@@ -8,18 +8,20 @@
     "analyze": "turbo analyze",
     "bump-deps": "npx npm-check-updates --deep -u -x react-day-picker && pnpm install",
     "migrate": "cd packages/database && npx prisma format && npx prisma generate && npx prisma db push",
-    "format": "prettier --write \"**/*.{js,jsx,ts,tsx}\" --ignore-path .gitignore --ignore-pattern \"node_modules/**\" --ignore-pattern \".turbo/**\" --ignore-pattern \".github/**\""
+    "format": "prettier --write \"**/*.{js,jsx,ts,tsx}\" --ignore-path .gitignore --ignore-pattern \"node_modules/**\" --ignore-pattern \".turbo/**\" --ignore-pattern \".github/**\"",
+    "prepare": "husky"
   },
   "devDependencies": {
     "@auto-it/all-contributors": "^11.3.0",
     "@auto-it/first-time-contributor": "^11.3.0",
     "@repo/typescript-config": "workspace:*",
+    "husky": "^9.1.7",
+    "mixpanel": "^0.18.0",
+    "next": "^14.1.0",
     "prettier": "^3.2.5",
     "turbo": "^2.2.3",
     "typescript": "^5.6.3",
-    "ultracite": "^4.1.6",
-    "mixpanel": "^0.18.0",
-    "next": "^14.1.0"
+    "ultracite": "^4.1.6"
   },
   "overrides": {
     "@headlessui/react": "^2.2.0"

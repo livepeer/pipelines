@@ -64,7 +64,8 @@ export default function Winners() {
         <div>
           <h3 className="font-medium text-lg">Highlights</h3>
           <p className="text-muted-foreground text-sm w-full">
-            Check out a few of our community's best live video AI creations.
+            Check out a few of our community&apos;s best live video AI
+            creations.
           </p>
         </div>
         <div>
@@ -73,14 +74,14 @@ export default function Winners() {
             target="_blank"
             className="text-sm gap-1 flex items-center -ml-20 -mt-8 md:-ml-0 md:-mt-0"
           >
-            Join Today's Challenge on Discord
+            Join Today&apos;s Challenge on Discord
             <ArrowTopRightIcon className="h-4 w-4" />
           </Link>
         </div>
       </div>
       <div className="grid md:grid-cols-3 gap-6 mt-3">
-        {dummyPlaybackIds.map(item => (
-          <div className="aspect-video relative">
+        {dummyPlaybackIds.map((item, index) => (
+          <div className="aspect-video relative" key={index}>
             <iframe
               src={`https://lvpr.tv/?v=${item.playbackId}`}
               className="w-full h-full"

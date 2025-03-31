@@ -12,7 +12,6 @@ import {
 } from "@/hooks/useDreamshaper";
 import useFullscreenStore from "@/hooks/useFullscreenStore";
 import useMobileStore from "@/hooks/useMobileStore";
-import { usePrivy } from "@privy-io/react-auth";
 import { usePromptStore } from "@/hooks/usePromptStore";
 import { useStreamStatus } from "@/hooks/useStreamStatus";
 import track from "@/lib/track";
@@ -23,6 +22,7 @@ import { InputPrompt } from "./InputPrompt";
 import { MainContent } from "./MainContent";
 import { ManagedBroadcast } from "./ManagedBroadcast";
 import { usePlayerPositionUpdater } from "./usePlayerPosition";
+import { usePrivy } from "@privy-io/react-auth";
 
 export default function Dreamshaper() {
   useInitialization();
@@ -194,6 +194,7 @@ export default function Dreamshaper() {
             </div>
           </div>
 
+          {/* Input and Broadcast Section */}
           <ManagedBroadcast />
           <InputPrompt />
           <StreamDebugPanel />

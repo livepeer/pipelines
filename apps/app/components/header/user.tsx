@@ -1,10 +1,8 @@
 "use client";
 
 import useMobileStore from "@/hooks/useMobileStore";
-import { submitToHubspot } from "@/lib/analytics/hubspot";
-import { identifyUser } from "@/lib/analytics/mixpanel";
 import track from "@/lib/track";
-import { User as PrivyUser } from "@privy-io/react-auth";
+import { usePrivy } from "@privy-io/react-auth";
 import {
   Avatar,
   AvatarFallback,
@@ -20,9 +18,6 @@ import {
 } from "@repo/design-system/components/ui/dropdown-menu";
 import { cn } from "@repo/design-system/lib/utils";
 import { LogOut, UserIcon } from "lucide-react";
-import { useEffect } from "react";
-import { createUser } from "./action";
-import { usePrivy } from "@privy-io/react-auth";
 
 export default function User({ className }: { className?: string }) {
   const { ready, authenticated, user, login, logout } = usePrivy();
@@ -37,33 +32,6 @@ export default function User({ className }: { className?: string }) {
       : "Email";
 
   const disableLogin = !ready || authenticated;
-
-  const checkUser = async (userToInsert: PrivyUser) => {
-    return await createUser(userToInsert);
-  };
-
-  useEffect(() => {
-    const initUser = async () => {
-      if (user?.id) {
-        const { isNewUser } = await checkUser(user);
-        const distinctId = localStorage.getItem("mixpanel_distinct_id");
-        localStorage.setItem("mixpanel_user_id", user.id);
-
-        await Promise.all([
-          identifyUser(user.id, distinctId || "", user),
-          // TODO: only submit to Hubspot on production
-          isNewUser ? submitToHubspot(user) : Promise.resolve(),
-        ]);
-
-        track("user_logged_in", {
-          user_id: user.id,
-          distinct_id: distinctId,
-        });
-      }
-    };
-
-    initUser().catch(console.error);
-  }, [user]);
 
   return authenticated ? (
     <DropdownMenu>

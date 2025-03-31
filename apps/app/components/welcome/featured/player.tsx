@@ -1,10 +1,12 @@
 "use client";
+
 import { sendKafkaEvent } from "@/app/api/metrics/kafka";
 import { getStreamPlaybackInfo } from "@/app/api/streams/get";
 import { LPPLayer } from "@/components/playground/player";
 import { useAppConfig } from "@/hooks/useAppConfig";
 import { useDreamshaperStore } from "@/hooks/useDreamshaper";
 import { useFallbackDetection } from "@/hooks/useFallbackDetection";
+import useFullscreenStore from "@/hooks/useFullscreenStore";
 import useMobileStore from "@/hooks/useMobileStore";
 import {
   EnterFullscreenIcon,
@@ -16,13 +18,12 @@ import {
 } from "@livepeer/react/assets";
 import { getSrc } from "@livepeer/react/external";
 import * as Player from "@livepeer/react/player";
+import { usePrivy } from "@privy-io/react-auth";
 import { PlaybackInfo } from "livepeer/models/components";
 import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
 import * as React from "react";
 import { useEffect, useRef, useState } from "react";
-import { usePrivy } from "@privy-io/react-auth";
-import useFullscreenStore from "@/hooks/useFullscreenStore";
 
 const VideoJSPlayer = dynamic(() => import("./videojs-player"), {
   ssr: false,
@@ -40,7 +41,6 @@ export const LivepeerPlayer = () => {
   const { stream, pipeline } = useDreamshaperStore();
   const { isMobile } = useMobileStore();
   const { isFullscreen } = useFullscreenStore();
-
   const appConfig = useAppConfig();
   const [playbackInfo, setPlaybackInfo] = useState<PlaybackInfo | null>(null);
 
@@ -69,10 +69,10 @@ export const LivepeerPlayer = () => {
     };
     fetchPlaybackInfo();
   }, [
-    stream?.output_playback_id!,
     useMediamtx,
     iframePlayerFallback,
     useVideoJS,
+    stream?.output_playback_id,
   ]);
 
   if (iframePlayerFallback) {
@@ -85,7 +85,7 @@ export const LivepeerPlayer = () => {
     );
   }
 
-  if (useVideoJS) {
+  if (useVideoJS && pipeline) {
     return (
       <VideoJSPlayer
         src={playerUrl}
@@ -169,7 +169,7 @@ export const LivepeerPlayer = () => {
           <div className="flex flex-col gap-1">
             <div className="text-2xl font-bold">Stream is private</div>
             <div className="text-sm text-gray-100">
-              It looks like you don't have permission to view this content
+              It looks like you don&apos;t have permission to view this content
             </div>
           </div>
         </Player.ErrorIndicator>
@@ -217,6 +217,8 @@ export const LivepeerPlayer = () => {
     </div>
   );
 };
+
+LivepeerPlayer.displayName = "LivepeerPlayer";
 
 export const PlayerLoading = ({
   title,

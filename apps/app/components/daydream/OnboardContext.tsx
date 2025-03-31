@@ -8,21 +8,25 @@ export type CameraPermission = "prompt" | "granted" | "denied";
 interface OnboardContextType {
   // Current step in the onboarding flow
   currentStep: OnboardingStep;
-  // Camera permission state
-  initialCameraValidation: boolean;
+  // Initialization of user and camera permissions
+  isInitializing: boolean;
   hasSharedPrompt: boolean;
   cameraPermission: CameraPermission;
   // Selected options for each step
-  selectedPersonas: string[] | null;
+  selectedPersonas: string[];
+  customPersona: string;
   selectedPrompt: string | null;
   // When a prompt is selected, we fade out the welcome screen
   isFadingOut: boolean;
   // Methods to update state
   setCurrentStep: (step: OnboardingStep) => void;
   setCameraPermission: (permission: CameraPermission) => void;
-  setSelectedPersonas: (personas: string[]) => void;
+  setSelectedPersonas: (
+    personas: string[] | ((prev: string[]) => string[]),
+  ) => void;
+  setCustomPersona: (persona: string) => void;
   setSelectedPrompt: (prompt: string | null) => void;
-  setInitialCameraValidation: (validation: boolean) => void;
+  setIsInitializing: (initializing: boolean) => void;
   setFadingOut: (fadingOut: boolean) => void;
 }
 
@@ -41,8 +45,9 @@ export function OnboardProvider({
   const [cameraPermission, setCameraPermission] =
     useState<CameraPermission>("prompt");
   const [selectedPersonas, setSelectedPersonas] = useState<string[]>([]);
+  const [customPersona, setCustomPersona] = useState<string>("");
   const [selectedPrompt, setSelectedPrompt] = useState<string | null>(null);
-  const [initialCameraValidation, setInitialCameraValidation] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(true);
   const [isFadingOut, setFadingOut] = useState(false);
 
   const value = useMemo(
@@ -50,14 +55,16 @@ export function OnboardProvider({
       currentStep,
       cameraPermission,
       selectedPersonas,
+      customPersona,
       selectedPrompt,
-      initialCameraValidation,
+      isInitializing,
       isFadingOut,
       setCurrentStep,
       setCameraPermission,
       setSelectedPersonas,
+      setCustomPersona,
       setSelectedPrompt,
-      setInitialCameraValidation,
+      setIsInitializing,
       setFadingOut,
       hasSharedPrompt,
     }),
@@ -65,8 +72,9 @@ export function OnboardProvider({
       currentStep,
       cameraPermission,
       selectedPersonas,
+      customPersona,
       selectedPrompt,
-      initialCameraValidation,
+      isInitializing,
       isFadingOut,
       hasSharedPrompt,
     ],

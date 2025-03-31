@@ -9,6 +9,10 @@ import { useEffect } from "react";
 import LayoutWrapper from "./LayoutWrapper";
 import { AuthProvider } from "./LoginScreen/AuthContext";
 import { usePrivy } from "@privy-io/react-auth";
+import { createUser } from "@/app/actions/user";
+import { identifyUser } from "@/lib/analytics/mixpanel";
+import { submitToHubspot } from "@/lib/analytics/hubspot";
+import track from "@/lib/track";
 
 export default function Daydream({
   hasSharedPrompt,
@@ -51,49 +55,80 @@ export default function Daydream({
 
 function DaydreamRenderer() {
   const {
-    initialCameraValidation,
-    setInitialCameraValidation,
+    isInitializing,
+    setIsInitializing,
     setCameraPermission,
     setCurrentStep,
+    currentStep,
+    setSelectedPersonas,
+    setCustomPersona,
   } = useOnboard();
   const { user } = usePrivy();
 
-  // Check if the user has camera permission
   useEffect(() => {
-    const checkPermissions = async () => {
+    const initUser = async () => {
       try {
-        if ("permissions" in navigator) {
-          const hasVisitedMainPage = localStorage.getItem(
-            `hasSeenLandingPage-${user?.id}`,
-          );
-          const hasVisitedSelectPrompt = localStorage.getItem(
-            `hasSeenSelectPrompt-${user?.id}`,
-          );
-          const cameraPermission = await navigator.permissions.query({
-            name: "camera" as PermissionName,
-          });
+        if (!user?.id) {
+          return;
+        }
 
-          if (cameraPermission.state === "granted") {
-            setCameraPermission("granted");
-            if (hasVisitedMainPage) {
-              setCurrentStep("main");
-            } else if (hasVisitedSelectPrompt) {
-              // If the user has visited the select prompt and not the main page, user is still in onboarding
-              setCurrentStep("prompt");
+        // 1. Create or fetch the user from DB
+        const {
+          isNewUser,
+          user: { additional_details },
+        } = await createUser(user);
+
+        const initialStep =
+          additional_details.next_onboarding_step ?? "persona";
+        const initialPersonas = additional_details.personas ?? [];
+        const initialCustomPersona = additional_details.custom_persona ?? "";
+
+        // 2. If the user is in main experience, check for camera permissions initially
+        if (initialStep === "main") {
+          try {
+            if ("permissions" in navigator) {
+              const cameraPermission = await navigator.permissions.query({
+                name: "camera" as PermissionName,
+              });
+
+              if (cameraPermission.state === "granted") {
+                setCameraPermission("granted");
+              }
             }
+          } catch (err) {
+            console.error("Error checking camera permission:", err);
           }
         }
+
+        setSelectedPersonas(initialPersonas);
+        setCustomPersona(initialCustomPersona);
+        setCurrentStep(initialStep);
+        setIsInitializing(false);
+
+        // 3. Handle tracking after initialization
+        const distinctId = localStorage.getItem("mixpanel_distinct_id");
+        localStorage.setItem("mixpanel_user_id", user.id);
+
+        await Promise.all([
+          identifyUser(user.id, distinctId || "", user),
+          // TODO: only submit to Hubspot on production
+          isNewUser ? submitToHubspot(user) : Promise.resolve(),
+        ]);
+
+        track("user_logged_in", {
+          user_id: user.id,
+          distinct_id: distinctId,
+        });
       } catch (err) {
-        console.error("Error checking camera permission:", err);
-      } finally {
-        setInitialCameraValidation(true);
+        console.error("Error initializing user:", err);
+        setIsInitializing(false);
       }
     };
 
-    checkPermissions();
+    initUser();
   }, []);
 
-  if (!initialCameraValidation) {
+  if (isInitializing) {
     return (
       <LayoutWrapper>
         <div className="w-full h-screen flex items-center justify-center">
@@ -106,7 +141,7 @@ function DaydreamRenderer() {
   return (
     <>
       <WelcomeScreen />
-      <MainExperience />
+      {["main", "prompt"].includes(currentStep) && <MainExperience />}
     </>
   );
 }

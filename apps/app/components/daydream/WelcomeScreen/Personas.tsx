@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { useOnboard } from "../OnboardContext";
 import track from "@/lib/track";
 import { usePrivy } from "@privy-io/react-auth";
+import { updateUserAdditionalDetails } from "@/app/actions/user";
 
 const personas = [
   "Personal Use",
@@ -20,9 +21,15 @@ const personas = [
 
 export default function Personas() {
   const { user } = usePrivy();
-  const { currentStep, setCurrentStep, cameraPermission } = useOnboard();
-  const [selectedPersonas, setSelectedPersonas] = useState<string[]>([]);
-  const [customPersona, setCustomPersona] = useState("");
+  const {
+    currentStep,
+    setCurrentStep,
+    cameraPermission,
+    selectedPersonas,
+    setSelectedPersonas,
+    customPersona,
+    setCustomPersona,
+  } = useOnboard();
 
   useEffect(() => {
     track("daydream_persona_viewed", {
@@ -48,6 +55,11 @@ export default function Personas() {
       user_id: user?.id,
     });
     setCurrentStep(cameraPermission === "granted" ? "prompt" : "camera");
+    await updateUserAdditionalDetails(user!, {
+      next_onboarding_step: "camera",
+      personas: selectedPersonas,
+      custom_persona: customPersona,
+    });
   };
 
   const isButtonDisabled =

@@ -102,7 +102,7 @@ export function InputOTPControlled({ email }: { email: string }) {
       </InputOTP>
       {otpState === "idle" && (
         <div className="text-center text-sm text-[#71717A]">
-          We've emailed a one-time passcode to {email}. Please enter it to
+          We&apos;ve emailed a one-time passcode to {email}. Please enter it to
           continue.
         </div>
       )}

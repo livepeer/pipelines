@@ -1,3 +1,4 @@
+import { updateUserAdditionalDetails } from "@/app/actions/user";
 import useMobileStore from "@/hooks/useMobileStore";
 import track from "@/lib/track";
 import { usePrivy } from "@privy-io/react-auth";
@@ -5,8 +6,8 @@ import { cn } from "@repo/design-system/lib/utils";
 import { CameraIcon, CheckIcon } from "lucide-react";
 import { useOnboard } from "../OnboardContext";
 
-const useMediaPermissions = () => {
-  const { setCameraPermission, setCurrentStep, hasSharedPrompt } = useOnboard();
+export const useMediaPermissions = () => {
+  const { setCameraPermission } = useOnboard();
   const { authenticated } = usePrivy();
 
   const requestMediaPermissions = async () => {
@@ -55,7 +56,7 @@ const useMediaPermissions = () => {
         });
       }
 
-      setCurrentStep(hasSharedPrompt ? "main" : "prompt");
+      return hasVideo && hasAudio;
     } catch (err) {
       if (
         err instanceof Error &&
@@ -73,20 +74,34 @@ const useMediaPermissions = () => {
           "Please ensure camera and microphone permissions are enabled in your browser settings.",
         );
       }
+
+      return false;
     }
   };
 
-  return requestMediaPermissions;
+  return { requestMediaPermissions };
 };
 
 export default function CameraAccess() {
   const { isMobile } = useMobileStore();
-  const { currentStep, cameraPermission } = useOnboard();
-  const requestMediaPermissions = useMediaPermissions();
+  const { user } = usePrivy();
+  const { currentStep, cameraPermission, setCurrentStep, hasSharedPrompt } =
+    useOnboard();
+  const { requestMediaPermissions } = useMediaPermissions();
 
   if (currentStep === "persona") {
     return null;
   }
+
+  const handleRequestMediaPermissions = async () => {
+    const hasPermissions = await requestMediaPermissions();
+    if (hasPermissions) {
+      setCurrentStep(hasSharedPrompt ? "main" : "prompt");
+      await updateUserAdditionalDetails(user!, {
+        next_onboarding_step: hasSharedPrompt ? "main" : "prompt",
+      });
+    }
+  };
 
   return (
     <>
@@ -99,7 +114,9 @@ export default function CameraAccess() {
           "flex flex-col gap-3 animate-fade-in",
           currentStep === "camera" && "cursor-pointer",
         )}
-        onClick={currentStep === "camera" ? requestMediaPermissions : undefined}
+        onClick={
+          currentStep === "camera" ? handleRequestMediaPermissions : undefined
+        }
       >
         <div
           className={cn(
@@ -120,10 +137,10 @@ export default function CameraAccess() {
             </h3>
             <p className="font-inter text-xs leading-[1.55] tracking-[-1.1%] text-[#161616]">
               To transform your video we need access. Nothing is recorded unless
-              you click "record"
+              you click &quot;record&quot;
             </p>
           </div>
-          {cameraPermission === "granted" ? (
+          {cameraPermission === "granted" || currentStep === "prompt" ? (
             <div className="bg-[#95B4BE] shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] rounded-md px-2 py-2 text-black font-inter text-[13px] leading-[1.21] flex items-center justify-center gap-2 animate-[bounce_0.5s_ease-in-out]">
               <CheckIcon className="w-4 h-4 stroke-[3px]" />
             </div>
@@ -136,14 +153,14 @@ export default function CameraAccess() {
       </div>
       {cameraPermission === "denied" && (
         <p className="font-inter text-sm leading-[1.55] tracking-[-1.1%] text-[#161616] text-center">
-          We couldn't load your permissions, please look into{" "}
+          We could&apos;t access your camera and microphone. Please contact{" "}
           <a
             className="font-semibold underline"
-            href="https://pipelines.livepeer.org/docs"
+            href="https://livepeer.notion.site/15f0a348568781aab037c863d91b05e2"
           >
-            documentation
+            Support
           </a>{" "}
-          for help
+          if you continue having issues
         </p>
       )}
     </>

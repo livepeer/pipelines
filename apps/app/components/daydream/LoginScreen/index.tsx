@@ -7,7 +7,6 @@ import track from "@/lib/track";
 import { cn } from "@repo/design-system/lib/utils";
 import { Loader2 } from "lucide-react";
 import { useTheme } from "next-themes";
-import { useEffect } from "react";
 import LivepeerLogo from "../LivepeerLogo";
 import { useAuth } from "./AuthContext";
 import DiscordLoginButton from "./DiscordLoginButton";
@@ -26,6 +25,7 @@ export default function LoginScreen({
 
   useMount(() => {
     setTheme("light");
+    track("daydream_login_viewed");
   });
 
   // If the user is redirected from OAuth, show a loading screen to prevent displaying login for a split second
@@ -39,10 +39,6 @@ export default function LoginScreen({
       </div>
     );
   }
-
-  useEffect(() => {
-    track("daydream_login_viewed");
-  }, []);
 
   return (
     <div
