@@ -217,7 +217,6 @@ export default function Dreamshaper() {
 
           <StreamDebugPanel />
           <StreamInfo />
-          <div className="h-96"></div>
         </div>
       </div>
     </div>
