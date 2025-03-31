@@ -4,10 +4,10 @@ import { TrackedButton } from "@/components/analytics/TrackedButton";
 import { ClipButton } from "@/components/ClipButton";
 import useFullscreenStore from "@/hooks/useFullscreenStore";
 import useMobileStore from "@/hooks/useMobileStore";
+import { usePrivy } from "@/hooks/usePrivy";
 import { usePromptStore } from "@/hooks/usePromptStore";
 import { useStreamStatus } from "@/hooks/useStreamStatus";
 import track from "@/lib/track";
-import { usePrivy } from "@/hooks/usePrivy";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Dialog } from "@repo/design-system/components/ui/dialog";
 import { Separator } from "@repo/design-system/components/ui/separator";
@@ -59,9 +59,9 @@ export const Header = () => {
               isMobile ? "items-center" : "items-start",
             )}
           >
-            Daydream
+            <h1 className="tracking-widest">Daydream</h1>
             <div className="flex items-center gap-2 text-xs">
-              <span className="uppercase text-xs">by</span>
+              <span className="text-xs text-neutral-800 font-medium">BY </span>
               <span className="w-16">
                 <Image
                   src="https://mintlify.s3.us-west-1.amazonaws.com/livepeer-ai/logo/light.svg"

@@ -3,9 +3,9 @@
 import { TrackedButton } from "@/components/analytics/TrackedButton";
 import useFullscreenStore from "@/hooks/useFullscreenStore";
 import useMobileStore from "@/hooks/useMobileStore";
+import { usePrivy } from "@/hooks/usePrivy";
 import { useStreamStatus } from "@/hooks/useStreamStatus";
 import { useTrialTimer } from "@/hooks/useTrialTimer";
-import { usePrivy } from "@/hooks/usePrivy";
 import {
   Tooltip,
   TooltipContent,

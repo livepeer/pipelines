@@ -9,79 +9,16 @@ import useFullscreenStore from "@/hooks/useFullscreenStore";
 import useMobileStore from "@/hooks/useMobileStore";
 import { cn } from "@repo/design-system/lib/utils";
 import { Loader2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { usePlayerPositionStore } from "./usePlayerPosition";
 
-interface ManagedBroadcastProps {
-  outputPlayerRef: React.RefObject<HTMLDivElement>;
-}
-
-export function ManagedBroadcast({ outputPlayerRef }: ManagedBroadcastProps) {
+export function ManagedBroadcast() {
   const { isMobile } = useMobileStore();
   const { loading, streamUrl } = useDreamshaperStore();
   const { isFullscreen } = useFullscreenStore();
 
   const { collapsed, setCollapsed } = useBroadcastUIStore();
-  const [playerPosition, setPlayerPosition] = useState({ bottom: 0, right: 0 });
-
-  useEffect(() => {
-    if (!isMobile && outputPlayerRef.current) {
-      const updatePlayerPosition = () => {
-        if (!outputPlayerRef.current) return;
-        const rect = outputPlayerRef.current.getBoundingClientRect();
-        const newBottom = rect.bottom;
-        const newRight = rect.right;
-
-        setPlayerPosition(prev => {
-          if (prev.bottom === newBottom && prev.right === newRight) {
-            return prev;
-          }
-          return { bottom: newBottom, right: newRight };
-        });
-      };
-
-      const broadcastPositioning = () => {
-        updatePlayerPosition();
-
-        const delays = [50, 100, 300, 500, 1000];
-        const timeouts = delays.map(delay =>
-          setTimeout(updatePlayerPosition, delay),
-        );
-
-        return () => timeouts.forEach(clearTimeout);
-      };
-
-      const cleanupInitialPositioning = broadcastPositioning();
-
-      window.addEventListener("resize", updatePlayerPosition);
-      window.addEventListener("scroll", updatePlayerPosition);
-      document.addEventListener("DOMContentLoaded", updatePlayerPosition);
-      window.addEventListener("load", updatePlayerPosition);
-
-      const resizeObserver = new ResizeObserver(() => {
-        updatePlayerPosition();
-      });
-
-      resizeObserver.observe(outputPlayerRef.current);
-
-      const bodyObserver = new MutationObserver(updatePlayerPosition);
-      bodyObserver.observe(document.body, {
-        childList: true,
-        subtree: true,
-        attributes: true,
-        attributeFilter: ["class", "style"],
-      });
-
-      return () => {
-        cleanupInitialPositioning();
-        window.removeEventListener("resize", updatePlayerPosition);
-        window.removeEventListener("scroll", updatePlayerPosition);
-        document.removeEventListener("DOMContentLoaded", updatePlayerPosition);
-        window.removeEventListener("load", updatePlayerPosition);
-        resizeObserver.disconnect();
-        bodyObserver.disconnect();
-      };
-    }
-  }, [isMobile, outputPlayerRef]);
+  const { position } = usePlayerPositionStore();
 
   useEffect(() => {
     setCollapsed(isMobile);
@@ -96,21 +33,21 @@ export function ManagedBroadcast({ outputPlayerRef }: ManagedBroadcastProps) {
         isMobile ? "mx-4 w-auto -mt-2 mb-4" : "absolute z-50",
       )}
       style={
-        !isMobile
-          ? {
+        isMobile
+          ? {}
+          : {
               position: "fixed",
               bottom: isFullscreen
                 ? "80px"
-                : `${window.innerHeight - playerPosition.bottom + 120}px`,
+                : `${window.innerHeight - position.bottom + 120}px`,
               right: isFullscreen
                 ? "16px"
-                : `calc(${window.innerWidth - playerPosition.right}px + 1.5rem)`,
+                : `calc(${window.innerWidth - position.right}px + 1.5rem)`,
               width: collapsed ? "48px" : "250px",
               height: collapsed ? "48px" : "auto",
               aspectRatio: collapsed ? "1" : "16/9",
               transform: "translate(0, 0)",
             }
-          : {}
       }
     >
       {loading && isMobile ? (

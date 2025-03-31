@@ -5,24 +5,17 @@ import { LPPLayer } from "@/components/playground/player";
 import { useAppConfig } from "@/hooks/useAppConfig";
 import { useDreamshaperStore } from "@/hooks/useDreamshaper";
 import { useFallbackDetection } from "@/hooks/useFallbackDetection";
-import useFullscreenStore from "@/hooks/useFullscreenStore";
 import useMobileStore from "@/hooks/useMobileStore";
-import {
-  EnterFullscreenIcon,
-  ExitFullscreenIcon,
-  LoadingIcon,
-  MuteIcon,
-  PrivateErrorIcon,
-  UnmuteIcon,
-} from "@livepeer/react/assets";
+import { usePrivy } from "@/hooks/usePrivy";
+import { LoadingIcon, PrivateErrorIcon } from "@livepeer/react/assets";
 import { getSrc } from "@livepeer/react/external";
 import * as Player from "@livepeer/react/player";
-import { usePrivy } from "@/hooks/usePrivy";
 import { PlaybackInfo } from "livepeer/models/components";
 import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
 import * as React from "react";
 import { useEffect, useRef, useState } from "react";
+import { PlayerControls } from "./PlayerControls";
 
 const VideoJSPlayer = dynamic(() => import("./videojs-player"), {
   ssr: false,
@@ -39,7 +32,6 @@ const VideoJSPlayer = dynamic(() => import("./videojs-player"), {
 export const LivepeerPlayer = () => {
   const { stream, pipeline } = useDreamshaperStore();
   const { isMobile } = useMobileStore();
-  const { isFullscreen } = useFullscreenStore();
 
   const appConfig = useAppConfig();
   const [playbackInfo, setPlaybackInfo] = useState<PlaybackInfo | null>(null);
@@ -174,7 +166,9 @@ export const LivepeerPlayer = () => {
           </div>
         </Player.ErrorIndicator>
 
-        <Player.Controls
+        <PlayerControls />
+
+        {/* <Player.Controls
           autoHide={1000}
           className={
             isFullscreen
@@ -210,7 +204,7 @@ export const LivepeerPlayer = () => {
               </Player.FullscreenTrigger>
             </div>
           </div>
-        </Player.Controls>
+        </Player.Controls> */}
 
         <DebugTimer debugMode={debugMode} />
       </Player.Root>

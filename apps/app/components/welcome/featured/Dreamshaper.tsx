@@ -11,6 +11,7 @@ import {
   useStreamUpdates,
 } from "@/hooks/useDreamshaper";
 import useFullscreenStore from "@/hooks/useFullscreenStore";
+import useMobileStore from "@/hooks/useMobileStore";
 import { usePrivy } from "@/hooks/usePrivy";
 import { usePromptStore } from "@/hooks/usePromptStore";
 import { useStreamStatus } from "@/hooks/useStreamStatus";
@@ -18,10 +19,10 @@ import track from "@/lib/track";
 import { cn } from "@repo/design-system/lib/utils";
 import { useEffect, useRef, useState } from "react";
 import { Header } from "./Header";
-import { InputPrompt } from "./InputPrompt";
 import { MainContent } from "./MainContent";
 import { ManagedBroadcast } from "./ManagedBroadcast";
-import useMobileStore from "@/hooks/useMobileStore";
+import { usePlayerPositionUpdater } from "./usePlayerPosition";
+import { InputPrompt } from "./InputPrompt";
 
 export default function Dreamshaper() {
   useInitialization();
@@ -36,8 +37,9 @@ export default function Dreamshaper() {
   const { user, authenticated } = usePrivy();
   const { isFullscreen } = useFullscreenStore();
   const { isMobile } = useMobileStore();
+  const playerRef = useRef<HTMLDivElement>(null);
 
-  const outputPlayerRef = useRef<HTMLDivElement>(null);
+  usePlayerPositionUpdater(playerRef);
 
   const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -182,7 +184,7 @@ export default function Dreamshaper() {
             )}
           >
             <div
-              ref={outputPlayerRef}
+              ref={playerRef}
               className={cn(
                 "w-full max-w-[calc(min(100%,calc((100vh-16rem)*16/9)))] mx-auto md:aspect-video aspect-square bg-sidebar rounded-2xl overflow-hidden relative",
                 isFullscreen && "w-full h-full max-w-none rounded-none",
@@ -193,9 +195,7 @@ export default function Dreamshaper() {
           </div>
 
           {/* Input and Broadcast Section */}
-          <div>
-            <ManagedBroadcast outputPlayerRef={outputPlayerRef} />
-          </div>
+          <ManagedBroadcast />
 
           <div className={cn("px-4", !isFullscreen && "z-50")}>
             <div
@@ -208,7 +208,6 @@ export default function Dreamshaper() {
                   isMobile &&
                   "bottom-[calc(env(safe-area-inset-bottom)+16px)]",
                 isFullscreen && !isMobile && "bottom-0",
-
                 !isFullscreen && "md:-translate-y-24 md:mt-0",
               )}
             >
@@ -218,6 +217,7 @@ export default function Dreamshaper() {
 
           <StreamDebugPanel />
           <StreamInfo />
+          <div className="h-96"></div>
         </div>
       </div>
     </div>

@@ -3,13 +3,12 @@
 import { useCommandSuggestions } from "@/hooks/useCommandSuggestions";
 import useFullscreenStore from "@/hooks/useFullscreenStore";
 import useMobileStore from "@/hooks/useMobileStore";
+import { usePrivy } from "@/hooks/usePrivy";
 import { usePromptStore } from "@/hooks/usePromptStore";
 import { usePromptVersionStore } from "@/hooks/usePromptVersionStore";
 import track from "@/lib/track";
-import { usePrivy } from "@/hooks/usePrivy";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Input } from "@repo/design-system/components/ui/input";
-import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   Tooltip,
   TooltipContent,
@@ -19,7 +18,6 @@ import { cn } from "@repo/design-system/lib/utils";
 import {
   CircleDot,
   Loader2,
-  Rocket,
   SlidersHorizontal,
   WandSparkles,
   X,
@@ -417,24 +415,8 @@ export const InputPrompt = () => {
       {/* Lower Control Area */}
       <div className="flex justify-between">
         {/* Lower Left Section */}
-        <div>
-          <Button
-            variant="ghost"
-            size="icon"
-            className={cn(
-              "w-full px-3 h-8 rounded-full bg-white border border-neutral-300",
-              "flex items-center gap-2",
-            )}
-            onClick={e => {
-              e.preventDefault();
-            }}
-          >
-            <CircleDot className="px-[0.5px] text-muted-foreground" />
-            <span className="text-[0.65rem] text-muted-foreground">
-              Record a clip
-            </span>
-          </Button>
-        </div>
+        <ClipRecordButton />
+
         {/* Lower Right Section */}
         <div className="flex gap-2">
           {/* Settings button */}
@@ -531,6 +513,29 @@ export const InputPrompt = () => {
           )}
         </div>
       )}
+    </div>
+  );
+};
+
+const ClipRecordButton = () => {
+  return (
+    <div className="rounded-full bg-gradient-to-r from-[#BCBCBC] via-[#1BB6FF] to-[#767676] p-[1px]">
+      <Button
+        variant="ghost"
+        size="icon"
+        className={cn(
+          "w-full px-3 h-8 rounded-full bg-white border-none",
+          "flex items-center gap-2",
+        )}
+        onClick={e => {
+          e.preventDefault();
+        }}
+      >
+        <CircleDot className="px-[0.5px] text-muted-foreground" />
+        <span className="text-[0.65rem] text-muted-foreground">
+          Record a clip
+        </span>
+      </Button>
     </div>
   );
 };
