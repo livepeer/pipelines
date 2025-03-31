@@ -1,3 +1,5 @@
+"use client";
+
 import { create } from "zustand";
 
 const MOBILE_BREAKPOINT = 768;
@@ -30,7 +32,8 @@ const useMobileStore = create<IsMobileState>(set => {
   }
 
   return {
-    isMobile: window.innerWidth < MOBILE_BREAKPOINT,
+    isMobile:
+      typeof window !== "undefined" && window.innerWidth < MOBILE_BREAKPOINT,
   };
 });
 
