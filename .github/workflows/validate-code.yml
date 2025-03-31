@@ -40,7 +40,7 @@ jobs:
         run: pnpm install
 
       - name: Run lint
-        run: turbo lint
+        run: pnpm lint
 
       - name: Check formatting
         run: pnpm format --check
