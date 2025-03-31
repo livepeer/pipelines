@@ -45,19 +45,16 @@ export const PlayerControls = () => {
       className={cn(
         "transition-all duration-100",
         isMobile ? "mx-4 w-auto -mt-2 mb-4" : "absolute z-50",
+        isFullscreen && "hidden",
       )}
       style={
         isMobile
           ? {}
           : {
               position: "fixed",
-              bottom: isFullscreen
-                ? "80px"
-                : `${window.innerHeight - position.bottom + 120}px`,
-              left: isFullscreen
-                ? "16px"
-                : // 1.5rem: Default padding, 0.5rem: Additional padding
-                  `calc(${position.left}px + 1.5rem + 0.5rem)`,
+              bottom: `${window.innerHeight - position.bottom + 120}px`,
+              // 1.5rem: Default padding, 0.5rem: Additional padding
+              left: `calc(${position.left}px + 1.5rem + 0.5rem)`,
             }
       }
     >
@@ -125,22 +122,22 @@ export const Controls = () => {
           "h-8 rounded-full text-neutral-200 mix-blend-difference",
         )}
       >
-        <button className="transition duration-200 hover:scale-110">
-          <SquarePen className="w-4 h-4" />
+        <button className="transition duration-200 hover:scale-125">
+          <SquarePen className="w-[0.9rem] h-[0.9rem]" />
         </button>
         <Separator orientation="vertical" className="h-4" />
-        <button className="transition duration-200 hover:scale-110">
-          <SlidersVertical className="w-4 h-4" />
+        <button className="transition duration-200 hover:scale-125">
+          <SlidersVertical className="w-[0.9rem] h-[0.9rem]" />
         </button>
-        <button className="transition duration-200 hover:scale-110">
-          <StopwatchIcon className="w-4 h-4" />
+        <button className="transition duration-200 hover:scale-125">
+          <StopwatchIcon className="w-[0.9rem] h-[0.9rem]" />
         </button>
         <Separator orientation="vertical" className="h-4" />
-        <button className="transition duration-200 hover:scale-110">
-          <ThumbsUp className="w-4 h-4" />
+        <button className="transition duration-200 hover:scale-125">
+          <ThumbsUp className="w-[0.9rem] h-[0.9rem]" />
         </button>
-        <button className="transition duration-200 hover:scale-110">
-          <ThumbsDown className="w-4 h-4" />
+        <button className="transition duration-200 hover:scale-125">
+          <ThumbsDown className="w-[0.9rem] h-[0.9rem]" />
         </button>
       </div>
     </div>

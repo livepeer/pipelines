@@ -39,7 +39,7 @@ export function usePlayerPositionUpdater(
         });
       };
 
-      const debouncedUpdate = debounce(updatePlayerPosition, 50);
+      const debouncedUpdate = debounce(updatePlayerPosition, 30);
 
       updatePlayerPosition();
       const initialTimeout = setTimeout(updatePlayerPosition, 300);
