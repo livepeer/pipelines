@@ -3,7 +3,6 @@
 import { TrackedButton } from "@/components/analytics/TrackedButton";
 import useFullscreenStore from "@/hooks/useFullscreenStore";
 import useMobileStore from "@/hooks/useMobileStore";
-import { usePrivy } from "@/hooks/usePrivy";
 import { useStreamStatus } from "@/hooks/useStreamStatus";
 import { useTrialTimer } from "@/hooks/useTrialTimer";
 import {
@@ -15,6 +14,7 @@ import { Loader2, Maximize, Minimize } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useDreamshaperStore } from "../../../hooks/useDreamshaper";
 import { LivepeerPlayer } from "./player";
+import { usePrivy } from "@privy-io/react-auth";
 
 export const MainContent = () => {
   const { stream, loading } = useDreamshaperStore();

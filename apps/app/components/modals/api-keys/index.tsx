@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { XIcon } from "lucide-react";
 import { Button } from "@repo/design-system/components/ui/button";
 import LoggedOutComponent from "../logged-out";
-import { usePrivy } from "@/hooks/usePrivy";
+import { usePrivy } from "@privy-io/react-auth";
 import { useRouter, useSearchParams } from "next/navigation";
 import track from "@/lib/track";
 import { useEffect } from "react";

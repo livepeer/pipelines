@@ -6,7 +6,7 @@ import { Label } from "@repo/design-system/components/ui/label";
 import LoggedOutComponent from "./logged-out";
 import { useRouter, useSearchParams } from "next/navigation";
 import track from "@/lib/track";
-import { usePrivy } from "@/hooks/usePrivy";
+import { usePrivy } from "@privy-io/react-auth";
 
 const PIPELINE_ICONS = {
   image: {

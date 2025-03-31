@@ -5,7 +5,6 @@ import { Badge } from "@repo/design-system/components/ui/badge";
 
 import { useAppConfig } from "@/hooks/useAppConfig";
 import useMobileStore from "@/hooks/useMobileStore";
-import { usePrivy } from "@/hooks/usePrivy";
 import {
   Sidebar,
   SidebarContent,
@@ -24,6 +23,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 import SystemStatus, { STATUS_PAGE_URL } from "./daydream/SystemStatus";
+import { usePrivy } from "@privy-io/react-auth";
 
 type GlobalSidebarProperties = {
   readonly children: ReactNode;

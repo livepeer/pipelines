@@ -8,13 +8,13 @@ import { updateParams } from "@/app/api/streams/update-params";
 import { Stream, upsertStream } from "@/app/api/streams/upsert";
 import { useGatewayHost } from "@/hooks/useGatewayHost";
 import { getAppConfig } from "@/lib/env";
-import { usePrivy } from "@/hooks/usePrivy";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { create } from "zustand";
 import { useStreamStatus } from "./useStreamStatus";
 import track from "@/lib/track";
+import { usePrivy } from "@privy-io/react-auth";
 
 export const DEFAULT_PIPELINE_ID = "pip_DRQREDnSei4HQyC8"; // Staging Dreamshaper ID
 export const DUMMY_USER_ID_FOR_NON_AUTHENTICATED_USERS =

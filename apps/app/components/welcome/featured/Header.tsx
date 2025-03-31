@@ -4,7 +4,7 @@ import { TrackedButton } from "@/components/analytics/TrackedButton";
 import { ClipButton } from "@/components/ClipButton";
 import useFullscreenStore from "@/hooks/useFullscreenStore";
 import useMobileStore from "@/hooks/useMobileStore";
-import { usePrivy } from "@/hooks/usePrivy";
+import { usePrivy } from "@privy-io/react-auth";
 import { usePromptStore } from "@/hooks/usePromptStore";
 import { useStreamStatus } from "@/hooks/useStreamStatus";
 import track from "@/lib/track";

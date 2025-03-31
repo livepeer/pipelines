@@ -1,6 +1,6 @@
 import useMobileStore from "@/hooks/useMobileStore";
 import track from "@/lib/track";
-import { usePrivy } from "@/hooks/usePrivy";
+import { usePrivy } from "@privy-io/react-auth";
 import { cn } from "@repo/design-system/lib/utils";
 import { CameraIcon, CheckIcon } from "lucide-react";
 import { useOnboard } from "../OnboardContext";

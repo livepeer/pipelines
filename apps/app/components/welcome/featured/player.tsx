@@ -6,8 +6,14 @@ import { useAppConfig } from "@/hooks/useAppConfig";
 import { useDreamshaperStore } from "@/hooks/useDreamshaper";
 import { useFallbackDetection } from "@/hooks/useFallbackDetection";
 import useMobileStore from "@/hooks/useMobileStore";
-import { usePrivy } from "@/hooks/usePrivy";
-import { LoadingIcon, PrivateErrorIcon } from "@livepeer/react/assets";
+import {
+  EnterFullscreenIcon,
+  ExitFullscreenIcon,
+  LoadingIcon,
+  MuteIcon,
+  PrivateErrorIcon,
+  UnmuteIcon,
+} from "@livepeer/react/assets";
 import { getSrc } from "@livepeer/react/external";
 import * as Player from "@livepeer/react/player";
 import { PlaybackInfo } from "livepeer/models/components";
@@ -15,7 +21,8 @@ import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
 import * as React from "react";
 import { useEffect, useRef, useState } from "react";
-import { PlayerControls } from "./PlayerControls";
+import { usePrivy } from "@privy-io/react-auth";
+import useFullscreenStore from "@/hooks/useFullscreenStore";
 
 const VideoJSPlayer = dynamic(() => import("./videojs-player"), {
   ssr: false,
@@ -32,6 +39,7 @@ const VideoJSPlayer = dynamic(() => import("./videojs-player"), {
 export const LivepeerPlayer = () => {
   const { stream, pipeline } = useDreamshaperStore();
   const { isMobile } = useMobileStore();
+  const { isFullscreen } = useFullscreenStore();
 
   const appConfig = useAppConfig();
   const [playbackInfo, setPlaybackInfo] = useState<PlaybackInfo | null>(null);
@@ -166,9 +174,7 @@ export const LivepeerPlayer = () => {
           </div>
         </Player.ErrorIndicator>
 
-        <PlayerControls />
-
-        {/* <Player.Controls
+        <Player.Controls
           autoHide={1000}
           className={
             isFullscreen
@@ -204,7 +210,7 @@ export const LivepeerPlayer = () => {
               </Player.FullscreenTrigger>
             </div>
           </div>
-        </Player.Controls> */}
+        </Player.Controls>
 
         <DebugTimer debugMode={debugMode} />
       </Player.Root>

@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Button } from "@repo/design-system/components/ui/button";
-import { usePrivy } from "@/hooks/usePrivy";
+import { usePrivy } from "@privy-io/react-auth";
 import track from "@/lib/track";
 export default function LoggedOut({ text }: { text: string }) {
   const { ready, authenticated, user, login, logout } = usePrivy();

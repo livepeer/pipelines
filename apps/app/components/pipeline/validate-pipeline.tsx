@@ -1,7 +1,7 @@
 "use client";
 import { publishPipeline } from "@/app/api/pipelines/edit";
 import { getStoredStreamStatus } from "@/app/api/pipelines/validation";
-import { usePrivy } from "@/hooks/usePrivy";
+import { usePrivy } from "@privy-io/react-auth";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,

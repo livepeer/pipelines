@@ -1,5 +1,5 @@
 import { Button } from "@repo/design-system/components/ui/button";
-import { usePrivy } from "@/hooks/usePrivy";
+import { usePrivy } from "@privy-io/react-auth";
 import {
   Dialog,
   DialogContent,

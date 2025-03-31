@@ -22,7 +22,7 @@ import { cn } from "@repo/design-system/lib/utils";
 import { LogOut, UserIcon } from "lucide-react";
 import { useEffect } from "react";
 import { createUser } from "./action";
-import { usePrivy } from "@/hooks/usePrivy";
+import { usePrivy } from "@privy-io/react-auth";
 
 export default function User({ className }: { className?: string }) {
   const { ready, authenticated, user, login, logout } = usePrivy();

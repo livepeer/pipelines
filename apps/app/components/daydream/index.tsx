@@ -8,7 +8,7 @@ import MainExperience from "./MainExperience";
 import { useEffect } from "react";
 import LayoutWrapper from "./LayoutWrapper";
 import { AuthProvider } from "./LoginScreen/AuthContext";
-import { usePrivy } from "@/hooks/usePrivy";
+import { usePrivy } from "@privy-io/react-auth";
 
 export default function Daydream({
   hasSharedPrompt,

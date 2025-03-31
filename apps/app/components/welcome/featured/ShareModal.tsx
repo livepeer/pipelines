@@ -2,7 +2,6 @@
 
 import { usePromptVersionStore } from "@/hooks/usePromptVersionStore";
 import track from "@/lib/track";
-import { usePrivy } from "@/hooks/usePrivy";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
   Dialog,
@@ -19,6 +18,7 @@ import {
   useDreamshaperStore,
   useShareLink,
 } from "../../../hooks/useDreamshaper";
+import { usePrivy } from "@privy-io/react-auth";
 
 export function useShareModal() {
   const [open, setOpen] = useState(false);
@@ -35,8 +35,8 @@ export const ShareModalContent = () => {
   const { createShareLink } = useShareLink();
   const { stream } = useDreamshaperStore();
   const { promptVersion } = usePromptVersionStore();
-  const { authenticated } = usePrivy();
   const [isCreating, setIsCreating] = useState(false);
+  const { authenticated } = usePrivy();
   const [shareUrl, setShareUrl] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 

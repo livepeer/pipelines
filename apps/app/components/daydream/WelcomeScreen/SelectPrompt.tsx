@@ -3,7 +3,7 @@ import { useOnboard } from "../OnboardContext";
 import useScrollView from "@/hooks/useScrollView";
 import { useEffect } from "react";
 import track from "@/lib/track";
-import { usePrivy } from "@/hooks/usePrivy";
+import { usePrivy } from "@privy-io/react-auth";
 import useMount from "@/hooks/useMount";
 import { Separator } from "@repo/design-system/components/ui/separator";
 import { InfoIcon } from "lucide-react";

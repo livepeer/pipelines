@@ -21,7 +21,7 @@ import { getSrc } from "@livepeer/react/external";
 import * as Player from "@livepeer/react/player";
 import { LPPLayer } from "./player";
 import track from "@/lib/track";
-import { usePrivy } from "@/hooks/usePrivy";
+import { usePrivy } from "@privy-io/react-auth";
 import { ArrowTopRightIcon } from "@radix-ui/react-icons";
 import Link from "next/link";
 

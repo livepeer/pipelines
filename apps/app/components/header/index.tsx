@@ -6,7 +6,7 @@ import { Button } from "@repo/design-system/components/ui/button";
 import Link from "next/link";
 import Search from "./search";
 import User from "./user";
-import { usePrivy } from "@/hooks/usePrivy";
+import { usePrivy } from "@privy-io/react-auth";
 import track from "@/lib/track";
 import { useRouter } from "next/navigation";
 

@@ -1,8 +1,6 @@
 "use client";
 
 import { sendKafkaEvent } from "@/app/api/metrics/kafka";
-import { useAppConfig } from "@/hooks/useAppConfig";
-import { usePrivy } from "@/hooks/usePrivy";
 import { useSearchParams } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
 import videojs from "video.js";
@@ -11,6 +9,7 @@ import "video.js/dist/video-js.css";
 
 import MillicastWhepPlugin from "@millicast/videojs-whep-plugin";
 import "videojs-resolution-switcher/lib/videojs-resolution-switcher.css";
+import { usePrivy } from "@privy-io/react-auth";
 
 // @ts-ignore
 videojs.registerPlugin("MillicastWhepPlugin", MillicastWhepPlugin);

@@ -1,6 +1,6 @@
 "use client";
 
-import { User } from "@privy-io/react-auth";
+import { usePrivy, User } from "@privy-io/react-auth";
 import LoggedOutComponent from "@/components/modals/logged-out";
 import { useFetch } from "@/hooks/useFetch";
 import { getPipelinesByUser } from "../api/pipelines/get";
@@ -31,7 +31,6 @@ import Link from "next/link";
 import { deletePipeline } from "../api/pipelines/delete";
 import { toast } from "sonner";
 import ConfirmDialog from "@/components/modals/confirm";
-import { usePrivy } from "@/hooks/usePrivy";
 
 const EmptyState = ({ user }: { user: User | null }) => {
   const router = useRouter();

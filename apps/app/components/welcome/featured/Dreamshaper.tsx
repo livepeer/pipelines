@@ -12,7 +12,7 @@ import {
 } from "@/hooks/useDreamshaper";
 import useFullscreenStore from "@/hooks/useFullscreenStore";
 import useMobileStore from "@/hooks/useMobileStore";
-import { usePrivy } from "@/hooks/usePrivy";
+import { usePrivy } from "@privy-io/react-auth";
 import { usePromptStore } from "@/hooks/usePromptStore";
 import { useStreamStatus } from "@/hooks/useStreamStatus";
 import track from "@/lib/track";
@@ -194,27 +194,8 @@ export default function Dreamshaper() {
             </div>
           </div>
 
-          {/* Input and Broadcast Section */}
           <ManagedBroadcast />
-
-          <div className={cn("px-4", !isFullscreen && "z-50")}>
-            <div
-              className={cn(
-                "space-y-5 md:space-y-8 mt-4",
-                "w-full md:max-w-[calc(min(100%,calc((100vh-16rem)*16/9)))] md:px-6 mx-auto mb-0",
-
-                isFullscreen && "z-[10000] fixed left-1/2 -translate-x-1/2",
-                isFullscreen &&
-                  isMobile &&
-                  "bottom-[calc(env(safe-area-inset-bottom)+16px)]",
-                isFullscreen && !isMobile && "bottom-0",
-                !isFullscreen && "md:-translate-y-24 md:mt-0",
-              )}
-            >
-              <InputPrompt />
-            </div>
-          </div>
-
+          <InputPrompt />
           <StreamDebugPanel />
           <StreamInfo />
         </div>
