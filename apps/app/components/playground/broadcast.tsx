@@ -149,14 +149,7 @@ export function BroadcastWithControls({
       video={true}
       aspectRatio={16 / 9}
       ingestUrl={ingestUrl}
-      iceServers={{
-        urls: [
-          "stun:stun.l.google.com:19302",
-          "stun:global.stun.twilio.com:3478",
-          "stun:stun.cloudflare.com:3478",
-          "stun:stun.services.mozilla.com:3478",
-        ],
-      }}
+      noIceGathering
       storage={null}
     >
       {streamId && pipelineId && pipelineType && (
