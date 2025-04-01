@@ -29,8 +29,8 @@ import {
 } from "../../../hooks/useDreamshaper";
 import SettingsMenu from "./prompt-settings";
 import { MAX_PROMPT_LENGTH, useValidateInput } from "./useValidateInput";
-import { usePrivy } from "@privy-io/react-auth";
 import { Separator } from "@repo/design-system/components/ui/separator";
+import { usePrivy } from "@/hooks/usePrivy";
 
 const PROMPT_PLACEHOLDER = "Enter your prompt...";
 

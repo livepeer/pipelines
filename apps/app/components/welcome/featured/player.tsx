@@ -8,6 +8,7 @@ import { useDreamshaperStore } from "@/hooks/useDreamshaper";
 import { useFallbackDetection } from "@/hooks/useFallbackDetection";
 import useFullscreenStore from "@/hooks/useFullscreenStore";
 import useMobileStore from "@/hooks/useMobileStore";
+import { usePrivy } from "@/hooks/usePrivy";
 import {
   EnterFullscreenIcon,
   ExitFullscreenIcon,
@@ -18,7 +19,6 @@ import {
 } from "@livepeer/react/assets";
 import { getSrc } from "@livepeer/react/external";
 import * as Player from "@livepeer/react/player";
-import { usePrivy } from "@privy-io/react-auth";
 import { PlaybackInfo } from "livepeer/models/components";
 import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";

@@ -1,6 +1,6 @@
 "use server";
 
-import { User } from "@privy-io/react-auth";
+import { User } from "@/hooks/usePrivy";
 import { createServerClient } from "@repo/supabase";
 
 export async function updateUserAdditionalDetails(

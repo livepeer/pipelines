@@ -1,11 +1,9 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useState } from "react";
 import { Button } from "@repo/design-system/components/ui/button";
-import { Copy, Info, PauseIcon, PlayIcon, Share } from "lucide-react";
+import { Copy } from "lucide-react";
 import { toast } from "sonner";
-import { useSearchParams } from "next/navigation";
-import { pipelines } from "../welcome/featured/index";
 import {
   AlertDialog,
   AlertDialogContent,
@@ -14,14 +12,8 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogCancel,
-  AlertDialogAction,
 } from "@repo/design-system/components/ui/alert-dialog";
-import { Livepeer } from "livepeer";
-import { getSrc } from "@livepeer/react/external";
-import * as Player from "@livepeer/react/player";
 import { LPPLayer } from "./player";
-import track from "@/lib/track";
-import { usePrivy } from "@privy-io/react-auth";
 import { ArrowTopRightIcon } from "@radix-ui/react-icons";
 import Link from "next/link";
 

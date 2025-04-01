@@ -22,7 +22,7 @@ import { InputPrompt } from "./InputPrompt";
 import { MainContent } from "./MainContent";
 import { ManagedBroadcast } from "./ManagedBroadcast";
 import { usePlayerPositionUpdater } from "./usePlayerPosition";
-import { usePrivy } from "@privy-io/react-auth";
+import { usePrivy } from "@/hooks/usePrivy";
 
 export default function Dreamshaper() {
   useInitialization();

@@ -8,11 +8,11 @@ import MainExperience from "./MainExperience";
 import { useEffect } from "react";
 import LayoutWrapper from "./LayoutWrapper";
 import { AuthProvider } from "./LoginScreen/AuthContext";
-import { usePrivy } from "@privy-io/react-auth";
 import { createUser } from "@/app/actions/user";
 import { identifyUser } from "@/lib/analytics/mixpanel";
 import { submitToHubspot } from "@/lib/analytics/hubspot";
 import track from "@/lib/track";
+import { usePrivy } from "@/hooks/usePrivy";
 
 export default function Daydream({
   hasSharedPrompt,

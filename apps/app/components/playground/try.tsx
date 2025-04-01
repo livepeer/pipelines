@@ -11,7 +11,6 @@ import {
 } from "@repo/design-system/components/ui/select";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
 import { upsertStream } from "@/app/api/streams/upsert";
-import { usePrivy } from "@privy-io/react-auth";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Switch } from "@repo/design-system/components/ui/switch";
 import { Slider } from "@repo/design-system/components/ui/slider";
@@ -38,6 +37,7 @@ import { TrialExpiredModal } from "@/components/modals/trial-expired-modal";
 import { useRouter, useSearchParams } from "next/navigation";
 import { StreamStatus } from "@/hooks/useStreamStatus";
 import { useAppConfig } from "@/hooks/useAppConfig";
+import { usePrivy } from "@/hooks/usePrivy";
 
 type BaseParam = {
   nodeId: string;
@@ -105,7 +105,7 @@ export default function Try({
   setStreamInfo: (streamInfo: any) => void;
   pipeline: any;
 }): JSX.Element {
-  const { user, authenticated, login } = usePrivy();
+  const { user } = usePrivy();
   const router = useRouter();
   const [source, setSource] = useState<string>("");
   const [streamId, setStreamId] = useState<string | null>(null);
@@ -117,7 +117,6 @@ export default function Try({
   const [hasChanges, setHasChanges] = useState(false);
   const [streamKey, setStreamKey] = useState<string | null>(null);
   const [streamKilled, setStreamKilled] = useState(false);
-  const { timeRemaining } = useTrialTimer();
   const appConfig = useAppConfig();
 
   useEffect(() => {

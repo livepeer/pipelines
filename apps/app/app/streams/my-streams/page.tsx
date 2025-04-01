@@ -52,7 +52,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@repo/design-system/components/ui/pagination";
-import { usePrivy } from "@privy-io/react-auth";
+import { usePrivy } from "@/hooks/usePrivy";
 
 export default function MyStreams({ searchParams }: { searchParams: any }) {
   const { authenticated, user, ready: isAuthLoaded } = usePrivy();

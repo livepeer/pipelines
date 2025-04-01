@@ -1,7 +1,7 @@
 "use client";
 import { useEffect } from "react";
 import track from "@/lib/track";
-import { usePrivy } from "@privy-io/react-auth";
+import { usePrivy } from "@/hooks/usePrivy";
 
 interface ClientSideTrackerProps {
   eventName: string;

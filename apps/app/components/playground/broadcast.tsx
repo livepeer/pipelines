@@ -26,8 +26,8 @@ import { createPortal } from "react-dom";
 import { toast } from "sonner";
 import { sendKafkaEvent } from "@/app/api/metrics/kafka";
 import { useDreamshaperStore } from "@/hooks/useDreamshaper";
-import { usePrivy } from "@privy-io/react-auth";
 import { create } from "zustand";
+import { usePrivy } from "@/hooks/usePrivy";
 
 const StatusMonitor = () => {
   const { user } = usePrivy();

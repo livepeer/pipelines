@@ -1,7 +1,6 @@
 "use client";
 
 import LoggedOutComponent from "@/components/modals/logged-out";
-import { usePrivy } from "@privy-io/react-auth";
 import { Input } from "@repo/design-system/components/ui/input";
 import { ScrollArea } from "@repo/design-system/components/ui/scroll-area";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
@@ -15,6 +14,7 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { LoaderCircleIcon } from "lucide-react";
 import PipelineParamsSelector from "./pipeline-params-selector";
+import { usePrivy } from "@/hooks/usePrivy";
 
 export default function CreatePipeline() {
   const { authenticated, user, ready: isAuthLoaded } = usePrivy();

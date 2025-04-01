@@ -1,12 +1,12 @@
 "use client";
 
+import { updateUserAdditionalDetails } from "@/app/actions/user";
+import { usePrivy } from "@/hooks/usePrivy";
+import track from "@/lib/track";
 import { Separator } from "@repo/design-system/components/ui/separator";
 import { CheckIcon, PlusIcon } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useOnboard } from "../OnboardContext";
-import track from "@/lib/track";
-import { usePrivy } from "@privy-io/react-auth";
-import { updateUserAdditionalDetails } from "@/app/actions/user";
 
 const personas = [
   "Personal Use",

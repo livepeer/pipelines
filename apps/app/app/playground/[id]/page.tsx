@@ -4,8 +4,8 @@ import { getPipeline } from "@/app/api/pipelines/get";
 import Modals from "@/components/modals";
 import Form from "@/components/playground/form";
 import Output from "@/components/playground/output";
+import { usePrivy } from "@/hooks/usePrivy";
 import track from "@/lib/track";
-import { usePrivy } from "@privy-io/react-auth";
 import { ScrollArea } from "@repo/design-system/components/ui/scroll-area";
 import { useEffect, useState } from "react";
 

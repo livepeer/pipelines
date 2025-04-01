@@ -4,10 +4,10 @@ import React from "react";
 import { XIcon } from "lucide-react";
 import { Button } from "@repo/design-system/components/ui/button";
 import LoggedOutComponent from "./logged-out";
-import { usePrivy } from "@privy-io/react-auth";
 import { useRouter, useSearchParams } from "next/navigation";
 import track from "@/lib/track";
 import { useEffect } from "react";
+import { usePrivy } from "@/hooks/usePrivy";
 
 const Header = ({ onClick }: { onClick: () => void }) => (
   <div className="flex items-center justify-between">

@@ -1,4 +1,4 @@
-import { User as PrivyUser } from "@privy-io/react-auth";
+import { User as PrivyUser } from "@/hooks/usePrivy";
 
 export async function identifyUser(
   userId: string,

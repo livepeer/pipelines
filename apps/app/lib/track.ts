@@ -1,6 +1,6 @@
-import { User } from "@privy-io/react-auth";
 import { handleDistinctId, handleSessionId } from "@/lib/analytics/mixpanel";
 import { getSharedParamsAuthor } from "@/app/api/streams/share-params";
+import { User } from "@/hooks/usePrivy";
 
 interface TrackProperties {
   [key: string]: any;

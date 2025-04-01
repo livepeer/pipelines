@@ -1,8 +1,8 @@
 "use client";
 
 import { sendKafkaEvent } from "@/app/api/metrics/kafka";
+import { usePrivy } from "@/hooks/usePrivy";
 import MillicastWhepPlugin from "@millicast/videojs-whep-plugin";
-import { usePrivy } from "@privy-io/react-auth";
 import { useSearchParams } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
 import videojs from "video.js";

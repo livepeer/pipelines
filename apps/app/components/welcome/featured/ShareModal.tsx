@@ -18,7 +18,7 @@ import {
   useDreamshaperStore,
   useShareLink,
 } from "../../../hooks/useDreamshaper";
-import { usePrivy } from "@privy-io/react-auth";
+import { usePrivy } from "@/hooks/usePrivy";
 
 export function useShareModal() {
   const [open, setOpen] = useState(false);

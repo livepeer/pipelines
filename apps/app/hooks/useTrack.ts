@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 import track from "@/lib/track";
 import { TrackEventName, TrackProperties } from "@/lib/analytics/event-types";
-import { usePrivy } from "@privy-io/react-auth";
+import { usePrivy } from "@/hooks/usePrivy";
 
 export function useTrack() {
   const { user, authenticated } = usePrivy();

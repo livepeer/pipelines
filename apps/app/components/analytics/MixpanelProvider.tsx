@@ -9,7 +9,7 @@ import {
   setCookies,
   handleSessionEnd,
 } from "@/lib/analytics/mixpanel";
-import { usePrivy } from "@privy-io/react-auth";
+import { usePrivy } from "@/hooks/usePrivy";
 
 export function MixpanelProvider({ children }: { children: ReactNode }) {
   const { user, ready } = usePrivy();

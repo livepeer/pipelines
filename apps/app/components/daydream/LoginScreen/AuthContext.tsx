@@ -1,10 +1,10 @@
-import { createContext, useContext, useMemo } from "react";
 import {
   OAuthFlowState,
   OAuthProviderType,
   useLoginWithEmail,
   useLoginWithOAuth,
-} from "@privy-io/react-auth";
+} from "@/hooks/usePrivy";
+import { createContext, useContext, useMemo } from "react";
 
 export const AuthContext = createContext<{
   sendCode: ({ email }: { email: string }) => Promise<void>;
