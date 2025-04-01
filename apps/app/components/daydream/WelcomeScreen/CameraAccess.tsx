@@ -153,7 +153,7 @@ export default function CameraAccess() {
       </div>
       {cameraPermission === "denied" && (
         <p className="font-inter text-sm leading-[1.55] tracking-[-1.1%] text-[#161616] text-center">
-          We could&apos;t access your camera and microphone. Please contact {" "}
+          We could&apos;t access your camera and microphone. Please contact{" "}
           <a
             className="font-semibold underline"
             href="https://livepeer.notion.site/15f0a348568781aab037c863d91b05e2"
