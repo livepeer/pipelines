@@ -113,6 +113,8 @@ export default function Dreamshaper({
 }: DreamshaperProps) {
   const { lastSubmittedPrompt, setLastSubmittedPrompt } = usePrompts();
   const [inputValue, setInputValue] = useState("");
+  const [timeUntilRefresh, setTimeUntilRefresh] = useState(90);
+  const refreshTimerRef = useRef<NodeJS.Timeout>();
   const { profanity, exceedsMaxLength } = useValidateInput(inputValue);
   const isMobile = useIsMobile();
   const outputPlayerRef = useRef<HTMLDivElement>(null);
@@ -538,8 +540,32 @@ export default function Dreamshaper({
     };
   }, [authenticated, user, streamId, outputPlaybackId, isRefreshing]);
 
+  useEffect(() => {
+    setTimeUntilRefresh(90);
+    
+    refreshTimerRef.current = setInterval(() => {
+      setTimeUntilRefresh(prev => {
+        if (prev <= 1) {
+          window.location.reload();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => {
+      if (refreshTimerRef.current) {
+        clearInterval(refreshTimerRef.current);
+      }
+    };
+  }, []);
+
   return (
     <div className="relative flex flex-col min-h-screen overflow-y-auto">
+      <div className="fixed top-4 right-4 z-[100] bg-neutral-800/80 text-white px-3 py-1 rounded-full text-sm font-mono">
+        Refreshing in {timeUntilRefresh}s
+      </div>
+
       {/* Header section */}
       <div
         className={cn(
