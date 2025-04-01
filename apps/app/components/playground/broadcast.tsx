@@ -75,16 +75,16 @@ const StatusMonitor = () => {
   return null;
 };
 
-interface BroadcastUIState {
+interface BroadcastUIStore {
   collapsed: boolean;
   setCollapsed: (value: boolean) => void;
   toggleCollapsed: () => void;
 }
 
-export const useBroadcastUIStore = create<BroadcastUIState>((set, get) => ({
+export const useBroadcastUIStore = create<BroadcastUIStore>(set => ({
   collapsed: false,
   setCollapsed: value => set({ collapsed: value }),
-  toggleCollapsed: () => set({ collapsed: !get().collapsed }),
+  toggleCollapsed: () => set(state => ({ collapsed: !state.collapsed })),
 }));
 
 const videoId = "live-video";

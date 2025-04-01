@@ -10,12 +10,12 @@ interface PlayerPosition {
   right: number;
 }
 
-interface PlayerPositionState {
+interface PlayerPositionStore {
   position: PlayerPosition;
   setPosition: (position: PlayerPosition) => void;
 }
 
-export const usePlayerPositionStore = create<PlayerPositionState>(set => ({
+export const usePlayerPositionStore = create<PlayerPositionStore>(set => ({
   position: { top: 0, bottom: 0, left: 0, right: 0 },
   setPosition: position => set({ position }),
 }));

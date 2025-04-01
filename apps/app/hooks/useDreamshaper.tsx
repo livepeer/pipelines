@@ -143,7 +143,7 @@ const getParamsFromLocalStorage = (currentPipelineVersion: string) => {
   }
 };
 
-interface DreamshaperState {
+interface DreamshaperStore {
   loading: boolean;
   updating: boolean;
   stream: Stream | null;
@@ -161,7 +161,7 @@ interface DreamshaperState {
   setSharedPrompt: (prompt: string | null) => void;
 }
 
-export const useDreamshaperStore = create<DreamshaperState>(set => ({
+export const useDreamshaperStore = create<DreamshaperStore>(set => ({
   loading: true,
   updating: false,
   stream: null,
