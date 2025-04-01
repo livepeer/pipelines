@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
     if (!eventType || !data || !app || !host) {
       return NextResponse.json(
         { error: "Missing required fields" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
     const appConfig = getAppConfig(request.nextUrl.searchParams);
     const ip =
       appConfig.environment === "dev"
-        ? "development.fake.ip" 
+        ? "development.fake.ip"
         : forwardedFor
           ? forwardedFor.split(",")[0].trim()
           : "";
@@ -72,13 +72,12 @@ export async function POST(request: NextRequest) {
     };
 
     await sendKafkaEvent(eventType, enrichedData, app, host);
-
     return NextResponse.json({ status: "ok" });
   } catch (error) {
-    console.error("Error processing beacon request:", error);
+    console.error("Error processing Kafka request:", error);
     return NextResponse.json(
-      { error: "Failed to process beacon request" },
-      { status: 500 },
+      { error: "Failed to process Kafka request" },
+      { status: 500 }
     );
   }
-}
+} 

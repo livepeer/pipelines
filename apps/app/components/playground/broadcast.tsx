@@ -27,7 +27,7 @@ import { createPortal } from "react-dom";
 import { useIsMobile } from "@repo/design-system/hooks/use-mobile";
 import { toast } from "sonner";
 
-import { sendKafkaEvent } from "@/app/api/metrics/kafka";
+import { sendKafkaEvent } from "@/lib/analytics/event-middleware";
 import { usePrivy } from "@privy-io/react-auth";
 
 const StatusMonitor = ({
@@ -53,22 +53,14 @@ const StatusMonitor = ({
           "stream_trace",
           {
             type: "app_start_broadcast_stream",
-            timestamp: Date.now(),
-            user_id: user?.id || "anonymous",
             playback_id: "",
             stream_id: streamId,
             pipeline: pipelineType,
             pipeline_id: pipelineId,
-            hostname: window.location.hostname,
-            broadcaster_info: {
-              ip: "",
-              user_agent: navigator.userAgent,
-              country: "",
-              city: "",
-            },
           },
           "daydream",
           "server",
+          user || undefined
         );
       };
 
@@ -76,7 +68,7 @@ const StatusMonitor = ({
     } else if (state.status !== "live") {
       liveEventSentRef.current = false;
     }
-  }, [state.status, streamId, pipelineId, pipelineType, user?.id]);
+  }, [state.status, streamId, pipelineId, pipelineType, user]);
 
   return null;
 };
@@ -149,14 +141,14 @@ export function BroadcastWithControls({
       video={true}
       aspectRatio={16 / 9}
       ingestUrl={ingestUrl}
-      iceServers={{
+      {...{iceServers: {
         urls: [
           "stun:stun.l.google.com:19302",
           "stun:global.stun.twilio.com:3478",
           "stun:stun.cloudflare.com:3478",
           "stun:stun.services.mozilla.com:3478",
         ],
-      }}
+      }} as any}
       storage={null}
     >
       {streamId && pipelineId && pipelineType && (

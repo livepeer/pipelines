@@ -42,7 +42,7 @@ import SettingsMenu from "./prompt-settings";
 import { ShareModal } from "./ShareModal";
 import { UpdateOptions } from "./useDreamshaper";
 import { MAX_PROMPT_LENGTH, useValidateInput } from "./useValidateInput";
-import { sendKafkaEvent } from "@/app/api/metrics/kafka";
+import { sendKafkaEvent, sendBeaconEvent } from "@/lib/analytics/event-middleware";
 
 const PROMPT_PLACEHOLDER = "Enter your prompt...";
 const MAX_STREAM_TIMEOUT_MS = 300000; // 5 minutes
@@ -470,7 +470,6 @@ export default function Dreamshaper({
 
       const eventData = {
         type: "app_user_page_unload",
-        user_id: user?.id || "anonymous",
         is_authenticated: authenticated,
         stream_id: streamId,
         playback_id: outputPlaybackId,
@@ -478,28 +477,19 @@ export default function Dreamshaper({
         event_type: "unload",
       };
 
-      if (navigator.sendBeacon) {
-        const blob = new Blob(
-          [
-            JSON.stringify({
-              eventType: "stream_trace",
-              data: eventData,
-              app: "daydream",
-              host: window.location.hostname,
-            }),
-          ],
-          { type: "application/json" },
-        );
-
-        navigator.sendBeacon("/api/metrics/beacon", blob);
-      }
+      sendBeaconEvent(
+        "stream_trace",
+        eventData,
+        "daydream",
+        window.location.hostname,
+        user || undefined
+      );
     };
 
     const handleVisibilityChange = () => {
       if (document.visibilityState === "hidden" && !isRefreshing) {
         const eventData = {
           type: "app_user_page_visibility_change",
-          user_id: user?.id || "anonymous",
           is_authenticated: authenticated,
           stream_id: streamId,
           playback_id: outputPlaybackId,
@@ -507,21 +497,13 @@ export default function Dreamshaper({
           event_type: "visibility_change",
         };
 
-        if (navigator.sendBeacon) {
-          const blob = new Blob(
-            [
-              JSON.stringify({
-                eventType: "stream_trace",
-                data: eventData,
-                app: "daydream",
-                host: window.location.hostname,
-              }),
-            ],
-            { type: "application/json" },
-          );
-
-          navigator.sendBeacon("/api/metrics/beacon", blob);
-        }
+        sendBeaconEvent(
+          "stream_trace",
+          eventData,
+          "daydream",
+          window.location.hostname,
+          user || undefined
+        );
       }
 
       if (document.visibilityState === "visible") {
