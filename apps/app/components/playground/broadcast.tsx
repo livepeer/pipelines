@@ -144,7 +144,7 @@ export function BroadcastWithControls({
           : null;
       }}
       forceEnabled={true}
-      mirrored={true}
+      mirrored={false}
       audio={false}
       video={true}
       aspectRatio={16 / 9}
