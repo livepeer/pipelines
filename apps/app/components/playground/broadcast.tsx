@@ -24,7 +24,7 @@ import {
 import React, { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { toast } from "sonner";
-import { sendKafkaEvent } from "@/app/api/metrics/kafka";
+import { sendKafkaEvent } from "@/lib/analytics/event-middleware";
 import { useDreamshaperStore } from "@/hooks/useDreamshaper";
 import { create } from "zustand";
 import { usePrivy } from "@/hooks/usePrivy";
@@ -47,22 +47,14 @@ const StatusMonitor = () => {
           "stream_trace",
           {
             type: "app_start_broadcast_stream",
-            timestamp: Date.now(),
-            user_id: user?.id || "anonymous",
             playback_id: "",
             stream_id: stream.id,
             pipeline: pipeline.type,
             pipeline_id: pipeline.id,
-            hostname: window.location.hostname,
-            broadcaster_info: {
-              ip: "",
-              user_agent: navigator.userAgent,
-              country: "",
-              city: "",
-            },
           },
           "daydream",
           "server",
+          user || undefined
         );
       };
 
@@ -70,7 +62,7 @@ const StatusMonitor = () => {
     } else if (state.status !== "live") {
       liveEventSentRef.current = false;
     }
-  }, [state.status, stream?.id, pipeline?.id, pipeline?.type, user?.id]);
+  }, [state.status, stream?.id, pipeline?.id, pipeline?.type, user]);
 
   return null;
 };
@@ -141,14 +133,14 @@ export function BroadcastWithControls({ className }: { className?: string }) {
       video={true}
       aspectRatio={16 / 9}
       ingestUrl={ingestUrl}
-      iceServers={{
+      {...{iceServers: {
         urls: [
           "stun:stun.l.google.com:19302",
           "stun:global.stun.twilio.com:3478",
           "stun:stun.cloudflare.com:3478",
           "stun:stun.services.mozilla.com:3478",
         ],
-      }}
+      }} as any}
       storage={null}
     >
       <StatusMonitor />
