@@ -113,7 +113,7 @@ export default function Dreamshaper({
 }: DreamshaperProps) {
   const { lastSubmittedPrompt, setLastSubmittedPrompt } = usePrompts();
   const [inputValue, setInputValue] = useState("");
-  const [timeUntilRefresh, setTimeUntilRefresh] = useState(90);
+  const [timeUntilRefresh, setTimeUntilRefresh] = useState(300);
   const refreshTimerRef = useRef<NodeJS.Timeout>();
   const { profanity, exceedsMaxLength } = useValidateInput(inputValue);
   const isMobile = useIsMobile();
@@ -541,7 +541,7 @@ export default function Dreamshaper({
   }, [authenticated, user, streamId, outputPlaybackId, isRefreshing]);
 
   useEffect(() => {
-    setTimeUntilRefresh(90);
+    setTimeUntilRefresh(300);
     
     refreshTimerRef.current = setInterval(() => {
       setTimeUntilRefresh(prev => {
