@@ -542,7 +542,7 @@ export default function Dreamshaper({
 
   useEffect(() => {
     setTimeUntilRefresh(300);
-    
+
     refreshTimerRef.current = setInterval(() => {
       setTimeUntilRefresh(prev => {
         if (prev <= 1) {
