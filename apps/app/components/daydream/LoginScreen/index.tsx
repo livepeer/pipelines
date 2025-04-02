@@ -181,7 +181,7 @@ export default function LoginScreen({
             muted
             loop
             playsInline
-            className="w-full h-full rounded-[26px]"
+            className="w-full h-full rounded-[26px] bg-white"
           />
         </div>
       </div>
