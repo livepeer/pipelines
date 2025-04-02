@@ -1,7 +1,7 @@
 "use client";
 
+import { usePrivy } from "@/hooks/usePrivy";
 import track from "@/lib/track";
-import { usePrivy } from "@privy-io/react-auth";
 import {
   AlertDialog,
   AlertDialogAction,

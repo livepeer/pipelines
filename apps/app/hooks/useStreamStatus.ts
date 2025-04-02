@@ -1,7 +1,7 @@
 import useSWR from "swr";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
-import { usePrivy } from "@privy-io/react-auth";
+import { usePrivy } from "@/hooks/usePrivy";
 
 const BASE_POLLING_INTERVAL = 5000;
 

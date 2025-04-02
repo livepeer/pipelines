@@ -1,4 +1,4 @@
-import { User as PrivyUser } from "@privy-io/react-auth";
+import { User as PrivyUser } from "@/hooks/usePrivy";
 import { hubspot as HubspotConfig } from "@/lib/env";
 
 interface HubspotField {

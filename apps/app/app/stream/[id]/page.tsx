@@ -11,7 +11,7 @@ import { ExternalToast, toast } from "sonner";
 import { useRouter } from "next/navigation";
 import Modals from "@/components/modals";
 import track from "@/lib/track";
-import { usePrivy } from "@privy-io/react-auth";
+import { usePrivy } from "@/hooks/usePrivy";
 
 export default function Stream({
   searchParams,

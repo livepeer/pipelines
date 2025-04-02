@@ -1,5 +1,3 @@
-import { Button } from "@repo/design-system/components/ui/button";
-import { usePrivy } from "@privy-io/react-auth";
 import {
   Dialog,
   DialogContent,
@@ -8,6 +6,7 @@ import {
   DialogDescription,
 } from "@repo/design-system/components/ui/dialog";
 import { TrackedButton } from "../../components/analytics/TrackedButton";
+import { usePrivy } from "@/hooks/usePrivy";
 interface TrialExpiredModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;

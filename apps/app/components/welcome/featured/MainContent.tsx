@@ -14,7 +14,7 @@ import { Loader2, Maximize, Minimize } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useDreamshaperStore } from "../../../hooks/useDreamshaper";
 import { LivepeerPlayer } from "./player";
-import { usePrivy } from "@privy-io/react-auth";
+import { usePrivy } from "@/hooks/usePrivy";
 
 export const MainContent = () => {
   const { stream, loading } = useDreamshaperStore();

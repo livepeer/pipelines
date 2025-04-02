@@ -4,11 +4,9 @@ import { GitHubLogoIcon } from "@radix-ui/react-icons";
 import { ModeToggle } from "@repo/design-system/components/mode-toggle";
 import { Button } from "@repo/design-system/components/ui/button";
 import Link from "next/link";
-import Search from "./search";
 import User from "./user";
-import { usePrivy } from "@privy-io/react-auth";
 import track from "@/lib/track";
-import { useRouter } from "next/navigation";
+import { usePrivy } from "@/hooks/usePrivy";
 
 export default function Header() {
   const { user, authenticated } = usePrivy();

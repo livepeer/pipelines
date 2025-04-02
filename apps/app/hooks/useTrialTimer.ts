@@ -1,4 +1,4 @@
-import { usePrivy } from "@privy-io/react-auth";
+import { usePrivy } from "@/hooks/usePrivy";
 import { useState, useEffect, useMemo } from "react";
 
 const UNREGISTERED_TIMEOUT_SECONDS = 10 * 60; // 10 minutes

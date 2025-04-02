@@ -3,7 +3,6 @@
 import { editPipelineFromFormData } from "@/app/api/pipelines/edit";
 import LoggedOutComponent from "@/components/modals/logged-out";
 import { PipelineSchema } from "@/lib/types";
-import { usePrivy } from "@privy-io/react-auth";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
@@ -16,6 +15,7 @@ import { toast } from "sonner";
 import FileUploadDropzone, { FileType } from "./json-upload";
 import { useRouter } from "next/navigation";
 import PipelineParamsSelector from "./pipeline-params-selector";
+import { usePrivy } from "@/hooks/usePrivy";
 
 export default function EditPipeline({
   pipeline,

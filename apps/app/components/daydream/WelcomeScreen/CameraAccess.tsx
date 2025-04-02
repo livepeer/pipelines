@@ -1,10 +1,10 @@
 import { updateUserAdditionalDetails } from "@/app/actions/user";
 import useMobileStore from "@/hooks/useMobileStore";
 import track from "@/lib/track";
-import { usePrivy } from "@privy-io/react-auth";
 import { cn } from "@repo/design-system/lib/utils";
 import { CameraIcon, CheckIcon } from "lucide-react";
 import { useOnboard } from "../OnboardContext";
+import { usePrivy } from "@/hooks/usePrivy";
 
 export const useMediaPermissions = () => {
   const { setCameraPermission } = useOnboard();

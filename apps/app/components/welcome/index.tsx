@@ -3,11 +3,6 @@
 import { ArrowTopRightIcon } from "@radix-ui/react-icons";
 import { Avatar, AvatarImage } from "@repo/design-system/components/ui/avatar";
 import { Button } from "@repo/design-system/components/ui/button";
-import { Input } from "@repo/design-system/components/ui/input";
-import {
-  ScrollArea,
-  ScrollBar,
-} from "@repo/design-system/components/ui/scroll-area";
 import {
   Table,
   TableBody,
@@ -16,16 +11,11 @@ import {
   TableHeader,
   TableRow,
 } from "@repo/design-system/components/ui/table";
-import { AnimatePresence, motion } from "framer-motion";
-import { ChevronRight, Plus } from "lucide-react";
-import { useState } from "react";
-import FeaturedPipelines from "./featured";
-import { usePrivy } from "@privy-io/react-auth";
-import { cn } from "@repo/design-system/lib/utils";
+import { Plus } from "lucide-react";
 import track from "@/lib/track";
 import { useRouter, useSearchParams } from "next/navigation";
-import Search from "../header/search";
 import Link from "next/link";
+import { usePrivy } from "@/hooks/usePrivy";
 
 export default function Head() {
   return (
@@ -45,7 +35,6 @@ export default function Head() {
 const Intro = () => {
   const { user } = usePrivy();
   const router = useRouter();
-  const searchParams = useSearchParams();
   const name = user?.github?.name || user?.discord?.username;
 
   return (

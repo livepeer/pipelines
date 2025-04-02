@@ -21,7 +21,6 @@ const useMobileStore = create<MobileStore>(set => {
     };
 
     mql.addEventListener("change", onChange);
-    console.log("onChangeCalled", window.innerWidth, MOBILE_BREAKPOINT);
     onChange();
 
     listenerInitialized = true;
