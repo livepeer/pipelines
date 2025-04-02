@@ -28,6 +28,7 @@
     "@supabase/supabase-js": "^2.46.1",
     "@types/video.js": "^7.3.58",
     "@vercel/toolbar": "^0.1.26",
+    "app": "link:",
     "bcrypt": "^5.1.1",
     "bcrypt-edge": "^0.1.0",
     "bcryptjs": "^2.4.3",

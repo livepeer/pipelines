@@ -51,15 +51,7 @@ export const getStreamUrl = (
     return `${customWhipServer}${streamKey}/whip`;
   }
 
-  if (isAdmin) {
-    const baseUrl = process.env.NEXT_PUBLIC_AI_GATEWAY_API_BASE_URL;
-    if (!baseUrl) {
-      return `${app.whipUrl}${streamKey}/whip`;
-    }
-    return `${baseUrl}${streamKey}/whip`;
-  }
-
-  return `${app.whipUrl}${streamKey}/whip`;
+  return `${app.newWhipUrl}${streamKey}/whip`;
 };
 
 const processInputValues = (inputValues: any) => {
