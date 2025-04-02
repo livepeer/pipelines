@@ -35,7 +35,6 @@ const createDefaultValues = (pipeline: any) => {
 };
 
 export const getStreamUrl = (
-  isAdmin: boolean,
   streamKey: string,
   searchParams: URLSearchParams,
   storedWhipUrl?: string | null,
@@ -524,7 +523,6 @@ export function useInitialization() {
 
         if (stream && stream.stream_key) {
           const whipUrl = getStreamUrl(
-            user?.email?.address?.endsWith("@livepeer.org") ?? false,
             stream.stream_key,
             searchParams,
             stream.whip_url,
@@ -574,7 +572,6 @@ export function useInitialization() {
     }
     setStreamUrl(
       getStreamUrl(
-        user?.email?.address?.endsWith("@livepeer.org") ?? false,
         stream?.stream_key,
         searchParams,
         stream.whip_url,
