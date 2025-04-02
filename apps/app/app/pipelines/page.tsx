@@ -12,7 +12,6 @@ import {
 } from "lucide-react";
 import { useCallback, useState } from "react";
 import { Button } from "@repo/design-system/components/ui/button";
-import track from "@/lib/track";
 import { useRouter } from "next/navigation";
 import {
   Tooltip,

@@ -3,20 +3,13 @@
 import { useState } from "react";
 import { Copy, Check } from "lucide-react";
 import { cn } from "@repo/design-system/lib/utils";
+import { useDreamshaperStore } from "@/hooks/useDreamshaper";
+import useFullscreenStore from "@/hooks/useFullscreenStore";
 
-interface StreamInfoProps {
-  streamId: string | null;
-  streamKey: string | null;
-  className?: string;
-  isFullscreen?: boolean;
-}
+export function StreamInfo({ className }: { className?: string }) {
+  const { stream } = useDreamshaperStore();
+  const { isFullscreen } = useFullscreenStore();
 
-export function StreamInfo({
-  streamId,
-  streamKey,
-  className,
-  isFullscreen = false,
-}: StreamInfoProps) {
   const [copied, setCopied] = useState(false);
   const appVersion =
     process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA?.slice(0, 7) || "dev";
@@ -26,8 +19,8 @@ export function StreamInfo({
       version: appVersion,
       browser: navigator.userAgent,
       path: window.location.pathname,
-      streamId: streamId || "not-available",
-      streamKey: streamKey || "not-available",
+      streamId: stream?.id || "not-available",
+      streamKey: stream?.stream_key || "not-available",
     };
 
     await navigator.clipboard.writeText(JSON.stringify(fullInfo, null, 2));
@@ -35,7 +28,9 @@ export function StreamInfo({
     setTimeout(() => setCopied(false), 2000);
   };
 
-  if (!streamId) return null;
+  if (!stream?.id) {
+    return <></>;
+  }
 
   return (
     <div

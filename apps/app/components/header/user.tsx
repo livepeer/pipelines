@@ -1,5 +1,6 @@
 "use client";
 
+import useMobileStore from "@/hooks/useMobileStore";
 import track from "@/lib/track";
 import { usePrivy } from "@privy-io/react-auth";
 import {
@@ -15,13 +16,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@repo/design-system/components/ui/dropdown-menu";
-import { LogOut, UserIcon } from "lucide-react";
 import { cn } from "@repo/design-system/lib/utils";
-import { useIsMobile } from "@repo/design-system/hooks/use-mobile";
+import { LogOut, UserIcon } from "lucide-react";
 
 export default function User({ className }: { className?: string }) {
   const { ready, authenticated, user, login, logout } = usePrivy();
-  const isMobile = useIsMobile();
+  const { isMobile } = useMobileStore();
 
   const name =
     user?.discord?.username || user?.google?.name || user?.email?.address;

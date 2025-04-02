@@ -1,11 +1,11 @@
 "use client";
 
+import useMobileStore from "@/hooks/useMobileStore";
 import { Separator } from "@repo/design-system/components/ui/separator";
 import { SidebarTrigger } from "@repo/design-system/components/ui/sidebar";
-import { useIsMobile } from "@repo/design-system/hooks/use-mobile";
 
 const MobileSidebarTrigger = () => {
-  const isMobile = useIsMobile();
+  const { isMobile } = useMobileStore();
 
   if (!isMobile) return null;
 

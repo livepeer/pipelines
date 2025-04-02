@@ -1,9 +1,9 @@
 "use client";
 
 import useCloudAnimation from "@/hooks/useCloudAnimation";
+import useMobileStore from "@/hooks/useMobileStore";
 import useMount from "@/hooks/useMount";
 import track from "@/lib/track";
-import { useIsMobile } from "@repo/design-system/hooks/use-mobile";
 import { cn } from "@repo/design-system/lib/utils";
 import { Loader2 } from "lucide-react";
 import { useTheme } from "next-themes";
@@ -18,7 +18,7 @@ export default function LoginScreen({
 }: {
   isOAuthSuccessRedirect: boolean;
 }) {
-  const isMobile = useIsMobile();
+  const { isMobile } = useMobileStore();
   const { setTheme } = useTheme();
   const { oAuthState } = useAuth();
   const { containerRef, getCloudTransform } = useCloudAnimation(0);

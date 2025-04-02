@@ -3,13 +3,13 @@
 import { ReactNode, useEffect } from "react";
 import mixpanel from "mixpanel-browser";
 import { mixpanel as mixpanelConfig } from "@/lib/env";
-import { usePrivy } from "@privy-io/react-auth";
 import {
   handleDistinctId,
   handleSessionId,
   setCookies,
   handleSessionEnd,
 } from "@/lib/analytics/mixpanel";
+import { usePrivy } from "@privy-io/react-auth";
 
 export function MixpanelProvider({ children }: { children: ReactNode }) {
   const { user, ready } = usePrivy();

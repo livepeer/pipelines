@@ -1,7 +1,5 @@
 import {
-  DisableAudioIcon,
   DisableVideoIcon,
-  EnableAudioIcon,
   EnableVideoIcon,
   LoadingIcon,
   OfflineErrorIcon,
@@ -12,39 +10,35 @@ import {
 } from "@livepeer/react/assets";
 import * as Broadcast from "@livepeer/react/broadcast";
 import * as Popover from "@radix-ui/react-popover";
+import { useIsMobile } from "@repo/design-system/hooks/use-mobile";
 import { cn } from "@repo/design-system/lib/utils";
 import {
+  Camera,
   CheckIcon,
   ChevronDownIcon,
-  XIcon,
-  Minimize2,
   Maximize,
-  Camera,
+  Minimize2,
   SwitchCamera,
+  XIcon,
 } from "lucide-react";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { useIsMobile } from "@repo/design-system/hooks/use-mobile";
 import { toast } from "sonner";
-
 import { sendKafkaEvent } from "@/app/api/metrics/kafka";
+import { useDreamshaperStore } from "@/hooks/useDreamshaper";
 import { usePrivy } from "@privy-io/react-auth";
+import { create } from "zustand";
 
-const StatusMonitor = ({
-  streamId,
-  pipelineId,
-  pipelineType,
-}: {
-  streamId: string;
-  pipelineId: string;
-  pipelineType: string;
-}) => {
+const StatusMonitor = () => {
   const { user } = usePrivy();
+  const { stream, pipeline } = useDreamshaperStore();
   const liveEventSentRef = useRef(false);
   const context = Broadcast.useBroadcastContext("StatusMonitor", undefined);
   const state = Broadcast.useStore(context.store, state => state);
 
   useEffect(() => {
+    if (!stream?.id || !pipeline?.id || !pipeline?.type) return;
+
     if (state.status === "live" && !liveEventSentRef.current) {
       liveEventSentRef.current = true;
 
@@ -56,9 +50,9 @@ const StatusMonitor = ({
             timestamp: Date.now(),
             user_id: user?.id || "anonymous",
             playback_id: "",
-            stream_id: streamId,
-            pipeline: pipelineType,
-            pipeline_id: pipelineId,
+            stream_id: stream.id,
+            pipeline: pipeline.type,
+            pipeline_id: pipeline.id,
             hostname: window.location.hostname,
             broadcaster_info: {
               ip: "",
@@ -76,32 +70,30 @@ const StatusMonitor = ({
     } else if (state.status !== "live") {
       liveEventSentRef.current = false;
     }
-  }, [state.status, streamId, pipelineId, pipelineType, user?.id]);
+  }, [state.status, stream?.id, pipeline?.id, pipeline?.type, user?.id]);
 
   return null;
 };
 
-export function BroadcastWithControls({
-  ingestUrl,
-  className,
-  onCollapse,
-  isCollapsed,
-  streamId,
-  pipelineId,
-  pipelineType,
-}: {
-  ingestUrl: string | null;
-  className?: string;
-  onCollapse?: (collapsed: boolean) => void;
-  isCollapsed?: boolean;
-  streamId?: string;
-  pipelineId?: string;
-  pipelineType?: string;
-}) {
+interface BroadcastUIStore {
+  collapsed: boolean;
+  setCollapsed: (value: boolean) => void;
+  toggleCollapsed: () => void;
+}
+
+export const useBroadcastUIStore = create<BroadcastUIStore>(set => ({
+  collapsed: false,
+  setCollapsed: value => set({ collapsed: value }),
+  toggleCollapsed: () => set(state => ({ collapsed: !state.collapsed })),
+}));
+
+const videoId = "live-video";
+
+export function BroadcastWithControls({ className }: { className?: string }) {
+  const { streamUrl: ingestUrl } = useDreamshaperStore();
   const [isPiP, setIsPiP] = useState(false);
-  const videoId = "live-video";
-  const [localCollapsed, setLocalCollapsed] = useState(false);
-  const collapsed = isCollapsed ?? localCollapsed;
+
+  const { collapsed, setCollapsed, toggleCollapsed } = useBroadcastUIStore();
   const isMobile = useIsMobile();
 
   useEffect(() => {
@@ -159,13 +151,7 @@ export function BroadcastWithControls({
       }}
       storage={null}
     >
-      {streamId && pipelineId && pipelineType && (
-        <StatusMonitor
-          streamId={streamId}
-          pipelineId={pipelineId}
-          pipelineType={pipelineType}
-        />
-      )}
+      <StatusMonitor />
 
       <Broadcast.Container
         id={videoId}
@@ -192,7 +178,7 @@ export function BroadcastWithControls({
             onClick={e => {
               e.preventDefault();
               e.stopPropagation();
-              onCollapse?.(!collapsed) ?? setLocalCollapsed(!collapsed);
+              toggleCollapsed();
             }}
             className={cn(
               "flex items-center cursor-pointer absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 z-50 shadow-[4px_12px_16px_0px_#37373F40]",
@@ -227,7 +213,7 @@ export function BroadcastWithControls({
                   onClick={e => {
                     e.preventDefault();
                     e.stopPropagation();
-                    onCollapse?.(!collapsed) ?? setLocalCollapsed(!collapsed);
+                    toggleCollapsed();
                   }}
                   className="p-1"
                 >
@@ -246,7 +232,7 @@ export function BroadcastWithControls({
                 onClick={e => {
                   e.preventDefault();
                   e.stopPropagation();
-                  onCollapse?.(true) ?? setLocalCollapsed(true);
+                  setCollapsed(true);
                 }}
                 className="p-2 hover:scale-110 transition cursor-pointer"
                 aria-label="Collapse stream"

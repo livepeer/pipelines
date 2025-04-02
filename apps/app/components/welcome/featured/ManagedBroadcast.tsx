@@ -1,96 +1,27 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { BroadcastWithControls } from "@/components/playground/broadcast";
-import { Loader2 } from "lucide-react";
+import {
+  BroadcastWithControls,
+  useBroadcastUIStore,
+} from "@/components/playground/broadcast";
+import { useDreamshaperStore } from "@/hooks/useDreamshaper";
+import useFullscreenStore from "@/hooks/useFullscreenStore";
+import useMobileStore from "@/hooks/useMobileStore";
 import { cn } from "@repo/design-system/lib/utils";
-import { useIsMobile } from "@repo/design-system/hooks/use-mobile";
+import { Loader2 } from "lucide-react";
+import { useEffect } from "react";
+import { usePlayerPositionStore } from "./usePlayerPosition";
 
-interface ManagedBroadcastProps {
-  streamUrl: string | null;
-  isFullscreen: boolean;
-  outputPlayerRef: React.RefObject<HTMLDivElement>;
-  loading?: boolean;
-  streamId?: string;
-  pipelineId?: string;
-  pipelineType?: string;
-}
+export function ManagedBroadcast() {
+  const { isMobile } = useMobileStore();
+  const { loading, streamUrl } = useDreamshaperStore();
+  const { isFullscreen } = useFullscreenStore();
 
-export function ManagedBroadcast({
-  streamUrl,
-  isFullscreen,
-  outputPlayerRef,
-  loading = false,
-  streamId,
-  pipelineId,
-  pipelineType,
-}: ManagedBroadcastProps) {
-  const isMobile = useIsMobile();
-  const [isCollapsed, setIsCollapsed] = useState(false);
-  const [playerPosition, setPlayerPosition] = useState({ bottom: 0, right: 0 });
+  const { collapsed, setCollapsed } = useBroadcastUIStore();
+  const { position } = usePlayerPositionStore();
 
   useEffect(() => {
-    if (!isMobile && outputPlayerRef.current) {
-      const updatePlayerPosition = () => {
-        if (!outputPlayerRef.current) return;
-        const rect = outputPlayerRef.current.getBoundingClientRect();
-        const newBottom = rect.bottom;
-        const newRight = rect.right;
-
-        setPlayerPosition(prev => {
-          if (prev.bottom === newBottom && prev.right === newRight) {
-            return prev;
-          }
-          return { bottom: newBottom, right: newRight };
-        });
-      };
-
-      const broadcastPositioning = () => {
-        updatePlayerPosition();
-
-        const delays = [50, 100, 300, 500, 1000];
-        const timeouts = delays.map(delay =>
-          setTimeout(updatePlayerPosition, delay),
-        );
-
-        return () => timeouts.forEach(clearTimeout);
-      };
-
-      const cleanupInitialPositioning = broadcastPositioning();
-
-      window.addEventListener("resize", updatePlayerPosition);
-      window.addEventListener("scroll", updatePlayerPosition);
-      document.addEventListener("DOMContentLoaded", updatePlayerPosition);
-      window.addEventListener("load", updatePlayerPosition);
-
-      const resizeObserver = new ResizeObserver(() => {
-        updatePlayerPosition();
-      });
-
-      resizeObserver.observe(outputPlayerRef.current);
-
-      const bodyObserver = new MutationObserver(updatePlayerPosition);
-      bodyObserver.observe(document.body, {
-        childList: true,
-        subtree: true,
-        attributes: true,
-        attributeFilter: ["class", "style"],
-      });
-
-      return () => {
-        cleanupInitialPositioning();
-        window.removeEventListener("resize", updatePlayerPosition);
-        window.removeEventListener("scroll", updatePlayerPosition);
-        document.removeEventListener("DOMContentLoaded", updatePlayerPosition);
-        window.removeEventListener("load", updatePlayerPosition);
-        resizeObserver.disconnect();
-        bodyObserver.disconnect();
-      };
-    }
-  }, [isMobile, outputPlayerRef]);
-
-  useEffect(() => {
-    setIsCollapsed(isMobile);
+    setCollapsed(isMobile);
   }, [isMobile]);
 
   if (!streamUrl) return null;
@@ -102,21 +33,21 @@ export function ManagedBroadcast({
         isMobile ? "mx-4 w-auto -mt-2 mb-4" : "absolute z-50",
       )}
       style={
-        !isMobile
-          ? {
+        isMobile
+          ? {}
+          : {
               position: "fixed",
               bottom: isFullscreen
                 ? "80px"
-                : `${window.innerHeight - playerPosition.bottom + 40}px`,
+                : `${window.innerHeight - position.bottom + 40}px`,
               right: isFullscreen
                 ? "16px"
-                : `${window.innerWidth - playerPosition.right + 20}px`,
-              width: isCollapsed ? "48px" : "250px",
-              height: isCollapsed ? "48px" : "auto",
-              aspectRatio: isCollapsed ? "1" : "16/9",
+                : `calc(${window.innerWidth - position.right + 20}px)`,
+              width: collapsed ? "48px" : "250px",
+              height: collapsed ? "48px" : "auto",
+              aspectRatio: collapsed ? "1" : "16/9",
               transform: "translate(0, 0)",
             }
-          : {}
       }
     >
       {loading && isMobile ? (
@@ -130,25 +61,19 @@ export function ManagedBroadcast({
             isMobile
               ? cn(
                   "flex-shrink-0 [&>div]:!pb-0 [&>div]:h-full",
-                  isCollapsed ? "h-8" : "h-64",
+                  collapsed ? "h-8" : "h-64",
                 )
               : cn(
                   "rounded-xl overflow-hidden",
-                  isCollapsed ? "w-12 h-12" : "w-full aspect-video",
+                  collapsed ? "w-12 h-12" : "w-full aspect-video",
                 ),
           )}
         >
           <BroadcastWithControls
-            ingestUrl={streamUrl}
-            isCollapsed={isCollapsed}
-            onCollapse={setIsCollapsed}
             className={cn(
               "rounded-xl overflow-hidden",
               isMobile ? "w-full h-full" : "",
             )}
-            streamId={streamId}
-            pipelineId={pipelineId}
-            pipelineType={pipelineType}
           />
         </div>
       )}

@@ -1,11 +1,12 @@
-import DayDreamContent from "./DaydreamContent";
-import { useOnboard } from "../OnboardContext";
+import ClientSideTracker from "@/components/analytics/ClientSideTracker";
 import { GlobalSidebar } from "@/components/sidebar";
+import { usePrivy } from "@privy-io/react-auth";
 import { SidebarProvider } from "@repo/design-system/components/ui/sidebar";
 import { cn } from "@repo/design-system/lib/utils";
 import { useEffect, useState } from "react";
-import { usePrivy } from "@privy-io/react-auth";
+import { useOnboard } from "../OnboardContext";
 import { useMediaPermissions } from "../WelcomeScreen/CameraAccess";
+import Dreamshaper from "@/components/welcome/featured/Dreamshaper";
 
 export default function MainExperience() {
   const { currentStep, cameraPermission, setCameraPermission } = useOnboard();
@@ -49,7 +50,8 @@ export default function MainExperience() {
     >
       <GlobalSidebar>
         <div className="flex h-screen md:h-auto md:min-h-[calc(100vh-2rem)] flex-col px-2 md:px-6">
-          <DayDreamContent />
+          <Dreamshaper />
+          <ClientSideTracker eventName="home_page_view" />
         </div>
       </GlobalSidebar>
     </SidebarProvider>

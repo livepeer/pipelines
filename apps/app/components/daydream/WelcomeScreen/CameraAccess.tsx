@@ -1,10 +1,10 @@
-import { useIsMobile } from "@repo/design-system/hooks/use-mobile";
-import { CameraIcon, CheckIcon } from "lucide-react";
-import { useOnboard } from "../OnboardContext";
+import { updateUserAdditionalDetails } from "@/app/actions/user";
+import useMobileStore from "@/hooks/useMobileStore";
 import track from "@/lib/track";
 import { usePrivy } from "@privy-io/react-auth";
 import { cn } from "@repo/design-system/lib/utils";
-import { updateUserAdditionalDetails } from "@/app/actions/user";
+import { CameraIcon, CheckIcon } from "lucide-react";
+import { useOnboard } from "../OnboardContext";
 
 export const useMediaPermissions = () => {
   const { setCameraPermission } = useOnboard();
@@ -83,7 +83,7 @@ export const useMediaPermissions = () => {
 };
 
 export default function CameraAccess() {
-  const isMobile = useIsMobile();
+  const { isMobile } = useMobileStore();
   const { user } = usePrivy();
   const { currentStep, cameraPermission, setCurrentStep, hasSharedPrompt } =
     useOnboard();

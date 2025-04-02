@@ -1,25 +1,29 @@
 "use client";
+
 import { sendKafkaEvent } from "@/app/api/metrics/kafka";
 import { getStreamPlaybackInfo } from "@/app/api/streams/get";
 import { LPPLayer } from "@/components/playground/player";
 import { useAppConfig } from "@/hooks/useAppConfig";
+import { useDreamshaperStore } from "@/hooks/useDreamshaper";
 import { useFallbackDetection } from "@/hooks/useFallbackDetection";
+import useFullscreenStore from "@/hooks/useFullscreenStore";
+import useMobileStore from "@/hooks/useMobileStore";
 import {
-  LoadingIcon,
-  MuteIcon,
-  UnmuteIcon,
   EnterFullscreenIcon,
   ExitFullscreenIcon,
+  LoadingIcon,
+  MuteIcon,
   PrivateErrorIcon,
+  UnmuteIcon,
 } from "@livepeer/react/assets";
 import { getSrc } from "@livepeer/react/external";
 import * as Player from "@livepeer/react/player";
 import { usePrivy } from "@privy-io/react-auth";
 import { PlaybackInfo } from "livepeer/models/components";
+import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
 import * as React from "react";
-import { useCallback, useEffect, useRef, useState } from "react";
-import dynamic from "next/dynamic";
+import { useEffect, useRef, useState } from "react";
 
 const VideoJSPlayer = dynamic(() => import("./videojs-player"), {
   ssr: false,
@@ -33,216 +37,193 @@ const VideoJSPlayer = dynamic(() => import("./videojs-player"), {
   ),
 });
 
-type TrackingProps = {
-  playbackId: string;
-  streamId: string;
-  pipelineId: string;
-  pipelineType: string;
-};
+export const LivepeerPlayer = () => {
+  const { stream, pipeline } = useDreamshaperStore();
+  const { isMobile } = useMobileStore();
+  const { isFullscreen } = useFullscreenStore();
+  const appConfig = useAppConfig();
+  const [playbackInfo, setPlaybackInfo] = useState<PlaybackInfo | null>(null);
 
-export const LivepeerPlayer = React.memo(
-  ({
-    playbackId,
-    isMobile,
-    stream_key,
-    streamId,
-    pipelineId,
-    pipelineType,
-    isFullscreen = false,
-  }: {
-    playbackId: string;
-    isMobile?: boolean;
-    stream_key?: string | null;
-    isFullscreen?: boolean;
-  } & TrackingProps) => {
-    const appConfig = useAppConfig();
-    const [playbackInfo, setPlaybackInfo] = useState<PlaybackInfo | null>(null);
-    const [key, setKey] = useState(0);
+  const { useFallbackPlayer: useFallbackVideoJSPlayer, handleError } =
+    useFallbackDetection(stream?.output_playback_id!);
 
-    const { useFallbackPlayer: useFallbackVideoJSPlayer, handleError } =
-      useFallbackDetection(playbackId);
+  const playerUrl = `${appConfig.whipUrl}${appConfig?.whipUrl?.endsWith("/") ? "" : "/"}${stream?.stream_key}-out/whep`;
 
-    const playerUrl = `${appConfig.whipUrl}${appConfig?.whipUrl?.endsWith("/") ? "" : "/"}${stream_key}-out/whep`;
+  const searchParams = useSearchParams();
+  const useMediamtx =
+    process.env.NEXT_PUBLIC_LIVEPEER_DIRECT_PLAYBACK !== "true" ||
+    searchParams.get("useMediamtx") === "true";
+  const debugMode = searchParams.get("debugMode") === "true";
+  const iframePlayerFallback =
+    process.env.NEXT_PUBLIC_IFRAME_PLAYER_FALLBACK === "true";
+  const useVideoJS =
+    searchParams.get("videoJS") === "true" || useFallbackVideoJSPlayer;
 
-    const searchParams = useSearchParams();
-    const useMediamtx =
-      process.env.NEXT_PUBLIC_LIVEPEER_DIRECT_PLAYBACK !== "true" ||
-      searchParams.get("useMediamtx") === "true";
-    const debugMode = searchParams.get("debugMode") === "true";
-    const iframePlayerFallback =
-      process.env.NEXT_PUBLIC_IFRAME_PLAYER_FALLBACK === "true";
-    const useVideoJS =
-      searchParams.get("videoJS") === "true" || useFallbackVideoJSPlayer;
-
-    useEffect(() => {
-      if (useMediamtx || iframePlayerFallback || useVideoJS) {
-        return;
-      }
-      const fetchPlaybackInfo = async () => {
-        const info = await getStreamPlaybackInfo(playbackId);
-        setPlaybackInfo(info);
-      };
-      fetchPlaybackInfo();
-    }, [playbackId, useMediamtx, iframePlayerFallback, useVideoJS]);
-
-    if (iframePlayerFallback) {
-      return (
-        <LPPLayer
-          output_playback_id={playbackId}
-          stream_key={stream_key || null}
-          isMobile={isMobile}
-        />
-      );
+  useEffect(() => {
+    if (useMediamtx || iframePlayerFallback || useVideoJS) {
+      return;
     }
+    const fetchPlaybackInfo = async () => {
+      const info = await getStreamPlaybackInfo(stream?.output_playback_id!);
+      setPlaybackInfo(info);
+    };
+    fetchPlaybackInfo();
+  }, [
+    useMediamtx,
+    iframePlayerFallback,
+    useVideoJS,
+    stream?.output_playback_id,
+  ]);
 
-    if (useVideoJS) {
-      return (
-        <VideoJSPlayer
-          src={playerUrl}
-          isMobile={isMobile}
-          playbackId={playbackId}
-          streamId={streamId}
-          pipelineId={pipelineId}
-          pipelineType={pipelineType}
+  if (iframePlayerFallback) {
+    return (
+      <LPPLayer
+        output_playback_id={stream?.output_playback_id!}
+        stream_key={stream?.stream_key || null}
+        isMobile={isMobile}
+      />
+    );
+  }
+
+  if (useVideoJS && pipeline) {
+    return (
+      <VideoJSPlayer
+        src={playerUrl}
+        isMobile={isMobile}
+        playbackId={stream?.output_playback_id!}
+        streamId={stream?.id!}
+        pipelineId={pipeline?.id!}
+        pipelineType={pipeline?.type!}
+      />
+    );
+  }
+
+  const src = getSrc(useMediamtx ? playerUrl : playbackInfo);
+
+  if (!src) {
+    return (
+      <div className="w-full relative h-full bg-black/50 backdrop-blur data-[visible=true]:animate-in data-[visible=false]:animate-out data-[visible=false]:fade-out-0 data-[visible=true]:fade-in-0">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+          <LoadingIcon className="w-8 h-8 animate-spin" />
+        </div>
+        <PlayerLoading />
+      </div>
+    );
+  }
+
+  return (
+    <div className={isMobile ? "w-full h-full" : "aspect-video"}>
+      <Player.Root
+        autoPlay
+        aspectRatio={16 / 9}
+        clipLength={30}
+        src={src}
+        jwt={null}
+        backoffMax={1000}
+        timeout={300000}
+        lowLatency="force"
+        iceServers={{
+          urls: [
+            "stun:stun.l.google.com:19302",
+            "stun:stun1.l.google.com:19302",
+            "stun:stun.cloudflare.com:3478",
+          ],
+        }}
+        onError={handleError}
+      >
+        <div
+          className="absolute inset-0 z-[5]"
+          onClick={e => e.stopPropagation()}
+        ></div>
+
+        <Player.Video
+          title="Live stream"
+          className="h-full w-full transition-all object-contain relative z-0"
         />
-      );
-    }
 
-    const src = getSrc(useMediamtx ? playerUrl : playbackInfo);
-
-    if (!src) {
-      return (
-        <div className="w-full relative h-full bg-black/50 backdrop-blur data-[visible=true]:animate-in data-[visible=false]:animate-out data-[visible=false]:fade-out-0 data-[visible=true]:fade-in-0">
+        <Player.LoadingIndicator className="w-full relative h-full bg-black/50 backdrop-blur data-[visible=true]:animate-in data-[visible=false]:animate-out data-[visible=false]:fade-out-0 data-[visible=true]:fade-in-0 z-[6]">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
             <LoadingIcon className="w-8 h-8 animate-spin" />
           </div>
           <PlayerLoading />
-        </div>
-      );
-    }
+        </Player.LoadingIndicator>
 
-    return (
-      <div className={isMobile ? "w-full h-full" : "aspect-video"}>
-        <Player.Root
-          key={key}
-          autoPlay
-          aspectRatio={16 / 9}
-          clipLength={30}
-          src={src}
-          jwt={null}
-          backoffMax={1000}
-          timeout={300000}
-          lowLatency="force"
-          iceServers={{
-            urls: [
-              "stun:stun.l.google.com:19302",
-              "stun:stun1.l.google.com:19302",
-              "stun:stun.cloudflare.com:3478",
-            ],
-          }}
-          onError={handleError}
+        <Player.ErrorIndicator
+          matcher="all"
+          className="absolute select-none inset-0 text-center bg-black/80 backdrop-blur-lg flex flex-col items-center justify-center gap-4 duration-1000 data-[visible=true]:animate-in data-[visible=false]:animate-out data-[visible=false]:fade-out-0 data-[visible=true]:fade-in-0 z-[6]"
         >
-          <div
-            className="absolute inset-0 z-[5]"
-            onClick={e => e.stopPropagation()}
-          ></div>
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+            <LoadingIcon className="w-8 h-8 animate-spin" />
+          </div>
+          <PlayerLoading />
+        </Player.ErrorIndicator>
 
-          <Player.Video
-            title="Live stream"
-            className="h-full w-full transition-all object-contain relative z-0"
+        <Player.ErrorIndicator
+          matcher="offline"
+          className="absolute select-none animate-in fade-in-0 inset-0 text-center bg-black/80 backdrop-blur-lg flex flex-col items-center justify-center gap-4 duration-1000 data-[visible=true]:animate-in data-[visible=false]:animate-out data-[visible=false]:fade-out-0 data-[visible=true]:fade-in-0 z-[6]"
+        >
+          <PlayerLoading
+            title="ALMOST THERE"
+            description="Please wait while we are rendering your stream"
           />
+        </Player.ErrorIndicator>
 
-          <Player.LoadingIndicator className="w-full relative h-full bg-black/50 backdrop-blur data-[visible=true]:animate-in data-[visible=false]:animate-out data-[visible=false]:fade-out-0 data-[visible=true]:fade-in-0 z-[6]">
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-              <LoadingIcon className="w-8 h-8 animate-spin" />
+        <Player.ErrorIndicator
+          matcher="access-control"
+          className="absolute select-none inset-0 text-center bg-black/80 backdrop-blur-lg flex flex-col items-center justify-center gap-4 duration-1000 data-[visible=true]:animate-in data-[visible=false]:animate-out data-[visible=false]:fade-out-0 data-[visible=true]:fade-in-0 z-[6]"
+        >
+          <PrivateErrorIcon className="h-[120px] w-full sm:flex hidden" />
+          <div className="flex flex-col gap-1">
+            <div className="text-2xl font-bold">Stream is private</div>
+            <div className="text-sm text-gray-100">
+              It looks like you don&apos;t have permission to view this content
             </div>
-            <PlayerLoading />
-          </Player.LoadingIndicator>
+          </div>
+        </Player.ErrorIndicator>
 
-          <Player.ErrorIndicator
-            matcher="all"
-            className="absolute select-none inset-0 text-center bg-black/80 backdrop-blur-lg flex flex-col items-center justify-center gap-4 duration-1000 data-[visible=true]:animate-in data-[visible=false]:animate-out data-[visible=false]:fade-out-0 data-[visible=true]:fade-in-0 z-[6]"
-          >
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-              <LoadingIcon className="w-8 h-8 animate-spin" />
+        <Player.Controls
+          autoHide={1000}
+          className={
+            isFullscreen
+              ? "hidden"
+              : "bg-gradient-to-b gap-1 px-3 md:px-3 py-2 flex-col-reverse flex from-black/20 via-80% via-black/30 duration-1000 to-black/60 data-[visible=true]:animate-in data-[visible=false]:animate-out data-[visible=false]:fade-out-0 data-[visible=true]:fade-in-0 relative z-[10]"
+          }
+        >
+          <div className="flex justify-between gap-4">
+            <div className="flex flex-1 items-center gap-3">
+              <Player.MuteTrigger className="w-6 h-6 hover:scale-110 transition-all flex-shrink-0">
+                <Player.VolumeIndicator asChild matcher={false}>
+                  <MuteIcon className="w-full h-full text-white" />
+                </Player.VolumeIndicator>
+                <Player.VolumeIndicator asChild matcher={true}>
+                  <UnmuteIcon className="w-full h-full text-white" />
+                </Player.VolumeIndicator>
+              </Player.MuteTrigger>
+              <Player.Volume className="relative mr-1 flex-1 group flex cursor-pointer items-center select-none touch-none max-w-[120px] h-5">
+                <Player.Track className="bg-white/30 relative grow rounded-full transition-all h-[2px] md:h-[3px] group-hover:h-[3px] group-hover:md:h-[4px]">
+                  <Player.Range className="absolute bg-white rounded-full h-full" />
+                </Player.Track>
+                <Player.Thumb className="block transition-all group-hover:scale-110 w-3 h-3 bg-white rounded-full" />
+              </Player.Volume>
             </div>
-            <PlayerLoading />
-          </Player.ErrorIndicator>
-
-          <Player.ErrorIndicator
-            matcher="offline"
-            className="absolute select-none animate-in fade-in-0 inset-0 text-center bg-black/80 backdrop-blur-lg flex flex-col items-center justify-center gap-4 duration-1000 data-[visible=true]:animate-in data-[visible=false]:animate-out data-[visible=false]:fade-out-0 data-[visible=true]:fade-in-0 z-[6]"
-          >
-            <PlayerLoading
-              title="ALMOST THERE"
-              description="Please wait while we are rendering your stream"
-            />
-          </Player.ErrorIndicator>
-
-          <Player.ErrorIndicator
-            matcher="access-control"
-            className="absolute select-none inset-0 text-center bg-black/80 backdrop-blur-lg flex flex-col items-center justify-center gap-4 duration-1000 data-[visible=true]:animate-in data-[visible=false]:animate-out data-[visible=false]:fade-out-0 data-[visible=true]:fade-in-0 z-[6]"
-          >
-            <PrivateErrorIcon className="h-[120px] w-full sm:flex hidden" />
-            <div className="flex flex-col gap-1">
-              <div className="text-2xl font-bold">Stream is private</div>
-              <div className="text-sm text-gray-100">
-                It looks like you don&apos;t have permission to view this
-                content
-              </div>
+            <div className="flex sm:flex-1 md:flex-[1.5] justify-end items-center gap-2.5">
+              <Player.FullscreenTrigger className="w-6 h-6 hover:scale-110 transition-all flex-shrink-0">
+                <Player.FullscreenIndicator asChild>
+                  <ExitFullscreenIcon className="w-full h-full text-white" />
+                </Player.FullscreenIndicator>
+                <Player.FullscreenIndicator matcher={false} asChild>
+                  <EnterFullscreenIcon className="w-full h-full text-white" />
+                </Player.FullscreenIndicator>
+              </Player.FullscreenTrigger>
             </div>
-          </Player.ErrorIndicator>
+          </div>
+        </Player.Controls>
 
-          <Player.Controls
-            autoHide={1000}
-            className={
-              isFullscreen
-                ? "hidden"
-                : "bg-gradient-to-b gap-1 px-3 md:px-3 py-2 flex-col-reverse flex from-black/20 via-80% via-black/30 duration-1000 to-black/60 data-[visible=true]:animate-in data-[visible=false]:animate-out data-[visible=false]:fade-out-0 data-[visible=true]:fade-in-0 relative z-[10]"
-            }
-          >
-            <div className="flex justify-between gap-4">
-              <div className="flex flex-1 items-center gap-3">
-                <Player.MuteTrigger className="w-6 h-6 hover:scale-110 transition-all flex-shrink-0">
-                  <Player.VolumeIndicator asChild matcher={false}>
-                    <MuteIcon className="w-full h-full text-white" />
-                  </Player.VolumeIndicator>
-                  <Player.VolumeIndicator asChild matcher={true}>
-                    <UnmuteIcon className="w-full h-full text-white" />
-                  </Player.VolumeIndicator>
-                </Player.MuteTrigger>
-                <Player.Volume className="relative mr-1 flex-1 group flex cursor-pointer items-center select-none touch-none max-w-[120px] h-5">
-                  <Player.Track className="bg-white/30 relative grow rounded-full transition-all h-[2px] md:h-[3px] group-hover:h-[3px] group-hover:md:h-[4px]">
-                    <Player.Range className="absolute bg-white rounded-full h-full" />
-                  </Player.Track>
-                  <Player.Thumb className="block transition-all group-hover:scale-110 w-3 h-3 bg-white rounded-full" />
-                </Player.Volume>
-              </div>
-              <div className="flex sm:flex-1 md:flex-[1.5] justify-end items-center gap-2.5">
-                <Player.FullscreenTrigger className="w-6 h-6 hover:scale-110 transition-all flex-shrink-0">
-                  <Player.FullscreenIndicator asChild>
-                    <ExitFullscreenIcon className="w-full h-full text-white" />
-                  </Player.FullscreenIndicator>
-                  <Player.FullscreenIndicator matcher={false} asChild>
-                    <EnterFullscreenIcon className="w-full h-full text-white" />
-                  </Player.FullscreenIndicator>
-                </Player.FullscreenTrigger>
-              </div>
-            </div>
-          </Player.Controls>
-
-          <DebugTimer
-            debugMode={debugMode}
-            playbackId={playbackId}
-            streamId={streamId}
-            pipelineId={pipelineId}
-            pipelineType={pipelineType}
-          />
-        </Player.Root>
-      </div>
-    );
-  },
-);
+        <DebugTimer debugMode={debugMode} />
+      </Player.Root>
+    </div>
+  );
+};
 
 LivepeerPlayer.displayName = "LivepeerPlayer";
 
@@ -278,14 +259,9 @@ export const PlayerLoading = ({
   </div>
 );
 
-const useFirstFrameLoaded = ({
-  __scopeMedia,
-  playbackId,
-  streamId,
-  pipelineType,
-  pipelineId,
-}: Player.MediaScopedProps & TrackingProps) => {
+const useFirstFrameLoaded = ({ __scopeMedia }: Player.MediaScopedProps) => {
   const { user } = usePrivy();
+  const { stream, pipeline } = useDreamshaperStore();
   const startTime = useRef(Date.now());
   const [firstFrameTime, setFirstFrameTime] = useState<string | null>(null);
   const context = Player.useMediaContext("CustomComponent", __scopeMedia);
@@ -300,10 +276,10 @@ const useFirstFrameLoaded = ({
           type: "app_send_stream_request",
           timestamp: startTime.current,
           user_id: user?.id || "anonymous",
-          playback_id: playbackId,
-          stream_id: streamId,
-          pipeline: pipelineType,
-          pipeline_id: pipelineId,
+          playback_id: stream?.output_playback_id,
+          stream_id: stream?.id,
+          pipeline: pipeline?.type,
+          pipeline_id: pipeline?.id,
           player: "livepeer",
           hostname: window.location.hostname,
           // TODO: Get viewer info from client
@@ -334,10 +310,10 @@ const useFirstFrameLoaded = ({
             type: "app_receive_first_segment",
             timestamp: Date.now(),
             user_id: user?.id || "anonymous",
-            playback_id: playbackId,
-            stream_id: streamId,
-            pipeline: pipelineType,
-            pipeline_id: pipelineId,
+            playback_id: stream?.output_playback_id,
+            stream_id: stream?.id,
+            pipeline: pipeline?.type,
+            pipeline_id: pipeline?.id,
             player: "livepeer",
             hostname: window.location.hostname,
             // TODO: Get viewer info from client
@@ -359,7 +335,7 @@ const useFirstFrameLoaded = ({
 };
 
 const DebugTimer = (
-  props: Player.MediaScopedProps & TrackingProps & { debugMode: boolean },
+  props: Player.MediaScopedProps & { debugMode: boolean },
 ) => {
   const firstFrameTime = useFirstFrameLoaded(props);
 

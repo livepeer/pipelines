@@ -657,7 +657,7 @@ export default function Try({
               <Label className="text-muted-foreground">Video Source</Label>
               <div className="flex flex-row h-[300px] w-full bg-sidebar rounded-2xl items-center justify-center overflow-hidden relative">
                 {streamUrl ? (
-                  <BroadcastWithControls ingestUrl={streamUrl} />
+                  <BroadcastWithControls />
                 ) : (
                   <p className="text-muted-foreground">
                     Waiting for webcam to start...

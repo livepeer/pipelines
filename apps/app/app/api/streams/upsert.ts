@@ -33,6 +33,8 @@ const streamSchema = z
     path: ["pipeline_id", "pipelines.id"],
   });
 
+export type Stream = z.infer<typeof streamSchema>;
+
 export async function upsertStream(body: any, userId: string) {
   const supabase = await createServerClient();
 

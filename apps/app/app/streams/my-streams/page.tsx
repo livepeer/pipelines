@@ -6,7 +6,6 @@ import ConfirmDialog from "@/components/modals/confirm";
 import LoggedOutComponent from "@/components/modals/logged-out";
 import StreamStatusIndicator from "@/components/stream/stream-status-indicator";
 import track from "@/lib/track";
-import { usePrivy } from "@privy-io/react-auth";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
   Dialog,
@@ -53,6 +52,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@repo/design-system/components/ui/pagination";
+import { usePrivy } from "@privy-io/react-auth";
 
 export default function MyStreams({ searchParams }: { searchParams: any }) {
   const { authenticated, user, ready: isAuthLoaded } = usePrivy();
