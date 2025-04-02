@@ -215,34 +215,6 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
 
   const isWHEP = src.includes("/whep");
 
-  useEffect(() => {
-    const sendInitialEvent = async () => {
-      await sendKafkaEvent(
-        "stream_trace",
-        {
-          type: "app_send_stream_request",
-          timestamp: startTimeRef.current,
-          user_id: user?.id || "anonymous",
-          playback_id: playbackId,
-          stream_id: streamId,
-          pipeline: pipelineType,
-          pipeline_id: pipelineId,
-          player: "videojs",
-          hostname: window.location.hostname,
-          viewer_info: {
-            ip: "",
-            user_agent: "",
-            country: "",
-            city: "",
-          },
-        },
-        "daydream",
-        "server",
-      );
-    };
-    sendInitialEvent();
-  }, [playbackId, streamId, pipelineId, pipelineType, user]);
-
   const handleFirstFrame = () => {
     const currentTime = Date.now();
     setFirstFrameTime(((currentTime - startTimeRef.current) / 1000).toFixed(2));
