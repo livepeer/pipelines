@@ -75,16 +75,16 @@ const StatusMonitor = () => {
   return null;
 };
 
-interface BroadcastUIState {
+interface BroadcastUIStore {
   collapsed: boolean;
   setCollapsed: (value: boolean) => void;
   toggleCollapsed: () => void;
 }
 
-export const useBroadcastUIStore = create<BroadcastUIState>((set, get) => ({
+export const useBroadcastUIStore = create<BroadcastUIStore>(set => ({
   collapsed: false,
   setCollapsed: value => set({ collapsed: value }),
-  toggleCollapsed: () => set({ collapsed: !get().collapsed }),
+  toggleCollapsed: () => set(state => ({ collapsed: !state.collapsed })),
 }));
 
 const videoId = "live-video";
@@ -136,12 +136,19 @@ export function BroadcastWithControls({ className }: { className?: string }) {
           : null;
       }}
       forceEnabled={true}
-      noIceGathering={true}
-      mirrored={true}
+      mirrored={false}
       audio={false}
       video={true}
       aspectRatio={16 / 9}
       ingestUrl={ingestUrl}
+      iceServers={{
+        urls: [
+          "stun:stun.l.google.com:19302",
+          "stun:global.stun.twilio.com:3478",
+          "stun:stun.cloudflare.com:3478",
+          "stun:stun.services.mozilla.com:3478",
+        ],
+      }}
       storage={null}
     >
       <StatusMonitor />

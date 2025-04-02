@@ -1,13 +1,12 @@
 import Image from "next/image";
-import { useOnboard } from "../OnboardContext";
-import useScrollView from "@/hooks/useScrollView";
-import { useEffect } from "react";
-import track from "@/lib/track";
-import useMount from "@/hooks/useMount";
-import { Separator } from "@repo/design-system/components/ui/separator";
-import { InfoIcon } from "lucide-react";
 import { updateUserAdditionalDetails } from "@/app/actions/user";
 import { usePrivy } from "@/hooks/usePrivy";
+import useScrollView from "@/hooks/useScrollView";
+import track from "@/lib/track";
+import { Separator } from "@repo/design-system/components/ui/separator";
+import { InfoIcon } from "lucide-react";
+import { useOnboard } from "../OnboardContext";
+import { useEffect } from "react";
 
 interface PromptOption {
   id: string;

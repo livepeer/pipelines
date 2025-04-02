@@ -1,9 +1,12 @@
 import { create } from "zustand";
 
-export const usePromptVersionStore = create<{
+interface PromptVersionStore {
   promptVersion: number;
   incrementPromptVersion: (value: number) => void;
-}>((set, get) => ({
+}
+
+export const usePromptVersionStore = create<PromptVersionStore>(set => ({
   promptVersion: 0,
-  incrementPromptVersion: () => set({ promptVersion: get().promptVersion + 1 }),
+  incrementPromptVersion: () =>
+    set(state => ({ promptVersion: state.promptVersion + 1 })),
 }));

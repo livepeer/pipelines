@@ -1,15 +1,15 @@
 "use client";
 
-import { ReactNode, useEffect } from "react";
-import mixpanel from "mixpanel-browser";
-import { mixpanel as mixpanelConfig } from "@/lib/env";
+import { usePrivy } from "@/hooks/usePrivy";
 import {
   handleDistinctId,
+  handleSessionEnd,
   handleSessionId,
   setCookies,
-  handleSessionEnd,
 } from "@/lib/analytics/mixpanel";
-import { usePrivy } from "@/hooks/usePrivy";
+import { mixpanel as mixpanelConfig } from "@/lib/env";
+import mixpanel from "mixpanel-browser";
+import { ReactNode, useEffect } from "react";
 
 export function MixpanelProvider({ children }: { children: ReactNode }) {
   const { user, ready } = usePrivy();

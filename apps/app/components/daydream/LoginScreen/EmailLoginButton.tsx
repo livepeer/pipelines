@@ -1,3 +1,5 @@
+import { useLoginWithEmail, usePrivy } from "@/hooks/usePrivy";
+import track from "@/lib/track";
 import {
   InputOTP,
   InputOTPGroup,
@@ -5,8 +7,6 @@ import {
 } from "@repo/design-system/components/ui/input-otp";
 import { useState } from "react";
 import { useAuth } from "./AuthContext";
-import track from "@/lib/track";
-import { useLoginWithEmail, usePrivy } from "@/hooks/usePrivy";
 
 export default function EmailLoginButton() {
   const [email, setEmail] = useState("");

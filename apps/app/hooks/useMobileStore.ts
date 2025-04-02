@@ -4,11 +4,11 @@ import { create } from "zustand";
 
 const MOBILE_BREAKPOINT = 768;
 
-interface IsMobileState {
+interface MobileStore {
   isMobile: boolean;
 }
 
-const useMobileStore = create<IsMobileState>(set => {
+const useMobileStore = create<MobileStore>(set => {
   let listenerInitialized = false;
 
   const initializeListener = () => {

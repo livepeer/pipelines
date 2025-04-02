@@ -1,11 +1,13 @@
 import { create } from "zustand";
 
-export const usePromptStore = create<{
+interface PromptStore {
   lastSubmittedPrompt: string | null;
   setLastSubmittedPrompt: (prompt: string | null) => void;
   hasSubmittedPrompt: boolean;
   setHasSubmittedPrompt: (value: boolean) => void;
-}>(set => ({
+}
+
+export const usePromptStore = create<PromptStore>(set => ({
   lastSubmittedPrompt: null,
   setLastSubmittedPrompt: prompt => set({ lastSubmittedPrompt: prompt }),
   hasSubmittedPrompt: false,

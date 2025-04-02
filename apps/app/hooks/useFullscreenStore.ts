@@ -1,11 +1,11 @@
 import { create } from "zustand";
 
-interface FullscreenState {
+interface FullscreenStore {
   isFullscreen: boolean;
   toggleFullscreen: () => void;
 }
 
-const useFullscreenStore = create<FullscreenState>((set, get) => {
+const useFullscreenStore = create<FullscreenStore>(set => {
   const isFullscreenAPISupported =
     typeof document !== "undefined" &&
     (document.fullscreenEnabled || (document as any).webkitFullscreenEnabled);
@@ -35,29 +35,28 @@ const useFullscreenStore = create<FullscreenState>((set, get) => {
   return {
     isFullscreen: false,
     toggleFullscreen: () => {
-      const { isFullscreen } = get();
+      set(state => {
+        initializeListeners();
 
-      initializeListeners();
-
-      if (isFullscreenAPISupported) {
-        if (!isFullscreen) {
-          if (document.documentElement.requestFullscreen) {
-            document.documentElement.requestFullscreen();
-          } else if (
-            (document.documentElement as any).webkitRequestFullscreen
-          ) {
-            (document.documentElement as any).webkitRequestFullscreen();
-          }
-        } else {
-          if (document.exitFullscreen) {
-            document.exitFullscreen();
-          } else if ((document as any).webkitExitFullscreen) {
-            (document as any).webkitExitFullscreen();
+        if (isFullscreenAPISupported) {
+          if (!state.isFullscreen) {
+            if (document.documentElement.requestFullscreen) {
+              document.documentElement.requestFullscreen();
+            } else if (
+              (document.documentElement as any).webkitRequestFullscreen
+            ) {
+              (document.documentElement as any).webkitRequestFullscreen();
+            }
+          } else {
+            if (document.exitFullscreen) {
+              document.exitFullscreen();
+            } else if ((document as any).webkitExitFullscreen) {
+              (document as any).webkitExitFullscreen();
+            }
           }
         }
-      }
-
-      set({ isFullscreen: !isFullscreen });
+        return { isFullscreen: !state.isFullscreen };
+      });
     },
   };
 });

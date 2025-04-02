@@ -1,15 +1,15 @@
 "use client";
 
-import Personas from "./Personas";
+import useCloudAnimation from "@/hooks/useCloudAnimation";
+import useMount from "@/hooks/useMount";
+import { cn } from "@repo/design-system/lib/utils";
+import { useTheme } from "next-themes";
+import LayoutWrapper from "../LayoutWrapper";
+import { useOnboard } from "../OnboardContext";
 import CameraAccess from "./CameraAccess";
 import Footer from "./Footer";
-import { useOnboard } from "../OnboardContext";
+import Personas from "./Personas";
 import SelectPrompt from "./SelectPrompt";
-import LayoutWrapper from "../LayoutWrapper";
-import useMount from "@/hooks/useMount";
-import useCloudAnimation from "@/hooks/useCloudAnimation";
-import { useTheme } from "next-themes";
-import { cn } from "@repo/design-system/lib/utils";
 
 export default function WelcomeScreen() {
   const { currentStep, isFadingOut } = useOnboard();
