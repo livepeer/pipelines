@@ -39,10 +39,10 @@ export function ManagedBroadcast() {
               position: "fixed",
               bottom: isFullscreen
                 ? "80px"
-                : `${window.innerHeight - position.bottom + 40}px`,
+                : `${window.innerHeight - position.bottom + 120}px`,
               right: isFullscreen
                 ? "16px"
-                : `calc(${window.innerWidth - position.right + 20}px)`,
+                : `calc(${window.innerWidth - position.right}px + 1.5rem)`,
               width: collapsed ? "48px" : "250px",
               height: collapsed ? "48px" : "auto",
               aspectRatio: collapsed ? "1" : "16/9",
