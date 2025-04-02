@@ -162,7 +162,7 @@ export function BroadcastWithControls({ className }: { className?: string }) {
           !collapsed
             ? "w-full h-full"
             : isMobile
-              ? "!w-full !h-12 bg-muted-background rounded-2xl"
+              ? "!w-full !h-12 bg-muted-background rounded-2xl max-w-[calc(min(100%,calc((100vh-16rem)*16/9)))] mx-auto md:aspect-video aspect-square"
               : "!w-12 !h-12 rounded-full",
         )}
         style={collapsed && !isMobile ? { width: "3rem", height: "3rem" } : {}}
