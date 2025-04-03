@@ -13,6 +13,7 @@ import { ReactNode, useEffect } from "react";
 
 export function MixpanelProvider({ children }: { children: ReactNode }) {
   const { user, ready } = usePrivy();
+
   useEffect(() => {
     if (mixpanelConfig.projectToken) {
       try {
@@ -30,18 +31,18 @@ export function MixpanelProvider({ children }: { children: ReactNode }) {
         };
 
         initSession();
+        console.log("Mixpanel initialized successfully", user, ready);
 
-        // Clean up sessions when page is unloaded
-        //const handleBeforeUnload = () => {
-        //handleSessionEnd();
-        //};
+        const onBeforeUnload = () => {
+          handleSessionEnd();
+        };
 
-        //window.addEventListener('beforeunload', handleBeforeUnload);
+        window.addEventListener("beforeunload", onBeforeUnload);
 
         console.log("Mixpanel initialized successfully", user, ready);
         return () => {
+          window.removeEventListener("beforeunload", onBeforeUnload);
           handleSessionEnd();
-          //window.removeEventListener('beforeunload', handleBeforeUnload);
         };
       } catch (error) {
         console.error("Error initializing Mixpanel:", error);
