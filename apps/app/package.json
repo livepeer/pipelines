@@ -4,6 +4,7 @@
   "scripts": {
     "dev": "next dev -p 3000",
     "dev:mock": "NEXT_PUBLIC_USE_PRIVY_MOCK=true pnpm dev",
+    "dev:mobile": "NEXT_PUBLIC_USE_PRIVY_MOCK=true pnpm dev --experimental-httpps",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",

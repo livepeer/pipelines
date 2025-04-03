@@ -571,11 +571,7 @@ export function useInitialization() {
       return;
     }
     setStreamUrl(
-      getStreamUrl(
-        stream?.stream_key,
-        searchParams,
-        stream.whip_url,
-      ),
+      getStreamUrl(stream?.stream_key, searchParams, stream.whip_url),
     );
   }, [stream]);
 }
