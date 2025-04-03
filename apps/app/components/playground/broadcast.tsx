@@ -144,9 +144,8 @@ export function BroadcastWithControls({ className }: { className?: string }) {
       iceServers={{
         urls: [
           "stun:stun.l.google.com:19302",
-          "stun:global.stun.twilio.com:3478",
+          "stun:stun1.l.google.com:19302",
           "stun:stun.cloudflare.com:3478",
-          "stun:stun.services.mozilla.com:3478",
         ],
       }}
       storage={null}
