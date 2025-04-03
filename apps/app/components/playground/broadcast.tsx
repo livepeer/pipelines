@@ -135,10 +135,10 @@ export function BroadcastWithControls({ className }: { className?: string }) {
             )
           : null;
       }}
-      forceEnabled={true}
-      mirrored={false}
+      forceEnabled
+      mirrored
+      video
       audio={false}
-      video={true}
       aspectRatio={16 / 9}
       ingestUrl={ingestUrl}
       iceServers={{
@@ -170,10 +170,7 @@ export function BroadcastWithControls({ className }: { className?: string }) {
       >
         <Broadcast.Video
           title="Live stream"
-          className={cn(
-            "w-full h-full object-cover -scale-x-100",
-            collapsed && "opacity-0",
-          )}
+          className={cn("w-full h-full object-cover", collapsed && "opacity-0")}
         />
 
         {collapsed ? (
