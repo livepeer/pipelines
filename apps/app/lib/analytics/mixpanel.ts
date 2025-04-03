@@ -8,6 +8,8 @@ export async function identifyUser(
   try {
     const currentDate = new Date();
     const currentDateString = currentDate.toISOString();
+    const userEmail =
+      user?.email?.address || user?.google?.email || user?.discord?.email;
 
     const payload = {
       userId,
@@ -15,7 +17,7 @@ export async function identifyUser(
       properties: {
         $name: userId,
         distinct_id: userId,
-        $email: user?.email?.address,
+        $email: userEmail,
         user_id: userId,
         user_type: "authenticated",
         $last_login: currentDateString,
@@ -23,7 +25,7 @@ export async function identifyUser(
         first_time_properties: {
           $first_login: currentDateString,
           first_wallet_address: user?.wallet?.address,
-          first_email: user?.email?.address,
+          first_email: userEmail,
         },
       },
     };
