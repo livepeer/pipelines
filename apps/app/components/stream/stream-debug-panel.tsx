@@ -6,6 +6,7 @@ import { useDreamshaperStore } from "@/hooks/useDreamshaper";
 import useFullscreenStore from "@/hooks/useFullscreenStore";
 import { cn } from "@repo/design-system/lib/utils";
 import { usePrivy } from "@/hooks/usePrivy";
+import { isLivepeerEmail } from "@/lib/utils";
 
 interface ErrorHistoryItem {
   source: string;
@@ -20,6 +21,7 @@ export const StreamDebugPanel = () => {
 
   const { fullResponse } = useStreamStatus(stream?.id, false);
   const { user } = usePrivy();
+  const status = fullResponse?.status || null;
 
   useEffect(() => {
     if (fullResponse) {
@@ -76,7 +78,7 @@ export const StreamDebugPanel = () => {
   };
 
   const isAdmin = useMemo(
-    () => user?.email?.address?.endsWith("@livepeer.org"),
+    () => isLivepeerEmail(user),
     [user],
   );
 
@@ -90,7 +92,7 @@ export const StreamDebugPanel = () => {
           isFullscreen && "hidden",
         )}
       >
-        {user?.email?.address?.endsWith("@livepeer.org") && (
+        {isLivepeerEmail(user) && (
           <>
             <button
               onClick={() => setDebugOpen(!debugOpen)}
