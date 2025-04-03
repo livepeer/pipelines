@@ -8,22 +8,16 @@ import { useDreamshaperStore } from "@/hooks/useDreamshaper";
 import { useFallbackDetection } from "@/hooks/useFallbackDetection";
 import useFullscreenStore from "@/hooks/useFullscreenStore";
 import useMobileStore from "@/hooks/useMobileStore";
-import { usePrivy } from "@/hooks/usePrivy";
-import {
-  EnterFullscreenIcon,
-  ExitFullscreenIcon,
-  LoadingIcon,
-  MuteIcon,
-  PrivateErrorIcon,
-  UnmuteIcon,
-} from "@livepeer/react/assets";
+import { LoadingIcon, PrivateErrorIcon } from "@livepeer/react/assets";
 import { getSrc } from "@livepeer/react/external";
 import * as Player from "@livepeer/react/player";
+import { usePrivy } from "@privy-io/react-auth";
 import { PlaybackInfo } from "livepeer/models/components";
 import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
 import * as React from "react";
 import { useEffect, useRef, useState } from "react";
+import { PlayerControls } from "./PlayerControls";
 
 const VideoJSPlayer = dynamic(() => import("./videojs-player"), {
   ssr: false,
@@ -40,7 +34,6 @@ const VideoJSPlayer = dynamic(() => import("./videojs-player"), {
 export const LivepeerPlayer = () => {
   const { stream, pipeline } = useDreamshaperStore();
   const { isMobile } = useMobileStore();
-  const { isFullscreen } = useFullscreenStore();
   const appConfig = useAppConfig();
   const [playbackInfo, setPlaybackInfo] = useState<PlaybackInfo | null>(null);
 
@@ -122,13 +115,6 @@ export const LivepeerPlayer = () => {
         backoffMax={1000}
         timeout={300000}
         lowLatency="force"
-        iceServers={{
-          urls: [
-            "stun:stun.l.google.com:19302",
-            "stun:stun1.l.google.com:19302",
-            "stun:stun.cloudflare.com:3478",
-          ],
-        }}
         onError={handleError}
       >
         <div
@@ -181,43 +167,8 @@ export const LivepeerPlayer = () => {
           </div>
         </Player.ErrorIndicator>
 
-        <Player.Controls
-          autoHide={1000}
-          className={
-            isFullscreen
-              ? "hidden"
-              : "bg-gradient-to-b gap-1 px-3 md:px-3 py-2 flex-col-reverse flex from-black/20 via-80% via-black/30 duration-1000 to-black/60 data-[visible=true]:animate-in data-[visible=false]:animate-out data-[visible=false]:fade-out-0 data-[visible=true]:fade-in-0 relative z-[10]"
-          }
-        >
-          <div className="flex justify-between gap-4">
-            <div className="flex flex-1 items-center gap-3">
-              <Player.MuteTrigger className="w-6 h-6 hover:scale-110 transition-all flex-shrink-0">
-                <Player.VolumeIndicator asChild matcher={false}>
-                  <MuteIcon className="w-full h-full text-white" />
-                </Player.VolumeIndicator>
-                <Player.VolumeIndicator asChild matcher={true}>
-                  <UnmuteIcon className="w-full h-full text-white" />
-                </Player.VolumeIndicator>
-              </Player.MuteTrigger>
-              <Player.Volume className="relative mr-1 flex-1 group flex cursor-pointer items-center select-none touch-none max-w-[120px] h-5">
-                <Player.Track className="bg-white/30 relative grow rounded-full transition-all h-[2px] md:h-[3px] group-hover:h-[3px] group-hover:md:h-[4px]">
-                  <Player.Range className="absolute bg-white rounded-full h-full" />
-                </Player.Track>
-                <Player.Thumb className="block transition-all group-hover:scale-110 w-3 h-3 bg-white rounded-full" />
-              </Player.Volume>
-            </div>
-            <div className="flex sm:flex-1 md:flex-[1.5] justify-end items-center gap-2.5">
-              <Player.FullscreenTrigger className="w-6 h-6 hover:scale-110 transition-all flex-shrink-0">
-                <Player.FullscreenIndicator asChild>
-                  <ExitFullscreenIcon className="w-full h-full text-white" />
-                </Player.FullscreenIndicator>
-                <Player.FullscreenIndicator matcher={false} asChild>
-                  <EnterFullscreenIcon className="w-full h-full text-white" />
-                </Player.FullscreenIndicator>
-              </Player.FullscreenTrigger>
-            </div>
-          </div>
-        </Player.Controls>
+        {/* TODO: Enable this */}
+        {/* <PlayerControls /> */}
 
         <DebugTimer debugMode={debugMode} />
       </Player.Root>

@@ -1,9 +1,9 @@
 import { Button } from "@repo/design-system/components/ui/button";
-import { useVideoClip } from "../hooks/useVideoClip";
 import { cn } from "@repo/design-system/lib/utils";
+import { Scissors, Square } from "lucide-react";
+import { useVideoClip } from "../hooks/useVideoClip";
 import { ClipModal } from "./ClipModal";
 import { ClipOptionsModal, ClipRecordingMode } from "./ClipOptionsModal";
-import { Scissors, Square } from "lucide-react";
 
 interface ClipButtonProps {
   disabled?: boolean;
