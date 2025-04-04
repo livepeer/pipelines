@@ -1,7 +1,8 @@
 "use server";
 
-import { Kafka } from "kafkajs";
 import { serverConfig } from "@/lib/serverEnv";
+import { Kafka } from "kafkajs";
+import { v4 as uuidv4 } from "uuid";
 
 const KAFKA_REQUEST_TIMEOUT = 5000; // 5 seconds
 const KAFKA_CONNECTION_TIMEOUT = 10000; // 10 seconds
@@ -58,7 +59,7 @@ export async function sendKafkaEvent(
   });
 
   const event: NetworkEvent = {
-    id: crypto.randomUUID(),
+    id: uuidv4(),
     type: eventType,
     sender: {
       type: "app",
