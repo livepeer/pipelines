@@ -1,5 +1,8 @@
-import { handleDistinctId, handleSessionId } from "@/lib/analytics/mixpanel";
 import { getSharedParamsAuthor } from "@/app/api/streams/share-params";
+import {
+  useDistinctIdStore,
+  useSessionIdStore,
+} from "@/hooks/useMixpanelStore";
 import { User } from "@/hooks/usePrivy";
 
 interface TrackProperties {
@@ -17,20 +20,6 @@ interface SharedInfo {
   shared_author_id?: string;
   shared_pipeline_id?: string;
   shared_created_at?: string;
-}
-
-async function getStoredIds(user?: User) {
-  if (typeof window === "undefined") return {};
-
-  const distinctId = await handleDistinctId(user);
-  const sessionId = await handleSessionId();
-  const userId = localStorage.getItem("mixpanel_user_id");
-
-  return {
-    distinctId,
-    sessionId,
-    userId,
-  };
 }
 
 const getSharedParamsInfo = async (): Promise<SharedInfo> => {
@@ -106,7 +95,10 @@ const track = async (
     return false;
   }
 
-  const { distinctId, sessionId, userId } = await getStoredIds(user);
+  const distinctId = useDistinctIdStore.getState().distinctId;
+  const sessionId = useSessionIdStore.getState().sessionId;
+  const userId = user?.id;
+
   const browserInfo = await getBrowserInfo();
   const sharedInfo = await getSharedParamsInfo();
   const referrerType = sharedInfo.shared_id

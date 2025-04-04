@@ -47,6 +47,7 @@
     "react-textarea-autosize": "^8.5.7",
     "sonner": "^1.7.0",
     "swr": "^2.3.3",
+    "uuid": "^11.1.0",
     "video.js": "^8.22.0",
     "zod": "^3.24.1",
     "zustand": "^5.0.3"

@@ -1,18 +1,19 @@
 "use client";
 
-import LoginScreen from "./LoginScreen";
-import WelcomeScreen from "./WelcomeScreen";
-import { OnboardProvider, useOnboard } from "./OnboardContext";
+import { createUser } from "@/app/actions/user";
+import { useMixpanelStore } from "@/hooks/useMixpanelStore";
+import { usePrivy } from "@/hooks/usePrivy";
+import { submitToHubspot } from "@/lib/analytics/hubspot";
+import { identifyUser } from "@/lib/analytics/mixpanel";
+import track from "@/lib/track";
 import { Loader2 } from "lucide-react";
-import MainExperience from "./MainExperience";
 import { useEffect } from "react";
 import LayoutWrapper from "./LayoutWrapper";
+import LoginScreen from "./LoginScreen";
 import { AuthProvider } from "./LoginScreen/AuthContext";
-import { createUser } from "@/app/actions/user";
-import { identifyUser } from "@/lib/analytics/mixpanel";
-import { submitToHubspot } from "@/lib/analytics/hubspot";
-import track from "@/lib/track";
-import { usePrivy } from "@/hooks/usePrivy";
+import MainExperience from "./MainExperience";
+import { OnboardProvider, useOnboard } from "./OnboardContext";
+import WelcomeScreen from "./WelcomeScreen";
 
 export default function Daydream({
   hasSharedPrompt,
@@ -64,6 +65,7 @@ function DaydreamRenderer() {
     setCustomPersona,
   } = useOnboard();
   const { user } = usePrivy();
+  const { distinctId } = useMixpanelStore();
 
   useEffect(() => {
     const initUser = async () => {
@@ -104,10 +106,6 @@ function DaydreamRenderer() {
         setCustomPersona(initialCustomPersona);
         setCurrentStep(initialStep);
         setIsInitializing(false);
-
-        // 3. Handle tracking after initialization
-        const distinctId = localStorage.getItem("mixpanel_distinct_id");
-        localStorage.setItem("mixpanel_user_id", user.id);
 
         await Promise.all([
           identifyUser(user.id, distinctId || "", user),
