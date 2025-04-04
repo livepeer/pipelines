@@ -28,8 +28,8 @@ export default function Overlay({ statusMessage }: OverlayProps) {
           )}
         </p>
         <p className="text-foreground text-xs sm:text-sm text-center">
-          Thanks for dreaming with us — we're in beta, so <br /> you might hit a
-          few performance bumps
+          Thanks for dreaming with us — we&apos;re in beta, so <br /> you might
+          hit a few performance bumps
         </p>
       </div>
     </div>
