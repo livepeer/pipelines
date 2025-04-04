@@ -77,10 +77,7 @@ export const StreamDebugPanel = () => {
     navigator.clipboard.writeText(logs);
   };
 
-  const isAdmin = useMemo(
-    () => isLivepeerEmail(user),
-    [user],
-  );
+  const isAdmin = useMemo(() => isLivepeerEmail(user), [user]);
 
   const { isFullscreen } = useFullscreenStore();
 

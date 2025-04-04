@@ -1,20 +1,14 @@
+import { User } from "@privy-io/react-auth";
+
 export const sleep = (ms: number) =>
   new Promise(resolve => setTimeout(resolve, ms));
 
-export const isLivepeerEmail = (user: any): boolean => {
+export const isLivepeerEmail = (user: User | null | undefined): boolean => {
   if (!user) return false;
   
-  if (typeof user.email === 'string') {
-    return (user.email as string).endsWith('@livepeer.org');
-  }
+  const email = user.email?.address || user.google?.email || user.discord?.email;
+
+  if (!email) return false;
   
-  if (user?.email?.address && typeof user.email.address === 'string') {
-    return (user.email.address as string).endsWith('@livepeer.org');
-  }
-  
-  if (user?.google?.email && typeof user.google.email === 'string') {
-    return (user.google.email as string).endsWith('@livepeer.org');
-  }
-  
-  return false;
+  return email.endsWith("@livepeer.org");
 };
