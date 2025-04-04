@@ -167,6 +167,18 @@
     pointer-events: none !important;
   }
 }
+/* Shimmer text styles */
+.shimmer-text {
+  @apply bg-gradient-to-r from-neutral-900 via-slate-500 to-neutral-900 bg-[length:300%_100%] bg-left bg-clip-text text-transparent animate-shimmer;
+}
+
+.shimmer-fast {
+  @apply animate-shimmer-fast;
+}
+
+.shimmer-slow {
+  @apply animate-shimmer-slow;
+}
 
 /* Persona button styles */
 .persona-button-wrapper {
@@ -218,7 +230,7 @@
 }
 
 @property --gradient-angle {
-  syntax: '<angle>';
+  syntax: "<angle>";
   inherits: false;
   initial-value: 0deg;
 }
@@ -227,24 +239,24 @@
   position: relative;
   border-radius: 9999px;
   overflow: visible;
-  border: 1.5px solid transparent; 
+  border: 1.5px solid transparent;
 }
 
 .animatedGradientButton::before {
   content: "";
   position: absolute;
-  inset: -1.5px; 
+  inset: -1.5px;
   border-radius: 9999px;
-  padding: 1.5px; 
+  padding: 1.5px;
   background: conic-gradient(
     from var(--gradient-angle),
-    #83A5B5 0deg,
-    #9A9A9A 50deg,
+    #83a5b5 0deg,
+    #9a9a9a 50deg,
     #333333 70deg,
-    #9A9A9A 90deg,
-    #83A5B5 210deg,
+    #9a9a9a 90deg,
+    #83a5b5 210deg,
     #ffffff 240deg,
-    #83A5B5 280deg
+    #83a5b5 280deg
   );
   -webkit-mask:
     linear-gradient(#fff 0 0) content-box,
@@ -257,7 +269,7 @@
   opacity: 1;
   z-index: 0;
   pointer-events: none;
-  
+
   animation: rotate-gradient 3s linear infinite;
   animation-play-state: paused;
 }
@@ -302,37 +314,37 @@
 }
 
 #cloud1 {
-  background-image: url('/clouds/back_1-min.png');
+  background-image: url("/clouds/back_1-min.png");
   opacity: 0.5;
   z-index: 1;
 }
 
 #cloud2 {
-  background-image: url('/clouds/back_2-min.png');
+  background-image: url("/clouds/back_2-min.png");
   opacity: 0.5;
   z-index: 2;
 }
 
 #cloud3 {
-  background-image: url('/clouds/back_3-min.png');
+  background-image: url("/clouds/back_3-min.png");
   opacity: 0.5;
   z-index: 4;
 }
 
 #cloud4 {
-  background-image: url('/clouds/back_1_proc-min.png');
+  background-image: url("/clouds/back_1_proc-min.png");
   opacity: 0.3;
   z-index: 2;
 }
 
 #cloud5 {
-  background-image: url('/clouds/back_4_proc-min.png');
+  background-image: url("/clouds/back_4_proc-min.png");
   opacity: 0.3;
   z-index: 3;
 }
 
 #cloud6 {
-  background-image: url('/clouds/back_3_proc-min.png');
+  background-image: url("/clouds/back_3_proc-min.png");
   opacity: 0.3;
   z-index: 1;
 }
