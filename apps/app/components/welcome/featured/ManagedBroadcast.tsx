@@ -30,7 +30,7 @@ export function ManagedBroadcast() {
     <div
       className={cn(
         "transition-all duration-100",
-        isMobile ? "mx-4 w-auto -mt-2 mb-4" : "absolute z-50",
+        isMobile ? "mx-4 w-auto mb-4" : "absolute z-50",
       )}
       style={
         isMobile
