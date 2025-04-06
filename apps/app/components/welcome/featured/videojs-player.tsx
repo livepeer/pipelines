@@ -232,7 +232,7 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
         },
         "daydream",
         "server",
-        user || undefined
+        user || undefined,
       );
     };
     sendFirstFrameEvent();
