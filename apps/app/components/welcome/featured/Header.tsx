@@ -55,7 +55,7 @@ export const Header = () => {
             "",
           )}
         >
-          <h1
+          <div
             className={cn(
               inter.className,
               "text-lg md:text-xl flex flex-col uppercase font-light",
@@ -74,7 +74,7 @@ export const Header = () => {
                 />
               </span>
             </div>
-          </h1>
+          </div>
           <p className="text-xs md:text-sm text-muted-foreground max-w-[280px] md:max-w-none">
             Transform your video in real-time with AI
           </p>
