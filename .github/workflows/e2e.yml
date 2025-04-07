@@ -39,7 +39,7 @@ jobs:
         run: pnpm install
 
       - name: Install Playwright Browsers and Dependencies
-        run: pnpm --filter app-e2e playwright install --with-deps chrome
+        run: pnpm --filter app-e2e exec playwright install --with-deps chrome
 
       - name: Run Playwright tests
         run: pnpm --filter app-e2e test
