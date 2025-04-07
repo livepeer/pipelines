@@ -21,6 +21,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    # TODO: sync, or at least lint env vars
     env:
       NEXT_PUBLIC_ENV: ${{ secrets.NEXT_PUBLIC_ENV }}
       CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
