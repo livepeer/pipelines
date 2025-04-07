@@ -109,3 +109,4 @@ jobs:
 
       - name: Run Playwright tests
         run: pnpm --filter app-e2e test
+        continue-on-error: false

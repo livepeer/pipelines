@@ -108,6 +108,7 @@ async function assertVideoContentChanging(
   const videoTitle = await video.evaluate(
     v => (v as HTMLVideoElement).ariaLabel || (v as HTMLVideoElement).title,
   );
+  expect(true).toBeFalsy();
 
   await test.step(`Capture ${numFrames} video frames`, async () => {
     for (let i = 0; i < numFrames; i++) {
