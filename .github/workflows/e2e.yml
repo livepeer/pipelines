@@ -95,6 +95,14 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install
+      # Skip empty values
+      - name: Cache Playwright Browsers
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-browsers-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-browsers-
 
       - name: Install Playwright Browsers and Dependencies
         run: pnpm --filter app-e2e exec playwright install --with-deps chrome
