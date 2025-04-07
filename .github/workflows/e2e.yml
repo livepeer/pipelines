@@ -6,6 +6,17 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    # TODO: implement
+    # inputs:
+    #   environment:
+    #     description: "Choose the environment"
+    #     required: true
+    #     default: "production"
+    #     type: choice
+    #     options:
+    #       - production
+    #       - staging
+  # TODO: add cronjob
 
 jobs:
   test:
@@ -95,7 +106,7 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install
-      # Skip empty values
+
       - name: Cache Playwright Browsers
         uses: actions/cache@v3
         with:
