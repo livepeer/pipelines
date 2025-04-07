@@ -80,7 +80,7 @@ export default function Dreamshaper() {
         eventData,
         "daydream",
         window.location.hostname,
-        user || undefined
+        user || undefined,
       );
     };
 
@@ -100,7 +100,7 @@ export default function Dreamshaper() {
           eventData,
           "daydream",
           window.location.hostname,
-          user || undefined
+          user || undefined,
         );
       }
 
