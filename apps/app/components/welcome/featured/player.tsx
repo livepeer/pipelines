@@ -138,6 +138,7 @@ export const LivepeerPlayer = () => {
 
         <Player.Video
           title="Live stream"
+          data-testid="playback-video"
           className="h-full w-full transition-all object-contain relative z-0"
         />
 
