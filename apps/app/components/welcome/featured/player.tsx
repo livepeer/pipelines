@@ -122,13 +122,15 @@ export const LivepeerPlayer = () => {
         backoffMax={1000}
         timeout={300000}
         lowLatency="force"
-        {...{iceServers: {
-          urls: [
-            "stun:stun.l.google.com:19302",
-            "stun:stun1.l.google.com:19302",
-            "stun:stun.cloudflare.com:3478",
-          ],
-        }} as any}
+        {...({
+          iceServers: {
+            urls: [
+              "stun:stun.l.google.com:19302",
+              "stun:stun1.l.google.com:19302",
+              "stun:stun.cloudflare.com:3478",
+            ],
+          },
+        } as any)}
         onError={handleError}
       >
         <div
@@ -259,9 +261,7 @@ export const PlayerLoading = ({
   </div>
 );
 
-const useFirstFrameLoaded = ({
-  __scopeMedia,
-}: Player.MediaScopedProps) => {
+const useFirstFrameLoaded = ({ __scopeMedia }: Player.MediaScopedProps) => {
   const { user } = usePrivy();
   const { stream, pipeline } = useDreamshaperStore();
   const startTime = useRef(Date.now());
@@ -284,7 +284,7 @@ const useFirstFrameLoaded = ({
         },
         "daydream",
         "server",
-        user || undefined
+        user || undefined,
       );
     };
     sendEvent();
@@ -309,7 +309,7 @@ const useFirstFrameLoaded = ({
           },
           "daydream",
           "server",
-          user || undefined
+          user || undefined,
         );
       sendEvent();
     }

@@ -43,22 +43,23 @@ export async function POST(request: NextRequest) {
     const appConfig = getAppConfig(request.nextUrl.searchParams);
     const ip =
       appConfig.environment === "dev"
-        ? "development.fake.ip" 
+        ? "development.fake.ip"
         : forwardedFor
           ? forwardedFor.split(",")[0].trim()
           : "";
-    
+
     const userAgent = request.headers.get("user-agent") || "";
 
-    const geoData = ip && ip !== "127.0.0.1" && ip !== "::1" 
-      ? await getGeoData(ip) 
-      : {
-          city: "",
-          region: "",
-          country: "",
-          latitude: "",
-          longitude: "",
-        };
+    const geoData =
+      ip && ip !== "127.0.0.1" && ip !== "::1"
+        ? await getGeoData(ip)
+        : {
+            city: "",
+            region: "",
+            country: "",
+            latitude: "",
+            longitude: "",
+          };
 
     const { viewer_info, broadcaster_info, ...cleanData } = data;
 

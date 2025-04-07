@@ -28,6 +28,7 @@ import { sendKafkaEvent } from "@/lib/analytics/event-middleware";
 import { useDreamshaperStore } from "@/hooks/useDreamshaper";
 import { create } from "zustand";
 import { usePrivy } from "@/hooks/usePrivy";
+import { useOnboard } from "../daydream/OnboardContext";
 
 const StatusMonitor = () => {
   const { user } = usePrivy();
@@ -54,7 +55,7 @@ const StatusMonitor = () => {
           },
           "daydream",
           "server",
-          user || undefined
+          user || undefined,
         );
       };
 
@@ -83,6 +84,7 @@ const videoId = "live-video";
 
 export function BroadcastWithControls({ className }: { className?: string }) {
   const { streamUrl: ingestUrl } = useDreamshaperStore();
+  const { cameraPermission } = useOnboard();
   const [isPiP, setIsPiP] = useState(false);
 
   const { collapsed, setCollapsed, toggleCollapsed } = useBroadcastUIStore();
@@ -109,6 +111,15 @@ export function BroadcastWithControls({ className }: { className?: string }) {
     };
   }, []);
 
+  if (cameraPermission !== "granted") {
+    return (
+      <BroadcastLoading
+        title="Cannot access camera"
+        description="Please grant camera permission to broadcast."
+      />
+    );
+  }
+
   if (!ingestUrl) {
     return (
       <BroadcastLoading
@@ -133,13 +144,15 @@ export function BroadcastWithControls({ className }: { className?: string }) {
       video={true}
       aspectRatio={16 / 9}
       ingestUrl={ingestUrl}
-      {...{iceServers: {
-        urls: [
-          "stun:stun.l.google.com:19302",
-          "stun:stun1.l.google.com:19302",
-          "stun:stun.cloudflare.com:3478",
-        ],
-      }} as any}
+      {...({
+        iceServers: {
+          urls: [
+            "stun:stun.l.google.com:19302",
+            "stun:stun1.l.google.com:19302",
+            "stun:stun.cloudflare.com:3478",
+          ],
+        },
+      } as any)}
       storage={null}
     >
       <StatusMonitor />
@@ -492,22 +505,22 @@ export const BroadcastLoading = ({
   <div className="relative w-full px-3 md:px-3 py-3 gap-3 flex-col-reverse flex aspect-video bg-white/10 overflow-hidden rounded-sm">
     <div className="flex justify-between">
       <div className="flex items-center gap-2">
-        <div className="w-6 h-6 animate-pulse bg-white/5 overflow-hidden rounded-lg" />
-        <div className="w-16 h-6 md:w-20 md:h-7 animate-pulse bg-white/5 overflow-hidden rounded-lg" />
+        <div className="w-6 h-6 animate-pulse bg-background/5 overflow-hidden rounded-lg" />
+        <div className="w-16 h-6 md:w-20 md:h-7 animate-pulse bg-background/5 overflow-hidden rounded-lg" />
       </div>
 
       <div className="flex items-center gap-2">
-        <div className="w-6 h-6 animate-pulse bg-white/5 overflow-hidden rounded-lg" />
-        <div className="w-6 h-6 animate-pulse bg-white/5 overflow-hidden rounded-lg" />
+        <div className="w-6 h-6 animate-pulse bg-background/5 overflow-hidden rounded-lg" />
+        <div className="w-6 h-6 animate-pulse bg-background/5 overflow-hidden rounded-lg" />
       </div>
     </div>
-    <div className="w-full h-2 animate-pulse bg-white/5 overflow-hidden rounded-lg" />
+    <div className="w-full h-2 animate-pulse bg-background/5 overflow-hidden rounded-lg" />
 
     {title && (
       <div className="absolute flex flex-col gap-1 inset-10 text-center justify-center items-center">
-        <span className="text-white text-lg font-medium">{title}</span>
+        <span className="text-foreground text-lg font-medium">{title}</span>
         {description && (
-          <span className="text-sm text-white/80">{description}</span>
+          <span className="text-sm text-foreground/80">{description}</span>
         )}
       </div>
     )}
