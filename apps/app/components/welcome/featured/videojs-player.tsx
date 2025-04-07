@@ -122,17 +122,13 @@ const VideoJSStyles = () => (
       display: none !important;
     }
 
-    /* Position fullscreen button on the far right */
+    /* Hide fullscreen button */
     .video-js .vjs-fullscreen-control {
-      margin-left: auto;
-      order: 99;
+      display: none !important;
     }
 
-    /* Hide any other controls except volume and fullscreen */
-    .video-js
-      .vjs-control:not(.vjs-volume-panel):not(.vjs-fullscreen-control):not(
-        .vjs-mute-control
-      ) {
+    /* Hide any other controls except volume */
+    .video-js .vjs-control:not(.vjs-volume-panel):not(.vjs-mute-control) {
       display: none !important;
     }
 
