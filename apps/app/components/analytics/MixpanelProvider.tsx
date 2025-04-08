@@ -2,7 +2,6 @@
 
 import { useMixpanelStore } from "@/hooks/useMixpanelStore";
 import useMount from "@/hooks/useMount";
-import { identifyUser } from "@/lib/analytics/mixpanel";
 import { mixpanel as mixpanelConfig } from "@/lib/env";
 import { usePrivy } from "@privy-io/react-auth";
 import mixpanel from "mixpanel-browser";
@@ -14,53 +13,23 @@ export function MixpanelProvider({ children }: { children: ReactNode }) {
   const mixpanelInitialized = useRef(false);
 
   useEffect(() => {
-    const init = async () => {
-      if (
-        mixpanelConfig.projectToken &&
-        distinctId &&
-        !mixpanelInitialized.current
-      ) {
-        try {
-          console.log("MixpanelProvider: Initializing Mixpanel...");
-          mixpanel.init(mixpanelConfig.projectToken, {
-            debug: true,
-          });
-          mixpanelInitialized.current = true;
-          console.log("MixpanelProvider: Mixpanel initialized.");
-
-          if (ready && user) {
-            console.log(
-              `MixpanelProvider: User ${user.id} is ready. Calling identifyUser.`,
-            );
-            await identifyUser(user.id, distinctId, user);
-          } else {
-            const currentMixpanelId = mixpanel.get_distinct_id();
-            if (currentMixpanelId !== distinctId) {
-              console.log(
-                `MixpanelProvider: Aligning Mixpanel ID (${currentMixpanelId}) with store ID (${distinctId}). Calling identify.`,
-              );
-              mixpanel.identify(distinctId);
-            } else {
-              console.log(
-                `MixpanelProvider: Mixpanel already using correct distinct_id (${distinctId}).`,
-              );
-            }
-          }
-        } catch (error) {
-          console.error(
-            "MixpanelProvider: Error initializing or identifying Mixpanel:",
-            error,
-          );
-        }
-      } else if (!mixpanelConfig.projectToken) {
-        console.warn(
-          "MixpanelProvider: No Mixpanel project token found in environment variables",
-        );
+    if (
+      mixpanelConfig.projectToken &&
+      distinctId &&
+      !mixpanelInitialized.current
+    ) {
+      try {
+        console.log("Initializing Mixpanel");
+        mixpanel.init(mixpanelConfig.projectToken, { debug: true });
+        mixpanelInitialized.current = true;
+        console.log("Mixpanel initialized successfully", user, ready);
+      } catch (error) {
+        console.error("Error initializing Mixpanel:", error);
       }
-    };
-
-    init();
-  }, [mixpanelConfig.projectToken, distinctId, ready, user]);
+    } else {
+      console.warn("No Mixpanel project token found in environment variables");
+    }
+  }, [distinctId]);
 
   // TODO: Remove these
   useEffect(() => {

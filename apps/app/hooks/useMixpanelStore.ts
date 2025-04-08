@@ -2,6 +2,7 @@ import { v4 as uuidv4 } from "uuid";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import useMount from "./useMount";
+import { useEffect } from "react";
 
 interface SessionIdStore {
   sessionId: string | null;
@@ -56,13 +57,19 @@ export const useDistinctIdStore = create<DistinctIdStore>()(
 );
 
 export const useMixpanelStore = () => {
-  const { sessionId, initializeSessionId } = useSessionIdStore();
-  const { distinctId, initializeDistinctId } = useDistinctIdStore();
+  const sessionId = useSessionIdStore(state => state.sessionId);
+  const initializeSessionId = useSessionIdStore(
+    state => state.initializeSessionId,
+  );
+  const distinctId = useDistinctIdStore(state => state.distinctId);
+  const initializeDistinctId = useDistinctIdStore(
+    state => state.initializeDistinctId,
+  );
 
-  useMount(() => {
+  useEffect(() => {
     initializeSessionId();
     initializeDistinctId();
-  });
+  }, [initializeSessionId, initializeDistinctId]);
 
   return { sessionId, distinctId };
 };

@@ -68,15 +68,12 @@ function DaydreamRenderer() {
   const { distinctId } = useMixpanelStore();
 
   useEffect(() => {
+    if (!user?.id || !distinctId) {
+      return;
+    }
+
     const initUser = async () => {
       try {
-        if (!user?.id) {
-          console.log(
-            "DaydreamRenderer Effect: No user or user.id, returning.",
-          ); // 디버깅 로그 필요시 추가
-          return;
-        }
-
         // 1. Create or fetch the user from DB
         const {
           isNewUser,
@@ -110,14 +107,16 @@ function DaydreamRenderer() {
         setCurrentStep(initialStep);
         setIsInitializing(false);
 
+        await Promise.all([
+          identifyUser(user.id, distinctId, user),
+          // TODO: only submit to Hubspot on production
+          isNewUser ? submitToHubspot(user) : Promise.resolve(),
+        ]);
+
         track("user_logged_in", {
           user_id: user.id,
           distinct_id: distinctId,
         });
-
-        if (isNewUser) {
-          await submitToHubspot(user);
-        }
       } catch (err) {
         console.error("Error initializing user:", err);
         setIsInitializing(false);
