@@ -120,11 +120,16 @@ jobs:
         run: pnpm --filter app-e2e exec playwright install --with-deps chrome
 
       - name: Run Playwright tests
+        id: playwright
         run: pnpm --filter app-e2e test
-        continue-on-error: false
+        continue-on-error: true
 
       - name: Upload test screenshots
         uses: actions/upload-artifact@v4
         with:
           name: screenshots
           path: apps/app-e2e/screenshots/
+
+      - name: Fail workflow if tests failed
+        if: steps.playwright.outcome == 'failure'
+        run: exit 1
