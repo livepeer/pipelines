@@ -107,6 +107,7 @@ function DaydreamRenderer() {
         setCurrentStep(initialStep);
         setIsInitializing(false);
 
+        console.log("Identifying user...", user.id, distinctId);
         await Promise.all([
           identifyUser(user.id, distinctId || "", user),
           // TODO: only submit to Hubspot on production
