@@ -124,7 +124,7 @@ function DaydreamRenderer() {
     };
 
     initUser();
-  }, []);
+  }, [distinctId, user]);
 
   if (isInitializing) {
     return (
