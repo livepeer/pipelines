@@ -122,3 +122,9 @@ jobs:
       - name: Run Playwright tests
         run: pnpm --filter app-e2e test
         continue-on-error: false
+
+      - name: Upload test screenshots
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-screenshots
+          path: apps/app-e2e/screenshots/
