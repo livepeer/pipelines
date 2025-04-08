@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
     const { userId, anonymousId, properties } = await request.json();
     const { first_time_properties, ...regularProperties } = properties; // Create alias if needed
     if (anonymousId !== userId) {
-      mixpanelClient.alias(anonymousId, userId);
+      mixpanelClient.alias(userId, anonymousId);
     }
 
     const app = getAppConfig(request.nextUrl.searchParams);

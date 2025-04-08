@@ -9,19 +9,17 @@ import { ReactNode, useEffect, useRef } from "react";
 
 export function MixpanelProvider({ children }: { children: ReactNode }) {
   const { user, ready } = usePrivy();
-  const { sessionId, distinctId } = useMixpanelStore();
-  const mixpanelInitialized = useRef(false);
+  const { sessionId, distinctId, initializeDistinctId, initializeSessionId } =
+    useMixpanelStore();
 
-  useEffect(() => {
-    if (
-      mixpanelConfig.projectToken &&
-      distinctId &&
-      !mixpanelInitialized.current
-    ) {
+  useMount(() => {
+    if (mixpanelConfig.projectToken) {
       try {
         console.log("Initializing Mixpanel");
         mixpanel.init(mixpanelConfig.projectToken, { debug: true });
-        mixpanelInitialized.current = true;
+
+        initializeDistinctId();
+        initializeSessionId();
         console.log("Mixpanel initialized successfully", user, ready);
       } catch (error) {
         console.error("Error initializing Mixpanel:", error);
@@ -29,7 +27,7 @@ export function MixpanelProvider({ children }: { children: ReactNode }) {
     } else {
       console.warn("No Mixpanel project token found in environment variables");
     }
-  }, [distinctId]);
+  });
 
   // TODO: Remove these
   useEffect(() => {

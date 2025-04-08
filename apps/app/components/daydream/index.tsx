@@ -68,7 +68,6 @@ function DaydreamRenderer() {
   const { distinctId } = useMixpanelStore();
 
   useEffect(() => {
-    console.log(">>>", user?.id, distinctId);
     if (!user?.id || !distinctId) {
       return;
     }
@@ -108,7 +107,6 @@ function DaydreamRenderer() {
         setCurrentStep(initialStep);
         setIsInitializing(false);
 
-        console.log(">>> Identifying");
         await Promise.all([
           identifyUser(user.id, distinctId, user),
           // TODO: only submit to Hubspot on production

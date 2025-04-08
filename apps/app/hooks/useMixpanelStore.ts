@@ -71,5 +71,5 @@ export const useMixpanelStore = () => {
     initializeDistinctId();
   }, [initializeSessionId, initializeDistinctId]);
 
-  return { sessionId, distinctId };
+  return { sessionId, distinctId, initializeSessionId, initializeDistinctId };
 };
