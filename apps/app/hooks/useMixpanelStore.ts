@@ -1,4 +1,4 @@
-import { v4 as uuidv4 } from "uuid"; // uuid 라이브러리 사용 시
+import { v4 as uuidv4 } from "uuid";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import useMount from "./useMount";
