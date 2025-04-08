@@ -2,8 +2,8 @@
 
 import { useMixpanelStore } from "@/hooks/useMixpanelStore";
 import useMount from "@/hooks/useMount";
-import { usePrivy } from "@/hooks/usePrivy";
 import { mixpanel as mixpanelConfig } from "@/lib/env";
+import { usePrivy } from "@privy-io/react-auth";
 import mixpanel from "mixpanel-browser";
 import { ReactNode, useEffect } from "react";
 
@@ -38,7 +38,6 @@ export function MixpanelProvider({ children }: { children: ReactNode }) {
   }, [sessionId]);
 
   useEffect(() => {
-    console.log("##### UserState", ready, user);
     if (mixpanelConfig.projectToken && ready && user) {
       document.cookie = `mixpanel_user_id=${user.id}; path=/`;
     }

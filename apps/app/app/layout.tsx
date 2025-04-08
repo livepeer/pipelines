@@ -45,13 +45,13 @@ const RootLayout = ({ children }: RootLayoutProperties) => (
     <body
       className={`${inter.variable} ${playfair.variable} ${openSans.variable} bg-sidebar font-sans`}
     >
-      <MixpanelProvider>
-        <DesignSystemProvider defaultTheme="light" enableSystem={false}>
+      <DesignSystemProvider defaultTheme="light" enableSystem={false}>
+        <MixpanelProvider>
           {children}
           <Intercom />
           {/* TODO: REENABLE WHEN SHIH-YU IS READY FOR IT <Intercom /> */}
-        </DesignSystemProvider>
-      </MixpanelProvider>
+        </MixpanelProvider>
+      </DesignSystemProvider>
     </body>
   </html>
 );
