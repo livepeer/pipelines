@@ -28,20 +28,26 @@ async function getGeoData(ip: string | null) {
 }
 
 export async function POST(request: NextRequest) {
+  console.log(request);
   if (!mixpanelClient) {
     return NextResponse.json(
       { error: "Mixpanel not configured" },
       { status: 500 },
     );
   }
+  console.log("a");
 
   try {
     const { userId, anonymousId, properties } = await request.json();
+    console.log(userId, anonymousId, properties);
     const { first_time_properties, ...regularProperties } = properties; // Create alias if needed
     if (anonymousId !== userId) {
+      console.log("Aliasing,,,", userId, anonymousId);
       mixpanelClient.alias(userId, anonymousId);
     }
+
     const app = getAppConfig(request.nextUrl.searchParams);
+    console.log(app);
 
     const forwardedFor = request.headers.get("x-forwarded-for");
 

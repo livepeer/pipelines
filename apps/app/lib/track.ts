@@ -80,6 +80,12 @@ const track = async (
   eventProperties?: TrackProperties,
   user?: User,
 ) => {
+  console.log(
+    ">>>>>>>>",
+    useDistinctIdStore.getState().distinctId,
+    useSessionIdStore.getState().sessionId,
+    user?.id,
+  );
   const now = Date.now();
   const lastTracked = lastTrackedEvents[eventName] || 0;
 
