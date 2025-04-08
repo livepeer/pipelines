@@ -38,7 +38,6 @@ export default function Dreamshaper() {
   const { setLastSubmittedPrompt, setHasSubmittedPrompt } = usePromptStore();
   const { user, authenticated } = usePrivy();
   const { isFullscreen } = useFullscreenStore();
-  const { isMinHeightScreen } = useMobileStore();
   const playerRef = useRef<HTMLDivElement>(null);
 
   usePlayerPositionUpdater(playerRef);
@@ -177,7 +176,7 @@ export default function Dreamshaper() {
               className={cn(
                 "w-full max-w-[calc(min(100%,calc((100vh-16rem)*16/9)))] mx-auto md:aspect-video aspect-square bg-sidebar rounded-2xl overflow-hidden relative",
                 isFullscreen && "w-full h-full max-w-none rounded-none",
-                isMinHeightScreen && "min-w-[596px]",
+                "min-w-[596px]",
               )}
             >
               <MainContent />

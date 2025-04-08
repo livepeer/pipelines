@@ -39,6 +39,7 @@ export const Header = () => {
           isFullscreen && "hidden",
           isMobile ? "justify-center px-3 py-3" : "justify-between py-3",
           isMinHeightScreen && "flex-col gap-6",
+          "min-w-[596px]",
         )}
       >
         {isMobile && (
@@ -51,6 +52,7 @@ export const Header = () => {
           className={cn(
             "flex flex-col gap-2",
             isMobile ? "text-center items-center" : "text-left items-start",
+            "",
           )}
         >
           <h1
