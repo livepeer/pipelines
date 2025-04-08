@@ -38,6 +38,7 @@ export function MixpanelProvider({ children }: { children: ReactNode }) {
   }, [sessionId]);
 
   useEffect(() => {
+    console.log("##### UserState", ready, user);
     if (mixpanelConfig.projectToken && ready && user) {
       document.cookie = `mixpanel_user_id=${user.id}; path=/`;
     }
