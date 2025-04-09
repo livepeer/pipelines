@@ -391,7 +391,7 @@ export const InputPrompt = () => {
     } catch (error) {
       console.error('Error requesting motion permission:', error);
       // Show error to user
-      alert('Unable to access motion sensors. Please ensure you're using a mobile device and have granted the necessary permissions.');
+      alert("Unable to access motion sensors. Please ensure you're using a mobile device and have granted the necessary permissions.");
     }
   };
 
