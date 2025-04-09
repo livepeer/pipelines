@@ -51,7 +51,7 @@ type PipelineParam = {
 };
 
 // Add this function at the top of the file, after imports
-const SHAKE_THRESHOLD = 15;
+const SHAKE_THRESHOLD = 8;
 const SHAKE_TIMEOUT = 1000;
 
 // Add these prompts near the top of the file
@@ -262,28 +262,37 @@ export const InputPrompt = () => {
     return SHAKE_PROMPTS[randomIndex];
   };
 
-  // Add shake handler
-  const handleShake = () => {
-    if (!updating) {
-      const randomPrompt = generateRandomPrompt();
-      
-      track("daydream_prompt_submitted", {
-        is_authenticated: authenticated,
-        prompt: randomPrompt,
-        stream_id: stream?.id,
-        source: "shake"
-      });
+  // Memoize handleShake to prevent recreation on every render
+  const handleShake = useMemo(() => {
+    return () => {
+      if (!updating) {
+        const randomPrompt = generateRandomPrompt();
+        
+        track("daydream_prompt_submitted", {
+          is_authenticated: authenticated,
+          prompt: randomPrompt,
+          stream_id: stream?.id,
+          source: "shake"
+        });
 
-      handleStreamUpdate(randomPrompt, { silent: true });
-      setLastSubmittedPrompt(randomPrompt);
-      setHasSubmittedPrompt(true);
-      incrementPromptVersion(promptVersion + 1);
-    }
-  };
+        handleStreamUpdate(randomPrompt, { silent: true });
+        setLastSubmittedPrompt(randomPrompt);
+        setHasSubmittedPrompt(true);
+        incrementPromptVersion(promptVersion + 1);
+      }
+    };
+  }, [
+    updating,
+    authenticated,
+    stream?.id,
+    handleStreamUpdate,
+    setLastSubmittedPrompt,
+    setHasSubmittedPrompt,
+    incrementPromptVersion,
+    promptVersion
+  ]);
 
-  const [hasMotionPermission, setHasMotionPermission] = useState(false);
-
-  // Move the shake detection setup directly into the component
+  // Update the shake detection useEffect with proper dependencies
   useEffect(() => {
     if (!hasMotionPermission || !isMobile) return;
 
@@ -298,13 +307,22 @@ export const InputPrompt = () => {
       if (!acceleration) return;
 
       const { x, y, z } = acceleration;
-      if (!x || !y || !z) return;
+      if (x === null || y === null || z === null) return;
+
+      // Add some debug logging
+      console.log('Motion detected:', { x, y, z });
 
       const deltaX = Math.abs(x - (lastX || 0));
       const deltaY = Math.abs(y - (lastY || 0));
       const deltaZ = Math.abs(z - (lastZ || 0));
 
-      if ((deltaX + deltaY + deltaZ) > SHAKE_THRESHOLD) {
+      const totalAcceleration = deltaX + deltaY + deltaZ;
+      
+      // Add debug logging for threshold check
+      console.log('Total acceleration:', totalAcceleration, 'Threshold:', SHAKE_THRESHOLD);
+
+      if (totalAcceleration > SHAKE_THRESHOLD) {
+        console.log('Shake detected! Triggering prompt...');
         lastShake = current;
         handleShake();
       }
@@ -315,6 +333,7 @@ export const InputPrompt = () => {
     };
 
     if (typeof window !== 'undefined' && 'DeviceMotion' in window) {
+      console.log('Setting up motion detection...');
       window.addEventListener('devicemotion', handleMotion);
     }
 
@@ -323,8 +342,9 @@ export const InputPrompt = () => {
         window.removeEventListener('devicemotion', handleMotion);
       }
     };
-  }, [hasMotionPermission, isMobile]); // Add dependencies
+  }, [hasMotionPermission, isMobile, handleShake]); // Added handleShake to dependencies
 
+  // Update the permission request to log success/failure
   const requestMotionPermission = async () => {
     if (typeof DeviceMotionEvent !== 'undefined' && 
         // @ts-ignore - iOS specific request method
@@ -332,22 +352,19 @@ export const InputPrompt = () => {
       try {
         // @ts-ignore
         const permissionState = await DeviceMotionEvent.requestPermission();
+        console.log('Motion permission state:', permissionState);
         setHasMotionPermission(permissionState === 'granted');
       } catch (error) {
         console.error('Error requesting motion permission:', error);
       }
     } else {
       // For non-iOS devices that don't need explicit permission
+      console.log('Device does not require motion permission, enabling...');
       setHasMotionPermission(true);
     }
   };
 
-  // Only enable shake detection after we have permission
-  useEffect(() => {
-    if (hasMotionPermission) {
-      // This useEffect is now empty as the shake detection logic is handled inside the useEffect above
-    }
-  }, [hasMotionPermission]);
+  const [hasMotionPermission, setHasMotionPermission] = useState(false);
 
   // Add this near the start of your return statement, before the main input UI
   if (isMobile && !hasMotionPermission) {
