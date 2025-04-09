@@ -4,9 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "pnpm test:dev",
-    "test:dev": "playwright test -c playwright.config.dev.ts",
-    "test:prod": "playwright test -c playwright.config.prod.ts"
+    "test": "playwright test"
   },
   "keywords": [],
   "author": "",

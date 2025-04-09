@@ -15,7 +15,7 @@ on:
     - cron: "*/30 * * * *"
 
 jobs:
-  e2e_staging:
+  e2e-staging:
     if: (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'staging') || github.event_name == 'schedule'
     runs-on: ubuntu-latest
     environment: "Staging - e2e"
@@ -67,7 +67,7 @@ jobs:
           echo "::error::Playwright tests failed for the staging environment."
           exit 1
 
-  e2e_production:
+  e2e-production:
     if: (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'production') || github.event_name == 'schedule'
     runs-on: ubuntu-latest
     environment: "Production - e2e"
