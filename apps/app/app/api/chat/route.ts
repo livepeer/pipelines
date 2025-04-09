@@ -15,7 +15,7 @@ export async function POST(req: Request) {
     if (!message) {
       return NextResponse.json(
         { error: "Message is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -23,7 +23,7 @@ export async function POST(req: Request) {
     if (!openaiApiKey) {
       return NextResponse.json(
         { error: "OpenAI API key is not set" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -75,7 +75,7 @@ Your response must be a valid JSON object with the following structure:
     };
 
     let completion;
-    
+
     if (imageBase64) {
       // Use vision model for image analysis
       completion = await openai.chat.completions.create({
@@ -101,17 +101,14 @@ Your response must be a valid JSON object with the following structure:
       // Use standard model for text-only prompts
       completion = await openai.chat.completions.create({
         model: "gpt-4",
-        messages: [
-          systemMessage,
-          { role: "user" as const, content: message },
-        ],
+        messages: [systemMessage, { role: "user" as const, content: message }],
         max_tokens: 1000,
         response_format: { type: "json_object" },
       });
     }
 
     const content = completion.choices[0].message.content;
-    
+
     // Parse the response as JSON
     let parsedContent: ChatResponse;
     try {
@@ -120,7 +117,7 @@ Your response must be a valid JSON object with the following structure:
       console.error("Error parsing OpenAI response:", error);
       return NextResponse.json(
         { error: "Failed to parse OpenAI response" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -129,7 +126,7 @@ Your response must be a valid JSON object with the following structure:
     console.error("Error in chat route:", error);
     return NextResponse.json(
       { error: "An error occurred while processing your request" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
