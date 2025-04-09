@@ -1,5 +1,12 @@
 import { Button } from "@repo/design-system/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@repo/design-system/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@repo/design-system/components/ui/card";
 import { cn } from "@repo/design-system/lib/utils";
 import { ArrowRight, Sparkles } from "lucide-react";
 import Link from "next/link";
@@ -12,7 +19,8 @@ export function Welcome() {
           Welcome to <span className="text-primary">Pipelines</span>
         </h1>
         <p className="text-muted-foreground max-w-[600px]">
-          Your AI-powered pipeline management platform. Create, manage, and optimize your data pipelines with ease.
+          Your AI-powered pipeline management platform. Create, manage, and
+          optimize your data pipelines with ease.
         </p>
       </div>
 
@@ -29,7 +37,8 @@ export function Welcome() {
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">
-              Design and configure your pipeline using our visual builder or code editor.
+              Design and configure your pipeline using our visual builder or
+              code editor.
             </p>
           </CardContent>
           <CardFooter>
@@ -54,11 +63,16 @@ export function Welcome() {
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">
-              Explore our comprehensive documentation and guides to master pipeline management.
+              Explore our comprehensive documentation and guides to master
+              pipeline management.
             </p>
           </CardContent>
           <CardFooter>
-            <Button asChild variant="outline" className="w-full group-hover:bg-primary/10">
+            <Button
+              asChild
+              variant="outline"
+              className="w-full group-hover:bg-primary/10"
+            >
               <Link href="/docs">
                 Read Docs
                 <ArrowRight className="ml-2 h-4 w-4" />
@@ -69,4 +83,4 @@ export function Welcome() {
       </div>
     </div>
   );
-} 
+}

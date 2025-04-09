@@ -18,7 +18,6 @@ import track from "@/lib/track";
 import { cn } from "@repo/design-system/lib/utils";
 import { useEffect, useRef, useState } from "react";
 import { Header } from "./Header";
-import { InputPrompt } from "./InputPrompt";
 import { MainContent } from "./MainContent";
 import { ManagedBroadcast } from "./ManagedBroadcast";
 import { usePlayerPositionUpdater } from "./usePlayerPosition";
@@ -187,7 +186,6 @@ export default function Dreamshaper() {
 
           {/* Input and Broadcast Section */}
           <ManagedBroadcast />
-          <InputPrompt />
           <StreamDebugPanel />
           <StreamInfo />
         </div>

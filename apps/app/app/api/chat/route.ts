@@ -32,7 +32,7 @@ export async function POST(req: Request) {
     let imageType = "";
     if (image) {
       const buffer = await image.arrayBuffer();
-      imageBase64 = Buffer.from(buffer).toString('base64');
+      imageBase64 = Buffer.from(buffer).toString("base64");
       imageType = image.type;
     }
 
@@ -105,7 +105,7 @@ Format your response as JSON with the following structure:
 
     // Create the API request based on whether there's an image or not
     let completion;
-    
+
     if (imageBase64) {
       // With image - use vision model
       completion = await openai.chat.completions.create({
@@ -115,16 +115,16 @@ Format your response as JSON with the following structure:
           {
             role: "user" as const,
             content: [
-              { 
-                type: "text" as const, 
-                text: `User input: ${message}` 
+              {
+                type: "text" as const,
+                text: `User input: ${message}`,
               },
-              { 
-                type: "image_url" as const, 
+              {
+                type: "image_url" as const,
                 image_url: {
-                  url: `data:${imageType};base64,${imageBase64}`
-                }
-              }
+                  url: `data:${imageType};base64,${imageBase64}`,
+                },
+              },
             ],
           },
         ],

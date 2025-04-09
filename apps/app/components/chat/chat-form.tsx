@@ -46,7 +46,11 @@ export function ChatForm({ onSubmit, isLoading = false }: ChatFormProps) {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (!isLoading && e.key === "Enter" && !(e.metaKey || e.ctrlKey || e.shiftKey)) {
+    if (
+      !isLoading &&
+      e.key === "Enter" &&
+      !(e.metaKey || e.ctrlKey || e.shiftKey)
+    ) {
       e.preventDefault();
       handleSubmit(e);
     }
@@ -64,10 +68,12 @@ export function ChatForm({ onSubmit, isLoading = false }: ChatFormProps) {
   return (
     <div className="w-full max-w-2xl mx-auto">
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div className={cn(
-          "relative mx-auto flex justify-center items-center gap-2 h-14 md:h-auto md:min-h-14 md:gap-2 mt-4 mb-2 dark:bg-[#1A1A1A] bg-white md:rounded-xl py-2.5 px-3 md:py-1.5 md:px-3 w-[calc(100%-2rem)] md:w-[calc(min(100%,800px))] border-2 border-muted-foreground/10",
-          "rounded-2xl shadow-[4px_12px_16px_0px_#37373F40]"
-        )}>
+        <div
+          className={cn(
+            "relative mx-auto flex justify-center items-center gap-2 h-14 md:h-auto md:min-h-14 md:gap-2 mt-4 mb-2 dark:bg-[#1A1A1A] bg-white md:rounded-xl py-2.5 px-3 md:py-1.5 md:px-3 w-[calc(100%-2rem)] md:w-[calc(min(100%,800px))] border-2 border-muted-foreground/10",
+            "rounded-2xl shadow-[4px_12px_16px_0px_#37373F40]",
+          )}
+        >
           <div className="flex-1 relative flex items-center">
             <AutoResizeTextarea
               value={input}
@@ -91,7 +97,7 @@ export function ChatForm({ onSubmit, isLoading = false }: ChatFormProps) {
                 disabled={isLoading || (!input.trim() && !imageFile)}
                 className={cn(
                   "border-none items-center justify-center font-semibold text-xs bg-[#000000] flex disabled:bg-[#000000] disabled:opacity-80",
-                  "w-auto h-9 aspect-square rounded-md"
+                  "w-auto h-9 aspect-square rounded-md",
                 )}
               >
                 {isLoading ? (

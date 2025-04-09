@@ -29,9 +29,9 @@ export function ChatContainer() {
     setIsLoading(true);
 
     // Add user message
-    const userMessage: Message = { 
-      role: "user", 
-      content: message + (image ? " [Image uploaded]" : "") 
+    const userMessage: Message = {
+      role: "user",
+      content: message + (image ? " [Image uploaded]" : ""),
     };
     setMessages(prev => [...prev, userMessage]);
 
@@ -39,7 +39,7 @@ export function ChatContainer() {
       // Prepare the request to the chat API
       const formData = new FormData();
       formData.append("message", message);
-      
+
       if (image) {
         formData.append("image", image);
       }
@@ -55,7 +55,7 @@ export function ChatContainer() {
       }
 
       const data = await response.json();
-      
+
       // Use the handleStreamUpdate hook to update the stream with the processed prompt
       await handleStreamUpdate(message, { silent: true });
 
