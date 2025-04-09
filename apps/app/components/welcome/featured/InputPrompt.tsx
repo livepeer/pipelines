@@ -645,6 +645,13 @@ export const InputPrompt = () => {
         </Tooltip>
       )}
 
+      {/* Add subtle text when shake is enabled on mobile */}
+      {(isMobile && hasMotionPermission && !motionPermissionDenied) && (
+        <span className="text-xs text-muted-foreground/50 mr-2">
+          shake for a random prompt
+        </span>
+      )}
+
       {/* Existing submit button */}
       <Tooltip delayDuration={50}>
         <TooltipTrigger asChild>
