@@ -1,6 +1,6 @@
 "use client";
 
-import { sendKafkaEvent } from "@/app/api/metrics/kafka";
+import { sendKafkaEvent } from "@/lib/analytics/event-middleware";
 import { usePrivy } from "@/hooks/usePrivy";
 import MillicastWhepPlugin from "@millicast/videojs-whep-plugin";
 import { useSearchParams } from "next/navigation";
@@ -224,23 +224,15 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
         "stream_trace",
         {
           type: "app_receive_first_segment",
-          timestamp: Date.now(),
-          user_id: user?.id || "anonymous",
           playback_id: playbackId,
           stream_id: streamId,
           pipeline: pipelineType,
           pipeline_id: pipelineId,
           player: "videojs",
-          hostname: window.location.hostname,
-          viewer_info: {
-            ip: "",
-            user_agent: "",
-            country: "",
-            city: "",
-          },
         },
         "daydream",
         "server",
+        user || undefined,
       );
     };
     sendFirstFrameEvent();

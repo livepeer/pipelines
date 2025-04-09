@@ -24,6 +24,7 @@ import { ManagedBroadcast } from "./ManagedBroadcast";
 import { usePlayerPositionUpdater } from "./usePlayerPosition";
 import { usePrivy } from "@/hooks/usePrivy";
 import useMount from "@/hooks/useMount";
+import { sendBeaconEvent } from "@/lib/analytics/event-middleware";
 
 export default function Dreamshaper() {
   useInitialization();
@@ -37,7 +38,6 @@ export default function Dreamshaper() {
   const { setLastSubmittedPrompt, setHasSubmittedPrompt } = usePromptStore();
   const { user, authenticated } = usePrivy();
   const { isFullscreen } = useFullscreenStore();
-  const { isMobile } = useMobileStore();
   const playerRef = useRef<HTMLDivElement>(null);
 
   usePlayerPositionUpdater(playerRef);
@@ -61,60 +61,46 @@ export default function Dreamshaper() {
   }, [stream, live]);
 
   useEffect(() => {
-    let pageLoadTime = Date.now();
-
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+    // Track page unload events
+    const handleUnload = () => {
       setIsRefreshing(true);
 
       const eventData = {
         type: "app_user_page_unload",
-        user_id: user?.id || "anonymous",
         is_authenticated: authenticated,
         stream_id: stream?.id,
         playback_id: stream?.output_playback_id,
-        session_duration_ms: Date.now() - pageLoadTime,
+        pipeline_id: pipeline?.id,
         event_type: "unload",
       };
 
-      if (navigator.sendBeacon) {
-        const blob = new Blob(
-          [
-            JSON.stringify({
-              eventType: "stream_trace",
-              data: eventData,
-              app: "daydream",
-              host: window.location.hostname,
-            }),
-          ],
-          { type: "application/json" },
-        );
-
-        navigator.sendBeacon("/api/metrics/beacon", blob);
-      }
+      sendBeaconEvent(
+        "stream_trace",
+        eventData,
+        "daydream",
+        window.location.hostname,
+        user || undefined,
+      );
     };
 
     const handleVisibilityChange = () => {
       if (document.visibilityState === "hidden" && !isRefreshing) {
-        // Commented for now - if we ever want to track page leave events
-        /*const eventData = {
-          type: "app_user_page_leave",
-          user_id: user?.id || "anonymous",
+        const eventData = {
+          type: "app_user_page_visibility_change",
           is_authenticated: authenticated,
-          stream_id: streamId,
-          playback_id: outputPlaybackId,
-          session_duration_ms: Date.now() - pageLoadTime,
-          event_type: "leave",
+          stream_id: stream?.id,
+          playback_id: stream?.output_playback_id,
+          pipeline_id: pipeline?.id,
+          event_type: "visibility_change",
         };
-        if (navigator.sendBeacon) {
-          const blob = new Blob([JSON.stringify({
-            eventType: "stream_trace",
-            data: eventData,
-            app: "daydream",
-            host: window.location.hostname,
-          })], { type: "application/json" });
-          
-          navigator.sendBeacon("/api/metrics/beacon", blob);
-        }*/
+
+        sendBeaconEvent(
+          "stream_trace",
+          eventData,
+          "daydream",
+          window.location.hostname,
+          user || undefined,
+        );
       }
 
       if (document.visibilityState === "visible") {
@@ -122,11 +108,11 @@ export default function Dreamshaper() {
       }
     };
 
-    window.addEventListener("beforeunload", handleBeforeUnload);
+    window.addEventListener("beforeunload", handleUnload);
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
-      window.removeEventListener("beforeunload", handleBeforeUnload);
+      window.removeEventListener("beforeunload", handleUnload);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, [
@@ -134,6 +120,7 @@ export default function Dreamshaper() {
     user,
     stream?.id,
     stream?.output_playback_id,
+    pipeline?.id,
     isRefreshing,
   ]);
 
@@ -189,6 +176,7 @@ export default function Dreamshaper() {
               className={cn(
                 "w-full max-w-[calc(min(100%,calc((100vh-16rem)*16/9)))] mx-auto md:aspect-video aspect-square bg-sidebar rounded-2xl overflow-hidden relative",
                 isFullscreen && "w-full h-full max-w-none rounded-none",
+                "min-w-[596px]",
               )}
             >
               <MainContent />

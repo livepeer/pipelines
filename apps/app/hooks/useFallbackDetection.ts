@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { sendKafkaEvent } from "@/lib/analytics/event-middleware";
+import { usePrivy } from "@/hooks/usePrivy";
 
-const TIME_TO_FALLBACK_VIDEOJS_MS = 10000;
+const TIME_TO_FALLBACK_VIDEOJS_MS = 12000;
 /**
  * This hook tracks errors and determines when to switch to the VideoJS fallback player
  * based on error patterns and video playback status.
@@ -9,6 +11,25 @@ export const useFallbackDetection = (playbackId: string) => {
   const [useFallbackPlayer, setUseFallbackPlayer] = useState(false);
   const lastErrorTimeRef = useRef<number | null>(null);
   const errorIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const { user } = usePrivy();
+
+  const trackFallbackEvent = useCallback(
+    (reason: string, errorDetails?: string) => {
+      sendKafkaEvent(
+        "stream_trace",
+        {
+          type: "app_player_fallback_to_videojs",
+          playback_id: playbackId,
+          reason: reason,
+          error_details: errorDetails || "",
+        },
+        "daydream",
+        "server",
+        user || undefined,
+      );
+    },
+    [playbackId, user],
+  );
 
   const handleError = useCallback(
     (error: any) => {
@@ -32,6 +53,7 @@ export const useFallbackDetection = (playbackId: string) => {
           "Failed to connect to peer. Switching to VideoJS fallback player.",
         );
         setUseFallbackPlayer(true);
+        trackFallbackEvent("peer_connection_failure", errorMessage);
         return;
       }
 
@@ -55,6 +77,10 @@ export const useFallbackDetection = (playbackId: string) => {
           if (timeSinceLastError > TIME_TO_FALLBACK_VIDEOJS_MS && !isPlaying) {
             console.warn("Switching to VideoJS fallback player.");
             setUseFallbackPlayer(true);
+            trackFallbackEvent(
+              "timeout_error_reached",
+              `Last error time: ${lastErrorTime}`,
+            );
 
             if (errorIntervalRef.current) {
               clearInterval(errorIntervalRef.current);
@@ -69,7 +95,7 @@ export const useFallbackDetection = (playbackId: string) => {
         }, 1000);
       }
     },
-    [useFallbackPlayer],
+    [useFallbackPlayer, trackFallbackEvent],
   );
 
   useEffect(() => {
@@ -81,5 +107,5 @@ export const useFallbackDetection = (playbackId: string) => {
     };
   }, []);
 
-  return { useFallbackPlayer, handleError };
+  return { useFallbackPlayer, handleError, trackFallbackEvent };
 };

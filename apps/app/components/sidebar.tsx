@@ -38,7 +38,7 @@ type NavItem = {
   items?: { title: string; url: string }[];
 };
 
-const Logo = ({ className }: { className?: string }) => (
+export const Logo = ({ className }: { className?: string }) => (
   <svg
     width="23"
     height="25"

@@ -25,7 +25,7 @@ const inter = Inter({ subsets: ["latin"] });
 export const Header = () => {
   const { authenticated } = usePrivy();
   const { isFullscreen } = useFullscreenStore();
-  const { isMobile } = useMobileStore();
+  const { isMobile, isMinHeightScreen } = useMobileStore();
   const { stream, streamUrl } = useDreamshaperStore();
   const { live } = useStreamStatus(stream?.id);
   const { hasSubmittedPrompt } = usePromptStore();
@@ -38,6 +38,8 @@ export const Header = () => {
           "flex items-start mt-4 w-full max-w-[calc(min(100%,calc((100vh-16rem)*16/9)))] mx-auto relative",
           isFullscreen && "hidden",
           isMobile ? "justify-center px-3 py-3" : "justify-between py-3",
+          isMinHeightScreen && "flex-col gap-6",
+          "min-w-[596px]",
         )}
       >
         {isMobile && (
@@ -50,6 +52,7 @@ export const Header = () => {
           className={cn(
             "flex flex-col gap-2",
             isMobile ? "text-center items-center" : "text-left items-start",
+            "",
           )}
         >
           <div
@@ -79,7 +82,12 @@ export const Header = () => {
 
         {/* Header buttons */}
         {!isMobile && !isFullscreen && (
-          <div className="absolute bottom-3 right-0 flex gap-2">
+          <div
+            className={cn(
+              "absolute bottom-3 right-0 flex gap-2",
+              isMinHeightScreen && "relative",
+            )}
+          >
             <div className="flex items-center gap-2">
               {/* Only show clip button when stream is live */}
               {live && stream?.output_playback_id && streamUrl && (

@@ -115,7 +115,9 @@ export default function CameraAccess() {
           currentStep === "camera" && "cursor-pointer",
         )}
         onClick={
-          currentStep === "camera" ? handleRequestMediaPermissions : undefined
+          cameraPermission !== "granted"
+            ? handleRequestMediaPermissions
+            : undefined
         }
       >
         <div
@@ -140,7 +142,7 @@ export default function CameraAccess() {
               you click &quot;record&quot;
             </p>
           </div>
-          {cameraPermission === "granted" || currentStep === "prompt" ? (
+          {cameraPermission === "granted" ? (
             <div className="bg-[#95B4BE] shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] rounded-md px-2 py-2 text-black font-inter text-[13px] leading-[1.21] flex items-center justify-center gap-2 animate-[bounce_0.5s_ease-in-out]">
               <CheckIcon className="w-4 h-4 stroke-[3px]" />
             </div>

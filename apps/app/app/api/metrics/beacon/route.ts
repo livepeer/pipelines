@@ -1,5 +1,29 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sendKafkaEvent } from "../kafka";
+import { getAppConfig } from "@/lib/env";
+
+async function getGeoData(ip: string) {
+  try {
+    const response = await fetch(`http://ip-api.com/json/${ip}`);
+    const data = await response.json();
+    return {
+      city: data.city,
+      region: data.regionName,
+      country: data.countryCode,
+      latitude: data.lat,
+      longitude: data.lon,
+    };
+  } catch (error) {
+    console.warn("Failed to get geolocation data:", error);
+    return {
+      city: "",
+      region: "",
+      country: "",
+      latitude: "",
+      longitude: "",
+    };
+  }
+}
 
 // handle beacon API requests
 // during page unload events when standard fetch requests might be cancelled
@@ -15,7 +39,42 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    await sendKafkaEvent(eventType, data, app, host);
+    const forwardedFor = request.headers.get("x-forwarded-for");
+    const appConfig = getAppConfig(request.nextUrl.searchParams);
+    const ip =
+      appConfig.environment === "dev"
+        ? "development.fake.ip"
+        : forwardedFor
+          ? forwardedFor.split(",")[0].trim()
+          : "";
+
+    const userAgent = request.headers.get("user-agent") || "";
+
+    const geoData =
+      ip && ip !== "127.0.0.1" && ip !== "::1"
+        ? await getGeoData(ip)
+        : {
+            city: "",
+            region: "",
+            country: "",
+            latitude: "",
+            longitude: "",
+          };
+
+    const { viewer_info, broadcaster_info, ...cleanData } = data;
+
+    const enrichedData = {
+      ...cleanData,
+      user_info: {
+        ip,
+        country: geoData.country || "",
+        city: geoData.city || "",
+        region: geoData.region || "",
+        user_agent: userAgent,
+      },
+    };
+
+    await sendKafkaEvent(eventType, enrichedData, app, host);
 
     return NextResponse.json({ status: "ok" });
   } catch (error) {

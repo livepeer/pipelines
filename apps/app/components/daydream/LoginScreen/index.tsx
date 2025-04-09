@@ -153,36 +153,38 @@ export default function LoginScreen({
           Transform your video
         </h1>
 
-        <div className="relative h-[calc(40dvh)] sm:max-h-none sm:h-[calc(100dvh-200px)] overflow-hidden shadow-[12px_24px_33px_0px_#0913168A] rounded-[26px]">
-          <div
-            className="absolute -top-[209.5px] -right-[209.5px] w-[419px] h-[419px] rounded-full mix-blend-screen z-10"
-            style={{
-              background:
-                "radial-gradient(circle, rgba(45, 128, 148, 0.79) 0%, rgba(45, 128, 148, 0.3) 35%, rgb(84 163 182 / 0%) 70%, rgba(84, 163, 182, 0) 100%)",
-            }}
-          />
-          <div
-            className="absolute -top-[159.5px] -left-[259.5px] w-[419px] h-[419px] rounded-full mix-blend-screen z-10"
-            style={{
-              background:
-                "radial-gradient(circle, rgba(45, 128, 148, 0.79) 0%, rgba(45, 128, 148, 0.3) 35%, rgb(84 163 182 / 0%) 70%, rgba(84, 163, 182, 0) 100%)",
-            }}
-          />
-          <div
-            className="absolute -bottom-[209.5px] -left-[209.5px] w-[419px] h-[419px] rounded-full mix-blend-screen z-10"
-            style={{
-              background:
-                "radial-gradient(circle, rgba(45, 128, 148, 0.39) 0%, rgba(45, 128, 148, 0.1) 35%, rgb(84 163 182 / 0%) 70%, rgba(84, 163, 182, 0) 100%)",
-            }}
-          />
-          <video
-            src="/daydream.mp4"
-            autoPlay
-            muted
-            loop
-            playsInline
-            className="w-full h-full rounded-[26px]"
-          />
+        <div className="flex flex-col items-center justify-center w-full h-full">
+          <div className="relative w-fit overflow-hidden shadow-[12px_24px_33px_0px_#0913168A] rounded-[26px] items-center sm:-mt-10">
+            <div
+              className="absolute -top-[209.5px] -right-[209.5px] w-[419px] h-[419px] rounded-full mix-blend-screen z-10"
+              style={{
+                background:
+                  "radial-gradient(circle, rgba(45, 128, 148, 0.79) 0%, rgba(45, 128, 148, 0.3) 35%, rgb(84 163 182 / 0%) 70%, rgba(84, 163, 182, 0) 100%)",
+              }}
+            />
+            <div
+              className="absolute -top-[159.5px] -left-[259.5px] w-[419px] h-[419px] rounded-full mix-blend-screen z-10"
+              style={{
+                background:
+                  "radial-gradient(circle, rgba(45, 128, 148, 0.79) 0%, rgba(45, 128, 148, 0.3) 35%, rgb(84 163 182 / 0%) 70%, rgba(84, 163, 182, 0) 100%)",
+              }}
+            />
+            <div
+              className="absolute -bottom-[209.5px] -left-[209.5px] w-[419px] h-[419px] rounded-full mix-blend-screen z-10"
+              style={{
+                background:
+                  "radial-gradient(circle, rgba(45, 128, 148, 0.39) 0%, rgba(45, 128, 148, 0.1) 35%, rgb(84 163 182 / 0%) 70%, rgba(84, 163, 182, 0) 100%)",
+              }}
+            />
+            <video
+              src="/daydream.mp4"
+              autoPlay
+              muted
+              loop
+              playsInline
+              className="w-full h-full max-h-[calc(100dvh-200px)] rounded-[26px]"
+            />
+          </div>
         </div>
       </div>
     </div>
