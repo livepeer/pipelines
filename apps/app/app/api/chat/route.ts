@@ -19,11 +19,16 @@ function extractJsonFromText(text: string): ChatResponse | null {
       if (jsonMatch) {
         return JSON.parse(jsonMatch[0]);
       }
-      
+
       // If no JSON found, create a default response
       return {
-        content: "I've analyzed your request and created a prompt based on your input.",
-        suggestions: ["Try adding more details", "Try specifying a style", "Try mentioning a specific artist"]
+        content:
+          "I've analyzed your request and created a prompt based on your input.",
+        suggestions: [
+          "Try adding more details",
+          "Try specifying a style",
+          "Try mentioning a specific artist",
+        ],
       };
     } catch (extractError) {
       console.error("Failed to extract JSON from text:", extractError);
@@ -41,7 +46,7 @@ export async function POST(req: Request) {
     if (!message) {
       return NextResponse.json(
         { error: "Message is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -49,7 +54,7 @@ export async function POST(req: Request) {
     if (!openaiApiKey) {
       return NextResponse.json(
         { error: "OpenAI API key is not set" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -103,7 +108,7 @@ DO NOT include any text outside of this JSON structure. DO NOT start with "I'm s
     };
 
     let completion;
-    
+
     if (imageBase64) {
       // Use vision model for image analysis
       completion = await openai.chat.completions.create({
@@ -129,33 +134,30 @@ DO NOT include any text outside of this JSON structure. DO NOT start with "I'm s
       // Use standard model for text-only prompts
       completion = await openai.chat.completions.create({
         model: "gpt-4",
-        messages: [
-          systemMessage,
-          { role: "user" as const, content: message },
-        ],
+        messages: [systemMessage, { role: "user" as const, content: message }],
         max_tokens: 1000,
       });
     }
 
     const content = completion.choices[0].message.content;
-    
+
     // Extract JSON from the response
     const parsedContent = extractJsonFromText(content || "{}");
-    
+
     if (!parsedContent) {
       console.error("Failed to parse OpenAI response:", content);
       return NextResponse.json(
         { error: "Failed to parse OpenAI response" },
-        { status: 500 }
+        { status: 500 },
       );
     }
-    
+
     // Validate the response structure
     if (!parsedContent.content || !Array.isArray(parsedContent.suggestions)) {
       console.error("Invalid response structure:", parsedContent);
       return NextResponse.json(
         { error: "Invalid response structure from OpenAI" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -164,7 +166,7 @@ DO NOT include any text outside of this JSON structure. DO NOT start with "I'm s
     console.error("Error in chat route:", error);
     return NextResponse.json(
       { error: "An error occurred while processing your request" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
