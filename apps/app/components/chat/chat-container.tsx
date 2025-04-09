@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useRef, useEffect } from "react";
 import { ChatForm } from "./chat-form";
 import { ChatMessage } from "./chat-message";

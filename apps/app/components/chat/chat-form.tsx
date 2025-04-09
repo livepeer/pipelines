@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useRef } from "react";
 import { AutoResizeTextarea } from "../ui/auto-resize-textarea";
 import { Button } from "../ui/button";
