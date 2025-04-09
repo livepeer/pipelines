@@ -98,13 +98,13 @@ const useShakeDetection = (onShake: () => void) => {
 
 // Add these prompts near the top of the file
 const SHAKE_PROMPTS = [
-  "Create a surreal dreamscape",
-  "Design a mystical creature",
-  "Paint a cosmic landscape",
-  "Imagine a futuristic city",
-  "Show me an enchanted garden",
-  "Generate an alien world",
-  "Create an underwater kingdom"
+  "a surreal dreamscape --quality 3",
+  "a mystical creature --creativity 0.4",
+  "a cosmic landscape",
+  "a futuristic city",
+  "an enchanted garden",
+  "an alien world",
+  "an underwater kingdom"
 ];
 
 export const InputPrompt = () => {
@@ -323,24 +323,52 @@ export const InputPrompt = () => {
     }
   };
 
-  // Add shake detection
-  useShakeDetection(handleShake);
+  const [hasMotionPermission, setHasMotionPermission] = useState(false);
 
-  // Add iOS permission request
-  useEffect(() => {
-    if (isMobile && typeof DeviceMotionEvent !== 'undefined' && 
+  // Replace the existing iOS permission useEffect with this function
+  const requestMotionPermission = async () => {
+    if (typeof DeviceMotionEvent !== 'undefined' && 
         // @ts-ignore - iOS specific request method
         typeof DeviceMotionEvent.requestPermission === 'function') {
-      // @ts-ignore
-      DeviceMotionEvent.requestPermission()
-        .then((permissionState: string) => {
-          if (permissionState === 'granted') {
-            // Permission granted
-          }
-        })
-        .catch(console.error);
+      try {
+        // @ts-ignore
+        const permissionState = await DeviceMotionEvent.requestPermission();
+        setHasMotionPermission(permissionState === 'granted');
+      } catch (error) {
+        console.error('Error requesting motion permission:', error);
+      }
+    } else {
+      // For non-iOS devices that don't need explicit permission
+      setHasMotionPermission(true);
     }
-  }, [isMobile]);
+  };
+
+  // Only enable shake detection after we have permission
+  useEffect(() => {
+    if (hasMotionPermission) {
+      useShakeDetection(handleShake);
+    }
+  }, [hasMotionPermission]);
+
+  // Add this near the start of your return statement, before the main input UI
+  if (isMobile && !hasMotionPermission) {
+    return (
+      <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
+        <div className="bg-white dark:bg-zinc-900 p-6 rounded-lg max-w-sm mx-4 text-center">
+          <h3 className="text-lg font-semibold mb-2">Enable Shake to Generate</h3>
+          <p className="text-sm text-muted-foreground mb-4">
+            Allow motion access to generate images by shaking your device
+          </p>
+          <Button
+            onClick={requestMotionPermission}
+            className="w-full"
+          >
+            Enable Shake Feature
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
