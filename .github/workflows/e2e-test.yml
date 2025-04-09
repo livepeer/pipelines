@@ -59,7 +59,7 @@ jobs:
         id: playwright
         env:
           TEST_APP_URL: ${{ env.TEST_APP_URL }}
-        run: pnpm --filter app-e2e test:prod
+        run: pnpm --filter app-e2e test
         continue-on-error: true
 
       - name: Upload test screenshots for preview

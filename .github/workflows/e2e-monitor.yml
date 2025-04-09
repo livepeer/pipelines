@@ -50,7 +50,7 @@ jobs:
 
       - name: Run Playwright tests for staging
         id: playwright
-        run: pnpm --filter app-e2e test:prod
+        run: pnpm --filter app-e2e test
         continue-on-error: true
 
       - name: Upload test screenshots for staging
@@ -102,7 +102,7 @@ jobs:
 
       - name: Run Playwright tests for production
         id: playwright
-        run: pnpm --filter app-e2e test:prod
+        run: pnpm --filter app-e2e test
         continue-on-error: true
 
       - name: Upload test screenshots for production
