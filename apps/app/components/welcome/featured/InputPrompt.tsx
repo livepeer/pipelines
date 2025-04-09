@@ -34,8 +34,6 @@ import { MAX_PROMPT_LENGTH, useValidateInput } from "./useValidateInput";
 import { Separator } from "@repo/design-system/components/ui/separator";
 import { usePrivy } from "@/hooks/usePrivy";
 
-const PROMPT_PLACEHOLDER = "Enter your prompt...";
-
 // Define type for command options
 type CommandOption = {
   id: string;
@@ -394,6 +392,13 @@ export const InputPrompt = () => {
     }
   };
 
+  const getPlaceholderText = () => {
+    if (isMobile && hasMotionPermission && !motionPermissionDenied) {
+      return "Shake for a random prompt or write your own";
+    }
+    return "Enter your prompt...";
+  };
+
   return (
     <div
       className={cn(
@@ -429,7 +434,7 @@ export const InputPrompt = () => {
               }
             }}
           >
-            <span>{lastSubmittedPrompt || PROMPT_PLACEHOLDER}</span>
+            <span>{lastSubmittedPrompt || getPlaceholderText()}</span>
             {isInputHovered && lastSubmittedPrompt && (
               <Tooltip delayDuration={0}>
                 <TooltipTrigger asChild>
@@ -643,13 +648,6 @@ export const InputPrompt = () => {
             )}
           </TooltipContent>
         </Tooltip>
-      )}
-
-      {/* Add subtle text when shake is enabled on mobile */}
-      {(isMobile && hasMotionPermission && !motionPermissionDenied) && (
-        <span className="text-xs text-muted-foreground/50 mr-2">
-          shake for a random prompt
-        </span>
       )}
 
       {/* Existing submit button */}
