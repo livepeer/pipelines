@@ -59,6 +59,8 @@ jobs:
         id: playwright
         env:
           TEST_APP_URL: ${{ env.TEST_APP_URL }}
+          TEST_EMAIL: ${{ secrets.TEST_EMAIL }}
+          TEST_OTP_CODE: ${{ secrets.TEST_OTP_CODE }}
         run: pnpm --filter app-e2e test
         continue-on-error: true
 
