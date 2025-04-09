@@ -111,6 +111,7 @@ function DaydreamRenderer() {
 
         await Promise.all([
           identifyUser(user.id, distinctId || "", user),
+
           // TODO: only submit to Hubspot on production
           isNewUser ? submitToHubspot(user) : Promise.resolve(),
         ]);
@@ -126,7 +127,7 @@ function DaydreamRenderer() {
     };
 
     initUser();
-  }, []);
+  }, [user]);
 
   if (isInitializing) {
     return (

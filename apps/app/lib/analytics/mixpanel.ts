@@ -1,3 +1,4 @@
+import { v4 as uuidv4 } from "uuid";
 import { User as PrivyUser } from "@/hooks/usePrivy";
 
 export async function identifyUser(
@@ -54,25 +55,25 @@ export async function identifyUser(
   }
 }
 
-export async function handleDistinctId(user: any) {
+export function handleDistinctId() {
   let distinctId = localStorage.getItem("mixpanel_distinct_id");
   if (!distinctId) {
-    distinctId = crypto.randomUUID();
+    distinctId = uuidv4();
     localStorage.setItem("mixpanel_distinct_id", distinctId);
   }
 
   return distinctId;
 }
 
-export async function handleSessionId() {
-  let sessionId = localStorage.getItem("mixpanel_session_id");
+export function handleSessionId() {
+  let sessionId = sessionStorage.getItem("mixpanel_session_id");
   if (!sessionId) {
-    sessionId = crypto.randomUUID();
+    sessionId = uuidv4();
     console.log(
       "Initializing Mixpanel Session: sessionId is null, generating new sessionId",
       sessionId,
     );
-    localStorage.setItem("mixpanel_session_id", sessionId);
+    sessionStorage.setItem("mixpanel_session_id", sessionId);
   }
 
   return sessionId;

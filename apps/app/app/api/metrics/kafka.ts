@@ -1,5 +1,6 @@
 "use server";
 
+import { v4 as uuidv4 } from "uuid";
 import { Kafka } from "kafkajs";
 import { serverConfig } from "@/lib/serverEnv";
 
@@ -58,7 +59,7 @@ export async function sendKafkaEvent(
   });
 
   const event: NetworkEvent = {
-    id: crypto.randomUUID(),
+    id: uuidv4(),
     type: eventType,
     sender: {
       type: "app",
