@@ -24,7 +24,10 @@ export default function BentoGrids() {
           Explore work from the most talented and accomplished designers ready
           to take on your next project
         </h2>
-        <GridSet configuration={GridSetConfiguration.first}>
+        <GridSet
+          configuration={GridSetConfiguration.first}
+          className="mt-10 sm:mt-16"
+        >
           <GridItem src="/explore-03.mp4" className="lg:row-span-2" />
           <GridItem src="/explore-02.mov" className="max-lg:row-start-1" />
           <GridItem
@@ -43,11 +46,11 @@ export default function BentoGrids() {
           <GridItem src="/explore-02.mov" className="lg:row-span-2" />
         </GridSet>
         <GridSet configuration={GridSetConfiguration.third}>
-          <GridItem src="/explore-03.mp4" className="lg:row-span-2" />
-          <GridItem src="/explore-02.mov" className="max-lg:row-start-1" />
+          <GridItem src="/explore-02.mov" className="lg:row-span-2" />
+          <GridItem src="/daydream.mp4" className="max-lg:row-start-1 h-80" />
           <GridItem
             src="/explore-01.mov"
-            className="max-lg:row-start-3 lg:col-start-2 lg:row-start-2"
+            className="max-lg:row-start-3 lg:col-start-2 lg:row-start-2 h-80"
           />
           <GridItem src="/daydream.mp4" className="lg:row-span-2" />
         </GridSet>
@@ -69,26 +72,21 @@ function GridItem({ src, className }: { src: string; className?: string }) {
 }
 
 enum GridSetConfiguration {
-  first = "9fr_5fr_6fr",
-  second = "5fr_6fr_9fr",
-  third = "6fr_9fr_5fr",
+  first = "lg:grid-cols-[9fr_5fr_6fr]",
+  second = "lg:grid-cols-[5fr_6fr_9fr]",
+  third = "lg:grid-cols-[6fr_9fr_5fr]",
 }
 
 type GridSetProps = {
   children: React.ReactNode;
-  configuration?: GridSetConfiguration;
+  configuration: GridSetConfiguration;
+  className?: string;
 };
 
-function GridSet({
-  children,
-  configuration = GridSetConfiguration.first,
-}: GridSetProps) {
+function GridSet({ children, configuration, className }: GridSetProps) {
   return (
     <div
-      className={cn(
-        "mt-10 grid gap-4 sm:mt-16",
-        `lg:grid-cols-[${configuration}] lg:grid-rows-2`,
-      )}
+      className={cn("mt-4 grid gap-4 lg:grid-rows-2", configuration, className)}
     >
       {children}
     </div>
