@@ -18,10 +18,10 @@ interface ChatFormProps {
   placeholder?: string;
 }
 
-export function ChatForm({ 
-  onSubmit, 
+export function ChatForm({
+  onSubmit,
   isLoading = false,
-  placeholder = "Describe what you want to visualize..."
+  placeholder = "Describe what you want to visualize...",
 }: ChatFormProps) {
   const [input, setInput] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);

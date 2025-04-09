@@ -158,7 +158,7 @@ export function ChatContainer() {
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
             <p className="text-sm">
-              {promptMode === "assisted" 
+              {promptMode === "assisted"
                 ? "Describe what you want to visualize and I'll help you create the perfect prompt."
                 : "Enter your prompt directly to generate an image."}
             </p>
@@ -169,7 +169,9 @@ export function ChatContainer() {
             key={index}
             role={message.role}
             content={message.content}
-            suggestions={promptMode === "assisted" ? message.suggestions : undefined}
+            suggestions={
+              promptMode === "assisted" ? message.suggestions : undefined
+            }
             onSuggestionClick={handleSuggestionClick}
             onFeedback={
               message.role === "assistant" && promptMode === "assisted"
@@ -181,12 +183,14 @@ export function ChatContainer() {
         <div ref={messagesEndRef} />
       </div>
       <div className="mt-auto px-4 pb-4">
-        <ChatForm 
-          onSubmit={handleSubmit} 
+        <ChatForm
+          onSubmit={handleSubmit}
           isLoading={isLoading}
-          placeholder={promptMode === "assisted" 
-            ? "Describe what you want to visualize..." 
-            : "Enter your prompt..."}
+          placeholder={
+            promptMode === "assisted"
+              ? "Describe what you want to visualize..."
+              : "Enter your prompt..."
+          }
         />
       </div>
     </div>
