@@ -1027,35 +1027,25 @@ const addEffectsToStore = (
         if (peerConnection) {
           const currentAudioTrack = mediaStream.getAudioTracks()[0];
 
-          if (!audio && microphoneTrack) {
-            // use silent track
-            if (currentAudioTrack && currentAudioTrack !== microphoneTrack) {
-              currentAudioTrack.enabled = true;
-            } else {
-              // swap in a silent track
-              const silentTrack = createSilentAudioTrack();
+          if (audio && microphoneTrack) {
+            // For testing: use the tone track when audio is enabled
+            if (currentAudioTrack === microphoneTrack) {
+              const toneTrack = createSilentAudioTrack();
+              
+              mediaStream.removeTrack(currentAudioTrack);
+              mediaStream.addTrack(toneTrack);
 
-              if (currentAudioTrack) {
-                mediaStream.removeTrack(currentAudioTrack);
-              }
-              mediaStream.addTrack(silentTrack);
-
-              // Replace in peer connection
               const audioSender = peerConnection
                 .getSenders()
                 .find((s) => s.track && s.track.kind === "audio");
               if (audioSender) {
-                await audioSender.replaceTrack(silentTrack);
+                await audioSender.replaceTrack(toneTrack);
               }
             }
-          } else if (audio && microphoneTrack) {
-            if (currentAudioTrack === microphoneTrack) {
-              microphoneTrack.enabled = true;
-            } else {
-              // swap back to microphone track
-              if (currentAudioTrack) {
-                mediaStream.removeTrack(currentAudioTrack);
-              }
+          } else if (!audio && microphoneTrack) {
+            // When audio is disabled, add back the original microphone track but keep it disabled
+            if (currentAudioTrack && currentAudioTrack !== microphoneTrack) {
+              mediaStream.removeTrack(currentAudioTrack);
               mediaStream.addTrack(microphoneTrack);
 
               const audioSender = peerConnection
@@ -1063,7 +1053,7 @@ const addEffectsToStore = (
                 .find((s) => s.track && s.track.kind === "audio");
               if (audioSender) {
                 await audioSender.replaceTrack(microphoneTrack);
-                microphoneTrack.enabled = true;
+                microphoneTrack.enabled = false;
               }
             }
           }
@@ -1290,9 +1280,9 @@ const addEffectsToStore = (
 };
 
 /**
- * Creates a silent audio track to use when audio is muted but we still want
- * to send an audio track. This helps maintain connection stability while muted.
- * @returns MediaStreamTrack A silent audio track
+ * Creates a stable audio tone track that can be used for testing audio.
+ * This generates a 440Hz sine wave (an A note) with low volume.
+ * @returns MediaStreamTrack A tone audio track
  */
 export const createSilentAudioTrack = (): MediaStreamTrack => {
   const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();

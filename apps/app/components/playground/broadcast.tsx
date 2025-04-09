@@ -146,6 +146,7 @@ export function BroadcastWithControls({ className }: { className?: string }) {
       video={true}
       aspectRatio={16 / 9}
       ingestUrl={ingestUrl}
+      silentAudioTrack={true}
       {...({
         iceServers: {
           urls: [
