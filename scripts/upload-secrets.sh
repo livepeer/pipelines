@@ -2,11 +2,6 @@
 
 REPO="livepeer/pipelines"
 
-# for secret in $(gh secret list --repo "$REPO" --json name -q '.[].name'); do
-#     echo "Deleting secret: $secret"
-#     gh secret delete "$secret" --repo "$REPO"
-# done
-
 while IFS='=' read -r key value
 do
   clean_value=$(echo "$value" | sed -e 's/^"//' -e 's/"$//' -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')

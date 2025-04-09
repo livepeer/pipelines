@@ -4,10 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "playwright test",
-    "test:ui": "playwright test --ui",
-    "test:headed": "playwright test --headed",
-    "codegen": "playwright codegen"
+    "test": "pnpm test:dev",
+    "test:dev": "playwright test -c playwright.config.dev.ts",
+    "test:prod": "playwright test -c playwright.config.prod.ts"
   },
   "keywords": [],
   "author": "",
