@@ -18,13 +18,13 @@ import track from "@/lib/track";
 import { cn } from "@repo/design-system/lib/utils";
 import { useEffect, useRef, useState } from "react";
 import { Header } from "./Header";
-import { InputPrompt } from "./InputPrompt";
 import { MainContent } from "./MainContent";
 import { ManagedBroadcast } from "./ManagedBroadcast";
 import { usePlayerPositionUpdater } from "./usePlayerPosition";
 import { usePrivy } from "@/hooks/usePrivy";
 import useMount from "@/hooks/useMount";
 import { sendBeaconEvent } from "@/lib/analytics/event-middleware";
+import { ChatContainer } from "@/components/chat/chat-container";
 
 export default function Dreamshaper() {
   useInitialization();
@@ -165,12 +165,7 @@ export default function Dreamshaper() {
         <div className="relative flex flex-col min-h-screen overflow-y-auto">
           <Header />
 
-          <div
-            className={cn(
-              "px-4 my-4 flex items-center justify-center md:mb-0 md:my-2 mb-5",
-              isFullscreen && "fixed inset-0 z-[9999] p-0 m-0",
-            )}
-          >
+          <div className="flex flex-col md:flex-row gap-4 px-4 my-4 items-center justify-center md:mb-0 md:my-2 mb-5">
             <div
               ref={playerRef}
               className={cn(
@@ -181,11 +176,30 @@ export default function Dreamshaper() {
             >
               <MainContent />
             </div>
+
+            {/* Chat Interface */}
+            <div
+              className={cn(
+                "w-full md:w-1/3 max-w-md bg-background/50 backdrop-blur-sm rounded-2xl shadow-lg",
+                "border border-muted-foreground/10",
+                "h-[calc(100vh-16rem)] overflow-hidden flex flex-col",
+                "transition-all duration-300 ease-in-out",
+              )}
+            >
+              <div className="px-4 py-3 border-b border-muted-foreground/10">
+                <h2 className="text-lg font-medium">Chat Assistant</h2>
+                <p className="text-sm text-muted-foreground">
+                  I&apos;ll help you create the perfect prompt
+                </p>
+              </div>
+              <div className="flex-1 overflow-hidden">
+                <ChatContainer />
+              </div>
+            </div>
           </div>
 
           {/* Input and Broadcast Section */}
           <ManagedBroadcast />
-          <InputPrompt />
           <StreamDebugPanel />
           <StreamInfo />
         </div>
