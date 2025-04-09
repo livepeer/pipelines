@@ -46,33 +46,22 @@ jobs:
         uses: aaimio/vercel-preview-url-action@v2.2.0
         id: preview
         with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
 
       - name: Set TEST_APP_URL from preview URL
         if: github.event_name == 'issue_comment' && matrix.env == 'preview'
         run: echo "TEST_APP_URL=${{ steps.preview.outputs.vercel_preview_url }}" >> $GITHUB_ENV
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 22
 
       - name: Install pnpm
         uses: pnpm/action-setup@v2
         with:
           version: 9
 
-      - name: Get pnpm store directory
-        id: pnpm-cache
-        run: echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
-
-      - name: Setup pnpm cache
-        uses: actions/cache@v3
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
+          node-version: 22
+          cache: "pnpm"
 
       - name: Install dependencies
         run: pnpm install --filter app-e2e...
