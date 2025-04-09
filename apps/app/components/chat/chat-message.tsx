@@ -23,24 +23,24 @@ export function ChatMessage({
   return (
     <div
       className={cn(
-        "flex flex-col space-y-2",
-        role === "user" ? "items-end" : "items-start",
+        "group flex flex-col space-y-2 w-full",
+        role === "user" ? "items-end" : "items-start"
       )}
     >
       <div
         className={cn(
-          "max-w-[85%] rounded-2xl px-4 py-2 text-sm",
+          "max-w-[85%] rounded-2xl px-4 py-2.5 text-sm break-words",
           role === "user"
             ? "bg-primary text-primary-foreground"
             : "bg-muted/50 text-foreground",
-          role === "assistant" ? "rounded-tl-sm" : "rounded-tr-sm",
+          role === "assistant" ? "rounded-tl-sm" : "rounded-tr-sm"
         )}
       >
         <p className="whitespace-pre-wrap leading-relaxed">{content}</p>
       </div>
 
       {suggestions && suggestions.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 max-w-[85%]">
+        <div className="flex flex-wrap gap-1.5 max-w-[85%] px-1">
           {suggestions.map((suggestion, index) => (
             <Button
               key={index}
@@ -48,9 +48,9 @@ export function ChatMessage({
               size="sm"
               onClick={() => onSuggestionClick?.(suggestion)}
               className={cn(
-                "text-xs h-7 bg-background hover:bg-muted",
-                "border border-input shadow-sm",
-                "transition-colors duration-200",
+                "text-xs h-7 bg-background/50 hover:bg-muted/50",
+                "border border-input/50 shadow-sm",
+                "transition-colors duration-200"
               )}
             >
               {suggestion}
@@ -60,7 +60,7 @@ export function ChatMessage({
       )}
 
       {role === "assistant" && onFeedback && (
-        <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
           <Button
             variant="ghost"
             size="icon"
