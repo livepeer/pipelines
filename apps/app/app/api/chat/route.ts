@@ -48,7 +48,9 @@ export async function POST(req: Request) {
     const message = formData.get("message") as string;
     const image = formData.get("image") as File | null;
     const messagesJson = formData.get("messages") as string;
-    const messageHistory = (messagesJson ? JSON.parse(messagesJson) : []) as Message[];
+    const messageHistory = (
+      messagesJson ? JSON.parse(messagesJson) : []
+    ) as Message[];
 
     if (!message) {
       return NextResponse.json(
@@ -82,7 +84,9 @@ export async function POST(req: Request) {
     let currentPrompt = "";
     for (let i = messageHistory.length - 1; i >= 0; i--) {
       if (messageHistory[i].role === "assistant") {
-        const match = messageHistory[i].content.match(/Current prompt: "(.*?)"/);
+        const match = messageHistory[i].content.match(
+          /Current prompt: "(.*?)"/,
+        );
         if (match) {
           currentPrompt = match[1];
           break;
@@ -128,7 +132,7 @@ Current prompt to build upon: "${currentPrompt}"`,
     };
 
     let completion;
-    
+
     if (imageBase64) {
       // Use vision model for image analysis
       completion = await openai.chat.completions.create({
