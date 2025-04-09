@@ -39,7 +39,6 @@ export default defineConfig({
   projects: [
     {
       name: "monitor",
-      testMatch: /.*\.prod\.spec\.ts/,
       use: {
         ...devices["Desktop Chrome"],
         channel: "chrome",

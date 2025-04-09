@@ -1,18 +1,56 @@
 name: E2E Tests
 
 on:
-  pull_request:
-    branches: [main]
-  push:
-    branches: [main]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Choose the environment"
+        required: true
+        default: "staging"
+        type: choice
+        options:
+          - production
+          - staging
+  schedule:
+    - cron: "*/30 * * * *"
+  issue_comment:
+    types: [edited]
 
 jobs:
-  test:
+  monitor:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - env: production
+            deployment_target: "Production - e2e"
+          - env: staging
+            deployment_target: "Staging - e2e"
+          - env: preview
+            deployment_target: "Preview - e2e"
+
+    if: >
+      github.event_name == 'schedule' ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == matrix.env) ||
+      (github.event_name == 'issue_comment' && matrix.env == 'preview' && github.event.issue.pull_request != null)
+
+    environment: ${{ matrix.deployment_target }}
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+
+      - name: Capture Vercel Preview URL
+        if: github.event_name == 'issue_comment' && matrix.env == 'preview'
+        uses: aaimio/vercel-preview-url-action@v2.2.0
+        id: preview
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set TEST_APP_URL from preview URL
+        if: github.event_name == 'issue_comment' && matrix.env == 'preview'
+        run: echo "TEST_APP_URL=${{ steps.preview.outputs.vercel_preview_url }}" >> $GITHUB_ENV
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
@@ -37,7 +75,7 @@ jobs:
             ${{ runner.os }}-pnpm-store-
 
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --filter app-e2e...
 
       - name: Cache Playwright Browsers
         uses: actions/cache@v3
@@ -50,74 +88,23 @@ jobs:
       - name: Install Playwright Browsers and Dependencies
         run: pnpm --filter app-e2e exec playwright install --with-deps chrome
 
-      - name: Run Playwright tests
+      - name: Run Playwright tests for ${{ matrix.env }}
         id: playwright
-        # TODO: sync, or at least lint env vars
         env:
-          NEXT_PUBLIC_ENV: ${{ secrets.NEXT_PUBLIC_ENV }}
-          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
-          CLERK_WEBHOOK_SECRET: ${{ secrets.CLERK_WEBHOOK_SECRET }}
-          RESEND_AUDIENCE_ID: ${{ secrets.RESEND_AUDIENCE_ID }}
-          RESEND_FROM: ${{ secrets.RESEND_FROM }}
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          RESEND_TOKEN: ${{ secrets.RESEND_TOKEN }}
-          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
-          STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
-          BETTERSTACK_API_KEY: ${{ secrets.BETTERSTACK_API_KEY }}
-          BETTERSTACK_URL: ${{ secrets.BETTERSTACK_URL }}
-          FLAGS_SECRET: ${{ secrets.FLAGS_SECRET }}
-          ARCJET_KEY: ${{ secrets.ARCJET_KEY }}
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-          STREAM_STATUS_ENDPOINT_URL: ${{ secrets.STREAM_STATUS_ENDPOINT_URL }}
-          STREAM_STATUS_ENDPOINT_USER: ${{ secrets.STREAM_STATUS_ENDPOINT_USER }}
-          STREAM_STATUS_ENDPOINT_PASSWORD: ${{ secrets.STREAM_STATUS_ENDPOINT_PASSWORD }}
-          STREAM_STATUS_ENDPOINT_URL_SECONDARY: ${{ secrets.STREAM_STATUS_ENDPOINT_URL_SECONDARY }}
-          MIXPANEL_PROJECT_TOKEN: ${{ secrets.MIXPANEL_PROJECT_TOKEN }}
-          LIVEPEER_STUDIO_API_KEY: ${{ secrets.LIVEPEER_STUDIO_API_KEY }}
-          LIVEPEER_STUDIO_API_URL: ${{ secrets.LIVEPEER_STUDIO_API_URL }}
-          LIVEPEER_STUDIO_RTMP_URL: ${{ secrets.LIVEPEER_STUDIO_RTMP_URL }}
-          USERNAME_PASSWORD: ${{ secrets.USERNAME_PASSWORD }}
-          KAFKA_BOOTSTRAP_NODE: ${{ secrets.KAFKA_BOOTSTRAP_NODE }}
-          KAFKA_PASSWORD: ${{ secrets.KAFKA_PASSWORD }}
-          KAFKA_USER: ${{ secrets.KAFKA_USER }}
-          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
-          NEXT_PUBLIC_CLERK_SIGN_IN_URL: ${{ secrets.NEXT_PUBLIC_CLERK_SIGN_IN_URL }}
-          NEXT_PUBLIC_CLERK_SIGN_UP_URL: ${{ secrets.NEXT_PUBLIC_CLERK_SIGN_UP_URL }}
-          NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL: ${{ secrets.NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL }}
-          NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL: ${{ secrets.NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL }}
-          NEXT_PUBLIC_GA_MEASUREMENT_ID: ${{ secrets.NEXT_PUBLIC_GA_MEASUREMENT_ID }}
-          NEXT_PUBLIC_POSTHOG_KEY: ${{ secrets.NEXT_PUBLIC_POSTHOG_KEY }}
-          NEXT_PUBLIC_POSTHOG_HOST: ${{ secrets.NEXT_PUBLIC_POSTHOG_HOST }}
-          NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL }}
-          NEXT_PUBLIC_WEB_URL: ${{ secrets.NEXT_PUBLIC_WEB_URL }}
-          NEXT_PUBLIC_DOCS_URL: ${{ secrets.NEXT_PUBLIC_DOCS_URL }}
-          NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL: ${{ secrets.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL }}
-          NEXT_PUBLIC_AI_WEBRTC_BASE_URL: ${{ secrets.NEXT_PUBLIC_AI_WEBRTC_BASE_URL }}
-          NEXT_PUBLIC_WHIP_URL: ${{ secrets.NEXT_PUBLIC_WHIP_URL }}
-          NEXT_PUBLIC_WHIP_URL_SECONDARY: ${{ secrets.NEXT_PUBLIC_WHIP_URL_SECONDARY }}
-          NEXT_PUBLIC_RTMP_URL: ${{ secrets.NEXT_PUBLIC_RTMP_URL }}
-          NEXT_PUBLIC_RTMP_URL_SECONDARY: ${{ secrets.NEXT_PUBLIC_RTMP_URL_SECONDARY }}
-          NEXT_PUBLIC_AI_GATEWAY_API_BASE_URL: ${{ secrets.NEXT_PUBLIC_AI_GATEWAY_API_BASE_URL }}
-          NEXT_PUBLIC_AI_GATEWAY_API_BASE_URL_SECONDARY: ${{ secrets.NEXT_PUBLIC_AI_GATEWAY_API_BASE_URL_SECONDARY }}
-          NEXT_PUBLIC_LIVEPEER_STUDIO_API_KEY: ${{ secrets.NEXT_PUBLIC_LIVEPEER_STUDIO_API_KEY }}
-          NEXT_PUBLIC_LIVEPEER_STUDIO_API_URL: ${{ secrets.NEXT_PUBLIC_LIVEPEER_STUDIO_API_URL }}
-          NEXT_PUBLIC_INTERCOM_APP_ID: ${{ secrets.NEXT_PUBLIC_INTERCOM_APP_ID }}
-          NEXT_PUBLIC_SITE_PASSWORD: ${{ secrets.NEXT_PUBLIC_SITE_PASSWORD }}
-          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
-          NEXT_PUBLIC_HUBSPOT_PORTAL_ID: ${{ secrets.NEXT_PUBLIC_HUBSPOT_PORTAL_ID }}
-          NEXT_PUBLIC_HUBSPOT_FORM_ID: ${{ secrets.NEXT_PUBLIC_HUBSPOT_FORM_ID }}
-        run: pnpm --filter app-e2e test:dev
+          TEST_APP_URL: ${{ env.TEST_APP_URL }}
+        run: pnpm --filter app-e2e test:prod
         continue-on-error: true
 
-      - name: Upload test screenshots
+      - name: Upload test screenshots for ${{ matrix.env }}
         uses: actions/upload-artifact@v4
+        if: always()
         with:
-          name: screenshots
+          name: screenshots-${{ matrix.env }}
           path: apps/app-e2e/screenshots/
+          retention-days: 14
 
-      - name: Fail workflow if tests failed
+      - name: Fail workflow if tests failed for ${{ matrix.env }}
         if: steps.playwright.outcome == 'failure'
-        run: exit 1
+        run: |
+          echo "::error::Playwright tests failed for the ${{ matrix.env }} environment."
+          exit 1
