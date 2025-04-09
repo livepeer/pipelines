@@ -52,7 +52,7 @@ export default function BentoGrids() {
             src="https://storage.googleapis.com/thom-vod-testing/daydream-05.mp4"
             className="max-lg:row-start-3 lg:col-start-2 lg:row-start-2 h-80"
           />
-          <GridItem src="/daydream.mp4" className="lg:row-span-2" />
+          <GridItem src="https://storage.googleapis.com/thom-vod-testing/daydream-05.mp4" className="lg:row-span-2" />
         </GridSet>
       </div>
     </div>
