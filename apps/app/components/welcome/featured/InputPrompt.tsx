@@ -50,11 +50,9 @@ type PipelineParam = {
   // Add other fields if needed
 };
 
-// Add this function at the top of the file, after imports
 const SHAKE_THRESHOLD = 25;
 const SHAKE_TIMEOUT = 1000;
 
-// Add these prompts near the top of the file
 const SHAKE_PROMPTS = [
   `((Surreal dreamscape)), floating objects, melting clocks, impossible architecture, vibrant colors, dreamlike atmosphere, Salvador Dali influence --quality 3 --negative-prompt "realistic, ordinary, mundane" --creativity 0.9`,
   `(Mystical creature), ethereal glow, intricate details, fantasy environment, otherworldly features --quality 3 --negative-prompt "blurry, low resolution, anatomically incorrect" --creativity 0.4`,
@@ -62,7 +60,22 @@ const SHAKE_PROMPTS = [
   `(Futuristic cityscape), towering skyscrapers, flying vehicles, (holographic advertisements), gleaming architecture, neon lighting, reflective surfaces --quality 3 --negative-prompt "low quality, blurry, dystopian" --creativity 0.7`,
   `((Enchanted garden)), magical atmosphere, dappled sunlight through ancient trees, glowing flowers, hidden pathways, fairy lights, vibrant colors --quality 3 --negative-prompt "artificial looking, oversaturated" --creativity 0.7`,
   `((Alien landscape)), psychedelic flora, twin moons in sky, otherworldly terrain, unusual rock formations, strange atmospheric conditions --quality 3 --negative-prompt "earth-like, familiar plants, humans" --creativity 0.8`,
-  `((Underwater kingdom)), bioluminescent architecture, coral reefs, merfolk civilization, floating bubbles, azure lighting --quality 3 --negative-prompt "low quality, cartoon-style" --creativity 0.7`
+  `((Underwater kingdom)), bioluminescent architecture, coral reefs, merfolk civilization, floating bubbles, azure lighting --quality 3 --negative-prompt "low quality, cartoon-style" --creativity 0.7`,
+  `((Ancient civilization ruins)), overgrown with vegetation, hidden temples, mysterious symbols, fog-shrouded monuments, archaeologist's discovery, golden artifacts --quality 3 --negative-prompt "modern elements, tourists, clean and restored" --creativity 0.8`,
+  `((Steampunk laboratory)), brass instruments, gears and clockwork, steam-powered inventions, Victorian aesthetic, amber lighting, mechanical contraptions --quality 3 --negative-prompt "digital technology, modern elements" --creativity 0.7`,
+  `((Crystalline cavern)), geometric formations, refracting light beams, translucent structures, glowing minerals, subterranean wonder --quality 3 --negative-prompt "cluttered, chaotic, dull colors" --creativity 0.6`,
+  `((Floating islands)) in the sky, cascading waterfalls, ancient ruins, lush vegetation, flying creatures, suspension bridges between islands --quality 3 --negative-prompt "ground-based, desert, barren" --creativity 0.8`,
+  `((Cybernetic organism)), fusion of biological and mechanical parts, glowing circuitry, exposed machinery, organic-synthetic interface --quality 3 --negative-prompt "fully organic, fully robotic, crude design" --creativity 0.7`,
+  `((Abandoned space station)), zero gravity debris, flickering emergency lights, overgrown vegetation modules, damaged technology, distant stars visible through breached hull --quality 3 --negative-prompt "clean, functional, inhabited" --creativity 0.6`,
+  `((Microscopic world)), cellular structures, vibrant organelles, pulsing membranes, intricate biological patterns, dynamic interactions --quality 3 --negative-prompt "macro photography, visible humans, medical imagery" --creativity 0.75`,
+  `((Ghost ship)) on foggy sea, tattered sails, weathered wood, ethereal glow, mysterious figures, abandoned treasures --quality 3 --negative-prompt "sunny weather, modern vessel, crowded" --creativity 0.65`,
+  `((Mythological battle)), epic confrontation, divine weapons, legendary creatures, atmospheric lighting, dramatic poses --quality 3 --negative-prompt "modern warfare, realistic proportions" --creativity 0.8`,
+  `((Dimensional portal)), swirling energies, glimpses of parallel worlds, reality distortion, cosmic bridge, ethereal guardians --quality 3 --negative-prompt "solid structure, single reality, static image" --creativity 0.85`,
+  `((Volcanic landscape)), rivers of lava, obsidian formations, heat distortion, ash plumes, fire-resistant organisms --quality 3 --negative-prompt "cold climate, lush vegetation, human structures" --creativity 0.6`,
+  `((Sentient plant civilization)), living architecture, bioluminescent communication, symbiotic relationships, organic technology, flowering consciousness --quality 3 --negative-prompt "mechanical, human-centric, winter scene" --creativity 0.75`,
+  `((Quantum realm)), probability waves, subatomic particles, energy fluctuations, fractal patterns, dimensional shifting --quality 3 --negative-prompt "macroscopic, solid objects, definite shapes" --creativity 0.9`,
+  `((Elemental convergence)), clashing forces of nature, fire meeting water, earth splitting to reveal magma, air vortices, primal energy --quality 3 --negative-prompt "peaceful scene, single element dominance" --creativity 0.8`,
+  `((Time-worn library)), ancient tomes, dust motes in sunbeams, forgotten knowledge, magical manuscripts, labyrinthine shelves --quality 3 --negative-prompt "modern books, electronic devices, clean and organized" --creativity 0.7`
 ];
 
 export const InputPrompt = () => {
@@ -338,16 +351,13 @@ export const InputPrompt = () => {
 
   // Update the permission request
   const requestMotionPermission = async () => {
-    console.log('Requesting motion permission...');
     
     try {
       if (typeof DeviceMotionEvent !== 'undefined' && 
           // @ts-ignore - iOS specific request method
           typeof DeviceMotionEvent.requestPermission === 'function') {
-        console.log('iOS device detected, requesting permission...');
         // @ts-ignore
         const permissionState = await DeviceMotionEvent.requestPermission();
-        console.log('Permission response:', permissionState);
         if (permissionState === 'granted') {
           setHasMotionPermission(true);
           setMotionPermissionDenied(false);
@@ -356,7 +366,6 @@ export const InputPrompt = () => {
         }
       } else {
         // Android or older iOS that doesn't need permission
-        console.log('Non-iOS device detected, enabling motion detection');
         setHasMotionPermission(true);
         setMotionPermissionDenied(false);
       }

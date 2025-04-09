@@ -21,7 +21,6 @@ export const ShakePrompt = () => {
       }
 
       // Handle successful submission
-      console.log('Prompt submitted successfully');
     } catch (error) {
       console.error('Error submitting prompt:', error);
     }
