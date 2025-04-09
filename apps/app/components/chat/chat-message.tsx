@@ -43,6 +43,7 @@ export function ChatMessage({
               variant="outline"
               size="sm"
               onClick={() => onSuggestionClick?.(suggestion)}
+              className="text-xs"
             >
               {suggestion}
             </Button>

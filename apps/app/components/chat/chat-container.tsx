@@ -29,23 +29,41 @@ export function ChatContainer() {
     setIsLoading(true);
 
     // Add user message
-    const userMessage: Message = { role: "user", content: message };
+    const userMessage: Message = { 
+      role: "user", 
+      content: message + (image ? " [Image uploaded]" : "") 
+    };
     setMessages(prev => [...prev, userMessage]);
 
     try {
-      // Use the handleStreamUpdate hook to update the stream
+      // Prepare the request to the chat API
+      const formData = new FormData();
+      formData.append("message", message);
+      
+      if (image) {
+        formData.append("image", image);
+      }
+
+      // Call the chat API to process the prompt
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      // Use the handleStreamUpdate hook to update the stream with the processed prompt
       await handleStreamUpdate(message, { silent: true });
 
-      // Add assistant message with a success response
+      // Add assistant message with the processed prompt and suggestions
       const assistantMessage: Message = {
         role: "assistant",
-        content:
-          "I've updated the visualization based on your description. You should see the changes reflected in the main display.",
-        suggestions: [
-          "Make it more detailed",
-          "Add more dramatic lighting",
-          "Include additional elements",
-        ],
+        content: data.content,
+        suggestions: data.suggestions,
       };
       setMessages(prev => [...prev, assistantMessage]);
     } catch (error) {
