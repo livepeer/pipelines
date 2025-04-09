@@ -6,6 +6,11 @@ interface ChatResponse {
   suggestions: string[];
 }
 
+interface Message {
+  role: "user" | "assistant";
+  content: string;
+}
+
 // Function to extract JSON from text response
 function extractJsonFromText(text: string): ChatResponse | null {
   try {
@@ -42,6 +47,8 @@ export async function POST(req: Request) {
     const formData = await req.formData();
     const message = formData.get("message") as string;
     const image = formData.get("image") as File | null;
+    const messagesJson = formData.get("messages") as string;
+    const messageHistory = (messagesJson ? JSON.parse(messagesJson) : []) as Message[];
 
     if (!message) {
       return NextResponse.json(
@@ -71,102 +78,67 @@ export async function POST(req: Request) {
       imageType = image.type;
     }
 
+    // Extract the current prompt from the last assistant message
+    let currentPrompt = "";
+    for (let i = messageHistory.length - 1; i >= 0; i--) {
+      if (messageHistory[i].role === "assistant") {
+        const match = messageHistory[i].content.match(/Current prompt: "(.*?)"/);
+        if (match) {
+          currentPrompt = match[1];
+          break;
+        }
+      }
+    }
+
     const systemMessage = {
       role: "system" as const,
-      content: `You are an expert at helping users refine their video filter prompts through iterative feedback. Follow these instructions carefully:
+      content: `You are an expert at helping users refine their video filter prompts through iterative feedback. 
 
-1. For initial prompts:
-   - Create a clear, concise base prompt
-   - Focus on the main visual elements and style
-   - Include essential technical parameters for quality
+Your task is to maintain and improve a single prompt based on user feedback. Each response should:
 
-2. For prompt refinements:
-   - Build upon the existing prompt
-   - Suggest specific improvements for:
-     - Lighting (e.g., "add dramatic rim lighting", "make lighting more ethereal")
-     - Color (e.g., "shift to warmer tones", "add golden hour glow")
-     - Atmosphere (e.g., "increase fog density", "add magical particles")
-     - Style (e.g., "make it more cinematic", "add film grain effect")
-
-3. Always provide actionable suggestions that:
-   - Can be clicked to modify the current prompt
-   - Are specific and visual in nature
-   - Build upon the current aesthetic direction
-   - Offer diverse creative directions
-
-4. Keep prompts:
-   - Clear and direct
-   - Focused on visual elements
-   - Enhanced with technical parameters for quality
-
-
-   Identity recognition: When an image or the accompanying text contains a recognizable public figure (celebrity, politician, etc.), immediately identify them and prioritize their name in the prompt
-
-For recognizable figures: Always lead with the person's name in double parentheses (e.g., "((Tom Cruise))") before adding style elements
-
-Image Analysis Instructions
-When a user uploads an image, analyze it for:
-
-Subject matter and key elements
-Color palette and lighting
-Composition and perspective
-Artistic style (if applicable)
-Textures and patterns
-Mood/atmosphere
-
-Generate prompts that:
-
-Are concise and direct (typically under 200 characters)
-Use parentheses to emphasize key elements (more parentheses = more emphasis)
-Focus on visual aspects only
-Describe the desired output rather than the process
-Prioritize recognizable references over detailed descriptions when applicable
+1. ALWAYS start with "Current prompt: " followed by the complete, updated prompt in quotes
+2. Then provide a brief explanation of what changed
+3. Offer 3-4 short, specific visual suggestions for further refinement
 
 Technical Parameters
 Leverage these parameters for enhanced results:
 
-- -quality: Reduces noise in the output, especially useful for clean, professional images. Scale of 1 - 5. 5 may degrade framerate, so typically target 2-3 depending on the realism desired
+--quality: Reduces noise in the output, especially useful for clean, professional images. Scale of 1 - 5. 5 may degrade framerate, so typically target 2-3 depending on the realism desired
 --negative-prompt: Excludes unwanted elements from generation
 --creativity: Controls how closely the output follows the prompt. Scale of 0.0 to 1.0
 
-Optimization Approach
+Key rules:
+- Build upon the existing prompt instead of creating new ones
+- Keep suggestions focused on visual changes (e.g. "Add fog", "More dramatic", "Golden sunset")
+- Make each suggestion 1-3 words only
+- If starting fresh, create a base prompt that captures the core visual concept
 
-For celebrity or specific person references: Simple name + style context + quality parameter
-For complex scenes: Core subject with parenthetical emphasis + key visual elements + appropriate parameters
-For artistic styles: Main reference + defining characteristics + quality/creativity settings
-
-Examples of Improved Prompts
-Example 1: Celebrity Portrait
-Original: "A nice picture of Elon Musk"
-Enhanced: "((Elon Musk)), professional portrait, studio lighting --quality 3"
-Example 2: Artistic Scene
-Original: "Futuristic cyberpunk but also medieval castle AI art"
-Enhanced: "(Medieval castle) with (cyberpunk elements), neon lighting --negative-prompt "low quality, blurry" --creativity 0.8"
-Example 3: Natural Scene
-Original: "A forest with animals"
-Enhanced: "(Forest clearing), morning light, wildlife --quality 2 --negative-prompt "oversaturated, cartoon-style""
 
 CRITICAL INSTRUCTION: Your response MUST be a valid JSON object with the following structure:
 {
-  "content": "A human-friendly description of the current prompt and its effects",
+  "content": "Current prompt: \"[THE FULL PROMPT]\"\n[Brief explanation of changes]",
   "suggestions": [
-    "Add [specific visual element]",
-    "Change [current element] to [new element]",
-    "Make it more [specific aesthetic]"
+    "Visual change 1",
+    "Visual change 2",
+    "Visual change 3"
   ]
 }
 
-DO NOT include any text outside of this JSON structure. DO NOT start with "I'm sorry" or any other text. ONLY return the JSON object.`,
+Current prompt to build upon: "${currentPrompt}"`,
     };
 
     let completion;
-
+    
     if (imageBase64) {
       // Use vision model for image analysis
       completion = await openai.chat.completions.create({
         model: "gpt-4-vision-preview",
         messages: [
           systemMessage,
+          ...messageHistory.map(msg => ({
+            role: msg.role,
+            content: msg.content,
+          })),
           {
             role: "user" as const,
             content: [
@@ -186,38 +158,39 @@ DO NOT include any text outside of this JSON structure. DO NOT start with "I'm s
       // Use standard model for text-only prompts
       completion = await openai.chat.completions.create({
         model: "gpt-4",
-        messages: [systemMessage, { role: "user" as const, content: message }],
+        messages: [
+          systemMessage,
+          ...messageHistory.map(msg => ({
+            role: msg.role,
+            content: msg.content,
+          })),
+          { role: "user" as const, content: message },
+        ],
         max_tokens: 1000,
       });
     }
 
-    const content = completion.choices[0].message.content;
-
-    // Extract JSON from the response
-    const parsedContent = extractJsonFromText(content || "{}");
-
-    if (!parsedContent) {
-      console.error("Failed to parse OpenAI response:", content);
-      return NextResponse.json(
-        { error: "Failed to parse OpenAI response" },
-        { status: 500 },
-      );
+    // Extract the response content
+    const responseText = completion.choices[0]?.message?.content;
+    if (!responseText) {
+      throw new Error("No response from OpenAI");
     }
 
-    // Validate the response structure
-    if (!parsedContent.content || !Array.isArray(parsedContent.suggestions)) {
-      console.error("Invalid response structure:", parsedContent);
-      return NextResponse.json(
-        { error: "Invalid response structure from OpenAI" },
-        { status: 500 },
-      );
+    // Parse the response using our helper function
+    const parsedResponse = extractJsonFromText(responseText);
+    if (!parsedResponse) {
+      // If parsing fails completely, return a basic response with the raw text
+      return NextResponse.json({
+        content: responseText,
+        suggestions: [],
+      });
     }
 
-    return NextResponse.json(parsedContent);
+    return NextResponse.json(parsedResponse);
   } catch (error) {
     console.error("Error in chat route:", error);
     return NextResponse.json(
-      { error: "An error occurred while processing your request" },
+      { error: "Failed to process request" },
       { status: 500 },
     );
   }
