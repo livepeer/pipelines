@@ -79,17 +79,17 @@ export function handleSessionId() {
   return sessionId;
 }
 
-export function setCookies(
-  distinctId: string,
-  sessionId: string,
-  userId?: string,
-) {
-  document.cookie = `mixpanel_distinct_id=${distinctId}; path=/`;
-  document.cookie = `mixpanel_session_id=${sessionId}; path=/`;
-  if (userId) {
-    document.cookie = `mixpanel_user_id=${userId}; path=/`;
-  }
-}
+// export function setCookies(
+//   distinctId: string,
+//   sessionId: string,
+//   userId?: string,
+// ) {
+//   document.cookie = `mixpanel_distinct_id=${distinctId}; path=/`;
+//   document.cookie = `mixpanel_session_id=${sessionId}; path=/`;
+//   if (userId) {
+//     document.cookie = `mixpanel_user_id=${userId}; path=/`;
+//   }
+// }
 
 export function handleSessionEnd() {
   const sessionId = localStorage.getItem("mixpanel_session_id");

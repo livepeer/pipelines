@@ -5,7 +5,7 @@ import {
   handleDistinctId,
   handleSessionEnd,
   handleSessionId,
-  setCookies,
+  // setCookies,
 } from "@/lib/analytics/mixpanel";
 import { mixpanel as mixpanelConfig } from "@/lib/env";
 import mixpanel from "mixpanel-browser";
@@ -20,7 +20,7 @@ export function MixpanelProvider({ children }: { children: ReactNode }) {
 
         const distinctId = handleDistinctId();
         const sessionId = handleSessionId();
-        setCookies(distinctId || "", sessionId || "");
+        // setCookies(distinctId || "", sessionId || "");
 
         // Clean up sessions when page is unloaded
 
