@@ -10,13 +10,13 @@ import { Inter, Playfair, Open_Sans } from "next/font/google";
 const playfair = Playfair({
   variable: "--font-playfair",
   subsets: ["latin"],
-  weight: ["400", "600", "700"],
+  weight: ["300", "400", "500", "600", "700"],
 });
 
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
-  weight: ["400", "700"],
+  weight: ["200", "300", "400", "500", "600", "700"],
 });
 
 const openSans = Open_Sans({
@@ -30,7 +30,7 @@ type RootLayoutProperties = {
 };
 
 export const metadata: Metadata = {
-  title: "Livepeer Pipelines", // This will be used for all pages
+  title: "Daydream", // This will be used for all pages
 };
 
 export const viewport: Viewport = {
