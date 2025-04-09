@@ -13,8 +13,10 @@ on:
           - staging
   schedule:
     - cron: "*/30 * * * *"
-  issue_comment:
-    types: [edited]
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
 
 jobs:
   monitor:
@@ -33,7 +35,8 @@ jobs:
     if: >
       github.event_name == 'schedule' ||
       (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == matrix.env) ||
-      (github.event_name == 'issue_comment' && matrix.env == 'preview' && github.event.issue.pull_request != null)
+      (github.event_name == 'pull_request' && matrix.env == 'preview') ||
+      (github.event_name == 'push' && matrix.env == 'preview')
 
     environment: ${{ matrix.deployment_target }}
 
@@ -41,16 +44,23 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Wait for Vercel deployment to be ready
+        if: matrix.env == 'preview'
+        run: sleep 150
+
       - name: Capture Vercel Preview URL
-        if: github.event_name == 'issue_comment' && matrix.env == 'preview'
-        uses: aaimio/vercel-preview-url-action@v2.2.0
-        id: preview
+        if: matrix.env == 'preview'
+        uses: zentered/vercel-preview-url@v1.1.9
+        id: vercel_preview_url
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         with:
-          GITHUB_TOKEN: ${{ github.token }}
+          vercel_project_id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel_team_id: ${{ secrets.VERCEL_TEAM_ID }}
 
       - name: Set TEST_APP_URL from preview URL
-        if: github.event_name == 'issue_comment' && matrix.env == 'preview'
-        run: echo "TEST_APP_URL=${{ steps.preview.outputs.vercel_preview_url }}" >> $GITHUB_ENV
+        if: matrix.env == 'preview'
+        run: echo "TEST_APP_URL=https://${{ steps.vercel_preview_url.outputs.preview_url }}" >> $GITHUB_ENV
 
       - name: Install pnpm
         uses: pnpm/action-setup@v2
