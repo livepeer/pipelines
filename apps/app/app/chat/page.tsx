@@ -1,4 +1,4 @@
-import { ChatContainer } from '@/components/chat/chat-container';
+import { ChatContainer } from "@/components/chat/chat-container";
 
 export default function ChatPage() {
   return (
@@ -8,10 +8,10 @@ export default function ChatPage() {
           Daydream Prompting System
         </h1>
         <p className="text-lg text-center mb-8 text-muted-foreground">
-          Describe what you want to visualize, and I'll help you create it.
+          Describe what you want to visualize, and I&apos;ll help you create it.
         </p>
         <ChatContainer />
       </div>
     </main>
   );
-} 
+}

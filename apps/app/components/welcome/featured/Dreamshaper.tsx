@@ -25,7 +25,7 @@ import { usePlayerPositionUpdater } from "./usePlayerPosition";
 import { usePrivy } from "@/hooks/usePrivy";
 import useMount from "@/hooks/useMount";
 import { sendBeaconEvent } from "@/lib/analytics/event-middleware";
-import { ChatContainer } from '@/components/chat/chat-container';
+import { ChatContainer } from "@/components/chat/chat-container";
 
 export default function Dreamshaper() {
   useInitialization();
@@ -177,7 +177,7 @@ export default function Dreamshaper() {
             >
               <MainContent />
             </div>
-            
+
             {/* Chat Interface */}
             <div className="w-full md:w-1/3 max-w-md bg-background rounded-lg shadow-md p-4 h-[600px] overflow-hidden">
               <h2 className="text-xl font-semibold mb-4">Chat Assistant</h2>

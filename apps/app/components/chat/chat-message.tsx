@@ -1,9 +1,9 @@
-import React from 'react';
-import { Button } from '../ui/button';
-import { ThumbsUp, ThumbsDown } from 'lucide-react';
+import React from "react";
+import { Button } from "../ui/button";
+import { ThumbsUp, ThumbsDown } from "lucide-react";
 
 interface ChatMessageProps {
-  role: 'user' | 'assistant';
+  role: "user" | "assistant";
   content: string;
   suggestions?: string[];
   onSuggestionClick?: (suggestion: string) => void;
@@ -20,14 +20,14 @@ export function ChatMessage({
   return (
     <div
       className={`flex flex-col space-y-4 ${
-        role === 'user' ? 'items-end' : 'items-start'
+        role === "user" ? "items-end" : "items-start"
       }`}
     >
       <div
         className={`max-w-[80%] rounded-lg p-4 ${
-          role === 'user'
-            ? 'bg-primary text-primary-foreground'
-            : 'bg-muted text-muted-foreground'
+          role === "user"
+            ? "bg-primary text-primary-foreground"
+            : "bg-muted text-muted-foreground"
         }`}
       >
         <p className="whitespace-pre-wrap">{content}</p>
@@ -48,7 +48,7 @@ export function ChatMessage({
         </div>
       )}
 
-      {role === 'assistant' && onFeedback && (
+      {role === "assistant" && onFeedback && (
         <div className="flex items-center space-x-2">
           <Button
             variant="ghost"
@@ -70,4 +70,4 @@ export function ChatMessage({
       )}
     </div>
   );
-} 
+}

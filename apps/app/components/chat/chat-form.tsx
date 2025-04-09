@@ -1,10 +1,10 @@
-import React, { useState, useRef } from 'react';
-import { AutoResizeTextarea } from '../ui/auto-resize-textarea';
-import { Button } from '../ui/button';
-import { ThumbsUp, ThumbsDown, Image as ImageIcon } from 'lucide-react';
+import React, { useState, useRef } from "react";
+import { AutoResizeTextarea } from "../ui/auto-resize-textarea";
+import { Button } from "../ui/button";
+import { ThumbsUp, ThumbsDown, Image as ImageIcon } from "lucide-react";
 
 interface Message {
-  role: 'user' | 'assistant';
+  role: "user" | "assistant";
   content: string;
   suggestions?: string[];
 }
@@ -15,7 +15,7 @@ interface ChatFormProps {
 }
 
 export function ChatForm({ onSubmit, isLoading = false }: ChatFormProps) {
-  const [input, setInput] = useState('');
+  const [input, setInput] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -37,7 +37,7 @@ export function ChatForm({ onSubmit, isLoading = false }: ChatFormProps) {
     if (!input.trim() && !imageFile) return;
 
     await onSubmit(input, imageFile || undefined);
-    setInput('');
+    setInput("");
     setImageFile(null);
     setImagePreview(null);
   };
@@ -52,7 +52,7 @@ export function ChatForm({ onSubmit, isLoading = false }: ChatFormProps) {
         <div className="relative">
           <AutoResizeTextarea
             value={input}
-            onChange={(e) => setInput(e.target.value)}
+            onChange={e => setInput(e.target.value)}
             placeholder="Describe what you want to visualize..."
             className="pr-24"
           />
@@ -71,7 +71,7 @@ export function ChatForm({ onSubmit, isLoading = false }: ChatFormProps) {
               disabled={isLoading || (!input.trim() && !imageFile)}
               className="h-8"
             >
-              {isLoading ? 'Processing...' : 'Submit'}
+              {isLoading ? "Processing..." : "Submit"}
             </Button>
           </div>
           <input
@@ -106,4 +106,4 @@ export function ChatForm({ onSubmit, isLoading = false }: ChatFormProps) {
       </form>
     </div>
   );
-} 
+}

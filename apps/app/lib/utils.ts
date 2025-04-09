@@ -1,6 +1,6 @@
 import { User } from "@privy-io/react-auth";
-import { type ClassValue, clsx } from 'clsx';
-import { twMerge } from 'tailwind-merge';
+import { type ClassValue, clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
 
 export const sleep = (ms: number) =>
   new Promise(resolve => setTimeout(resolve, ms));
