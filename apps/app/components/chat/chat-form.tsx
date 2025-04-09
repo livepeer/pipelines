@@ -15,9 +15,14 @@ interface Message {
 interface ChatFormProps {
   onSubmit: (message: string, image?: File) => Promise<void>;
   isLoading?: boolean;
+  placeholder?: string;
 }
 
-export function ChatForm({ onSubmit, isLoading = false }: ChatFormProps) {
+export function ChatForm({ 
+  onSubmit, 
+  isLoading = false,
+  placeholder = "Describe what you want to visualize..."
+}: ChatFormProps) {
   const [input, setInput] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -79,7 +84,7 @@ export function ChatForm({ onSubmit, isLoading = false }: ChatFormProps) {
               value={input}
               onChange={e => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Describe what you want to visualize..."
+              placeholder={placeholder}
               className="w-full shadow-none border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-sm outline-none bg-transparent py-3 font-sans"
             />
             <div className="absolute right-2 bottom-2 flex items-center space-x-2">
