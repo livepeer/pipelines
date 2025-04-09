@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { generateText } from "ai";
+import OpenAI from "openai";
 
 interface ChatResponse {
   content: string;
@@ -20,11 +20,16 @@ export async function POST(req: Request) {
       );
     }
 
-    // Generate optimized prompt
-    const { text: optimizedPrompt } = await generateText({
-      model: "gpt-4",
+    const openai = new OpenAI({
       apiKey: openaiApiKey,
-      system: `You are a prompt engineering assistant that helps users create optimized prompts for image generation.
+    });
+
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4",
+      messages: [
+        {
+          role: "system",
+          content: `You are a prompt engineering assistant that helps users create optimized prompts for image generation.
 Your task is to:
 1. Analyze the user's input and any reference image
 2. Create a technically optimized prompt that will produce high-quality results
@@ -35,24 +40,23 @@ Format your response as JSON with the following structure:
 {
   "content": "Human friendly description of what will be created",
   "suggestions": ["Suggestion 1", "Suggestion 2", "Suggestion 3"]
-}`,
-      prompt: `User input: ${message}
-${image ? "Reference image provided: Yes" : "No reference image provided"}`,
+}`
+        },
+        {
+          role: "user",
+          content: `User input: ${message}\n${image ? 'Reference image provided: Yes' : 'No reference image provided'}`
+        }
+      ],
+      response_format: { type: "json_object" }
     });
 
-    // TODO: Submit the optimized prompt to the external API
-    // For now, we'll just return a mock response
-    const mockResponse: ChatResponse = {
-      content:
-        "I'll create a beautiful visualization based on your description. The image will feature vibrant colors and detailed elements that match your request.",
-      suggestions: [
-        "Make it more detailed",
-        "Add more dramatic lighting",
-        "Include additional elements",
-      ],
-    };
+    const content = completion.choices[0]?.message?.content;
+    if (!content) {
+      throw new Error('No response content from OpenAI');
+    }
 
-    return NextResponse.json(mockResponse);
+    const response = JSON.parse(content) as ChatResponse;
+    return NextResponse.json(response);
   } catch (error) {
     console.error("Error in chat route:", error);
     return NextResponse.json(

@@ -2,8 +2,8 @@
 
 import React, { useState, useRef } from "react";
 import { AutoResizeTextarea } from "../ui/auto-resize-textarea";
-import { Button } from "../ui/button";
-import { ThumbsUp, ThumbsDown, Image as ImageIcon } from "lucide-react";
+import { Button } from "@repo/design-system/components/ui/button";
+import { ImageIcon } from "lucide-react";
 
 interface Message {
   role: "user" | "assistant";
@@ -54,7 +54,7 @@ export function ChatForm({ onSubmit, isLoading = false }: ChatFormProps) {
         <div className="relative">
           <AutoResizeTextarea
             value={input}
-            onChange={e => setInput(e.target.value)}
+            onChange={(e) => setInput(e.target.value)}
             placeholder="Describe what you want to visualize..."
             className="pr-24"
           />
@@ -62,9 +62,9 @@ export function ChatForm({ onSubmit, isLoading = false }: ChatFormProps) {
             <Button
               type="button"
               variant="ghost"
-              size="icon"
               onClick={handleImageClick}
-              className="h-8 w-8"
+              className="h-8 w-8 p-0"
+              aria-label="Add image"
             >
               <ImageIcon className="h-4 w-4" />
             </Button>
@@ -94,12 +94,12 @@ export function ChatForm({ onSubmit, isLoading = false }: ChatFormProps) {
             <Button
               type="button"
               variant="ghost"
-              size="icon"
               onClick={() => {
                 setImageFile(null);
                 setImagePreview(null);
               }}
-              className="absolute top-1 right-1 h-6 w-6 bg-black/50 hover:bg-black/70"
+              className="absolute top-1 right-1 h-6 w-6 p-0 bg-black/50 hover:bg-black/70 text-white"
+              aria-label="Remove image"
             >
               ×
             </Button>
