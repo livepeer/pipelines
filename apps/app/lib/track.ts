@@ -19,11 +19,11 @@ interface SharedInfo {
   shared_created_at?: string;
 }
 
-async function getStoredIds(user?: User) {
+function getStoredIds() {
   if (typeof window === "undefined") return {};
 
-  const distinctId = await handleDistinctId(user);
-  const sessionId = await handleSessionId();
+  const distinctId = handleDistinctId();
+  const sessionId = handleSessionId();
   const userId = localStorage.getItem("mixpanel_user_id");
 
   return {
@@ -106,7 +106,7 @@ const track = async (
     return false;
   }
 
-  const { distinctId, sessionId, userId } = await getStoredIds(user);
+  const { distinctId, sessionId, userId } = getStoredIds();
   const browserInfo = await getBrowserInfo();
   const sharedInfo = await getSharedParamsInfo();
   const referrerType = sharedInfo.shared_id
