@@ -73,9 +73,10 @@ export const InputPrompt = () => {
   const { lastSubmittedPrompt, setLastSubmittedPrompt, setHasSubmittedPrompt } =
     usePromptStore();
   const { promptVersion, incrementPromptVersion } = usePromptVersionStore();
-
   const { authenticated } = usePrivy();
 
+  // Move hasMotionPermission state here with other state declarations
+  const [hasMotionPermission, setHasMotionPermission] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const [isInputHovered, setInputHovered] = useState(false);
   const [settingsOpened, setSettingsOpened] = useState(false);
@@ -363,8 +364,6 @@ export const InputPrompt = () => {
       setHasMotionPermission(true);
     }
   };
-
-  const [hasMotionPermission, setHasMotionPermission] = useState(false);
 
   // Add this near the start of your return statement, before the main input UI
   if (isMobile && !hasMotionPermission) {
