@@ -79,6 +79,7 @@ export const InputPrompt = () => {
 
   // Move hasMotionPermission state here with other state declarations
   const [hasMotionPermission, setHasMotionPermission] = useState(false);
+  const [motionPermissionDenied, setMotionPermissionDenied] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const [isInputHovered, setInputHovered] = useState(false);
   const [settingsOpened, setSettingsOpened] = useState(false);
@@ -342,7 +343,6 @@ export const InputPrompt = () => {
     console.log('Requesting motion permission...');
     
     try {
-      // Check if we're on iOS 13+ which requires permission
       if (typeof DeviceMotionEvent !== 'undefined' && 
           // @ts-ignore - iOS specific request method
           typeof DeviceMotionEvent.requestPermission === 'function') {
@@ -350,27 +350,33 @@ export const InputPrompt = () => {
         // @ts-ignore
         const permissionState = await DeviceMotionEvent.requestPermission();
         console.log('Permission response:', permissionState);
-        setHasMotionPermission(permissionState === 'granted');
+        if (permissionState === 'granted') {
+          setHasMotionPermission(true);
+          setMotionPermissionDenied(false);
+        } else {
+          setMotionPermissionDenied(true);
+        }
       } else {
         // Android or older iOS that doesn't need permission
         console.log('Non-iOS device detected, enabling motion detection');
         setHasMotionPermission(true);
+        setMotionPermissionDenied(false);
       }
     } catch (error) {
       console.error('Error requesting motion permission:', error);
-      // Show error to user
-      alert("Unable to access motion sensors. Please ensure you're using a mobile device and have granted the necessary permissions.");
+      setMotionPermissionDenied(true);
+      alert("Unable to access motion sensors. You can still use the shuffle feature!");
     }
   };
 
-  // Add handler for shuffle button
+  // Update the shuffle button handler
   const handleShuffleClick = async () => {
-    if (isMobile && !hasMotionPermission) {
+    if (isMobile && !hasMotionPermission && !motionPermissionDenied) {
       await requestMotionPermission();
       return;
     }
 
-    // If we're on desktop or already have permission, just submit a random prompt
+    // If we're on desktop or permissions were denied, just submit a random prompt
     if (!updating) {
       const randomPrompt = generateRandomPrompt();
       
@@ -378,7 +384,7 @@ export const InputPrompt = () => {
         is_authenticated: authenticated,
         prompt: randomPrompt,
         stream_id: stream?.id,
-        source: isMobile ? "shake-enabled" : "shuffle"
+        source: motionPermissionDenied ? "shuffle-fallback" : "shuffle"
       });
 
       handleStreamUpdate(randomPrompt, { silent: true });
@@ -601,33 +607,43 @@ export const InputPrompt = () => {
 
       {!isMobile && <Separator orientation="vertical" className="h-6 mr-2" />}
 
-      {/* Update the Shuffle button to use different icons based on mobile */}
-      <Tooltip delayDuration={50}>
-        <TooltipTrigger asChild>
-          <div className="relative inline-block">
-            <Button
-              disabled={updating}
-              onClick={handleShuffleClick}
-              className={cn(
-                "border-none items-center justify-center font-semibold text-xs bg-[#000000] flex disabled:bg-[#000000] disabled:opacity-80 mr-2",
-                isMobile
-                  ? "w-auto h-9 aspect-square rounded-md"
-                  : "w-auto h-9 aspect-square rounded-md"
-              )}
-            >
-              {isMobile ? <Vibrate className="h-4 w-4 stroke-[2]" /> : <Shuffle className="h-4 w-4 stroke-[2]" />}
-            </Button>
-          </div>
-        </TooltipTrigger>
-        <TooltipContent
-          side="top"
-          className="bg-white text-black border border-gray-200 shadow-md dark:bg-zinc-900 dark:text-white dark:border-zinc-700"
-        >
-          {isMobile ? 
-            hasMotionPermission ? "Shake to generate" : "Enable shake to generate" 
-            : "Random prompt"}
-        </TooltipContent>
-      </Tooltip>
+      {/* Only show the button if we either don't have permission yet, or if permission was denied, or if we're on desktop */}
+      {(isMobile || !hasMotionPermission || motionPermissionDenied) && (
+        <Tooltip delayDuration={50}>
+          <TooltipTrigger asChild>
+            <div className="relative inline-block">
+              <Button
+                disabled={updating}
+                onClick={handleShuffleClick}
+                className={cn(
+                  "border-none items-center justify-center font-semibold text-xs bg-[#000000] flex disabled:bg-[#000000] disabled:opacity-80 mr-2",
+                  "w-auto h-9 aspect-square rounded-md"
+                )}
+              >
+                {isMobile && !motionPermissionDenied && !hasMotionPermission ? (
+                  <Vibrate className="h-4 w-4 stroke-[2]" />
+                ) : (
+                  <Shuffle className="h-4 w-4 stroke-[2]" />
+                )}
+              </Button>
+            </div>
+          </TooltipTrigger>
+          <TooltipContent
+            side="top"
+            className="bg-white text-black border border-gray-200 shadow-md dark:bg-zinc-900 dark:text-white dark:border-zinc-700"
+          >
+            {isMobile ? (
+              motionPermissionDenied ? 
+                "Random prompt" : 
+                hasMotionPermission ? 
+                  "Shake to generate" : 
+                  "Enable shake to generate"
+            ) : (
+              "Random prompt"
+            )}
+          </TooltipContent>
+        </Tooltip>
+      )}
 
       {/* Existing submit button */}
       <Tooltip delayDuration={50}>
