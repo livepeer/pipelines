@@ -1,6 +1,11 @@
 import { NextResponse } from 'next/server';
 import { generateText } from 'ai';
 
+interface ChatResponse {
+  content: string;
+  suggestions: string[];
+}
+
 export async function POST(req: Request) {
   try {
     const { message, image } = await req.json();
@@ -37,7 +42,7 @@ ${image ? 'Reference image provided: Yes' : 'No reference image provided'}`,
 
     // TODO: Submit the optimized prompt to the external API
     // For now, we'll just return a mock response
-    const mockResponse = {
+    const mockResponse: ChatResponse = {
       content: "I'll create a beautiful visualization based on your description. The image will feature vibrant colors and detailed elements that match your request.",
       suggestions: [
         "Make it more detailed",
