@@ -1,5 +1,5 @@
-import { v4 as uuidv4 } from "uuid";
 import { User as PrivyUser } from "@/hooks/usePrivy";
+import { v4 as uuidv4 } from "uuid";
 
 export async function identifyUser(
   userId: string,
@@ -55,46 +55,46 @@ export async function identifyUser(
   }
 }
 
+export const DISTINCT_ID_KEY = "mixpanel_distinct_id";
+
 export function handleDistinctId() {
-  let distinctId = localStorage.getItem("mixpanel_distinct_id");
+  let distinctId = localStorage.getItem(DISTINCT_ID_KEY);
   if (!distinctId) {
     distinctId = uuidv4();
-    localStorage.setItem("mixpanel_distinct_id", distinctId);
+    localStorage.setItem(DISTINCT_ID_KEY, distinctId);
   }
 
   return distinctId;
 }
 
+export const SESSION_ID_KEY = "mixpanel_session_id";
+const SESSION_TIMESTAMP_KEY = "mixpanel_session_timestamp";
+const SESSION_TIMEOUT = 60 * 60 * 1000;
+
 export function handleSessionId() {
-  let sessionId = sessionStorage.getItem("mixpanel_session_id");
-  if (!sessionId) {
+  const currentTime = Date.now();
+  let sessionId = sessionStorage.getItem(SESSION_ID_KEY);
+
+  const sessionTimestampStr = sessionStorage.getItem(SESSION_TIMESTAMP_KEY);
+  const sessionTimestamp = sessionTimestampStr
+    ? parseInt(sessionTimestampStr, 10)
+    : null;
+
+  if (
+    !sessionId ||
+    !sessionTimestamp ||
+    currentTime - sessionTimestamp > SESSION_TIMEOUT
+  ) {
     sessionId = uuidv4();
     console.log(
-      "Initializing Mixpanel Session: sessionId is null, generating new sessionId",
+      "Initializing Mixpanel Session: sessionId is missing or expired, generating new sessionId",
       sessionId,
     );
-    sessionStorage.setItem("mixpanel_session_id", sessionId);
+    sessionStorage.setItem(SESSION_ID_KEY, sessionId);
+    sessionStorage.setItem(SESSION_TIMESTAMP_KEY, currentTime.toString());
+  } else {
+    sessionStorage.setItem(SESSION_TIMESTAMP_KEY, currentTime.toString());
   }
 
   return sessionId;
-}
-
-// export function setCookies(
-//   distinctId: string,
-//   sessionId: string,
-//   userId?: string,
-// ) {
-//   document.cookie = `mixpanel_distinct_id=${distinctId}; path=/`;
-//   document.cookie = `mixpanel_session_id=${sessionId}; path=/`;
-//   if (userId) {
-//     document.cookie = `mixpanel_user_id=${userId}; path=/`;
-//   }
-// }
-
-export function handleSessionEnd() {
-  const sessionId = localStorage.getItem("mixpanel_session_id");
-  if (sessionId) {
-    localStorage.removeItem("mixpanel_session_id");
-    console.log("Cleaning Up Mixpanel Session: sessionId is", sessionId);
-  }
 }

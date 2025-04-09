@@ -1,12 +1,7 @@
 "use client";
 
 import { usePrivy } from "@/hooks/usePrivy";
-import {
-  handleDistinctId,
-  handleSessionEnd,
-  handleSessionId,
-  // setCookies,
-} from "@/lib/analytics/mixpanel";
+import { handleDistinctId, handleSessionId } from "@/lib/analytics/mixpanel";
 import { mixpanel as mixpanelConfig } from "@/lib/env";
 import mixpanel from "mixpanel-browser";
 import { ReactNode, useEffect } from "react";
@@ -20,21 +15,14 @@ export function MixpanelProvider({ children }: { children: ReactNode }) {
 
         const distinctId = handleDistinctId();
         const sessionId = handleSessionId();
-        // setCookies(distinctId || "", sessionId || "");
 
-        // Clean up sessions when page is unloaded
-
-        //const handleBeforeUnload = () => {
-        //handleSessionEnd();
-        //};
-
-        //window.addEventListener('beforeunload', handleBeforeUnload);
-
-        console.log("Mixpanel initialized successfully");
-        return () => {
-          handleSessionEnd();
-          //window.removeEventListener('beforeunload', handleBeforeUnload);
-        };
+        console.log(
+          "Mixpanel initialized successfully",
+          "Distinct Id: ",
+          distinctId,
+          "Session Id: ",
+          sessionId,
+        );
       } catch (error) {
         console.error("Error initializing Mixpanel:", error);
       }
