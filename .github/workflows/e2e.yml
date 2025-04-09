@@ -19,37 +19,20 @@ on:
     branches: [main]
 
 jobs:
-  monitor:
+  e2e_preview:
+    if: github.event.inputs.environment == 'preview'
+
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - env: production
-            deployment_target: "Production - e2e"
-          - env: staging
-            deployment_target: "Staging - e2e"
-          - env: preview
-            deployment_target: "Preview - e2e"
-
-    if: >
-      github.event_name == 'schedule' ||
-      (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == matrix.env) ||
-      (github.event_name == 'pull_request' && matrix.env == 'preview') ||
-      (github.event_name == 'push' && matrix.env == 'preview')
-
-    environment: ${{ matrix.deployment_target }}
+    environment: "Preview - e2e"
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
       - name: Wait for Vercel deployment to be ready
-        if: matrix.env == 'preview'
         run: sleep 150
 
       - name: Capture Vercel Preview URL
-        if: matrix.env == 'preview'
         uses: zentered/vercel-preview-url@v1.1.9
         id: vercel_preview_url
         env:
@@ -59,7 +42,6 @@ jobs:
           vercel_team_id: ${{ secrets.VERCEL_TEAM_ID }}
 
       - name: Set TEST_APP_URL from preview URL
-        if: matrix.env == 'preview'
         run: echo "TEST_APP_URL=https://${{ steps.vercel_preview_url.outputs.preview_url }}" >> $GITHUB_ENV
 
       - name: Install pnpm
@@ -87,23 +69,131 @@ jobs:
       - name: Install Playwright Browsers and Dependencies
         run: pnpm --filter app-e2e exec playwright install --with-deps chrome
 
-      - name: Run Playwright tests for ${{ matrix.env }}
+      - name: Run Playwright tests for preview
         id: playwright
         env:
           TEST_APP_URL: ${{ env.TEST_APP_URL }}
         run: pnpm --filter app-e2e test:prod
         continue-on-error: true
 
-      - name: Upload test screenshots for ${{ matrix.env }}
+      - name: Upload test screenshots for preview
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: screenshots-${{ matrix.env }}
+          name: screenshots-preview
           path: apps/app-e2e/screenshots/
           retention-days: 14
 
-      - name: Fail workflow if tests failed for ${{ matrix.env }}
+      - name: Fail workflow if tests failed for preview
         if: steps.playwright.outcome == 'failure'
         run: |
-          echo "::error::Playwright tests failed for the ${{ matrix.env }} environment."
+          echo "::error::Playwright tests failed for the preview environment."
+          exit 1
+
+  e2e_staging:
+    if: >
+      github.event_name == 'schedule' ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'staging')
+    runs-on: ubuntu-latest
+    environment: "Staging - e2e"
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --filter app-e2e...
+
+      - name: Cache Playwright Browsers
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-browsers-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-browsers-
+
+      - name: Install Playwright Browsers and Dependencies
+        run: pnpm --filter app-e2e exec playwright install --with-deps chrome
+
+      - name: Run Playwright tests for staging
+        id: playwright
+        run: pnpm --filter app-e2e test:prod
+        continue-on-error: true
+
+      - name: Upload test screenshots for staging
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: screenshots-staging
+          path: apps/app-e2e/screenshots/
+          retention-days: 14
+
+      - name: Fail workflow if tests failed for staging
+        if: steps.playwright.outcome == 'failure'
+        run: |
+          echo "::error::Playwright tests failed for the staging environment."
+          exit 1
+
+  e2e_production:
+    if: >
+      github.event_name == 'schedule' ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'production')
+    runs-on: ubuntu-latest
+    environment: "Production - e2e"
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --filter app-e2e...
+
+      - name: Cache Playwright Browsers
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-browsers-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-browsers-
+
+      - name: Install Playwright Browsers and Dependencies
+        run: pnpm --filter app-e2e exec playwright install --with-deps chrome
+
+      - name: Run Playwright tests for production
+        id: playwright
+        run: pnpm --filter app-e2e test:prod
+        continue-on-error: true
+
+      - name: Upload test screenshots for production
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: screenshots-production
+          path: apps/app-e2e/screenshots/
+          retention-days: 14
+
+      - name: Fail workflow if tests failed for production
+        if: steps.playwright.outcome == 'failure'
+        run: |
+          echo "::error::Playwright tests failed for the production environment."
           exit 1
