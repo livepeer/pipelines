@@ -1,4 +1,4 @@
-name: E2E Tests
+name: E2E Monitor
 
 on:
   workflow_dispatch:
@@ -13,87 +13,10 @@ on:
           - staging
   schedule:
     - cron: "*/30 * * * *"
-  pull_request:
-    branches: [main]
-  push:
-    branches: [main]
 
 jobs:
-  e2e_preview:
-    if: github.event.inputs.environment == 'preview'
-
-    runs-on: ubuntu-latest
-    environment: "Preview - e2e"
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Wait for Vercel deployment to be ready
-        run: sleep 150
-
-      - name: Capture Vercel Preview URL
-        uses: zentered/vercel-preview-url@v1.1.9
-        id: vercel_preview_url
-        env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-        with:
-          vercel_project_id: ${{ secrets.VERCEL_PROJECT_ID }}
-          vercel_team_id: ${{ secrets.VERCEL_TEAM_ID }}
-
-      - name: Set TEST_APP_URL from preview URL
-        run: echo "TEST_APP_URL=https://${{ steps.vercel_preview_url.outputs.preview_url }}" >> $GITHUB_ENV
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: 9
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: "pnpm"
-
-      - name: Install dependencies
-        run: pnpm install --filter app-e2e...
-
-      - name: Cache Playwright Browsers
-        uses: actions/cache@v3
-        with:
-          path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-browsers-${{ hashFiles('pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-playwright-browsers-
-
-      - name: Install Playwright Browsers and Dependencies
-        run: pnpm --filter app-e2e exec playwright install --with-deps chrome
-
-      - name: Run Playwright tests for preview
-        id: playwright
-        env:
-          TEST_APP_URL: ${{ env.TEST_APP_URL }}
-        run: pnpm --filter app-e2e test:prod
-        continue-on-error: true
-
-      - name: Upload test screenshots for preview
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: screenshots-preview
-          path: apps/app-e2e/screenshots/
-          retention-days: 14
-
-      - name: Fail workflow if tests failed for preview
-        if: steps.playwright.outcome == 'failure'
-        run: |
-          echo "::error::Playwright tests failed for the preview environment."
-          exit 1
-
   e2e_staging:
-    if: >
-      github.event_name == 'schedule' ||
-      (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'staging')
+    if: (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'staging') || github.event_name == 'schedule'
     runs-on: ubuntu-latest
     environment: "Staging - e2e"
     steps:
@@ -145,9 +68,7 @@ jobs:
           exit 1
 
   e2e_production:
-    if: >
-      github.event_name == 'schedule' ||
-      (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'production')
+    if: (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'production') || github.event_name == 'schedule'
     runs-on: ubuntu-latest
     environment: "Production - e2e"
     steps:
