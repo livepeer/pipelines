@@ -17,6 +17,8 @@ import {
   CheckIcon,
   ChevronDownIcon,
   Maximize,
+  Mic,
+  MicOff,
   Minimize2,
   SwitchCamera,
   XIcon,
@@ -140,7 +142,7 @@ export function BroadcastWithControls({ className }: { className?: string }) {
       }}
       forceEnabled={true}
       mirrored={false}
-      audio={false}
+      audio={true}
       video={true}
       aspectRatio={16 / 9}
       ingestUrl={ingestUrl}
@@ -283,6 +285,15 @@ export function BroadcastWithControls({ className }: { className?: string }) {
                       <EnableVideoIcon className="w-full h-full text-white/50" />
                     </Broadcast.VideoEnabledIndicator>
                   </Broadcast.VideoEnabledTrigger>
+
+                  <Broadcast.AudioEnabledTrigger className="w-6 h-6 hover:scale-110 transition flex-shrink-0">
+                    <Broadcast.AudioEnabledIndicator asChild matcher={false}>
+                      <MicOff className="w-full h-full text-white/50" />
+                    </Broadcast.AudioEnabledIndicator>
+                    <Broadcast.AudioEnabledIndicator asChild matcher={true}>
+                      <Mic className="w-full h-full text-white/50" />
+                    </Broadcast.AudioEnabledIndicator>
+                  </Broadcast.AudioEnabledTrigger>
                 </div>
                 <div className="flex sm:flex-1 md:flex-[1.5] justify-end items-center gap-2.5">
                   <CameraSwitchButton />

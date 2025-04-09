@@ -1,0 +1,58 @@
+# General
+*.local
+.cache
+logs
+*.log
+.DS_Store
+*.pem
+*.cookie
+
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+.yarn/install-state.gz
+
+# Build outputs
+dist
+dist-ssr
+build/
+.turbo
+
+# TypeScript
+tsconfig.tsbuildinfo
+*.tsbuildinfo
+next-env.d.ts
+
+# Editor directories and files
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Local environment files
+.env
+.envrc
+.env*.local
+
+# Debug logs
+pnpm-debug.log*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Sentry
+.sentryclirc
+
+# Testing
+coverage/
+/coverage
+
+# Next.js
+.next/
+/out/
+
+# Vercel
+.vercel

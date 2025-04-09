@@ -1,0 +1,102 @@
+{
+  "name": "@livepeer/core",
+  "description": "Livepeer UI Kit's core vanilla JS library.",
+  "license": "MIT",
+  "type": "module",
+  "version": "3.2.8",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/livepeer/ui-kit.git",
+    "directory": "packages/core"
+  },
+  "homepage": "https://docs.livepeer.org",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./crypto": {
+      "types": "./dist/crypto/index.d.ts",
+      "import": "./dist/crypto/index.js",
+      "require": "./dist/crypto/index.cjs"
+    },
+    "./errors": {
+      "types": "./dist/errors/index.d.ts",
+      "import": "./dist/errors/index.js",
+      "require": "./dist/errors/index.cjs"
+    },
+    "./media": {
+      "types": "./dist/media/index.d.ts",
+      "import": "./dist/media/index.js",
+      "require": "./dist/media/index.cjs"
+    },
+    "./storage": {
+      "types": "./dist/storage/index.d.ts",
+      "import": "./dist/storage/index.js",
+      "require": "./dist/storage/index.cjs"
+    },
+    "./utils": {
+      "types": "./dist/utils/index.d.ts",
+      "import": "./dist/utils/index.js",
+      "require": "./dist/utils/index.cjs"
+    },
+    "./version": {
+      "types": "./dist/version/index.d.ts",
+      "import": "./dist/version/index.js",
+      "require": "./dist/version/index.cjs"
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "crypto": [
+        "./dist/crypto/index.d.ts"
+      ],
+      "errors": [
+        "./dist/errors/index.d.ts"
+      ],
+      "media": [
+        "./dist/media/index.d.ts"
+      ],
+      "storage": [
+        "./dist/storage/index.d.ts"
+      ],
+      "utils": [
+        "./dist/utils/index.d.ts"
+      ],
+      "version": [
+        "./dist/version/index.d.ts"
+      ],
+      "*": [
+        "./dist/index.d.ts"
+      ]
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "clean": "rimraf .turbo node_modules dist",
+    "dev": "tsup --watch",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "multiformats": "^13.2.2",
+    "nanoid": "^5.0.7",
+    "zustand": "^4.5.5"
+  },
+  "devDependencies": {
+    "jose": "^5.3.0"
+  },
+  "keywords": [
+    "livepeer",
+    "video",
+    "streaming",
+    "livestream"
+  ]
+}

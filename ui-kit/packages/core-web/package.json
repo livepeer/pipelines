@@ -1,0 +1,99 @@
+{
+  "name": "@livepeer/core-web",
+  "description": "Livepeer UI Kit's core web library, for adding reactive stores to video elements.",
+  "license": "MIT",
+  "version": "5.0.1",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/livepeer/ui-kit.git",
+    "directory": "packages/core-web"
+  },
+  "homepage": "https://docs.livepeer.org",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./broadcast": {
+      "types": "./dist/broadcast/index.d.ts",
+      "import": "./dist/broadcast/index.js",
+      "require": "./dist/broadcast/index.cjs"
+    },
+    "./browser": {
+      "types": "./dist/browser/index.d.ts",
+      "import": "./dist/browser/index.js",
+      "require": "./dist/browser/index.cjs"
+    },
+    "./external": {
+      "types": "./dist/external/index.d.ts",
+      "import": "./dist/external/index.js",
+      "require": "./dist/external/index.cjs"
+    },
+    "./hls": {
+      "types": "./dist/hls/index.d.ts",
+      "import": "./dist/hls/index.js",
+      "require": "./dist/hls/index.cjs"
+    },
+    "./media": {
+      "types": "./dist/media/index.d.ts",
+      "import": "./dist/media/index.js",
+      "require": "./dist/media/index.cjs"
+    },
+    "./webrtc": {
+      "types": "./dist/webrtc/index.d.ts",
+      "import": "./dist/webrtc/index.js",
+      "require": "./dist/webrtc/index.cjs"
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "broadcast": [
+        "./dist/broadcast/index.d.ts"
+      ],
+      "browser": [
+        "./dist/browser/index.d.ts"
+      ],
+      "external": [
+        "./dist/external/index.d.ts"
+      ],
+      "hls": [
+        "./dist/hls/index.d.ts"
+      ],
+      "media": [
+        "./dist/media/index.d.ts"
+      ],
+      "webrtc": [
+        "./dist/webrtc/index.d.ts"
+      ],
+      "*": [
+        "./dist/index.d.ts"
+      ]
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "clean": "rimraf .turbo node_modules dist",
+    "dev": "tsup --watch",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@livepeer/core": "workspace:*",
+    "hls.js": "^1.5.14",
+    "zustand": "^4.5.5"
+  },
+  "keywords": [
+    "livepeer",
+    "video",
+    "streaming",
+    "livestream"
+  ]
+}

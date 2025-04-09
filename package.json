@@ -9,7 +9,7 @@
     "bump-deps": "npx npm-check-updates --deep -u -x react-day-picker && pnpm install",
     "migrate": "cd packages/database && npx prisma format && npx prisma generate && npx prisma db push",
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx}\" --ignore-path .gitignore --ignore-pattern \"node_modules/**\" --ignore-pattern \".turbo/**\" --ignore-pattern \".github/**\"",
-    "prepare": "husky"
+    "prepare": "husky && turbo run build --filter=@livepeer/react"
   },
   "devDependencies": {
     "@auto-it/all-contributors": "^11.3.0",

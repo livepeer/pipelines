@@ -1,0 +1,70 @@
+{
+  "name": "@livepeer/core-react",
+  "description": "Internal library used for livepeer react primitives.",
+  "license": "MIT",
+  "version": "3.2.8",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/livepeer/ui-kit.git",
+    "directory": "packages/core-react"
+  },
+  "homepage": "https://docs.livepeer.org",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./crypto": {
+      "types": "./dist/crypto/index.d.ts",
+      "import": "./dist/crypto/index.js",
+      "require": "./dist/crypto/index.cjs"
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "crypto": [
+        "./dist/crypto/index.d.ts"
+      ],
+      "*": [
+        "./dist/index.d.ts"
+      ]
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "clean": "rimraf .turbo node_modules dist",
+    "dev": "tsup --watch",
+    "lint": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "react": ">=17.0.0"
+  },
+  "peerDependenciesMeta": {},
+  "dependencies": {
+    "@livepeer/core": "workspace:*",
+    "zustand": "^4.5.5"
+  },
+  "devDependencies": {
+    "@testing-library/react": "^16.0.0",
+    "@testing-library/react-hooks": "^8.0.1",
+    "@types/react": "^18.3.2",
+    "@types/react-dom": "^18.3.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "keywords": [
+    "livepeer",
+    "video",
+    "streaming",
+    "livestream"
+  ]
+}
