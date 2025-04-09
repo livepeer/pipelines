@@ -20,6 +20,7 @@ import {
   SlidersHorizontal,
   WandSparkles,
   X,
+  Shuffle,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import TextareaAutosize from "react-textarea-autosize";
@@ -51,18 +52,18 @@ type PipelineParam = {
 };
 
 // Add this function at the top of the file, after imports
-const SHAKE_THRESHOLD = 5;
+const SHAKE_THRESHOLD = 25;
 const SHAKE_TIMEOUT = 1000;
 
 // Add these prompts near the top of the file
 const SHAKE_PROMPTS = [
-  "a surreal dreamscape --quality 3",
-  "a mystical creature --creativity 0.4",
-  "a cosmic landscape",
-  "a futuristic city",
-  "an enchanted garden",
-  "an alien world",
-  "an underwater kingdom"
+  `((Surreal dreamscape)), floating objects, melting clocks, impossible architecture, vibrant colors, dreamlike atmosphere, Salvador Dali influence --quality 3 --negative-prompt "realistic, ordinary, mundane" --creativity 0.9`,
+  `(Mystical creature), ethereal glow, intricate details, fantasy environment, otherworldly features --quality 3 --negative-prompt "blurry, low resolution, anatomically incorrect" --creativity 0.4`,
+  `((Cosmic landscape)) with (swirling nebulae), distant galaxies, stellar formations, dark matter wisps, foreground asteroid field, cosmic dust catching starlight --quality 3 --negative-prompt "oversaturated, cartoonish, low resolution" --creativity 0.7`,
+  `(Futuristic cityscape), towering skyscrapers, flying vehicles, (holographic advertisements), gleaming architecture, neon lighting, reflective surfaces --quality 3 --negative-prompt "low quality, blurry, dystopian" --creativity 0.7`,
+  `((Enchanted garden)), magical atmosphere, dappled sunlight through ancient trees, glowing flowers, hidden pathways, fairy lights, vibrant colors --quality 3 --negative-prompt "artificial looking, oversaturated" --creativity 0.7`,
+  `((Alien landscape)), psychedelic flora, twin moons in sky, otherworldly terrain, unusual rock formations, strange atmospheric conditions --quality 3 --negative-prompt "earth-like, familiar plants, humans" --creativity 0.8`,
+  `((Underwater kingdom)), bioluminescent architecture, coral reefs, merfolk civilization, floating bubbles, azure lighting --quality 3 --negative-prompt "low quality, cartoon-style" --creativity 0.7`
 ];
 
 export const InputPrompt = () => {
@@ -293,15 +294,9 @@ export const InputPrompt = () => {
     promptVersion
   ]);
 
-  // Add debug state to show motion values on screen for testing
-  const [debugMotion, setDebugMotion] = useState<{x: number, y: number, z: number} | null>(null);
-
   // Update the motion detection useEffect
   useEffect(() => {
-    if (!hasMotionPermission || !isMobile) {
-      console.log('Motion detection not started:', { hasMotionPermission, isMobile });
-      return;
-    }
+    if (!hasMotionPermission || !isMobile) return;
 
     let lastX: number = 0, lastY: number = 0, lastZ: number = 0;
     let lastShake = 0;
@@ -309,41 +304,23 @@ export const InputPrompt = () => {
     const handleMotion = (event: DeviceMotionEvent) => {
       const current = Date.now();
       
-      // Get acceleration with gravity
       const acceleration = event.accelerationIncludingGravity;
-      if (!acceleration) {
-        console.log('No acceleration data');
-        return;
-      }
+      if (!acceleration) return;
 
       const x = acceleration.x || 0;
       const y = acceleration.y || 0;
       const z = acceleration.z || 0;
 
-      // Update debug display
-      setDebugMotion({ x, y, z });
-
-      // Calculate deltas
       const deltaX = Math.abs(x - lastX);
       const deltaY = Math.abs(y - lastY);
       const deltaZ = Math.abs(z - lastZ);
 
       const totalAcceleration = deltaX + deltaY + deltaZ;
-      
-      console.log('Motion values:', {
-        deltas: { deltaX, deltaY, deltaZ },
-        total: totalAcceleration,
-        threshold: SHAKE_THRESHOLD
-      });
 
       if (totalAcceleration > SHAKE_THRESHOLD) {
-        // Only trigger if enough time has passed
         if (current - lastShake > SHAKE_TIMEOUT) {
-          console.log('Shake detected! Triggering prompt...');
-          lastShake = current;
           handleShake();
-        } else {
-          console.log('Shake detected but too soon after last shake');
+          lastShake = current;
         }
       }
 
@@ -352,17 +329,7 @@ export const InputPrompt = () => {
       lastZ = z;
     };
 
-    console.log('Attempting to set up motion detection...');
-    
-    // Try both devicemotion and deviceorientation events
     window.addEventListener('devicemotion', handleMotion, true);
-
-    // Log if the device supports motion events
-    if (typeof DeviceMotionEvent !== 'undefined') {
-      console.log('DeviceMotionEvent is supported');
-    } else {
-      console.log('DeviceMotionEvent is NOT supported');
-    }
 
     return () => {
       window.removeEventListener('devicemotion', handleMotion, true);
@@ -395,309 +362,322 @@ export const InputPrompt = () => {
     }
   };
 
-  // Add debug display to the UI when in mobile
-  const renderDebugInfo = () => {
-    if (!isMobile || !hasMotionPermission) return null;
+  // Add handler for shuffle button
+  const handleShuffleClick = async () => {
+    if (isMobile && !hasMotionPermission) {
+      await requestMotionPermission();
+      return;
+    }
 
-    return (
-      <div className="fixed top-0 left-0 bg-black/50 text-white p-2 text-xs z-50">
-        <div>Motion: {debugMotion ? 
-          `X: ${debugMotion.x.toFixed(2)}, Y: ${debugMotion.y.toFixed(2)}, Z: ${debugMotion.z.toFixed(2)}` 
-          : 'No data'}</div>
-        <div>Permission: {hasMotionPermission ? 'Granted' : 'Not granted'}</div>
-      </div>
-    );
+    // If we're on desktop or already have permission, just submit a random prompt
+    if (!updating) {
+      const randomPrompt = generateRandomPrompt();
+      
+      track("daydream_prompt_submitted", {
+        is_authenticated: authenticated,
+        prompt: randomPrompt,
+        stream_id: stream?.id,
+        source: isMobile ? "shake-enabled" : "shuffle"
+      });
+
+      handleStreamUpdate(randomPrompt, { silent: true });
+      setLastSubmittedPrompt(randomPrompt);
+      setHasSubmittedPrompt(true);
+      incrementPromptVersion(promptVersion + 1);
+    }
   };
 
-  // Add this near the start of your return statement, before the main input UI
-  if (isMobile && !hasMotionPermission) {
-    return (
-      <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
-        <div className="bg-white dark:bg-zinc-900 p-6 rounded-lg max-w-sm mx-4 text-center">
-          <h3 className="text-lg font-semibold mb-2">Enable Shake to Generate</h3>
-          <p className="text-sm text-muted-foreground mb-4">
-            Allow motion access to generate images by shaking your device
-          </p>
-          <Button
-            onClick={requestMotionPermission}
-            className="w-full"
-          >
-            Enable Shake Feature
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <>
-      {renderDebugInfo()}
+    <div
+      className={cn(
+        "relative mx-auto flex justify-center items-center gap-2 h-14 md:h-auto md:min-h-14 md:gap-2 mt-4 mb-2 dark:bg-[#1A1A1A] bg-white md:rounded-xl py-2.5 px-3 md:py-1.5 md:px-3 w-[calc(100%-2rem)] md:w-[calc(min(100%,800px))] border-2 border-muted-foreground/10",
+        isFullscreen
+          ? isMobile
+            ? "fixed left-1/2 bottom-[calc(env(safe-area-inset-bottom)+16px)] -translate-x-1/2 z-[10000] w-[600px] max-w-[calc(100%-2rem)] max-h-16 rounded-2xl"
+            : "fixed left-1/2 bottom-0 -translate-x-1/2 z-[10000] w-[600px] max-w-[calc(100%-2rem)] max-h-16 rounded-[100px]"
+          : isMobile
+            ? "rounded-2xl shadow-[4px_12px_16px_0px_#37373F40]"
+            : "rounded-[100px]",
+        (profanity || exceedsMaxLength) && "dark:border-red-700 border-red-600",
+      )}
+    >
       <div
-        className={cn(
-          "relative mx-auto flex justify-center items-center gap-2 h-14 md:h-auto md:min-h-14 md:gap-2 mt-4 mb-2 dark:bg-[#1A1A1A] bg-white md:rounded-xl py-2.5 px-3 md:py-1.5 md:px-3 w-[calc(100%-2rem)] md:w-[calc(min(100%,800px))] border-2 border-muted-foreground/10",
-          isFullscreen
-            ? isMobile
-              ? "fixed left-1/2 bottom-[calc(env(safe-area-inset-bottom)+16px)] -translate-x-1/2 z-[10000] w-[600px] max-w-[calc(100%-2rem)] max-h-16 rounded-2xl"
-              : "fixed left-1/2 bottom-0 -translate-x-1/2 z-[10000] w-[600px] max-w-[calc(100%-2rem)] max-h-16 rounded-[100px]"
-            : isMobile
-              ? "rounded-2xl shadow-[4px_12px_16px_0px_#37373F40]"
-              : "rounded-[100px]",
-          (profanity || exceedsMaxLength) && "dark:border-red-700 border-red-600",
-        )}
+        className="flex-1 relative flex items-center"
+        onMouseEnter={() => setInputHovered(true)}
+        onMouseLeave={() => setInputHovered(false)}
       >
-        <div
-          className="flex-1 relative flex items-center"
-          onMouseEnter={() => setInputHovered(true)}
-          onMouseLeave={() => setInputHovered(false)}
-        >
-          {!inputValue && (
-            <div
-              key={lastSubmittedPrompt}
-              className={cn(
-                "absolute inset-y-0 left-3 md:left-3 flex items-center text-muted-foreground/50 text-xs w-full z-10",
-                isInputHovered ? "pointer-events-auto" : "pointer-events-none",
-              )}
-              onClick={e => {
-                if ((e.target as HTMLElement).closest("button")) {
-                  return;
-                }
-                if (ref.current) {
-                  ref.current.focus();
-                }
-              }}
-            >
-              <span>{lastSubmittedPrompt || PROMPT_PLACEHOLDER}</span>
-              {isInputHovered && lastSubmittedPrompt && (
-                <Tooltip delayDuration={0}>
-                  <TooltipTrigger asChild>
-                    <button
-                      onClick={e => {
-                        e.stopPropagation();
-                        restoreLastPrompt();
-                      }}
-                      className="ml-2 text-muted-foreground hover:text-foreground transition-colors flex items-center justify-center relative z-20"
-                      aria-label="Restore last prompt"
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="h-3.5 w-3.5"
-                      >
-                        <path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-                        <path d="m15 5 4 4" />
-                      </svg>
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent
-                    side="top"
-                    sideOffset={5}
-                    className="bg-white text-black border border-gray-200 shadow-md dark:bg-zinc-900 dark:text-white dark:border-zinc-700"
-                  >
-                    Edit prompt
-                  </TooltipContent>
-                </Tooltip>
-              )}
-            </div>
-          )}
-
-          {/* Input wrapper with highlighting */}
+        {!inputValue && (
           <div
-            className="relative w-full flex items-center"
-            style={{ height: "auto" }}
+            key={lastSubmittedPrompt}
+            className={cn(
+              "absolute inset-y-0 left-3 md:left-3 flex items-center text-muted-foreground/50 text-xs w-full z-10",
+              isInputHovered ? "pointer-events-auto" : "pointer-events-none",
+            )}
+            onClick={e => {
+              if ((e.target as HTMLElement).closest("button")) {
+                return;
+              }
+              if (ref.current) {
+                ref.current.focus();
+              }
+            }}
           >
-            {formatInputWithHighlights()}
-            {isMobile ? (
-              <Input
-                ref={ref as React.RefObject<HTMLInputElement>}
-                className="w-full shadow-none border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-sm outline-none bg-transparent py-3 font-sans"
-                value={inputValue}
-                onChange={e => setInputValue(e.target.value)}
-                onFocus={() => {
-                  window.scrollTo({
-                    top: document.body.scrollHeight,
-                    behavior: "smooth",
-                  });
-                }}
-                onKeyDown={handleKeyDown}
-                style={{
-                  color: "transparent",
-                  caretColor: "black",
-                  paddingLeft: "12px",
-                  whiteSpace: "pre-wrap",
-                  wordBreak: "break-word",
-                }}
-              />
-            ) : (
-              <TextareaAutosize
-                ref={ref as React.RefObject<HTMLTextAreaElement>}
-                minRows={1}
-                maxRows={5}
-                className="text-black w-full shadow-none border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-sm outline-none bg-transparent py-3 break-all font-sans pl-3"
-                value={inputValue}
-                onChange={e => setInputValue(e.target.value)}
-                onKeyDown={handleKeyDown}
-                style={{
-                  resize: "none",
-                  color: "transparent",
-                  caretColor: "black",
-                  whiteSpace: "pre-wrap",
-                  wordBreak: "break-word",
-                }}
-              />
+            <span>{lastSubmittedPrompt || PROMPT_PLACEHOLDER}</span>
+            {isInputHovered && lastSubmittedPrompt && (
+              <Tooltip delayDuration={0}>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={e => {
+                      e.stopPropagation();
+                      restoreLastPrompt();
+                    }}
+                    className="ml-2 text-muted-foreground hover:text-foreground transition-colors flex items-center justify-center relative z-20"
+                    aria-label="Restore last prompt"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="h-3.5 w-3.5"
+                    >
+                      <path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                      <path d="m15 5 4 4" />
+                    </svg>
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent
+                  side="top"
+                  sideOffset={5}
+                  className="bg-white text-black border border-gray-200 shadow-md dark:bg-zinc-900 dark:text-white dark:border-zinc-700"
+                >
+                  Edit prompt
+                </TooltipContent>
+              </Tooltip>
             )}
           </div>
+        )}
 
-          {/* Command menu popover - Positioned ABOVE the input */}
-          {commandMenuOpen && filteredOptions.length > 0 && (
-            <div
-              className="absolute z-50 bottom-full mb-2 w-60 bg-popover rounded-md border shadow-md"
-              style={{
-                left: caretRef.current?.left ?? 0,
+        {/* Input wrapper with highlighting */}
+        <div
+          className="relative w-full flex items-center"
+          style={{ height: "auto" }}
+        >
+          {formatInputWithHighlights()}
+          {isMobile ? (
+            <Input
+              ref={ref as React.RefObject<HTMLInputElement>}
+              className="w-full shadow-none border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-sm outline-none bg-transparent py-3 font-sans"
+              value={inputValue}
+              onChange={e => setInputValue(e.target.value)}
+              onFocus={() => {
+                window.scrollTo({
+                  top: document.body.scrollHeight,
+                  behavior: "smooth",
+                });
               }}
-            >
-              <div className="p-1">
-                {filteredOptions.map((option, index) => (
-                  <button
-                    key={option.id}
-                    className={`flex w-full items-start gap-2 rounded-sm px-2 py-1.5 text-left text-sm ${
-                      index === selectedOptionIndex
-                        ? "bg-accent"
-                        : "hover:bg-accent"
-                    } focus:outline-none`}
-                    onClick={() => handleSelectOption(option)}
-                  >
-                    <div className="flex flex-col">
-                      <div className="font-medium flex items-center">
-                        <span>--{option.id}</span>
-                        {option.type && (
-                          <span className="ml-1.5 text-muted-foreground opacity-70 text-xs">
-                            {option.type}
-                          </span>
-                        )}
-                      </div>
-                      {option.description && (
-                        <span className="text-xs text-muted-foreground">
-                          {option.description}
+              onKeyDown={handleKeyDown}
+              style={{
+                color: "transparent",
+                caretColor: "black",
+                paddingLeft: "12px",
+                whiteSpace: "pre-wrap",
+                wordBreak: "break-word",
+              }}
+            />
+          ) : (
+            <TextareaAutosize
+              ref={ref as React.RefObject<HTMLTextAreaElement>}
+              minRows={1}
+              maxRows={5}
+              className="text-black w-full shadow-none border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-sm outline-none bg-transparent py-3 break-all font-sans pl-3"
+              value={inputValue}
+              onChange={e => setInputValue(e.target.value)}
+              onKeyDown={handleKeyDown}
+              style={{
+                resize: "none",
+                color: "transparent",
+                caretColor: "black",
+                whiteSpace: "pre-wrap",
+                wordBreak: "break-word",
+              }}
+            />
+          )}
+        </div>
+
+        {/* Command menu popover - Positioned ABOVE the input */}
+        {commandMenuOpen && filteredOptions.length > 0 && (
+          <div
+            className="absolute z-50 bottom-full mb-2 w-60 bg-popover rounded-md border shadow-md"
+            style={{
+              left: caretRef.current?.left ?? 0,
+            }}
+          >
+            <div className="p-1">
+              {filteredOptions.map((option, index) => (
+                <button
+                  key={option.id}
+                  className={`flex w-full items-start gap-2 rounded-sm px-2 py-1.5 text-left text-sm ${
+                    index === selectedOptionIndex
+                      ? "bg-accent"
+                      : "hover:bg-accent"
+                  } focus:outline-none`}
+                  onClick={() => handleSelectOption(option)}
+                >
+                  <div className="flex flex-col">
+                    <div className="font-medium flex items-center">
+                      <span>--{option.id}</span>
+                      {option.type && (
+                        <span className="ml-1.5 text-muted-foreground opacity-70 text-xs">
+                          {option.type}
                         </span>
                       )}
                     </div>
-                  </button>
-                ))}
-              </div>
+                    {option.description && (
+                      <span className="text-xs text-muted-foreground">
+                        {option.description}
+                      </span>
+                    )}
+                  </div>
+                </button>
+              ))}
             </div>
-          )}
-        </div>
-        {inputValue && (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 rounded-full"
-            onClick={e => {
-              e.preventDefault();
-              setInputValue("");
-            }}
-          >
-            <span className="text-muted-foreground text-lg">×</span>
-          </Button>
-        )}
-
-        {/* Settings button */}
-        {!isMobile && (
-          <div className="relative">
-            <Tooltip delayDuration={50}>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 rounded-full hidden md:flex"
-                  onClick={e => {
-                    e.preventDefault();
-                    setSettingsOpened(!settingsOpened);
-                  }}
-                >
-                  <SlidersHorizontal className="h-4 w-4 text-muted-foreground" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent
-                side="top"
-                className="bg-white text-black border border-gray-200 shadow-md dark:bg-zinc-900 dark:text-white dark:border-zinc-700"
-              >
-                Adjustments
-              </TooltipContent>
-            </Tooltip>
-
-            {settingsOpened && (
-              <SettingsMenu
-                pipeline={pipeline}
-                inputValue={inputValue}
-                setInputValue={setInputValue}
-                onClose={() => setSettingsOpened(false)}
-              />
-            )}
-          </div>
-        )}
-
-        {!isMobile && <Separator orientation="vertical" className="h-6 mr-2" />}
-
-        <Tooltip delayDuration={50}>
-          <TooltipTrigger asChild>
-            <div className="relative inline-block">
-              <Button
-                disabled={
-                  updating || !inputValue || profanity || exceedsMaxLength
-                }
-                onClick={e => {
-                  e.preventDefault();
-                  submitPrompt();
-                }}
-                className={cn(
-                  "border-none items-center justify-center font-semibold text-xs bg-[#000000] flex disabled:bg-[#000000] disabled:opacity-80",
-                  isMobile
-                    ? "w-auto h-9 aspect-square rounded-md"
-                    : "w-auto h-9 aspect-square rounded-md",
-                )}
-              >
-                {updating ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <WandSparkles className="h-4 w-4 stroke-[2]" />
-                )}
-              </Button>
-            </div>
-          </TooltipTrigger>
-          <TooltipContent
-            side="top"
-            className="bg-white text-black border border-gray-200 shadow-md dark:bg-zinc-900 dark:text-white dark:border-zinc-700"
-          >
-            Prompt <span className="text-gray-400 dark:text-gray-500">Enter</span>
-          </TooltipContent>
-        </Tooltip>
-
-        {(profanity || exceedsMaxLength) && (
-          <div
-            className={cn(
-              "absolute -top-10 left-0 mx-auto flex items-center justify-center gap-4 text-xs text-muted-foreground mt-4",
-              isMobile && "-top-8 text-[9px] left-auto",
-            )}
-          >
-            {exceedsMaxLength ? (
-              <span className="text-red-600">
-                {`Please fix your prompt as it exceeds the maximum length of ${MAX_PROMPT_LENGTH} characters`}
-              </span>
-            ) : (
-              <span className="text-red-600">
-                Please fix your prompt as it may contain harmful words
-              </span>
-            )}
           </div>
         )}
       </div>
-    </>
+      {inputValue && (
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 rounded-full"
+          onClick={e => {
+            e.preventDefault();
+            setInputValue("");
+          }}
+        >
+          <span className="text-muted-foreground text-lg">×</span>
+        </Button>
+      )}
+
+      {/* Settings button */}
+      {!isMobile && (
+        <div className="relative">
+          <Tooltip delayDuration={50}>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 rounded-full hidden md:flex"
+                onClick={e => {
+                  e.preventDefault();
+                  setSettingsOpened(!settingsOpened);
+                }}
+              >
+                <SlidersHorizontal className="h-4 w-4 text-muted-foreground" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent
+              side="top"
+              className="bg-white text-black border border-gray-200 shadow-md dark:bg-zinc-900 dark:text-white dark:border-zinc-700"
+            >
+              Adjustments
+            </TooltipContent>
+          </Tooltip>
+
+          {settingsOpened && (
+            <SettingsMenu
+              pipeline={pipeline}
+              inputValue={inputValue}
+              setInputValue={setInputValue}
+              onClose={() => setSettingsOpened(false)}
+            />
+          )}
+        </div>
+      )}
+
+      {!isMobile && <Separator orientation="vertical" className="h-6 mr-2" />}
+
+      {/* Add Shuffle button before the submit button */}
+      <Tooltip delayDuration={50}>
+        <TooltipTrigger asChild>
+          <div className="relative inline-block">
+            <Button
+              disabled={updating}
+              onClick={handleShuffleClick}
+              className={cn(
+                "border-none items-center justify-center font-semibold text-xs bg-[#000000] flex disabled:bg-[#000000] disabled:opacity-80 mr-2",
+                isMobile
+                  ? "w-auto h-9 aspect-square rounded-md"
+                  : "w-auto h-9 aspect-square rounded-md"
+              )}
+            >
+              <Shuffle className="h-4 w-4 stroke-[2]" />
+            </Button>
+          </div>
+        </TooltipTrigger>
+        <TooltipContent
+          side="top"
+          className="bg-white text-black border border-gray-200 shadow-md dark:bg-zinc-900 dark:text-white dark:border-zinc-700"
+        >
+          {isMobile ? "Enable shake to generate" : "Random prompt"}
+        </TooltipContent>
+      </Tooltip>
+
+      {/* Existing submit button */}
+      <Tooltip delayDuration={50}>
+        <TooltipTrigger asChild>
+          <div className="relative inline-block">
+            <Button
+              disabled={updating || !inputValue || profanity || exceedsMaxLength}
+              onClick={e => {
+                e.preventDefault();
+                submitPrompt();
+              }}
+              className={cn(
+                "border-none items-center justify-center font-semibold text-xs bg-[#000000] flex disabled:bg-[#000000] disabled:opacity-80",
+                isMobile
+                  ? "w-auto h-9 aspect-square rounded-md"
+                  : "w-auto h-9 aspect-square rounded-md"
+              )}
+            >
+              {updating ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <WandSparkles className="h-4 w-4 stroke-[2]" />
+              )}
+            </Button>
+          </div>
+        </TooltipTrigger>
+        <TooltipContent
+          side="top"
+          className="bg-white text-black border border-gray-200 shadow-md dark:bg-zinc-900 dark:text-white dark:border-zinc-700"
+        >
+          Prompt <span className="text-gray-400 dark:text-gray-500">Enter</span>
+        </TooltipContent>
+      </Tooltip>
+
+      {(profanity || exceedsMaxLength) && (
+        <div
+          className={cn(
+            "absolute -top-10 left-0 mx-auto flex items-center justify-center gap-4 text-xs text-muted-foreground mt-4",
+            isMobile && "-top-8 text-[9px] left-auto",
+          )}
+        >
+          {exceedsMaxLength ? (
+            <span className="text-red-600">
+              {`Please fix your prompt as it exceeds the maximum length of ${MAX_PROMPT_LENGTH} characters`}
+            </span>
+          ) : (
+            <span className="text-red-600">
+              Please fix your prompt as it may contain harmful words
+            </span>
+          )}
+        </div>
+      )}
+    </div>
   );
 };
 
