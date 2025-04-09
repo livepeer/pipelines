@@ -28,31 +28,58 @@ export default function BentoGrids() {
           configuration={GridSetConfiguration.first}
           className="mt-10 sm:mt-16"
         >
-          <GridItem src="https://storage.googleapis.com/thom-vod-testing/daydream-05.mp4" className="lg:row-span-2" />
-          <GridItem src="https://storage.googleapis.com/thom-vod-testing/daydream-01.mp4" className="max-lg:row-start-1" />
+          <GridItem
+            src="https://storage.googleapis.com/thom-vod-testing/daydream-05.mp4"
+            className="lg:row-span-2"
+          />
+          <GridItem
+            src="https://storage.googleapis.com/thom-vod-testing/daydream-01.mp4"
+            className="max-lg:row-start-1"
+          />
           <GridItem
             src="https://storage.googleapis.com/thom-vod-testing/daydream-02.mp4"
             className="max-lg:row-start-3 lg:col-start-2 lg:row-start-2"
           />
-          <GridItem src="https://storage.googleapis.com/thom-vod-testing/daydream-03.mp4" className="lg:row-span-2" />
+          <GridItem
+            src="https://storage.googleapis.com/thom-vod-testing/daydream-03.mp4"
+            className="lg:row-span-2"
+          />
         </GridSet>
         <GridSet configuration={GridSetConfiguration.second}>
-          <GridItem src="https://storage.googleapis.com/thom-vod-testing/daydream-04.mp4" className="lg:row-span-2" />
-          <GridItem src="https://storage.googleapis.com/thom-vod-testing/daydream-05.mp4" className="max-lg:row-start-1 h-80" />
+          <GridItem
+            src="https://storage.googleapis.com/thom-vod-testing/daydream-04.mp4"
+            className="lg:row-span-2"
+          />
+          <GridItem
+            src="https://storage.googleapis.com/thom-vod-testing/daydream-05.mp4"
+            className="max-lg:row-start-1 h-80"
+          />
           <GridItem
             src="https://storage.googleapis.com/thom-vod-testing/daydream-01.mp4"
             className="max-lg:row-start-3 lg:col-start-2 lg:row-start-2 h-80"
           />
-          <GridItem src="https://storage.googleapis.com/thom-vod-testing/daydream-02.mp4" className="lg:row-span-2" />
+          <GridItem
+            src="https://storage.googleapis.com/thom-vod-testing/daydream-02.mp4"
+            className="lg:row-span-2"
+          />
         </GridSet>
-        <GridSet configuration={GridSetConfiguration.third}>
-          <GridItem src="https://storage.googleapis.com/thom-vod-testing/daydream-03.mp4" className="lg:row-span-2" />
-          <GridItem src="https://storage.googleapis.com/thom-vod-testing/daydream-04.mp4" className="max-lg:row-start-1 h-80" />
+        <GridSet configuration={GridSetConfiguration.first}>
+          <GridItem
+            src="https://storage.googleapis.com/thom-vod-testing/daydream-03.mp4"
+            className="lg:row-span-2"
+          />
+          <GridItem
+            src="https://storage.googleapis.com/thom-vod-testing/daydream-04.mp4"
+            className="max-lg:row-start-1 h-80"
+          />
           <GridItem
             src="https://storage.googleapis.com/thom-vod-testing/daydream-05.mp4"
             className="max-lg:row-start-3 lg:col-start-2 lg:row-start-2 h-80"
           />
-          <GridItem src="https://storage.googleapis.com/thom-vod-testing/daydream-01.mp4" className="lg:row-span-2" />
+          <GridItem
+            src="https://storage.googleapis.com/thom-vod-testing/daydream-01.mp4"
+            className="lg:row-span-2"
+          />
         </GridSet>
       </div>
     </div>
