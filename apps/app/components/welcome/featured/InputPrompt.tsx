@@ -50,6 +50,63 @@ type PipelineParam = {
   // Add other fields if needed
 };
 
+// Add this function at the top of the file, after imports
+const SHAKE_THRESHOLD = 15;
+const SHAKE_TIMEOUT = 1000;
+
+const useShakeDetection = (onShake: () => void) => {
+  const [lastShake, setLastShake] = useState(0);
+
+  useEffect(() => {
+    let lastX: number, lastY: number, lastZ: number;
+
+    const handleMotion = (event: DeviceMotionEvent) => {
+      const current = Date.now();
+      if ((current - lastShake) < SHAKE_TIMEOUT) return;
+
+      const acceleration = event.accelerationIncludingGravity;
+      if (!acceleration) return;
+
+      const { x, y, z } = acceleration;
+      if (!x || !y || !z) return;
+
+      const deltaX = Math.abs(x - (lastX || 0));
+      const deltaY = Math.abs(y - (lastY || 0));
+      const deltaZ = Math.abs(z - (lastZ || 0));
+
+      if ((deltaX + deltaY + deltaZ) > SHAKE_THRESHOLD) {
+        setLastShake(current);
+        onShake();
+      }
+
+      lastX = x;
+      lastY = y;
+      lastZ = z;
+    };
+
+    if (typeof window !== 'undefined' && 'DeviceMotion' in window) {
+      window.addEventListener('devicemotion', handleMotion);
+    }
+
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('devicemotion', handleMotion);
+      }
+    };
+  }, [onShake]);
+};
+
+// Add these prompts near the top of the file
+const SHAKE_PROMPTS = [
+  "Create a surreal dreamscape",
+  "Design a mystical creature",
+  "Paint a cosmic landscape",
+  "Imagine a futuristic city",
+  "Show me an enchanted garden",
+  "Generate an alien world",
+  "Create an underwater kingdom"
+];
+
 export const InputPrompt = () => {
   const { pipeline, stream, updating } = useDreamshaperStore();
   const { handleStreamUpdate } = useStreamUpdates();
@@ -240,6 +297,50 @@ export const InputPrompt = () => {
       submitPrompt();
     }
   };
+
+  // Add this function to generate random prompts
+  const generateRandomPrompt = () => {
+    const randomIndex = Math.floor(Math.random() * SHAKE_PROMPTS.length);
+    return SHAKE_PROMPTS[randomIndex];
+  };
+
+  // Add shake handler
+  const handleShake = () => {
+    if (!updating) {
+      const randomPrompt = generateRandomPrompt();
+      
+      track("daydream_prompt_submitted", {
+        is_authenticated: authenticated,
+        prompt: randomPrompt,
+        stream_id: stream?.id,
+        source: "shake"
+      });
+
+      handleStreamUpdate(randomPrompt, { silent: true });
+      setLastSubmittedPrompt(randomPrompt);
+      setHasSubmittedPrompt(true);
+      incrementPromptVersion(promptVersion + 1);
+    }
+  };
+
+  // Add shake detection
+  useShakeDetection(handleShake);
+
+  // Add iOS permission request
+  useEffect(() => {
+    if (isMobile && typeof DeviceMotionEvent !== 'undefined' && 
+        // @ts-ignore - iOS specific request method
+        typeof DeviceMotionEvent.requestPermission === 'function') {
+      // @ts-ignore
+      DeviceMotionEvent.requestPermission()
+        .then((permissionState: string) => {
+          if (permissionState === 'granted') {
+            // Permission granted
+          }
+        })
+        .catch(console.error);
+    }
+  }, [isMobile]);
 
   return (
     <div
