@@ -24,7 +24,7 @@ export function ChatMessage({
     <div
       className={cn(
         "group flex flex-col space-y-2 w-full",
-        role === "user" ? "items-end" : "items-start"
+        role === "user" ? "items-end" : "items-start",
       )}
     >
       <div
@@ -33,7 +33,7 @@ export function ChatMessage({
           role === "user"
             ? "bg-primary text-primary-foreground"
             : "bg-muted/50 text-foreground",
-          role === "assistant" ? "rounded-tl-sm" : "rounded-tr-sm"
+          role === "assistant" ? "rounded-tl-sm" : "rounded-tr-sm",
         )}
       >
         <p className="whitespace-pre-wrap leading-relaxed">{content}</p>
@@ -50,7 +50,7 @@ export function ChatMessage({
               className={cn(
                 "text-xs h-7 bg-background/50 hover:bg-muted/50",
                 "border border-input/50 shadow-sm",
-                "transition-colors duration-200"
+                "transition-colors duration-200",
               )}
             >
               {suggestion}

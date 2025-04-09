@@ -40,7 +40,7 @@ export function ChatContainer() {
       // Prepare the request to the chat API
       const formData = new FormData();
       formData.append("message", message);
-      
+
       // Add message history for context
       const messageHistory = messages.slice(-4); // Keep last 4 messages for context
       formData.append("messages", JSON.stringify(messageHistory));
@@ -108,7 +108,7 @@ export function ChatContainer() {
       <div
         className={cn(
           "flex-1 overflow-y-auto space-y-4 mb-4 px-4 py-4",
-          "scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700 scrollbar-track-transparent"
+          "scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700 scrollbar-track-transparent",
         )}
       >
         {messages.length === 0 && (
