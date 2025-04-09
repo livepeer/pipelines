@@ -178,9 +178,21 @@ export default function Dreamshaper() {
             </div>
 
             {/* Chat Interface */}
-            <div className="w-full md:w-1/3 max-w-md bg-background rounded-lg shadow-md p-4 h-[600px] overflow-hidden">
-              <h2 className="text-xl font-semibold mb-4">Chat Assistant</h2>
-              <ChatContainer />
+            <div className={cn(
+              "w-full md:w-1/3 max-w-md bg-background/50 backdrop-blur-sm rounded-2xl shadow-lg",
+              "border border-muted-foreground/10",
+              "h-[calc(100vh-16rem)] overflow-hidden flex flex-col",
+              "transition-all duration-300 ease-in-out"
+            )}>
+              <div className="px-4 py-3 border-b border-muted-foreground/10">
+                <h2 className="text-lg font-medium">Chat Assistant</h2>
+                <p className="text-sm text-muted-foreground">
+                  I&apos;ll help you create the perfect prompt
+                </p>
+              </div>
+              <div className="flex-1 overflow-hidden">
+                <ChatContainer />
+              </div>
             </div>
           </div>
 

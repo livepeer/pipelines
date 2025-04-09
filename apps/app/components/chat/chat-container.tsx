@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { ChatForm } from "./chat-form";
 import { ChatMessage } from "./chat-message";
 import { useStreamUpdates } from "@/hooks/useDreamshaper";
+import { cn } from "@repo/design-system/lib/utils";
 
 interface Message {
   role: "user" | "assistant";
@@ -99,8 +100,20 @@ export function ChatContainer() {
   };
 
   return (
-    <div className="flex flex-col h-full max-w-4xl mx-auto p-4">
-      <div className="flex-1 overflow-y-auto space-y-4 mb-4">
+    <div className="flex flex-col h-full">
+      <div 
+        className={cn(
+          "flex-1 overflow-y-auto space-y-4 mb-4 px-2",
+          "scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700 scrollbar-track-transparent"
+        )}
+      >
+        {messages.length === 0 && (
+          <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
+            <p className="text-sm">
+              Describe what you want to visualize and I&apos;ll help you create the perfect prompt.
+            </p>
+          </div>
+        )}
         {messages.map((message, index) => (
           <ChatMessage
             key={index}
@@ -117,7 +130,9 @@ export function ChatContainer() {
         ))}
         <div ref={messagesEndRef} />
       </div>
-      <ChatForm onSubmit={handleSubmit} isLoading={isLoading} />
+      <div className="mt-auto">
+        <ChatForm onSubmit={handleSubmit} isLoading={isLoading} />
+      </div>
     </div>
   );
 }
