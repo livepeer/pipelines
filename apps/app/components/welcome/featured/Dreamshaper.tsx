@@ -176,7 +176,7 @@ export default function Dreamshaper() {
               className={cn(
                 "w-full max-w-[calc(min(100%,calc((100vh-16rem)*16/9)))] mx-auto md:aspect-video aspect-square bg-sidebar rounded-2xl overflow-hidden relative",
                 isFullscreen && "w-full h-full max-w-none rounded-none",
-                "min-w-[596px]",
+                "md:min-w-[596px]",
               )}
             >
               <MainContent />
