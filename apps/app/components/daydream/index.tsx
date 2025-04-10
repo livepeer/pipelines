@@ -9,7 +9,7 @@ import { useEffect } from "react";
 import LayoutWrapper from "./LayoutWrapper";
 import { AuthProvider } from "./LoginScreen/AuthContext";
 import { createUser } from "@/app/actions/user";
-import { identifyUser } from "@/lib/analytics/mixpanel";
+import { handleDistinctId, identifyUser } from "@/lib/analytics/mixpanel";
 import { submitToHubspot } from "@/lib/analytics/hubspot";
 import track from "@/lib/track";
 import { usePrivy } from "@/hooks/usePrivy";
@@ -106,11 +106,12 @@ function DaydreamRenderer() {
         setIsInitializing(false);
 
         // 3. Handle tracking after initialization
-        const distinctId = localStorage.getItem("mixpanel_distinct_id");
+        const distinctId = handleDistinctId();
         localStorage.setItem("mixpanel_user_id", user.id);
 
         await Promise.all([
           identifyUser(user.id, distinctId || "", user),
+
           // TODO: only submit to Hubspot on production
           isNewUser ? submitToHubspot(user) : Promise.resolve(),
         ]);
@@ -126,7 +127,7 @@ function DaydreamRenderer() {
     };
 
     initUser();
-  }, []);
+  }, [user]);
 
   if (isInitializing) {
     return (
