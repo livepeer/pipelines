@@ -1,7 +1,66 @@
 import { cn } from "@repo/design-system/lib/utils";
-import PlayOnHoverVideo from "./PlayOnHoverVideo";
+import { useEffect, useRef } from "react";
+import useClipsFetcher, { Clip } from "./hooks/useClipsFetcher";
+import LoadingSpinner from "./LoadingSpinner";
+import OptimizedVideo from "./OptimizedVideo";
+
+enum GridSetConfiguration {
+  first = "lg:grid-cols-[9fr_5fr_6fr]",
+  second = "lg:grid-cols-[5fr_6fr_9fr]",
+}
+
+type GridSetProps = {
+  children: React.ReactNode;
+  configuration: GridSetConfiguration;
+  className?: string;
+};
+
+function GridSet({ children, configuration, className }: GridSetProps) {
+  return (
+    <div
+      className={cn("mt-4 grid gap-4 lg:grid-rows-2", configuration, className)}
+    >
+      {children}
+    </div>
+  );
+}
 
 export default function BentoGrids() {
+  const { clips, loading, hasMore, fetchClips } = useClipsFetcher();
+  const loadingRef = useRef<HTMLDivElement>(null);
+  const initialFetchDone = useRef(false);
+
+  useEffect(() => {
+    if (!initialFetchDone.current) {
+      fetchClips();
+      initialFetchDone.current = true;
+    }
+  }, [fetchClips]);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      entries => {
+        if (entries[0].isIntersecting && !loading && initialFetchDone.current) {
+          fetchClips();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (loadingRef.current) {
+      observer.observe(loadingRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [fetchClips, loading]);
+
+  const clipSets = [];
+  for (let i = 0; i < clips.length; i += 4) {
+    if (i + 3 < clips.length) {
+      clipSets.push(clips.slice(i, i + 4));
+    }
+  }
+
   return (
     <div className="bg-gray-50 py-8 z-10">
       <div
@@ -24,63 +83,52 @@ export default function BentoGrids() {
           Explore work from the most talented and accomplished designers ready
           to take on your next project
         </h2>
-        <GridSet
-          configuration={GridSetConfiguration.first}
-          className="mt-10 sm:mt-16"
+        
+        {clipSets.map((set, setIndex) => {
+          const configIndex = setIndex % 2;
+          const configuration = [
+            GridSetConfiguration.first, 
+            GridSetConfiguration.second, 
+          ][configIndex];
+          
+          return (
+            <GridSet 
+              key={`set-${setIndex}`} 
+              configuration={configuration}
+              className={setIndex === 0 ? "mt-10 sm:mt-16" : ""}
+            >
+              <GridItem
+                src={set[0].src}
+                className="lg:row-span-2"
+              />
+              <GridItem
+                src={set[1].src}
+                className="max-lg:row-start-1"
+              />
+              <GridItem
+                src={set[2].src}
+                className="max-lg:row-start-3 lg:col-start-2 lg:row-start-2"
+              />
+              <GridItem
+                src={set[3].src}
+                className="lg:row-span-2"
+              />
+            </GridSet>
+          );
+        })}
+        
+        <div 
+          ref={loadingRef} 
+          className="py-8 text-center"
         >
-          <GridItem
-            src="https://storage.googleapis.com/thom-vod-testing/daydream-05.mp4"
-            className="lg:row-span-2"
-          />
-          <GridItem
-            src="https://storage.googleapis.com/thom-vod-testing/daydream-01.mp4"
-            className="max-lg:row-start-1"
-          />
-          <GridItem
-            src="https://storage.googleapis.com/thom-vod-testing/daydream-02.mp4"
-            className="max-lg:row-start-3 lg:col-start-2 lg:row-start-2"
-          />
-          <GridItem
-            src="https://storage.googleapis.com/thom-vod-testing/daydream-03.mp4"
-            className="lg:row-span-2"
-          />
-        </GridSet>
-        <GridSet configuration={GridSetConfiguration.second}>
-          <GridItem
-            src="https://storage.googleapis.com/thom-vod-testing/daydream-04.mp4"
-            className="lg:row-span-2"
-          />
-          <GridItem
-            src="https://storage.googleapis.com/thom-vod-testing/daydream-05.mp4"
-            className="max-lg:row-start-1 h-80"
-          />
-          <GridItem
-            src="https://storage.googleapis.com/thom-vod-testing/daydream-01.mp4"
-            className="max-lg:row-start-3 lg:col-start-2 lg:row-start-2 h-80"
-          />
-          <GridItem
-            src="https://storage.googleapis.com/thom-vod-testing/daydream-02.mp4"
-            className="lg:row-span-2"
-          />
-        </GridSet>
-        <GridSet configuration={GridSetConfiguration.first}>
-          <GridItem
-            src="https://storage.googleapis.com/thom-vod-testing/daydream-03.mp4"
-            className="lg:row-span-2"
-          />
-          <GridItem
-            src="https://storage.googleapis.com/thom-vod-testing/daydream-04.mp4"
-            className="max-lg:row-start-1 h-80"
-          />
-          <GridItem
-            src="https://storage.googleapis.com/thom-vod-testing/daydream-05.mp4"
-            className="max-lg:row-start-3 lg:col-start-2 lg:row-start-2 h-80"
-          />
-          <GridItem
-            src="https://storage.googleapis.com/thom-vod-testing/daydream-01.mp4"
-            className="lg:row-span-2"
-          />
-        </GridSet>
+          {loading ? (
+            <LoadingSpinner />
+          ) : hasMore ? (
+            <p className="text-gray-500 font-light">Scroll for more</p>
+          ) : (
+            <p className="text-gray-500 font-light">No more clips</p>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -91,31 +139,9 @@ function GridItem({ src, className }: { src: string; className?: string }) {
     <div className={cn("relative", className)}>
       <div className="absolute inset-px rounded-xl bg-white "></div>
       <div className="relative flex h-full flex-col overflow-hidden rounded-[calc(theme(borderRadius.xl)+1px)]">
-        <PlayOnHoverVideo src={src} />
+        <OptimizedVideo src={src} />
       </div>
       <div className="pointer-events-none absolute inset-px rounded-xl shadow ring-1 ring-black/5"></div>
-    </div>
-  );
-}
-
-enum GridSetConfiguration {
-  first = "lg:grid-cols-[9fr_5fr_6fr]",
-  second = "lg:grid-cols-[5fr_6fr_9fr]",
-  third = "lg:grid-cols-[6fr_9fr_5fr]",
-}
-
-type GridSetProps = {
-  children: React.ReactNode;
-  configuration: GridSetConfiguration;
-  className?: string;
-};
-
-function GridSet({ children, configuration, className }: GridSetProps) {
-  return (
-    <div
-      className={cn("mt-4 grid gap-4 lg:grid-rows-2", configuration, className)}
-    >
-      {children}
     </div>
   );
 }
