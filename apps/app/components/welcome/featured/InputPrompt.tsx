@@ -338,6 +338,8 @@ export const InputPrompt = () => {
                 color: "transparent",
                 caretColor: "black",
                 paddingLeft: "12px",
+                whiteSpace: "pre-wrap",
+                wordBreak: "break-word",
               }}
             />
           ) : (
@@ -353,6 +355,8 @@ export const InputPrompt = () => {
                 resize: "none",
                 color: "transparent",
                 caretColor: "black",
+                whiteSpace: "pre-wrap",
+                wordBreak: "break-word",
               }}
             />
           )}

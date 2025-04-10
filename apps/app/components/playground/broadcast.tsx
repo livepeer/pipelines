@@ -23,11 +23,12 @@ import {
 import React, { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { toast } from "sonner";
-import { sendKafkaEvent } from "@/app/api/metrics/kafka";
+import { sendKafkaEvent } from "@/lib/analytics/event-middleware";
 import { useDreamshaperStore } from "@/hooks/useDreamshaper";
 import { create } from "zustand";
 import { usePrivy } from "@/hooks/usePrivy";
 import useMobileStore from "@/hooks/useMobileStore";
+import { useOnboard } from "../daydream/OnboardContext";
 
 const StatusMonitor = () => {
   const { user } = usePrivy();
@@ -47,22 +48,14 @@ const StatusMonitor = () => {
           "stream_trace",
           {
             type: "app_start_broadcast_stream",
-            timestamp: Date.now(),
-            user_id: user?.id || "anonymous",
             playback_id: "",
             stream_id: stream.id,
             pipeline: pipeline.type,
             pipeline_id: pipeline.id,
-            hostname: window.location.hostname,
-            broadcaster_info: {
-              ip: "",
-              user_agent: navigator.userAgent,
-              country: "",
-              city: "",
-            },
           },
           "daydream",
           "server",
+          user || undefined,
         );
       };
 
@@ -70,7 +63,7 @@ const StatusMonitor = () => {
     } else if (state.status !== "live") {
       liveEventSentRef.current = false;
     }
-  }, [state.status, stream?.id, pipeline?.id, pipeline?.type, user?.id]);
+  }, [state.status, stream?.id, pipeline?.id, pipeline?.type, user]);
 
   return null;
 };
@@ -91,6 +84,7 @@ const videoId = "live-video";
 
 export function BroadcastWithControls({ className }: { className?: string }) {
   const { streamUrl: ingestUrl } = useDreamshaperStore();
+  const { cameraPermission } = useOnboard();
   const [isPiP, setIsPiP] = useState(false);
 
   const { collapsed, setCollapsed, toggleCollapsed } = useBroadcastUIStore();
@@ -117,6 +111,15 @@ export function BroadcastWithControls({ className }: { className?: string }) {
     };
   }, []);
 
+  if (cameraPermission !== "granted") {
+    return (
+      <BroadcastLoading
+        title="Cannot access camera"
+        description="Please grant camera permission to broadcast."
+      />
+    );
+  }
+
   if (!ingestUrl) {
     return (
       <BroadcastLoading
@@ -141,14 +144,15 @@ export function BroadcastWithControls({ className }: { className?: string }) {
       audio={false}
       aspectRatio={16 / 9}
       ingestUrl={ingestUrl}
-      iceServers={{
-        urls: [
-          "stun:stun.l.google.com:19302",
-          "stun:global.stun.twilio.com:3478",
-          "stun:stun.cloudflare.com:3478",
-          "stun:stun.services.mozilla.com:3478",
-        ],
-      }}
+      {...({
+        iceServers: {
+          urls: [
+            "stun:stun.l.google.com:19302",
+            "stun:stun1.l.google.com:19302",
+            "stun:stun.cloudflare.com:3478",
+          ],
+        },
+      } as any)}
       storage={null}
     >
       <StatusMonitor />
@@ -501,22 +505,22 @@ export const BroadcastLoading = ({
   <div className="relative w-full px-3 md:px-3 py-3 gap-3 flex-col-reverse flex aspect-video bg-white/10 overflow-hidden rounded-sm">
     <div className="flex justify-between">
       <div className="flex items-center gap-2">
-        <div className="w-6 h-6 animate-pulse bg-white/5 overflow-hidden rounded-lg" />
-        <div className="w-16 h-6 md:w-20 md:h-7 animate-pulse bg-white/5 overflow-hidden rounded-lg" />
+        <div className="w-6 h-6 animate-pulse bg-background/5 overflow-hidden rounded-lg" />
+        <div className="w-16 h-6 md:w-20 md:h-7 animate-pulse bg-background/5 overflow-hidden rounded-lg" />
       </div>
 
       <div className="flex items-center gap-2">
-        <div className="w-6 h-6 animate-pulse bg-white/5 overflow-hidden rounded-lg" />
-        <div className="w-6 h-6 animate-pulse bg-white/5 overflow-hidden rounded-lg" />
+        <div className="w-6 h-6 animate-pulse bg-background/5 overflow-hidden rounded-lg" />
+        <div className="w-6 h-6 animate-pulse bg-background/5 overflow-hidden rounded-lg" />
       </div>
     </div>
-    <div className="w-full h-2 animate-pulse bg-white/5 overflow-hidden rounded-lg" />
+    <div className="w-full h-2 animate-pulse bg-background/5 overflow-hidden rounded-lg" />
 
     {title && (
       <div className="absolute flex flex-col gap-1 inset-10 text-center justify-center items-center">
-        <span className="text-white text-lg font-medium">{title}</span>
+        <span className="text-foreground text-lg font-medium">{title}</span>
         {description && (
-          <span className="text-sm text-white/80">{description}</span>
+          <span className="text-sm text-foreground/80">{description}</span>
         )}
       </div>
     )}

@@ -106,11 +106,18 @@ export const config: Config = {
             transform: "translateY(0)",
           },
         },
+        shimmer: {
+          "0%": { backgroundPosition: "200% 0" },
+          "100%": { backgroundPosition: "-100% 0" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         "fade-in": "fade-in 1s ease-out",
+        shimmer: "shimmer 4s linear infinite",
+        "shimmer-slow": "shimmer 6s linear infinite",
+        "shimmer-fast": "shimmer 2.5s linear infinite",
       },
       typography: typographyConfig,
     },

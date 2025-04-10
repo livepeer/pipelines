@@ -1,6 +1,6 @@
 "use client";
 
-import { sendKafkaEvent } from "@/app/api/metrics/kafka";
+import { sendKafkaEvent } from "@/lib/analytics/event-middleware";
 import { getStreamPlaybackInfo } from "@/app/api/streams/get";
 import { LPPLayer } from "@/components/playground/player";
 import { useAppConfig } from "@/hooks/useAppConfig";
@@ -122,13 +122,15 @@ export const LivepeerPlayer = () => {
         backoffMax={1000}
         timeout={300000}
         lowLatency="force"
-        iceServers={{
-          urls: [
-            "stun:stun.l.google.com:19302",
-            "stun:stun1.l.google.com:19302",
-            "stun:stun.cloudflare.com:3478",
-          ],
-        }}
+        {...({
+          iceServers: {
+            urls: [
+              "stun:stun.l.google.com:19302",
+              "stun:stun1.l.google.com:19302",
+              "stun:stun.cloudflare.com:3478",
+            ],
+          },
+        } as any)}
         onError={handleError}
       >
         {/* TODO: What is this */}
@@ -275,24 +277,15 @@ const useFirstFrameLoaded = ({ __scopeMedia }: Player.MediaScopedProps) => {
         "stream_trace",
         {
           type: "app_send_stream_request",
-          timestamp: startTime.current,
-          user_id: user?.id || "anonymous",
           playback_id: stream?.output_playback_id,
           stream_id: stream?.id,
           pipeline: pipeline?.type,
           pipeline_id: pipeline?.id,
           player: "livepeer",
-          hostname: window.location.hostname,
-          // TODO: Get viewer info from client
-          viewer_info: {
-            ip: "",
-            user_agent: "",
-            country: "",
-            city: "",
-          },
         },
         "daydream",
         "server",
+        user || undefined,
       );
     };
     sendEvent();
@@ -309,24 +302,15 @@ const useFirstFrameLoaded = ({ __scopeMedia }: Player.MediaScopedProps) => {
           "stream_trace",
           {
             type: "app_receive_first_segment",
-            timestamp: Date.now(),
-            user_id: user?.id || "anonymous",
             playback_id: stream?.output_playback_id,
             stream_id: stream?.id,
             pipeline: pipeline?.type,
             pipeline_id: pipeline?.id,
             player: "livepeer",
-            hostname: window.location.hostname,
-            // TODO: Get viewer info from client
-            viewer_info: {
-              ip: "",
-              user_agent: "",
-              country: "",
-              city: "",
-            },
           },
           "daydream",
           "server",
+          user || undefined,
         );
       sendEvent();
     }

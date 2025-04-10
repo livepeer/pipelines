@@ -15,6 +15,8 @@ import { useEffect, useState } from "react";
 import { useDreamshaperStore } from "../../../hooks/useDreamshaper";
 import { LivepeerPlayer } from "./player";
 import { usePrivy } from "@/hooks/usePrivy";
+import { Logo } from "@/components/sidebar";
+import Overlay from "./Overlay";
 
 export const MainContent = () => {
   const { stream, loading } = useDreamshaperStore();
@@ -100,14 +102,7 @@ export const MainContent = () => {
           <div className="relative w-full h-full">
             <LivepeerPlayer />
           </div>
-          {!live || showOverlay ? (
-            <div className="absolute inset-0 bg-black flex flex-col items-center justify-center rounded-2xl z-[6]">
-              <Loader2 className="h-8 w-8 animate-spin text-white" />
-              {statusMessage && (
-                <span className="mt-4 text-white text-sm">{statusMessage}</span>
-              )}
-            </div>
-          ) : null}
+          {(!live || showOverlay) && <Overlay statusMessage={statusMessage} />}
         </>
       ) : (
         <div className="w-full h-full flex items-center justify-center text-muted-foreground">

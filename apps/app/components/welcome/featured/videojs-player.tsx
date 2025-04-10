@@ -1,6 +1,6 @@
 "use client";
 
-import { sendKafkaEvent } from "@/app/api/metrics/kafka";
+import { sendKafkaEvent } from "@/lib/analytics/event-middleware";
 import { usePrivy } from "@/hooks/usePrivy";
 import MillicastWhepPlugin from "@millicast/videojs-whep-plugin";
 import { useSearchParams } from "next/navigation";
@@ -122,17 +122,13 @@ const VideoJSStyles = () => (
       display: none !important;
     }
 
-    /* Position fullscreen button on the far right */
+    /* Hide fullscreen button */
     .video-js .vjs-fullscreen-control {
-      margin-left: auto;
-      order: 99;
+      display: none !important;
     }
 
-    /* Hide any other controls except volume and fullscreen */
-    .video-js
-      .vjs-control:not(.vjs-volume-panel):not(.vjs-fullscreen-control):not(
-        .vjs-mute-control
-      ) {
+    /* Hide any other controls except volume */
+    .video-js .vjs-control:not(.vjs-volume-panel):not(.vjs-mute-control) {
       display: none !important;
     }
 
@@ -215,34 +211,6 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
 
   const isWHEP = src.includes("/whep");
 
-  useEffect(() => {
-    const sendInitialEvent = async () => {
-      await sendKafkaEvent(
-        "stream_trace",
-        {
-          type: "app_send_stream_request",
-          timestamp: startTimeRef.current,
-          user_id: user?.id || "anonymous",
-          playback_id: playbackId,
-          stream_id: streamId,
-          pipeline: pipelineType,
-          pipeline_id: pipelineId,
-          player: "videojs",
-          hostname: window.location.hostname,
-          viewer_info: {
-            ip: "",
-            user_agent: "",
-            country: "",
-            city: "",
-          },
-        },
-        "daydream",
-        "server",
-      );
-    };
-    sendInitialEvent();
-  }, [playbackId, streamId, pipelineId, pipelineType, user]);
-
   const handleFirstFrame = () => {
     const currentTime = Date.now();
     setFirstFrameTime(((currentTime - startTimeRef.current) / 1000).toFixed(2));
@@ -252,23 +220,15 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
         "stream_trace",
         {
           type: "app_receive_first_segment",
-          timestamp: Date.now(),
-          user_id: user?.id || "anonymous",
           playback_id: playbackId,
           stream_id: streamId,
           pipeline: pipelineType,
           pipeline_id: pipelineId,
           player: "videojs",
-          hostname: window.location.hostname,
-          viewer_info: {
-            ip: "",
-            user_agent: "",
-            country: "",
-            city: "",
-          },
         },
         "daydream",
         "server",
+        user || undefined,
       );
     };
     sendFirstFrameEvent();
