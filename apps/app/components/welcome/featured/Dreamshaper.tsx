@@ -43,6 +43,8 @@ export default function Dreamshaper() {
   usePlayerPositionUpdater(playerRef);
 
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [timeUntilRefresh, setTimeUntilRefresh] = useState(300);
+  const refreshTimerRef = useRef<NodeJS.Timeout>();
 
   useMount(() => {
     track("daydream_page_view", {
@@ -159,11 +161,35 @@ export default function Dreamshaper() {
     }
   }, [pipeline]);
 
+  useEffect(() => {
+    setTimeUntilRefresh(300);
+
+    refreshTimerRef.current = setInterval(() => {
+      setTimeUntilRefresh(prev => {
+        if (prev <= 1) {
+          window.location.reload();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => {
+      if (refreshTimerRef.current) {
+        clearInterval(refreshTimerRef.current);
+      }
+    };
+  }, []);
+
   return (
     <div className="relative">
       <div className={currentStep !== "main" ? "hidden" : "block"}>
         <div className="relative flex flex-col min-h-screen overflow-y-auto">
           <Header />
+
+          <div className="fixed top-4 right-4 z-[100] bg-neutral-800/80 text-white px-3 py-1 rounded-full text-sm font-mono">
+            Refreshing in {timeUntilRefresh}s
+          </div>
 
           <div
             className={cn(
