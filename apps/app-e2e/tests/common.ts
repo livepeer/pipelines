@@ -7,7 +7,7 @@ export const HAVE_ENOUGH_DATA = 4;
 export const SEC = 1000;
 export const MIN = 60 * SEC;
 
-export const VIDEO_VISIBLE_TIMEOUT_MS = MIN;
+export const VIDEO_VISIBLE_TIMEOUT_MS = 2 * MIN;
 export const POLL_READYSTATE_TIMEOUT_MS = MIN;
 export const POLL_PLAYING_TIMEOUT_MS = MIN;
 export const PLAYBACK_PROGRESS_CHECK_DELAY_MS = 10 * SEC;
