@@ -3,11 +3,13 @@
 import { useCommandSuggestions } from "@/hooks/useCommandSuggestions";
 import useFullscreenStore from "@/hooks/useFullscreenStore";
 import useMobileStore from "@/hooks/useMobileStore";
+import { usePrivy } from "@/hooks/usePrivy";
 import { usePromptStore } from "@/hooks/usePromptStore";
 import { usePromptVersionStore } from "@/hooks/usePromptVersionStore";
 import track from "@/lib/track";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Input } from "@repo/design-system/components/ui/input";
+import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   Tooltip,
   TooltipContent,
@@ -17,11 +19,10 @@ import { cn } from "@repo/design-system/lib/utils";
 import {
   CircleDot,
   Loader2,
-  SlidersHorizontal,
-  WandSparkles,
-  X,
   Shuffle,
+  SlidersHorizontal,
   Vibrate,
+  WandSparkles,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import TextareaAutosize from "react-textarea-autosize";
@@ -31,8 +32,6 @@ import {
 } from "../../../hooks/useDreamshaper";
 import SettingsMenu from "./prompt-settings";
 import { MAX_PROMPT_LENGTH, useValidateInput } from "./useValidateInput";
-import { Separator } from "@repo/design-system/components/ui/separator";
-import { usePrivy } from "@/hooks/usePrivy";
 
 // Define type for command options
 type CommandOption = {
