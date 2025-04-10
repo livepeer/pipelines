@@ -14,12 +14,12 @@ export default function useClipsFetcher() {
 
   const fetchClips = useCallback(async () => {
     if (loading || !hasMore) return;
-    
+
     setLoading(true);
     try {
       const response = await fetch(`/api/clips?page=${page}&limit=12`);
       const data = await response.json();
-      
+
       setClips(prev => [...prev, ...data.clips]);
       setHasMore(data.hasMore);
       setPage(prev => prev + 1);
@@ -34,6 +34,6 @@ export default function useClipsFetcher() {
     clips,
     loading,
     hasMore,
-    fetchClips
+    fetchClips,
   };
-} 
+}

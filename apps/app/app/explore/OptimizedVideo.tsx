@@ -16,25 +16,25 @@ export default function OptimizedVideo({
 
   useEffect(() => {
     if (!containerRef.current) return;
-    
+
     const nearObserver = new IntersectionObserver(
-      (entries) => {
+      entries => {
         setIsNearViewport(entries[0].isIntersecting);
       },
-      { rootMargin: "1000px" }
+      { rootMargin: "1000px" },
     );
-    
+
     nearObserver.observe(containerRef.current);
-    
+
     return () => nearObserver.disconnect();
   }, []);
-  
+
   useEffect(() => {
     const videoElement = videoRef.current;
     if (!videoElement || !containerRef.current || !isNearViewport) return;
-    
+
     const playbackObserver = new IntersectionObserver(
-      (entries) => {
+      entries => {
         if (entries[0].isIntersecting) {
           videoElement.play().catch(error => {
             console.log("Browser is prevnting autoplay:", error);
@@ -43,19 +43,16 @@ export default function OptimizedVideo({
           videoElement.pause();
         }
       },
-      { threshold: 0.7 }
+      { threshold: 0.7 },
     );
-    
+
     playbackObserver.observe(containerRef.current);
-    
+
     return () => playbackObserver.disconnect();
-  }, [isNearViewport]); 
+  }, [isNearViewport]);
 
   return (
-    <div 
-      ref={containerRef} 
-      className={cn("size-full", className)}
-    >
+    <div ref={containerRef} className={cn("size-full", className)}>
       {isNearViewport ? (
         <video
           ref={videoRef}
@@ -70,4 +67,4 @@ export default function OptimizedVideo({
       )}
     </div>
   );
-} 
+}

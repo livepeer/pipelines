@@ -44,7 +44,7 @@ export default function BentoGrids() {
           fetchClips();
         }
       },
-      { threshold: 0.1 }
+      { threshold: 0.1 },
     );
 
     if (loadingRef.current) {
@@ -83,44 +83,32 @@ export default function BentoGrids() {
           Explore work from the most talented and accomplished designers ready
           to take on your next project
         </h2>
-        
+
         {clipSets.map((set, setIndex) => {
           const configIndex = setIndex % 2;
           const configuration = [
-            GridSetConfiguration.first, 
-            GridSetConfiguration.second, 
+            GridSetConfiguration.first,
+            GridSetConfiguration.second,
           ][configIndex];
-          
+
           return (
-            <GridSet 
-              key={`set-${setIndex}`} 
+            <GridSet
+              key={`set-${setIndex}`}
               configuration={configuration}
               className={setIndex === 0 ? "mt-10 sm:mt-16" : ""}
             >
-              <GridItem
-                src={set[0].src}
-                className="lg:row-span-2"
-              />
-              <GridItem
-                src={set[1].src}
-                className="max-lg:row-start-1"
-              />
+              <GridItem src={set[0].src} className="lg:row-span-2" />
+              <GridItem src={set[1].src} className="max-lg:row-start-1" />
               <GridItem
                 src={set[2].src}
                 className="max-lg:row-start-3 lg:col-start-2 lg:row-start-2"
               />
-              <GridItem
-                src={set[3].src}
-                className="lg:row-span-2"
-              />
+              <GridItem src={set[3].src} className="lg:row-span-2" />
             </GridSet>
           );
         })}
-        
-        <div 
-          ref={loadingRef} 
-          className="py-8 text-center"
-        >
+
+        <div ref={loadingRef} className="py-8 text-center">
           {loading ? (
             <LoadingSpinner />
           ) : hasMore ? (
