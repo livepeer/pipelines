@@ -40,8 +40,6 @@ test.describe("Daydream Page Tests", () => {
   test("video elements load and play correctly", async ({ page }) => {
     test.setTimeout(OVERALL_TEST_TIMEOUT_MS);
 
-    console.log(EMAIL);
-    console.log(OTP_CODE);
     const emailInput = page.getByTestId("email-input");
     await expect(emailInput).toBeVisible();
     await emailInput.fill(EMAIL);
