@@ -20,11 +20,8 @@ export const NUM_SCREENSHOTS = 4;
 export const SCREENSHOT_INTERVAL_MS = 250;
 export const MIN_DIFF_THRESHOLD = 300;
 
-export const BROADCAST_MIN_VARIANCE_THRESHOLD = 100;
-export const BROADCAST_MIN_ENTROPY_THRESHOLD = 0.5;
-
-export const PLAYBACK_MIN_VARIANCE_THRESHOLD = 5000;
-export const PLAYBACK_MIN_ENTROPY_THRESHOLD = 5;
+export const MIN_VARIANCE_THRESHOLD = 100;
+export const MIN_ENTROPY_THRESHOLD = 0.5;
 
 export const EXTENSION = "png";
 
@@ -110,8 +107,8 @@ export async function assertVideoContentChanging(
   video: Locator,
   numFrames = NUM_SCREENSHOTS,
   intervalMs = SCREENSHOT_INTERVAL_MS,
-  varianceThreshold = BROADCAST_MIN_VARIANCE_THRESHOLD,
-  entropyThreshold = BROADCAST_MIN_ENTROPY_THRESHOLD,
+  varianceThreshold = MIN_VARIANCE_THRESHOLD,
+  entropyThreshold = MIN_ENTROPY_THRESHOLD,
 ) {
   const frameBuffers: Buffer[] = [];
   const processedFrames: {

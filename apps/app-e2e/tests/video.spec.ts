@@ -2,13 +2,9 @@ import { expect, test } from "@playwright/test";
 import {
   assertVideoContentChanging,
   assertVideoPlaying,
-  BROADCAST_MIN_ENTROPY_THRESHOLD,
-  BROADCAST_MIN_VARIANCE_THRESHOLD,
   BROADCAST_VIDEO_TEST_ID,
   NUM_SCREENSHOTS,
   OVERALL_TEST_TIMEOUT_MS,
-  PLAYBACK_MIN_ENTROPY_THRESHOLD,
-  PLAYBACK_MIN_VARIANCE_THRESHOLD,
   PLAYBACK_VIDEO_TEST_ID,
   SCREENSHOT_INTERVAL_MS,
 } from "./common";
@@ -68,8 +64,8 @@ test.describe("Daydream Page Tests", () => {
       broadcast,
       NUM_SCREENSHOTS,
       SCREENSHOT_INTERVAL_MS,
-      BROADCAST_MIN_VARIANCE_THRESHOLD,
-      BROADCAST_MIN_ENTROPY_THRESHOLD,
+      100,
+      0.5,
     );
     await broadcast.evaluate(el => {
       (el as HTMLElement).style.visibility = "hidden";
@@ -78,8 +74,8 @@ test.describe("Daydream Page Tests", () => {
       playback,
       NUM_SCREENSHOTS,
       SCREENSHOT_INTERVAL_MS,
-      PLAYBACK_MIN_VARIANCE_THRESHOLD,
-      PLAYBACK_MIN_ENTROPY_THRESHOLD,
+      5000,
+      5,
     );
   });
 });
