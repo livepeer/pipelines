@@ -3,8 +3,6 @@ name: E2E Test
 on:
   pull_request:
     branches: [main]
-  push:
-    branches: [main]
 
 jobs:
   e2e-preview:
@@ -13,22 +11,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Wait for Vercel deployment to be ready
-        run: sleep 150
-
-      - name: Capture Vercel Preview URL
-        uses: zentered/vercel-preview-url@v1.1.9
-        id: vercel_preview_url
-        env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-        with:
-          vercel_project_id: ${{ secrets.VERCEL_PROJECT_ID }}
-          vercel_team_id: ${{ secrets.VERCEL_TEAM_ID }}
-
-      - name: Set TEST_APP_URL from preview URL
-        run: echo "TEST_APP_URL=https://${{ steps.vercel_preview_url.outputs.preview_url }}" >> $GITHUB_ENV
+        uses: actions/checkout@v4
 
       - name: Install pnpm
         uses: pnpm/action-setup@v2
@@ -45,7 +28,7 @@ jobs:
         run: pnpm install --filter app-e2e...
 
       - name: Cache Playwright Browsers
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
           key: ${{ runner.os }}-playwright-browsers-${{ hashFiles('pnpm-lock.yaml') }}
@@ -54,6 +37,18 @@ jobs:
 
       - name: Install Playwright Browsers and Dependencies
         run: pnpm --filter app-e2e exec playwright install --with-deps chrome
+
+      - name: Capture Vercel Preview URL
+        uses: zentered/vercel-preview-url@v1.1.9
+        id: vercel_preview_url
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        with:
+          vercel_project_id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel_team_id: ${{ secrets.VERCEL_TEAM_ID }}
+
+      - name: Set TEST_APP_URL from preview URL
+        run: echo "TEST_APP_URL=https://${{ steps.vercel_preview_url.outputs.preview_url }}" >> $GITHUB_ENV
 
       - name: Run Playwright tests for preview
         id: playwright

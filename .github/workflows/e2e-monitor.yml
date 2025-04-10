@@ -1,4 +1,5 @@
 name: E2E Monitor
+# TODO: Improve browser caching
 
 on:
   workflow_dispatch:
@@ -21,7 +22,7 @@ jobs:
     environment: "Staging - e2e"
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install pnpm
         uses: pnpm/action-setup@v2
@@ -38,7 +39,7 @@ jobs:
         run: pnpm install --filter app-e2e...
 
       - name: Cache Playwright Browsers
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
           key: ${{ runner.os }}-playwright-browsers-${{ hashFiles('pnpm-lock.yaml') }}
@@ -50,6 +51,10 @@ jobs:
 
       - name: Run Playwright tests for staging
         id: playwright
+        env:
+          TEST_APP_URL: ${{ secrets.TEST_APP_URL }}
+          TEST_EMAIL: ${{ secrets.TEST_EMAIL }}
+          TEST_OTP_CODE: ${{ secrets.TEST_OTP_CODE }}
         run: pnpm --filter app-e2e test
         continue-on-error: true
 
@@ -73,7 +78,7 @@ jobs:
     environment: "Production - e2e"
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install pnpm
         uses: pnpm/action-setup@v2

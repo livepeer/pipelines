@@ -3,6 +3,7 @@ import {
   assertVideoContentChanging,
   assertVideoPlaying,
   BROADCAST_VIDEO_TEST_ID,
+  MIN,
   NUM_SCREENSHOTS,
   OVERALL_TEST_TIMEOUT_MS,
   PLAYBACK_VIDEO_TEST_ID,
@@ -40,10 +41,8 @@ test.describe("Daydream Page Tests", () => {
   test("video elements load and play correctly", async ({ page }) => {
     test.setTimeout(OVERALL_TEST_TIMEOUT_MS);
 
-    console.log(EMAIL);
-    console.log(OTP_CODE);
     const emailInput = page.getByTestId("email-input");
-    await expect(emailInput).toBeVisible();
+    await expect(emailInput).toBeVisible({ timeout: 10 * MIN }); // Might still be building
     await emailInput.fill(EMAIL);
 
     await page.getByTestId("submit-email").click();
