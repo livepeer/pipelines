@@ -1,0 +1,124 @@
+name: E2E Monitor
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Choose the environment"
+        required: true
+        default: "staging"
+        type: choice
+        options:
+          - production
+          - staging
+  schedule:
+    - cron: "*/30 * * * *"
+
+jobs:
+  e2e-staging:
+    if: (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'staging') || github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    environment: "Staging - e2e"
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --filter app-e2e...
+
+      - name: Cache Playwright Browsers
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-browsers-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-browsers-
+
+      - name: Install Playwright Browsers and Dependencies
+        run: pnpm --filter app-e2e exec playwright install --with-deps chrome
+
+      - name: Run Playwright tests for staging
+        id: playwright
+        run: pnpm --filter app-e2e test
+        continue-on-error: true
+
+      - name: Upload test screenshots for staging
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: screenshots-staging
+          path: apps/app-e2e/screenshots/
+          retention-days: 14
+
+      - name: Fail workflow if tests failed for staging
+        if: steps.playwright.outcome == 'failure'
+        run: |
+          echo "::error::Playwright tests failed for the staging environment."
+          exit 1
+
+  e2e-production:
+    if: (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'production') || github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    environment: "Production - e2e"
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --filter app-e2e...
+
+      - name: Cache Playwright Browsers
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-browsers-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-browsers-
+
+      - name: Install Playwright Browsers and Dependencies
+        run: pnpm --filter app-e2e exec playwright install --with-deps chrome
+
+      - name: Run Playwright tests for production
+        id: playwright
+        env:
+          TEST_APP_URL: ${{ secrets.TEST_APP_URL }}
+          TEST_EMAIL: ${{ secrets.TEST_EMAIL }}
+          TEST_OTP_CODE: ${{ secrets.TEST_OTP_CODE }}
+        run: pnpm --filter app-e2e test
+        continue-on-error: true
+
+      - name: Upload test screenshots for production
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: screenshots-production
+          path: apps/app-e2e/screenshots/
+          retention-days: 14
+
+      - name: Fail workflow if tests failed for production
+        if: steps.playwright.outcome == 'failure'
+        run: |
+          echo "::error::Playwright tests failed for the production environment."
+          exit 1

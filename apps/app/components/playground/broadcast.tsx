@@ -174,6 +174,8 @@ export function BroadcastWithControls({ className }: { className?: string }) {
       >
         <Broadcast.Video
           title="Live stream"
+          data-testid="broadcast-video"
+          aria-label="broadcast"
           className={cn("w-full h-full object-cover", collapsed && "opacity-0")}
         />
 

@@ -32,5 +32,6 @@
       "persistent": true
     }
   },
-  "globalEnv": []
+  "globalEnv": [],
+  "globalPassThroughEnv": ["PLAYWRIGHT_*"]
 }
