@@ -23,7 +23,7 @@ import {
   Shuffle,
   Vibrate,
 } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import TextareaAutosize from "react-textarea-autosize";
 import {
   useDreamshaperStore,
@@ -75,7 +75,7 @@ const SHAKE_PROMPTS = [
   `((Sentient plant civilization)), living architecture, bioluminescent communication, symbiotic relationships, organic technology, flowering consciousness --quality 3 --negative-prompt "mechanical, human-centric, winter scene" --creativity 0.75`,
   `((Quantum realm)), probability waves, subatomic particles, energy fluctuations, fractal patterns, dimensional shifting --quality 3 --negative-prompt "macroscopic, solid objects, definite shapes" --creativity 0.9`,
   `((Elemental convergence)), clashing forces of nature, fire meeting water, earth splitting to reveal magma, air vortices, primal energy --quality 3 --negative-prompt "peaceful scene, single element dominance" --creativity 0.8`,
-  `((Time-worn library)), ancient tomes, dust motes in sunbeams, forgotten knowledge, magical manuscripts, labyrinthine shelves --quality 3 --negative-prompt "modern books, electronic devices, clean and organized" --creativity 0.7`
+  `((Time-worn library)), ancient tomes, dust motes in sunbeams, forgotten knowledge, magical manuscripts, labyrinthine shelves --quality 3 --negative-prompt "modern books, electronic devices, clean and organized" --creativity 0.7`,
 ];
 
 export const InputPrompt = () => {
@@ -109,21 +109,22 @@ export const InputPrompt = () => {
     }));
   }, [pipeline?.prioritized_params]);
 
-  const restoreLastPrompt = () => {
+  const restoreLastPrompt = useCallback(() => {
     if (lastSubmittedPrompt) {
       setInputValue(lastSubmittedPrompt);
       setTimeout(() => {
         if (ref && typeof ref !== "function" && ref.current) {
           ref.current.focus();
-
           if ("setSelectionRange" in ref.current) {
-            const length = lastSubmittedPrompt.length;
-            ref.current.setSelectionRange(length, length);
+            ref.current.setSelectionRange(
+              lastSubmittedPrompt.length,
+              lastSubmittedPrompt.length,
+            );
           }
         }
       }, 0);
     }
-  };
+  }, [lastSubmittedPrompt]);
 
   const {
     commandMenuOpen,
@@ -278,24 +279,20 @@ export const InputPrompt = () => {
   };
 
   // Memoize handleShake to prevent recreation on every render
-  const handleShake = useMemo(() => {
-    return () => {
-      if (!updating) {
-        const randomPrompt = generateRandomPrompt();
-        
-        track("daydream_prompt_submitted", {
-          is_authenticated: authenticated,
-          prompt: randomPrompt,
-          stream_id: stream?.id,
-          source: "shake"
-        });
-
-        handleStreamUpdate(randomPrompt, { silent: true });
-        setLastSubmittedPrompt(randomPrompt);
-        setHasSubmittedPrompt(true);
-        incrementPromptVersion(promptVersion + 1);
-      }
-    };
+  const handleShake = useCallback(() => {
+    if (!updating) {
+      const randomPrompt = generateRandomPrompt();
+      track("daydream_prompt_submitted", {
+        is_authenticated: authenticated,
+        prompt: randomPrompt,
+        stream_id: stream?.id,
+        source: "shake",
+      });
+      handleStreamUpdate(randomPrompt, { silent: true });
+      setLastSubmittedPrompt(randomPrompt);
+      setHasSubmittedPrompt(true);
+      incrementPromptVersion(promptVersion + 1);
+    }
   }, [
     updating,
     authenticated,
@@ -304,19 +301,21 @@ export const InputPrompt = () => {
     setLastSubmittedPrompt,
     setHasSubmittedPrompt,
     incrementPromptVersion,
-    promptVersion
+    promptVersion,
   ]);
 
   // Update the motion detection useEffect
   useEffect(() => {
     if (!hasMotionPermission || !isMobile) return;
 
-    let lastX: number = 0, lastY: number = 0, lastZ: number = 0;
+    let lastX: number = 0,
+      lastY: number = 0,
+      lastZ: number = 0;
     let lastShake = 0;
 
     const handleMotion = (event: DeviceMotionEvent) => {
       const current = Date.now();
-      
+
       const acceleration = event.accelerationIncludingGravity;
       if (!acceleration) return;
 
@@ -342,23 +341,24 @@ export const InputPrompt = () => {
       lastZ = z;
     };
 
-    window.addEventListener('devicemotion', handleMotion, true);
+    window.addEventListener("devicemotion", handleMotion, true);
 
     return () => {
-      window.removeEventListener('devicemotion', handleMotion, true);
+      window.removeEventListener("devicemotion", handleMotion, true);
     };
   }, [hasMotionPermission, isMobile, handleShake]);
 
   // Update the permission request
-  const requestMotionPermission = async () => {
-    
+  const requestMotionPermission = useCallback(async () => {
     try {
-      if (typeof DeviceMotionEvent !== 'undefined' && 
-          // @ts-ignore - iOS specific request method
-          typeof DeviceMotionEvent.requestPermission === 'function') {
+      if (
+        typeof DeviceMotionEvent !== "undefined" &&
+        // @ts-ignore - iOS specific request method
+        typeof DeviceMotionEvent.requestPermission === "function"
+      ) {
         // @ts-ignore
         const permissionState = await DeviceMotionEvent.requestPermission();
-        if (permissionState === 'granted') {
+        if (permissionState === "granted") {
           setHasMotionPermission(true);
           setMotionPermissionDenied(false);
         } else {
@@ -370,36 +370,50 @@ export const InputPrompt = () => {
         setMotionPermissionDenied(false);
       }
     } catch (error) {
-      console.error('Error requesting motion permission:', error);
+      console.error("Error requesting motion permission:", error);
       setMotionPermissionDenied(true);
-      alert("Unable to access motion sensors. You can still use the shuffle feature!");
+      alert(
+        "Unable to access motion sensors. You can still use the shuffle feature!",
+      );
     }
-  };
+  }, []);
 
   // Update the shuffle button handler
-  const handleShuffleClick = async () => {
+  const handleShuffleClick = useCallback(async () => {
     if (isMobile && !hasMotionPermission && !motionPermissionDenied) {
       await requestMotionPermission();
       return;
     }
 
     // If we're on desktop or permissions were denied, just submit a random prompt
-    if (!updating) {
-      const randomPrompt = generateRandomPrompt();
-      
-      track("daydream_prompt_submitted", {
-        is_authenticated: authenticated,
-        prompt: randomPrompt,
-        stream_id: stream?.id,
-        source: motionPermissionDenied ? "shuffle-fallback" : "shuffle"
-      });
-
-      handleStreamUpdate(randomPrompt, { silent: true });
-      setLastSubmittedPrompt(randomPrompt);
-      setHasSubmittedPrompt(true);
-      incrementPromptVersion(promptVersion + 1);
+    if (updating) {
+      return;
     }
-  };
+
+    const randomPrompt = generateRandomPrompt();
+
+    track("daydream_prompt_submitted", {
+      is_authenticated: authenticated,
+      prompt: randomPrompt,
+      stream_id: stream?.id,
+      source: motionPermissionDenied ? "shuffle-fallback" : "shuffle",
+    });
+
+    handleStreamUpdate(randomPrompt, { silent: true });
+    setLastSubmittedPrompt(randomPrompt);
+    setHasSubmittedPrompt(true);
+    incrementPromptVersion(promptVersion + 1);
+  }, [
+    isMobile,
+    hasMotionPermission,
+    motionPermissionDenied,
+    updating,
+    authenticated,
+    stream?.id,
+    requestMotionPermission,
+    handleStreamUpdate,
+    promptVersion,
+  ]);
 
   const getPlaceholderText = () => {
     if (isMobile && hasMotionPermission && !motionPermissionDenied) {
@@ -631,7 +645,7 @@ export const InputPrompt = () => {
                 onClick={handleShuffleClick}
                 className={cn(
                   "border-none items-center justify-center font-semibold text-xs bg-[#000000] flex disabled:bg-[#000000] disabled:opacity-80 mr-2",
-                  "w-auto h-9 aspect-square rounded-md"
+                  "w-auto h-9 aspect-square rounded-md",
                 )}
               >
                 {isMobile && !motionPermissionDenied && !hasMotionPermission ? (
@@ -646,15 +660,13 @@ export const InputPrompt = () => {
             side="top"
             className="bg-white text-black border border-gray-200 shadow-md dark:bg-zinc-900 dark:text-white dark:border-zinc-700"
           >
-            {isMobile ? (
-              motionPermissionDenied ? 
-                "Random prompt" : 
-                hasMotionPermission ? 
-                  "Shake to generate" : 
-                  "Enable shake to generate"
-            ) : (
-              "Random prompt"
-            )}
+            {isMobile
+              ? motionPermissionDenied
+                ? "Random prompt"
+                : hasMotionPermission
+                  ? "Shake to generate"
+                  : "Enable shake to generate"
+              : "Random prompt"}
           </TooltipContent>
         </Tooltip>
       )}
@@ -664,7 +676,9 @@ export const InputPrompt = () => {
         <TooltipTrigger asChild>
           <div className="relative inline-block">
             <Button
-              disabled={updating || !inputValue || profanity || exceedsMaxLength}
+              disabled={
+                updating || !inputValue || profanity || exceedsMaxLength
+              }
               onClick={e => {
                 e.preventDefault();
                 submitPrompt();
@@ -673,7 +687,7 @@ export const InputPrompt = () => {
                 "border-none items-center justify-center font-semibold text-xs bg-[#000000] flex disabled:bg-[#000000] disabled:opacity-80",
                 isMobile
                   ? "w-auto h-9 aspect-square rounded-md"
-                  : "w-auto h-9 aspect-square rounded-md"
+                  : "w-auto h-9 aspect-square rounded-md",
               )}
             >
               {updating ? (
