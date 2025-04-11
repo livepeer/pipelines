@@ -11,6 +11,8 @@ interface SettingsMenuProps {
   setInputValue: (value: string) => void;
   onClose: () => void;
   className?: string;
+  onSubmit?: () => void;
+  originalPrompt?: string;
 }
 
 function SettingsMenu({
@@ -19,6 +21,8 @@ function SettingsMenu({
   setInputValue,
   onClose,
   className,
+  onSubmit,
+  originalPrompt,
 }: SettingsMenuProps) {
   const sliderParams =
     pipeline?.prioritized_params?.filter(
@@ -65,13 +69,27 @@ function SettingsMenu({
               const min = param.widgetConfig?.min || 0;
               const max = param.widgetConfig?.max || 100;
               const step = param.widgetConfig?.step || 1;
+              const defaultValue =
+                param.widgetConfig?.defaultValue !== undefined
+                  ? param.widgetConfig?.defaultValue
+                  : min;
 
               const currentValueMatch = inputValue.match(
                 new RegExp(`--${commandId}\\s+([\\d\\.]+)`),
               );
+
+              const originalPromptMatch =
+                !inputValue && originalPrompt
+                  ? originalPrompt.match(
+                      new RegExp(`--${commandId}\\s+([\\d\\.]+)`),
+                    )
+                  : null;
+
               const currentValue = currentValueMatch
                 ? parseFloat(currentValueMatch[1])
-                : min;
+                : originalPromptMatch
+                  ? parseFloat(originalPromptMatch[1])
+                  : defaultValue;
 
               return (
                 <div key={param.name} className="space-y-1.5">
@@ -93,20 +111,46 @@ function SettingsMenu({
                         const value = parseFloat(e.target.value);
                         if (isNaN(value)) return;
 
-                        if (currentValueMatch) {
-                          setInputValue(
-                            inputValue.replace(
-                              new RegExp(`--${commandId}\\s+([\\d\\.]+)`),
-                              `--${commandId} ${value}`,
-                            ),
+                        if (!inputValue && originalPrompt) {
+                          const restoredPrompt = originalPrompt;
+                          const paramRegex = new RegExp(
+                            `--${commandId}\\s+([\\d\\.]+)`,
                           );
+                          const paramExists = paramRegex.test(restoredPrompt);
+
+                          if (paramExists) {
+                            setInputValue(
+                              restoredPrompt.replace(
+                                paramRegex,
+                                `--${commandId} ${value}`,
+                              ),
+                            );
+                          } else {
+                            const newInput =
+                              restoredPrompt.trim() +
+                              (restoredPrompt.trim() ? " " : "") +
+                              `--${commandId} ${value}`;
+                            setInputValue(newInput);
+                          }
                         } else {
-                          const newInput =
-                            inputValue.trim() +
-                            (inputValue.trim() ? " " : "") +
-                            `--${commandId} ${value}`;
-                          setInputValue(newInput);
+                          if (currentValueMatch) {
+                            setInputValue(
+                              inputValue.replace(
+                                new RegExp(`--${commandId}\\s+([\\d\\.]+)`),
+                                `--${commandId} ${value}`,
+                              ),
+                            );
+                          } else {
+                            const newInput =
+                              inputValue.trim() +
+                              (inputValue.trim() ? " " : "") +
+                              `--${commandId} ${value}`;
+                            setInputValue(newInput);
+                          }
                         }
+                      }}
+                      onBlur={() => {
+                        if (onSubmit) onSubmit();
                       }}
                     />
                     <div className="flex-1">
@@ -132,20 +176,49 @@ function SettingsMenu({
                         onChange={e => {
                           const value = parseFloat(e.target.value);
 
-                          if (currentValueMatch) {
-                            setInputValue(
-                              inputValue.replace(
-                                new RegExp(`--${commandId}\\s+([\\d\\.]+)`),
-                                `--${commandId} ${value}`,
-                              ),
+                          if (!inputValue && originalPrompt) {
+                            const restoredPrompt = originalPrompt;
+                            const paramRegex = new RegExp(
+                              `--${commandId}\\s+([\\d\\.]+)`,
                             );
+                            const paramExists = paramRegex.test(restoredPrompt);
+
+                            if (paramExists) {
+                              setInputValue(
+                                restoredPrompt.replace(
+                                  paramRegex,
+                                  `--${commandId} ${value}`,
+                                ),
+                              );
+                            } else {
+                              const newInput =
+                                restoredPrompt.trim() +
+                                (restoredPrompt.trim() ? " " : "") +
+                                `--${commandId} ${value}`;
+                              setInputValue(newInput);
+                            }
                           } else {
-                            const newInput =
-                              inputValue.trim() +
-                              (inputValue.trim() ? " " : "") +
-                              `--${commandId} ${value}`;
-                            setInputValue(newInput);
+                            if (currentValueMatch) {
+                              setInputValue(
+                                inputValue.replace(
+                                  new RegExp(`--${commandId}\\s+([\\d\\.]+)`),
+                                  `--${commandId} ${value}`,
+                                ),
+                              );
+                            } else {
+                              const newInput =
+                                inputValue.trim() +
+                                (inputValue.trim() ? " " : "") +
+                                `--${commandId} ${value}`;
+                              setInputValue(newInput);
+                            }
                           }
+                        }}
+                        onMouseUp={() => {
+                          if (onSubmit) onSubmit();
+                        }}
+                        onTouchEnd={() => {
+                          if (onSubmit) onSubmit();
                         }}
                       />
                     </div>
