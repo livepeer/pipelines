@@ -100,7 +100,7 @@ export function BentoGrids({ initialClips }: BentoGridsProps) {
                   <GridItem
                     key={typedClip.id || index}
                     src={typedClip.video_url}
-                    className={index % 2 === 0 ? "lg:row-span-2" : ""}
+                    className={`${index % 2 === 0 ? "lg:row-span-2" : ""} cursor-pointer`}
                   />
                 );
               })}
