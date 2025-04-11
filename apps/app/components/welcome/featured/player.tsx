@@ -133,6 +133,7 @@ export const LivepeerPlayer = () => {
         } as any)}
         onError={handleError}
       >
+        {/* TODO: What is this */}
         <div
           className="absolute inset-0 z-[5]"
           onClick={e => e.stopPropagation()}

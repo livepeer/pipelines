@@ -10,7 +10,6 @@ import {
 } from "@livepeer/react/assets";
 import * as Broadcast from "@livepeer/react/broadcast";
 import * as Popover from "@radix-ui/react-popover";
-import { useIsMobile } from "@repo/design-system/hooks/use-mobile";
 import { cn } from "@repo/design-system/lib/utils";
 import {
   Camera,
@@ -28,6 +27,7 @@ import { sendKafkaEvent } from "@/lib/analytics/event-middleware";
 import { useDreamshaperStore } from "@/hooks/useDreamshaper";
 import { create } from "zustand";
 import { usePrivy } from "@/hooks/usePrivy";
+import useMobileStore from "@/hooks/useMobileStore";
 import { useOnboard } from "../daydream/OnboardContext";
 
 const StatusMonitor = () => {
@@ -88,7 +88,7 @@ export function BroadcastWithControls({ className }: { className?: string }) {
   const [isPiP, setIsPiP] = useState(false);
 
   const { collapsed, setCollapsed, toggleCollapsed } = useBroadcastUIStore();
-  const isMobile = useIsMobile();
+  const { isMobile } = useMobileStore();
 
   useEffect(() => {
     const videoEl = document.getElementById(videoId) as HTMLVideoElement | null;
@@ -138,10 +138,10 @@ export function BroadcastWithControls({ className }: { className?: string }) {
             )
           : null;
       }}
-      forceEnabled={true}
-      mirrored={false}
+      forceEnabled
+      mirrored
+      video
       audio={false}
-      video={true}
       aspectRatio={16 / 9}
       ingestUrl={ingestUrl}
       {...({
