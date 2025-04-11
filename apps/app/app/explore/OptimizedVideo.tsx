@@ -17,8 +17,6 @@ export default function OptimizedVideo({
 
   const shortSrc = src.replace(/\.mp4$/, "-short.mp4");
 
-  const shortSrc = src.replace(/\.mp4$/, "-short.mp4");
-
   useEffect(() => {
     if (!containerRef.current) return;
 
