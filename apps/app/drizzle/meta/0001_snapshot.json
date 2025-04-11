@@ -1,0 +1,1326 @@
+{
+  "id": "642aaecd-8b63-4a00-a3d5-c2df50995c6a",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.api_keys": {
+      "name": "api_keys",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "api_key": {
+          "name": "api_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "CURRENT_TIMESTAMP"
+        },
+        "last_used": {
+          "name": "last_used",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "is_active": {
+          "name": "is_active",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "api_keys_user_id_fkey": {
+          "name": "api_keys_user_id_fkey",
+          "tableFrom": "api_keys",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "api_keys_api_key_key": {
+          "name": "api_keys_api_key_key",
+          "nullsNotDistinct": false,
+          "columns": [
+            "api_key"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.audit_logs": {
+      "name": "audit_logs",
+      "schema": "",
+      "columns": {
+        "log_id": {
+          "name": "log_id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "change_amount": {
+          "name": "change_amount",
+          "type": "numeric(10, 2)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "reason": {
+          "name": "reason",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "audit_logs_user_id_fkey": {
+          "name": "audit_logs_user_id_fkey",
+          "tableFrom": "audit_logs",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.clip_views": {
+      "name": "clip_views",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "clip_id": {
+          "name": "clip_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "viewer_user_id": {
+          "name": "viewer_user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "viewed_at": {
+          "name": "viewed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "ip_address": {
+          "name": "ip_address",
+          "type": "varchar(45)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "session_id": {
+          "name": "session_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "duration_watched_ms": {
+          "name": "duration_watched_ms",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "clip_views_clip_id_fkey": {
+          "name": "clip_views_clip_id_fkey",
+          "tableFrom": "clip_views",
+          "tableTo": "clips",
+          "columnsFrom": [
+            "clip_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "clip_views_viewer_user_id_fkey": {
+          "name": "clip_views_viewer_user_id_fkey",
+          "tableFrom": "clip_views",
+          "tableTo": "users",
+          "columnsFrom": [
+            "viewer_user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.clips": {
+      "name": "clips",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "video_url": {
+          "name": "video_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "thumbnail_url": {
+          "name": "thumbnail_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "author_user_id": {
+          "name": "author_user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "source_clip_id": {
+          "name": "source_clip_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "prompt": {
+          "name": "prompt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "priority": {
+          "name": "priority",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "clips_author_user_id_fkey": {
+          "name": "clips_author_user_id_fkey",
+          "tableFrom": "clips",
+          "tableTo": "users",
+          "columnsFrom": [
+            "author_user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "clips_source_clip_id_fkey": {
+          "name": "clips_source_clip_id_fkey",
+          "tableFrom": "clips",
+          "tableTo": "clips",
+          "columnsFrom": [
+            "source_clip_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.jobs": {
+      "name": "jobs",
+      "schema": "",
+      "columns": {
+        "job_id": {
+          "name": "job_id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "pipeline_details": {
+          "name": "pipeline_details",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "duration_s": {
+          "name": "duration_s",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "credit_cost": {
+          "name": "credit_cost",
+          "type": "numeric(10, 2)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "eth_fees": {
+          "name": "eth_fees",
+          "type": "numeric(10, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "status": {
+          "name": "status",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "jobs_user_id_fkey": {
+          "name": "jobs_user_id_fkey",
+          "tableFrom": "jobs",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "jobs_status_check": {
+          "name": "jobs_status_check",
+          "value": "(status)::text = ANY ((ARRAY['pending'::character varying, 'in-progress'::character varying, 'completed'::character varying])::text[])"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.pipelines": {
+      "name": "pipelines",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "CURRENT_TIMESTAMP"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "CURRENT_TIMESTAMP"
+        },
+        "last_used": {
+          "name": "last_used",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "is_private": {
+          "name": "is_private",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": true
+        },
+        "cover_image": {
+          "name": "cover_image",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "type": {
+          "name": "type",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'comfyUI'"
+        },
+        "sample_code_repo": {
+          "name": "sample_code_repo",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "is_featured": {
+          "name": "is_featured",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "sample_input_video": {
+          "name": "sample_input_video",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "author": {
+          "name": "author",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "model_card": {
+          "name": "model_card",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'{}'::jsonb"
+        },
+        "key": {
+          "name": "key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "config": {
+          "name": "config",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "comfy_ui_json": {
+          "name": "comfy_ui_json",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "version": {
+          "name": "version",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'1.0.0'"
+        },
+        "validation_status": {
+          "name": "validation_status",
+          "type": "validation_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'pending'"
+        },
+        "prioritized_params": {
+          "name": "prioritized_params",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "pipelines_author_fkey": {
+          "name": "pipelines_author_fkey",
+          "tableFrom": "pipelines",
+          "tableTo": "users",
+          "columnsFrom": [
+            "author"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.purchases": {
+      "name": "purchases",
+      "schema": "",
+      "columns": {
+        "purchase_id": {
+          "name": "purchase_id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "credits_purchased": {
+          "name": "credits_purchased",
+          "type": "numeric(10, 2)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "amount_paid": {
+          "name": "amount_paid",
+          "type": "numeric(10, 2)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "purchases_user_id_fkey": {
+          "name": "purchases_user_id_fkey",
+          "tableFrom": "purchases",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.shared_params": {
+      "name": "shared_params",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "last_seen_at": {
+          "name": "last_seen_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "params": {
+          "name": "params",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "author": {
+          "name": "author",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "pipeline": {
+          "name": "pipeline",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "hash": {
+          "name": "hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "shared_params_author_fkey": {
+          "name": "shared_params_author_fkey",
+          "tableFrom": "shared_params",
+          "tableTo": "users",
+          "columnsFrom": [
+            "author"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "shared_params_pipeline_fkey": {
+          "name": "shared_params_pipeline_fkey",
+          "tableFrom": "shared_params",
+          "tableTo": "pipelines",
+          "columnsFrom": [
+            "pipeline"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.streams": {
+      "name": "streams",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "stream_key": {
+          "name": "stream_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "output_stream_url": {
+          "name": "output_stream_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "pipeline_params": {
+          "name": "pipeline_params",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "pipeline_id": {
+          "name": "pipeline_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "output_playback_id": {
+          "name": "output_playback_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "author": {
+          "name": "author",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "from_playground": {
+          "name": "from_playground",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": true
+        },
+        "gateway_host": {
+          "name": "gateway_host",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "''"
+        },
+        "is_smoke_test": {
+          "name": "is_smoke_test",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "whip_url": {
+          "name": "whip_url",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "streams_author_fkey": {
+          "name": "streams_author_fkey",
+          "tableFrom": "streams",
+          "tableTo": "users",
+          "columnsFrom": [
+            "author"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "streams_pipeline_id_fkey": {
+          "name": "streams_pipeline_id_fkey",
+          "tableFrom": "streams",
+          "tableTo": "pipelines",
+          "columnsFrom": [
+            "pipeline_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.users": {
+      "name": "users",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "email": {
+          "name": "email",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "CURRENT_TIMESTAMP"
+        },
+        "last_login": {
+          "name": "last_login",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "is_active": {
+          "name": "is_active",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": true
+        },
+        "provider": {
+          "name": "provider",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "additional_details": {
+          "name": "additional_details",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'{}'::jsonb"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "users_email_key": {
+          "name": "users_email_key",
+          "nullsNotDistinct": false,
+          "columns": [
+            "email"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "users_provider_check": {
+          "name": "users_provider_check",
+          "value": "(provider)::text = ANY (ARRAY[('discord'::character varying)::text, ('email'::character varying)::text, ('github'::character varying)::text, ('google'::character varying)::text])"
+        }
+      },
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {
+    "public.validation_status": {
+      "name": "validation_status",
+      "schema": "public",
+      "values": [
+        "valid",
+        "invalid",
+        "processing",
+        "pending"
+      ]
+    }
+  },
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {
+    "public.pg_stat_monitor": {
+      "columns": {
+        "bucket": {
+          "name": "bucket",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "bucket_start_time": {
+          "name": "bucket_start_time",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "userid": {
+          "name": "userid",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "username": {
+          "name": "username",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "dbid": {
+          "name": "dbid",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "datname": {
+          "name": "datname",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "client_ip": {
+          "name": "client_ip",
+          "type": "inet",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "pgsm_query_id": {
+          "name": "pgsm_query_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "queryid": {
+          "name": "queryid",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "toplevel": {
+          "name": "toplevel",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "top_queryid": {
+          "name": "top_queryid",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "query": {
+          "name": "query",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "comments": {
+          "name": "comments",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "planid": {
+          "name": "planid",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "query_plan": {
+          "name": "query_plan",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "top_query": {
+          "name": "top_query",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "application_name": {
+          "name": "application_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "relations": {
+          "name": "relations",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cmd_type": {
+          "name": "cmd_type",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cmd_type_text": {
+          "name": "cmd_type_text",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "elevel": {
+          "name": "elevel",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sqlcode": {
+          "name": "sqlcode",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "message": {
+          "name": "message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "calls": {
+          "name": "calls",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "total_exec_time": {
+          "name": "total_exec_time",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "min_exec_time": {
+          "name": "min_exec_time",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "max_exec_time": {
+          "name": "max_exec_time",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "mean_exec_time": {
+          "name": "mean_exec_time",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "stddev_exec_time": {
+          "name": "stddev_exec_time",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "rows": {
+          "name": "rows",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "shared_blks_hit": {
+          "name": "shared_blks_hit",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "shared_blks_read": {
+          "name": "shared_blks_read",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "shared_blks_dirtied": {
+          "name": "shared_blks_dirtied",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "shared_blks_written": {
+          "name": "shared_blks_written",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "local_blks_hit": {
+          "name": "local_blks_hit",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "local_blks_read": {
+          "name": "local_blks_read",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "local_blks_dirtied": {
+          "name": "local_blks_dirtied",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "local_blks_written": {
+          "name": "local_blks_written",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "temp_blks_read": {
+          "name": "temp_blks_read",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "temp_blks_written": {
+          "name": "temp_blks_written",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "blk_read_time": {
+          "name": "blk_read_time",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "blk_write_time": {
+          "name": "blk_write_time",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "temp_blk_read_time": {
+          "name": "temp_blk_read_time",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "temp_blk_write_time": {
+          "name": "temp_blk_write_time",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "resp_calls": {
+          "name": "resp_calls",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cpu_user_time": {
+          "name": "cpu_user_time",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cpu_sys_time": {
+          "name": "cpu_sys_time",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "wal_records": {
+          "name": "wal_records",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "wal_fpi": {
+          "name": "wal_fpi",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "wal_bytes": {
+          "name": "wal_bytes",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "bucket_done": {
+          "name": "bucket_done",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "plans": {
+          "name": "plans",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "total_plan_time": {
+          "name": "total_plan_time",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "min_plan_time": {
+          "name": "min_plan_time",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "max_plan_time": {
+          "name": "max_plan_time",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "mean_plan_time": {
+          "name": "mean_plan_time",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "stddev_plan_time": {
+          "name": "stddev_plan_time",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "jit_functions": {
+          "name": "jit_functions",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "jit_generation_time": {
+          "name": "jit_generation_time",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "jit_inlining_count": {
+          "name": "jit_inlining_count",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "jit_inlining_time": {
+          "name": "jit_inlining_time",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "jit_optimization_count": {
+          "name": "jit_optimization_count",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "jit_optimization_time": {
+          "name": "jit_optimization_time",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "jit_emission_count": {
+          "name": "jit_emission_count",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "jit_emission_time": {
+          "name": "jit_emission_time",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "definition": "SELECT pg_stat_monitor_internal.bucket, pg_stat_monitor_internal.bucket_start_time, pg_stat_monitor_internal.userid, pg_stat_monitor_internal.username, pg_stat_monitor_internal.dbid, pg_stat_monitor_internal.datname, '0.0.0.0'::inet + pg_stat_monitor_internal.client_ip AS client_ip, pg_stat_monitor_internal.pgsm_query_id, pg_stat_monitor_internal.queryid, pg_stat_monitor_internal.toplevel, pg_stat_monitor_internal.top_queryid, pg_stat_monitor_internal.query, pg_stat_monitor_internal.comments, pg_stat_monitor_internal.planid, pg_stat_monitor_internal.query_plan, pg_stat_monitor_internal.top_query, pg_stat_monitor_internal.application_name, string_to_array(pg_stat_monitor_internal.relations, ','::text) AS relations, pg_stat_monitor_internal.cmd_type, get_cmd_type(pg_stat_monitor_internal.cmd_type) AS cmd_type_text, pg_stat_monitor_internal.elevel, pg_stat_monitor_internal.sqlcode, pg_stat_monitor_internal.message, pg_stat_monitor_internal.calls, pg_stat_monitor_internal.total_exec_time, pg_stat_monitor_internal.min_exec_time, pg_stat_monitor_internal.max_exec_time, pg_stat_monitor_internal.mean_exec_time, pg_stat_monitor_internal.stddev_exec_time, pg_stat_monitor_internal.rows, pg_stat_monitor_internal.shared_blks_hit, pg_stat_monitor_internal.shared_blks_read, pg_stat_monitor_internal.shared_blks_dirtied, pg_stat_monitor_internal.shared_blks_written, pg_stat_monitor_internal.local_blks_hit, pg_stat_monitor_internal.local_blks_read, pg_stat_monitor_internal.local_blks_dirtied, pg_stat_monitor_internal.local_blks_written, pg_stat_monitor_internal.temp_blks_read, pg_stat_monitor_internal.temp_blks_written, pg_stat_monitor_internal.shared_blk_read_time AS blk_read_time, pg_stat_monitor_internal.shared_blk_write_time AS blk_write_time, pg_stat_monitor_internal.temp_blk_read_time, pg_stat_monitor_internal.temp_blk_write_time, string_to_array(pg_stat_monitor_internal.resp_calls, ','::text) AS resp_calls, pg_stat_monitor_internal.cpu_user_time, pg_stat_monitor_internal.cpu_sys_time, pg_stat_monitor_internal.wal_records, pg_stat_monitor_internal.wal_fpi, pg_stat_monitor_internal.wal_bytes, pg_stat_monitor_internal.bucket_done, pg_stat_monitor_internal.plans, pg_stat_monitor_internal.total_plan_time, pg_stat_monitor_internal.min_plan_time, pg_stat_monitor_internal.max_plan_time, pg_stat_monitor_internal.mean_plan_time, pg_stat_monitor_internal.stddev_plan_time, pg_stat_monitor_internal.jit_functions, pg_stat_monitor_internal.jit_generation_time, pg_stat_monitor_internal.jit_inlining_count, pg_stat_monitor_internal.jit_inlining_time, pg_stat_monitor_internal.jit_optimization_count, pg_stat_monitor_internal.jit_optimization_time, pg_stat_monitor_internal.jit_emission_count, pg_stat_monitor_internal.jit_emission_time FROM pg_stat_monitor_internal(true) pg_stat_monitor_internal(bucket, userid, username, dbid, datname, client_ip, queryid, planid, query, query_plan, pgsm_query_id, top_queryid, top_query, application_name, relations, cmd_type, elevel, sqlcode, message, bucket_start_time, calls, total_exec_time, min_exec_time, max_exec_time, mean_exec_time, stddev_exec_time, rows, plans, total_plan_time, min_plan_time, max_plan_time, mean_plan_time, stddev_plan_time, shared_blks_hit, shared_blks_read, shared_blks_dirtied, shared_blks_written, local_blks_hit, local_blks_read, local_blks_dirtied, local_blks_written, temp_blks_read, temp_blks_written, shared_blk_read_time, shared_blk_write_time, local_blk_read_time, local_blk_write_time, temp_blk_read_time, temp_blk_write_time, resp_calls, cpu_user_time, cpu_sys_time, wal_records, wal_fpi, wal_bytes, comments, jit_functions, jit_generation_time, jit_inlining_count, jit_inlining_time, jit_optimization_count, jit_optimization_time, jit_emission_count, jit_emission_time, jit_deform_count, jit_deform_time, stats_since, minmax_stats_since, toplevel, bucket_done) ORDER BY pg_stat_monitor_internal.bucket_start_time",
+      "name": "pg_stat_monitor",
+      "schema": "public",
+      "isExisting": false,
+      "materialized": false
+    }
+  },
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}
