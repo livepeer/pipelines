@@ -4,12 +4,14 @@ import { createServerClient } from "@repo/supabase";
 import { newId } from "@/lib/generate-id";
 
 export async function POST(request: NextRequest) {
-  const authResult = await requireAdminAuth(request);
-  if (authResult instanceof NextResponse) {
-    return authResult;
+  const authResponse = await requireAdminAuth(request);
+
+  if (authResponse.status !== 200) {
+    return authResponse;
   }
 
-  const userId = authResult.user?.id;
+  const userData = await authResponse.json();
+  const userId = userData.user?.id;
 
   if (!userId) {
     return NextResponse.json({ error: "User ID not found" }, { status: 400 });
