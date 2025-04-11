@@ -6,11 +6,12 @@ import {
   DialogClose,
 } from "@repo/design-system/components/ui/dialog";
 import { ChevronLeft, Repeat, User2 } from "lucide-react";
+import { VideoProvider } from "./VideoProvider";
+import { VideoPlayer } from "./VideoPlayer";
 
 interface QuickviewVideoProps {
   children: React.ReactNode;
   src: string;
-  onBack?: () => void;
 }
 
 export default function QuickviewVideo({ children, src }: QuickviewVideoProps) {
@@ -25,7 +26,7 @@ export default function QuickviewVideo({ children, src }: QuickviewVideoProps) {
         <DialogHeader className="space-y-4">
           <div className="relative w-full">
             <DialogClose asChild>
-              <button className="absolute left-0 top-1/2 -translate-y-1/2 flex items-center gap-2 text-xs font-medium text-[#09090B] outline-none">
+              <button className="absolute left-0 top-1/2 -translate-y-1/2 flex items-center gap-1 text-xs font-medium text-[#09090B] outline-none hover:bg-zinc-100 rounded-lg px-2 py-1">
                 <ChevronLeft className="w-4 h-4" />
                 <span className="hidden sm:block">Back</span>
               </button>
@@ -56,8 +57,20 @@ export default function QuickviewVideo({ children, src }: QuickviewVideoProps) {
             </div>
           </div>
         </DialogHeader>
-        <video src={src} autoPlay muted loop playsInline className="w-full" />
+        <div className="w-full h-fit relative z-[100]">
+          <VideoProvider src={src}>
+            <VideoPlayerWrapper />
+          </VideoProvider>
+        </div>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function VideoPlayerWrapper() {
+  return (
+    <div className="absolute -bottom-8 left-0 right-0 md:left-2 md:right-2 z-[999]">
+      <VideoPlayer />
+    </div>
   );
 }
