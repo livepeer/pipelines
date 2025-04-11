@@ -37,7 +37,7 @@ export async function BentoGrids() {
           className="relative left-[calc(50%-11rem)] aspect-[1155/678] w-[36.125rem] -translate-x-1/2 rotate-[30deg] opacity-30 sm:left-[calc(50%-30rem)] sm:w-[72.1875rem]"
         />
       </div>
-      <div className="mx-auto px-8 lg:px-12 h-fit">
+      <div className="max-w-7xl mx-auto px-8 lg:px-12">
         <p className="mx-auto mt-2 max-w-lg text-balance text-center text-4xl font-extralight tracking-tight text-gray-950 sm:text-6xl">
           Discover how Others{" "}
           <span className="font-playfair font-bold">daydream</span>
