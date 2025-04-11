@@ -1,5 +1,6 @@
 import { cn } from "@repo/design-system/lib/utils";
 import { useRef } from "react";
+import QuickviewVideo from "./QuickviewVideo";
 
 export default function PlayOnHoverVideo({
   src,
@@ -17,15 +18,17 @@ export default function PlayOnHoverVideo({
   };
 
   return (
-    <video
-      ref={ref}
-      src={src}
-      muted
-      loop
-      playsInline
-      className={cn("size-full object-cover object-top", className)}
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
-    />
+    <QuickviewVideo src={src}>
+      <video
+        ref={ref}
+        src={src}
+        muted
+        loop
+        playsInline
+        className={cn("size-full object-cover object-top", className)}
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
+      />
+    </QuickviewVideo>
   );
 }
