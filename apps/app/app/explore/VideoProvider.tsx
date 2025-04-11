@@ -123,17 +123,17 @@ export function VideoProvider({
         this.isPlaying(video) ? actions.pause() : actions.play(video);
       },
       seekBy(amount) {
-        if (playerRef.current) {
+        if (playerRef.current && Number.isFinite(amount)) {
           playerRef.current.currentTime += amount;
         }
       },
       seek(time) {
-        if (playerRef.current) {
+        if (playerRef.current && Number.isFinite(time)) {
           playerRef.current.currentTime = time;
         }
       },
       playbackRate(rate) {
-        if (playerRef.current) {
+        if (playerRef.current && Number.isFinite(rate) && rate > 0) {
           playerRef.current.playbackRate = rate;
         }
       },
@@ -152,7 +152,7 @@ export function VideoProvider({
         }
       },
       setVolume(volume) {
-        if (playerRef.current) {
+        if (playerRef.current && Number.isFinite(volume) && volume >= 0 && volume <= 1) {
           playerRef.current.volume = volume;
           dispatch({ type: ActionKind.SET_VOLUME, payload: volume });
         }
