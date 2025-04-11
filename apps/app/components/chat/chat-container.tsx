@@ -7,7 +7,10 @@ import { useStreamUpdates } from "@/hooks/useDreamshaper";
 import { cn } from "@repo/design-system/lib/utils";
 import { Button } from "@repo/design-system/components/ui/button";
 import { RotateCcw } from "lucide-react";
-import { RadioGroup, RadioGroupItem } from "@repo/design-system/components/ui/radio-group";
+import {
+  RadioGroup,
+  RadioGroupItem,
+} from "@repo/design-system/components/ui/radio-group";
 import { Label } from "@repo/design-system/components/ui/label";
 
 interface Message {
@@ -132,7 +135,7 @@ export function ChatContainer() {
         <div className="flex items-center space-x-4">
           <RadioGroup
             value={promptMode}
-            onValueChange={(value) => setPromptMode(value as PromptMode)}
+            onValueChange={value => setPromptMode(value as PromptMode)}
             className="flex items-center space-x-4"
           >
             <div className="flex items-center space-x-2">
