@@ -1,3 +1,5 @@
+"use client";
+
 import { cn } from "@repo/design-system/lib/utils";
 import { useRef } from "react";
 

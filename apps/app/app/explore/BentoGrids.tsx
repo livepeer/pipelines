@@ -1,7 +1,29 @@
+import { db } from "@/lib/db";
+import { clips as clipsTable } from "@/lib/db/schema";
 import { cn } from "@repo/design-system/lib/utils";
+import { unstable_cache } from "next/cache";
 import PlayOnHoverVideo from "./PlayOnHoverVideo";
 
-export default function BentoGrids() {
+const getClips = unstable_cache(
+  async () => {
+    return await db.select().from(clipsTable).orderBy(clipsTable.created_at);
+  },
+  ["clips"],
+  { revalidate: 36000, tags: ["clips"] },
+);
+
+function chunkArray<T>(array: T[], size: number): T[][] {
+  const result: T[][] = [];
+  for (let i = 0; i < array.length; i += size) {
+    result.push(array.slice(i, i + size));
+  }
+  return result;
+}
+
+export async function BentoGrids() {
+  const clips = await getClips();
+  const groupedClips = chunkArray(clips, 4);
+
   return (
     <div className="bg-gray-50 py-8 z-10">
       <div
@@ -24,63 +46,29 @@ export default function BentoGrids() {
           Explore work from the most talented and accomplished designers ready
           to take on your next project
         </h2>
-        <GridSet
-          configuration={GridSetConfiguration.first}
-          className="mt-10 sm:mt-16"
-        >
-          <GridItem
-            src="https://storage.googleapis.com/thom-vod-testing/daydream-05.mp4"
-            className="lg:row-span-2"
-          />
-          <GridItem
-            src="https://storage.googleapis.com/thom-vod-testing/daydream-01.mp4"
-            className="max-lg:row-start-1"
-          />
-          <GridItem
-            src="https://storage.googleapis.com/thom-vod-testing/daydream-02.mp4"
-            className="max-lg:row-start-3 lg:col-start-2 lg:row-start-2"
-          />
-          <GridItem
-            src="https://storage.googleapis.com/thom-vod-testing/daydream-03.mp4"
-            className="lg:row-span-2"
-          />
-        </GridSet>
-        <GridSet configuration={GridSetConfiguration.second}>
-          <GridItem
-            src="https://storage.googleapis.com/thom-vod-testing/daydream-04.mp4"
-            className="lg:row-span-2"
-          />
-          <GridItem
-            src="https://storage.googleapis.com/thom-vod-testing/daydream-05.mp4"
-            className="max-lg:row-start-1 h-80"
-          />
-          <GridItem
-            src="https://storage.googleapis.com/thom-vod-testing/daydream-01.mp4"
-            className="max-lg:row-start-3 lg:col-start-2 lg:row-start-2 h-80"
-          />
-          <GridItem
-            src="https://storage.googleapis.com/thom-vod-testing/daydream-02.mp4"
-            className="lg:row-span-2"
-          />
-        </GridSet>
-        <GridSet configuration={GridSetConfiguration.first}>
-          <GridItem
-            src="https://storage.googleapis.com/thom-vod-testing/daydream-03.mp4"
-            className="lg:row-span-2"
-          />
-          <GridItem
-            src="https://storage.googleapis.com/thom-vod-testing/daydream-04.mp4"
-            className="max-lg:row-start-1 h-80"
-          />
-          <GridItem
-            src="https://storage.googleapis.com/thom-vod-testing/daydream-05.mp4"
-            className="max-lg:row-start-3 lg:col-start-2 lg:row-start-2 h-80"
-          />
-          <GridItem
-            src="https://storage.googleapis.com/thom-vod-testing/daydream-01.mp4"
-            className="lg:row-span-2"
-          />
-        </GridSet>
+
+        {groupedClips.map((group, groupIndex) => {
+          const configuration =
+            groupIndex % 2 === 0
+              ? GridSetConfiguration.first
+              : GridSetConfiguration.second;
+
+          return (
+            <GridSet
+              key={groupIndex}
+              configuration={configuration}
+              className={groupIndex === 0 ? "mt-10 sm:mt-16" : "mt-8"}
+            >
+              {group.map((clip, index) => (
+                <GridItem
+                  key={clip.id || index}
+                  src={clip.video_url}
+                  className={index % 2 === 0 ? "lg:row-span-2" : ""}
+                />
+              ))}
+            </GridSet>
+          );
+        })}
       </div>
     </div>
   );
@@ -89,7 +77,7 @@ export default function BentoGrids() {
 function GridItem({ src, className }: { src: string; className?: string }) {
   return (
     <div className={cn("relative", className)}>
-      <div className="absolute inset-px rounded-xl bg-white "></div>
+      <div className="absolute inset-px rounded-xl bg-white"></div>
       <div className="relative flex h-full flex-col overflow-hidden rounded-[calc(theme(borderRadius.xl)+1px)]">
         <PlayOnHoverVideo src={src} />
       </div>
@@ -98,6 +86,7 @@ function GridItem({ src, className }: { src: string; className?: string }) {
   );
 }
 
+// TODO: More systematic grid confituration
 enum GridSetConfiguration {
   first = "lg:grid-cols-[9fr_5fr_6fr]",
   second = "lg:grid-cols-[5fr_6fr_9fr]",
