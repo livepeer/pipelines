@@ -7,6 +7,7 @@ import { useEffect, useRef } from "react";
 import useClipsFetcher from "./hooks/useClipsFetcher";
 import LoadingSpinner from "./LoadingSpinner";
 import OptimizedVideo from "./OptimizedVideo";
+import NoMoreClipsFooter from "./NoMoreClipsFooter";
 
 function chunkArray<T>(array: T[], size: number): T[][] {
   const result: T[][] = [];
@@ -114,7 +115,7 @@ export function BentoGrids({ initialClips }: BentoGridsProps) {
           ) : hasMore ? (
             <p className="text-gray-500 font-light">Scroll for more</p>
           ) : (
-            <p className="text-gray-500 font-light">No more clips</p>
+            <NoMoreClipsFooter />
           )}
         </div>
       </div>
