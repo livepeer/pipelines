@@ -152,7 +152,12 @@ export function VideoProvider({
         }
       },
       setVolume(volume) {
-        if (playerRef.current && Number.isFinite(volume) && volume >= 0 && volume <= 1) {
+        if (
+          playerRef.current &&
+          Number.isFinite(volume) &&
+          volume >= 0 &&
+          volume <= 1
+        ) {
           playerRef.current.volume = volume;
           dispatch({ type: ActionKind.SET_VOLUME, payload: volume });
         }
