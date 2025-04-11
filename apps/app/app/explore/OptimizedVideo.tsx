@@ -1,5 +1,6 @@
 import { cn } from "@repo/design-system/lib/utils";
 import { useEffect, useRef, useState } from "react";
+import QuickviewVideo from "./QuickviewVideo";
 
 interface OptimizedVideoProps {
   src: string;
@@ -53,18 +54,20 @@ export default function OptimizedVideo({
 
   return (
     <div ref={containerRef} className={cn("size-full", className)}>
-      {isNearViewport ? (
-        <video
-          ref={videoRef}
-          src={src}
-          muted
-          loop
-          playsInline
-          className="size-full object-cover object-top"
-        />
-      ) : (
-        <div className="size-full bg-gray-100" />
-      )}
+      <QuickviewVideo src={src}>
+        {isNearViewport ? (
+          <video
+            ref={videoRef}
+            src={src}
+            muted
+            loop
+            playsInline
+            className="size-full object-cover object-top"
+          />
+        ) : (
+          <div className="size-full bg-gray-100" />
+        )}
+      </QuickviewVideo>
     </div>
   );
 }
