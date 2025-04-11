@@ -186,12 +186,6 @@ export default function Dreamshaper() {
                 "transition-all duration-300 ease-in-out",
               )}
             >
-              <div className="px-4 py-3 border-b border-muted-foreground/10">
-                <h2 className="text-lg font-medium">Chat Assistant</h2>
-                <p className="text-sm text-muted-foreground">
-                  I&apos;ll help you create the perfect prompt
-                </p>
-              </div>
               <div className="flex-1 overflow-hidden">
                 <ChatContainer />
               </div>

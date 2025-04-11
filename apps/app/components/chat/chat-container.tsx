@@ -66,8 +66,15 @@ export function ChatContainer() {
       const formData = new FormData();
       formData.append("message", message);
 
+      // Get the full message history, excluding the current thinking message
+      const messageHistory = messages
+        .filter(msg => msg.role !== "thinking")
+        .map(msg => ({
+          role: msg.role,
+          content: msg.content,
+        }));
+
       // Add message history for context
-      const messageHistory = messages.slice(-4); // Keep last 4 messages for context
       formData.append("messages", JSON.stringify(messageHistory));
 
       // Call the chat API to process the prompt
@@ -140,11 +147,11 @@ export function ChatContainer() {
           >
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="assisted" id="assisted" />
-              <Label htmlFor="assisted">Assisted</Label>
+              <Label htmlFor="assisted">Assisted Prompting</Label>
             </div>
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="classic" id="classic" />
-              <Label htmlFor="classic">Classic</Label>
+              <Label htmlFor="classic">Classic Prompting</Label>
             </div>
           </RadioGroup>
         </div>
