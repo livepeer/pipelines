@@ -7,14 +7,16 @@ import { useStreamUpdates } from "@/hooks/useDreamshaper";
 import { cn } from "@repo/design-system/lib/utils";
 import { Button } from "@repo/design-system/components/ui/button";
 import { RotateCcw } from "lucide-react";
+import { RadioGroup, RadioGroupItem } from "@repo/design-system/components/ui/radio-group";
+import { Label } from "@repo/design-system/components/ui/label";
 
 interface Message {
-  role: "user" | "assistant";
+  role: "user" | "assistant" | "thinking";
   content: string;
   suggestions?: string[];
 }
 
-type PromptMode = "freeform" | "assisted";
+type PromptMode = "assisted" | "classic";
 
 export function ChatContainer() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -31,20 +33,29 @@ export function ChatContainer() {
     scrollToBottom();
   }, [messages]);
 
-  const handleSubmit = async (message: string, image?: File) => {
+  const handleSubmit = async (message: string) => {
     setIsLoading(true);
 
     // Add user message
     const userMessage: Message = {
       role: "user",
-      content: message + (image ? " [Image uploaded]" : ""),
+      content: message,
     };
     setMessages(prev => [...prev, userMessage]);
 
+    // Add thinking message
+    const thinkingMessage: Message = {
+      role: "thinking",
+      content: "Thinking...",
+    };
+    setMessages(prev => [...prev, thinkingMessage]);
+
     try {
-      if (promptMode === "freeform") {
-        // In freeform mode, just update the stream directly
+      if (promptMode === "classic") {
+        // In classic mode, just update the stream directly
         await handleStreamUpdate(message, { silent: true });
+        // Remove thinking message
+        setMessages(prev => prev.filter(msg => msg.role !== "thinking"));
         return;
       }
 
@@ -55,10 +66,6 @@ export function ChatContainer() {
       // Add message history for context
       const messageHistory = messages.slice(-4); // Keep last 4 messages for context
       formData.append("messages", JSON.stringify(messageHistory));
-
-      if (image) {
-        formData.append("image", image);
-      }
 
       // Call the chat API to process the prompt
       const response = await fetch("/api/chat", {
@@ -75,22 +82,32 @@ export function ChatContainer() {
       // Use the handleStreamUpdate hook to update the stream with the processed prompt
       await handleStreamUpdate(message, { silent: true });
 
-      // Add assistant message with the processed prompt and suggestions
-      const assistantMessage: Message = {
-        role: "assistant",
-        content: data.content,
-        suggestions: data.suggestions,
-      };
-      setMessages(prev => [...prev, assistantMessage]);
+      // Remove thinking message and add assistant message
+      setMessages(prev => {
+        const filtered = prev.filter(msg => msg.role !== "thinking");
+        return [
+          ...filtered,
+          {
+            role: "assistant",
+            content: data.content,
+            suggestions: data.suggestions,
+          },
+        ];
+      });
     } catch (error) {
       console.error("Error:", error);
-      // Add error message
-      const errorMessage: Message = {
-        role: "assistant",
-        content:
-          "Sorry, there was an error processing your request. Please try again.",
-      };
-      setMessages(prev => [...prev, errorMessage]);
+      // Remove thinking message and add error message
+      setMessages(prev => {
+        const filtered = prev.filter(msg => msg.role !== "thinking");
+        return [
+          ...filtered,
+          {
+            role: "assistant",
+            content:
+              "Sorry, there was an error processing your request. Please try again.",
+          },
+        ];
+      });
     } finally {
       setIsLoading(false);
     }
@@ -109,33 +126,24 @@ export function ChatContainer() {
     setMessages([]);
   };
 
-  const convertImageToBase64 = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
-  };
-
   return (
     <div className="flex flex-col h-full">
       <div className="flex items-center justify-between px-4 py-2 border-b">
-        <div className="flex items-center space-x-2">
-          <Button
-            variant={promptMode === "assisted" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setPromptMode("assisted")}
+        <div className="flex items-center space-x-4">
+          <RadioGroup
+            value={promptMode}
+            onValueChange={(value) => setPromptMode(value as PromptMode)}
+            className="flex items-center space-x-4"
           >
-            Assisted
-          </Button>
-          <Button
-            variant={promptMode === "freeform" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setPromptMode("freeform")}
-          >
-            Freeform
-          </Button>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="assisted" id="assisted" />
+              <Label htmlFor="assisted">Assisted</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="classic" id="classic" />
+              <Label htmlFor="classic">Classic</Label>
+            </div>
+          </RadioGroup>
         </div>
         {messages.length > 0 && (
           <Button

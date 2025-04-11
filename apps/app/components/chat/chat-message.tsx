@@ -2,11 +2,11 @@
 
 import React from "react";
 import { Button } from "@repo/design-system/components/ui/button";
-import { ThumbsUp, ThumbsDown } from "lucide-react";
+import { ThumbsUp, ThumbsDown, Loader2 } from "lucide-react";
 import { cn } from "@repo/design-system/lib/utils";
 
 interface ChatMessageProps {
-  role: "user" | "assistant";
+  role: "user" | "assistant" | "thinking";
   content: string;
   suggestions?: string[];
   onSuggestionClick?: (suggestion: string) => void;
@@ -36,7 +36,14 @@ export function ChatMessage({
           role === "assistant" ? "rounded-tl-sm" : "rounded-tr-sm",
         )}
       >
-        <p className="whitespace-pre-wrap leading-relaxed">{content}</p>
+        {role === "thinking" ? (
+          <div className="flex items-center space-x-2">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            <p className="whitespace-pre-wrap leading-relaxed">{content}</p>
+          </div>
+        ) : (
+          <p className="whitespace-pre-wrap leading-relaxed">{content}</p>
+        )}
       </div>
 
       {suggestions && suggestions.length > 0 && (

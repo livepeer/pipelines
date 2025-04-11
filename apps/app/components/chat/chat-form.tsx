@@ -1,19 +1,19 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import { AutoResizeTextarea } from "../ui/auto-resize-textarea";
 import { Button } from "@repo/design-system/components/ui/button";
-import { ImageIcon, WandSparkles, Loader2, X } from "lucide-react";
+import { WandSparkles, Loader2 } from "lucide-react";
 import { cn } from "@repo/design-system/lib/utils";
 
 interface Message {
-  role: "user" | "assistant";
+  role: "user" | "assistant" | "thinking";
   content: string;
   suggestions?: string[];
 }
 
 interface ChatFormProps {
-  onSubmit: (message: string, image?: File) => Promise<void>;
+  onSubmit: (message: string) => Promise<void>;
   isLoading?: boolean;
   placeholder?: string;
 }
@@ -24,30 +24,13 @@ export function ChatForm({
   placeholder = "Describe what you want to visualize...",
 }: ChatFormProps) {
   const [input, setInput] = useState("");
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setImageFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() && !imageFile) return;
+    if (!input.trim()) return;
 
-    await onSubmit(input, imageFile || undefined);
+    await onSubmit(input);
     setInput("");
-    setImageFile(null);
-    setImagePreview(null);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -59,15 +42,6 @@ export function ChatForm({
       e.preventDefault();
       handleSubmit(e);
     }
-  };
-
-  const handleImageClick = () => {
-    fileInputRef.current?.click();
-  };
-
-  const removeImage = () => {
-    setImageFile(null);
-    setImagePreview(null);
   };
 
   return (
@@ -89,17 +63,8 @@ export function ChatForm({
             />
             <div className="absolute right-2 bottom-2 flex items-center space-x-2">
               <Button
-                type="button"
-                variant="ghost"
-                onClick={handleImageClick}
-                className="h-8 w-8 p-0"
-                aria-label="Add image"
-              >
-                <ImageIcon className="h-4 w-4" />
-              </Button>
-              <Button
                 type="submit"
-                disabled={isLoading || (!input.trim() && !imageFile)}
+                disabled={isLoading || !input.trim()}
                 className={cn(
                   "border-none items-center justify-center font-semibold text-xs bg-[#000000] flex disabled:bg-[#000000] disabled:opacity-80",
                   "w-auto h-9 aspect-square rounded-md",
@@ -112,33 +77,8 @@ export function ChatForm({
                 )}
               </Button>
             </div>
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleImageChange}
-              accept="image/*"
-              className="hidden"
-            />
           </div>
         </div>
-        {imagePreview && (
-          <div className="relative w-32 h-32">
-            <img
-              src={imagePreview}
-              alt="Preview"
-              className="w-full h-full object-cover rounded-lg"
-            />
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={removeImage}
-              className="absolute top-1 right-1 h-6 w-6 p-0 bg-black/50 hover:bg-black/70 text-white"
-              aria-label="Remove image"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-        )}
       </form>
     </div>
   );
