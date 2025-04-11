@@ -102,18 +102,26 @@ function SettingsMenu({
                   <div className="flex items-center py-2">
                     <div className="relative w-full h-4">
                       {/* Progress fill - very subtle blue */}
-                      <div 
+                      <div
                         className="absolute top-0 left-0 h-4 bg-primary/10 rounded-l-full z-30 mt-[2px] pointer-events-none"
-                        style={{ 
+                        style={{
                           width: `${((currentValue - min) / (max - min)) * 100}%`,
                         }}
                       />
-                      
+
                       {/* Tick marks for steps */}
                       <div className="absolute top-0 left-0 right-0 bottom-0 pointer-events-none z-20 overflow-hidden rounded-full mt-[4px]">
-                        {Array.from({ length: Math.min(Math.ceil((max - min) / step) + 1, 20) }).map((_, index) => {
+                        {Array.from({
+                          length: Math.min(
+                            Math.ceil((max - min) / step) + 1,
+                            20,
+                          ),
+                        }).map((_, index) => {
                           // Get actual number of intervals to display
-                          const totalIntervals = Math.min(Math.ceil((max - min) / step), 19);
+                          const totalIntervals = Math.min(
+                            Math.ceil((max - min) / step),
+                            19,
+                          );
                           // Calculate position as percentage where 0% is far left and 100% is far right
                           let positionPercentage;
                           if (totalIntervals === 0) {
@@ -122,18 +130,22 @@ function SettingsMenu({
                             // Ensure we go exactly from 0% to 100%
                             positionPercentage = index * (100 / totalIntervals);
                           }
-                          
+
                           return (
-                            <div 
+                            <div
                               key={index}
                               className="absolute w-[1px] bg-primary/40 z-20"
                               style={{
                                 left: `calc(${positionPercentage}% - 0.5px)`,
-                                opacity: index === 0 || index === totalIntervals ? 0 : 
-                                         index % 5 === 0 ? 0.6 : 0.35,
-                                height: index % 5 === 0 ? '100%' : '50%',
-                                top: '50%',
-                                transform: 'translateY(-50%)'
+                                opacity:
+                                  index === 0 || index === totalIntervals
+                                    ? 0
+                                    : index % 5 === 0
+                                      ? 0.6
+                                      : 0.35,
+                                height: index % 5 === 0 ? "100%" : "50%",
+                                top: "50%",
+                                transform: "translateY(-50%)",
                               }}
                             />
                           );
