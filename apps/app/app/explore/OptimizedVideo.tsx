@@ -14,6 +14,8 @@ export default function OptimizedVideo({
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isNearViewport, setIsNearViewport] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  
+  const shortSrc = src.replace(/\.mp4$/, '-short.mp4');
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -58,7 +60,7 @@ export default function OptimizedVideo({
         {isNearViewport ? (
           <video
             ref={videoRef}
-            src={src}
+            src={shortSrc}
             muted
             loop
             playsInline
