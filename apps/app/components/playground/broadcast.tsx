@@ -1,6 +1,8 @@
 import {
   DisableVideoIcon,
   EnableVideoIcon,
+  EnableAudioIcon,
+  DisableAudioIcon,
   LoadingIcon,
   OfflineErrorIcon,
   PictureInPictureIcon,
@@ -59,6 +61,13 @@ const StatusMonitor = () => {
       };
 
       sendEvent();
+
+      // Disable audio after 1 second - So at least 1 second of audio is sent to the gateway
+      setTimeout(() => {
+        if (state.audio && state.__controlsFunctions?.toggleAudio) {
+          state.__controlsFunctions.toggleAudio();
+        }
+      }, 1000);
     } else if (state.status !== "live") {
       liveEventSentRef.current = false;
     }
@@ -127,10 +136,10 @@ export function BroadcastWithControls({ className }: { className?: string }) {
             )
           : null;
       }}
-      forceEnabled={true}
-      mirrored={false}
-      audio={false}
-      video={true}
+      forceEnabled
+      mirrored
+      video
+      audio={true}
       aspectRatio={16 / 9}
       ingestUrl={ingestUrl}
       {...({
@@ -277,6 +286,15 @@ export function BroadcastWithControls({ className }: { className?: string }) {
                       <EnableVideoIcon className="w-full h-full text-white/50" />
                     </Broadcast.VideoEnabledIndicator>
                   </Broadcast.VideoEnabledTrigger>
+
+                  <Broadcast.AudioEnabledTrigger className="w-6 h-6 hover:scale-110 transition flex-shrink-0">
+                    <Broadcast.AudioEnabledIndicator asChild matcher={false}>
+                      <DisableAudioIcon className="w-full h-full text-white/50" />
+                    </Broadcast.AudioEnabledIndicator>
+                    <Broadcast.AudioEnabledIndicator asChild matcher={true}>
+                      <EnableAudioIcon className="w-full h-full text-white/50" />
+                    </Broadcast.AudioEnabledIndicator>
+                  </Broadcast.AudioEnabledTrigger>
                 </div>
                 <div className="flex sm:flex-1 md:flex-[1.5] justify-end items-center gap-2.5">
                   <CameraSwitchButton />
