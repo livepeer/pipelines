@@ -29,4 +29,4 @@ export function AdminDashboardLayout({ email }: AdminDashboardLayoutProps) {
       </div>
     </div>
   );
-} 
+}

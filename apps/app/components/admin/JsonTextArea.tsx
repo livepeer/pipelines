@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 interface JsonTextAreaProps {
   label: string;
@@ -7,7 +7,7 @@ interface JsonTextAreaProps {
   placeholder?: string;
   rows?: number;
   helpText?: string;
-  hasError?: boolean; 
+  hasError?: boolean;
 }
 
 export function JsonTextArea({
@@ -15,12 +15,12 @@ export function JsonTextArea({
   value,
   onChange,
   placeholder,
-  rows = 8, 
+  rows = 8,
   helpText,
   hasError = false,
 }: JsonTextAreaProps) {
-  const borderColor = hasError ? 'border-red-500' : 'border-gray-300';
-  const ringColor = hasError ? 'focus:ring-red-500' : 'focus:ring-blue-500';
+  const borderColor = hasError ? "border-red-500" : "border-gray-300";
+  const ringColor = hasError ? "focus:ring-red-500" : "focus:ring-blue-500";
 
   return (
     <div className="mb-4">
@@ -34,11 +34,7 @@ export function JsonTextArea({
         rows={rows}
         placeholder={placeholder}
       />
-      {helpText && (
-        <p className="mt-1 text-xs text-gray-500">
-          {helpText}
-        </p>
-      )}
+      {helpText && <p className="mt-1 text-xs text-gray-500">{helpText}</p>}
     </div>
   );
-} 
+}

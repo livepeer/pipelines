@@ -15,21 +15,18 @@ export async function DELETE(request: NextRequest) {
     if (!id) {
       return NextResponse.json(
         { error: "Pipeline ID is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     const supabase = await createServerClient();
-    const { error } = await supabase
-      .from("pipelines")
-      .delete()
-      .eq("id", id);
+    const { error } = await supabase.from("pipelines").delete().eq("id", id);
 
     if (error) {
       console.error("Error deleting pipeline:", error);
       return NextResponse.json(
         { error: "Failed to delete pipeline" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -38,7 +35,7 @@ export async function DELETE(request: NextRequest) {
     console.error("Error in admin/pipelines/delete API:", err);
     return NextResponse.json(
       { error: "An unexpected error occurred" },
-      { status: 500 }
+      { status: 500 },
     );
   }
-} 
+}

@@ -42,9 +42,7 @@ function AdminLayoutContent({ children }: { children: ReactNode }) {
       <AdminHeader />
       <div className="flex">
         <AdminSidebar email={email} />
-        <main className="flex-1 p-6">
-          {children}
-        </main>
+        <main className="flex-1 p-6">{children}</main>
       </div>
     </div>
   );
@@ -69,23 +67,23 @@ function AdminHeader() {
 function AdminSidebar({ email }: { email: string | null | undefined }) {
   const pathname = usePathname();
   const { logout } = usePrivy();
-  
+
   const isActive = (path: string) => {
     return pathname === path || pathname?.startsWith(`${path}/`);
   };
-  
+
   const navItems = [
     { name: "Dashboard", path: "/admin" },
     { name: "Pipelines", path: "/admin/pipelines" },
     { name: "Clips", path: "/admin/clips" },
     { name: "Users", path: "/admin/users" },
   ];
-  
+
   return (
     <aside className="w-64 bg-white shadow-sm min-h-[calc(100vh-4rem)] flex flex-col">
       <nav className="mt-5 px-2">
         <ul className="space-y-1">
-          {navItems.map((item) => (
+          {navItems.map(item => (
             <li key={item.path}>
               <Link
                 href={item.path}
@@ -104,7 +102,9 @@ function AdminSidebar({ email }: { email: string | null | undefined }) {
 
       <div className="mt-auto p-4 border-t border-gray-200">
         {email && (
-           <p className="text-xs text-gray-500 mb-2 truncate">Logged in as: {email}</p>
+          <p className="text-xs text-gray-500 mb-2 truncate">
+            Logged in as: {email}
+          </p>
         )}
         <ul className="space-y-1">
           <li>
@@ -129,4 +129,4 @@ function AdminSidebar({ email }: { email: string | null | undefined }) {
       </div>
     </aside>
   );
-} 
+}

@@ -15,7 +15,7 @@ export async function PUT(request: NextRequest) {
     if (!id) {
       return NextResponse.json(
         { error: "Pipeline ID is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -30,8 +30,10 @@ export async function PUT(request: NextRequest) {
     if (error) {
       console.error("Error updating pipeline:", error);
       return NextResponse.json(
-        { error: `Failed to update pipeline: ${error.message || error.details || JSON.stringify(error)}` },
-        { status: 500 }
+        {
+          error: `Failed to update pipeline: ${error.message || error.details || JSON.stringify(error)}`,
+        },
+        { status: 500 },
       );
     }
 
@@ -39,8 +41,13 @@ export async function PUT(request: NextRequest) {
   } catch (err) {
     console.error("Error in admin/pipelines/update API:", err);
     return NextResponse.json(
-      { error: err instanceof Error ? `An unexpected error occurred: ${err.message}` : "An unexpected error occurred" },
-      { status: 500 }
+      {
+        error:
+          err instanceof Error
+            ? `An unexpected error occurred: ${err.message}`
+            : "An unexpected error occurred",
+      },
+      { status: 500 },
     );
   }
-} 
+}

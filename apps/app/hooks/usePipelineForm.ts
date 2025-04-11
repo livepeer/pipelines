@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
-import { Pipeline } from '@/app/admin/types';
+import { useState, useEffect, useCallback } from "react";
+import { Pipeline } from "@/app/admin/types";
 
 // Define the shape of the state and return values for the hook
 interface UsePipelineFormProps {
@@ -29,10 +29,13 @@ interface UsePipelineFormReturn {
   resetForm: () => void;
 }
 
-export function usePipelineForm({ initialPipeline }: UsePipelineFormProps): UsePipelineFormReturn {
+export function usePipelineForm({
+  initialPipeline,
+}: UsePipelineFormProps): UsePipelineFormReturn {
   const [formData, setFormData] = useState<Partial<Pipeline>>({});
   const [configJson, setConfigJson] = useState<string>("");
-  const [prioritizedParamsJson, setPrioritizedParamsJson] = useState<string>("");
+  const [prioritizedParamsJson, setPrioritizedParamsJson] =
+    useState<string>("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [changedFields, setChangedFields] = useState<Set<string>>(new Set());
@@ -56,12 +59,14 @@ export function usePipelineForm({ initialPipeline }: UsePipelineFormProps): UseP
       setImageFile(null);
       try {
         setConfigJson(
-          initialPipeline.config ? JSON.stringify(initialPipeline.config, null, 2) : "{}"
+          initialPipeline.config
+            ? JSON.stringify(initialPipeline.config, null, 2)
+            : "{}",
         );
         setPrioritizedParamsJson(
           initialPipeline.prioritized_params
             ? JSON.stringify(initialPipeline.prioritized_params, null, 2)
-            : "[]"
+            : "[]",
         );
         setJsonError(null);
       } catch (err) {
@@ -88,7 +93,9 @@ export function usePipelineForm({ initialPipeline }: UsePipelineFormProps): UseP
     resetForm();
   }, [initialPipeline, resetForm]);
 
-  const handleImageUpload = useCallback(async (): Promise<string | undefined> => {
+  const handleImageUpload = useCallback(async (): Promise<
+    string | undefined
+  > => {
     if (!imageFile) return formData.cover_image;
 
     setIsUploading(true);
@@ -97,10 +104,14 @@ export function usePipelineForm({ initialPipeline }: UsePipelineFormProps): UseP
       const response = await fetch("/api/admin/upload-url", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ fileName: imageFile.name, contentType: imageFile.type }),
+        body: JSON.stringify({
+          fileName: imageFile.name,
+          contentType: imageFile.type,
+        }),
       });
 
-      if (!response.ok) throw new Error(`Failed to get upload URL (${response.status})`);
+      if (!response.ok)
+        throw new Error(`Failed to get upload URL (${response.status})`);
 
       const { uploadUrl, fileUrl } = await response.json();
 
@@ -110,12 +121,17 @@ export function usePipelineForm({ initialPipeline }: UsePipelineFormProps): UseP
         body: imageFile,
       });
 
-      if (!uploadResponse.ok) throw new Error(`Failed to upload image (${uploadResponse.status})`);
+      if (!uploadResponse.ok)
+        throw new Error(`Failed to upload image (${uploadResponse.status})`);
 
       return fileUrl;
     } catch (err) {
       console.error("Error uploading image:", err);
-      setUploadError(err instanceof Error ? err.message : "Failed to upload image. Please try again.");
+      setUploadError(
+        err instanceof Error
+          ? err.message
+          : "Failed to upload image. Please try again.",
+      );
       return undefined;
     } finally {
       setIsUploading(false);
@@ -126,7 +142,9 @@ export function usePipelineForm({ initialPipeline }: UsePipelineFormProps): UseP
     try {
       return JSON.parse(jsonString);
     } catch (err) {
-      setJsonError(`Invalid JSON: ${err instanceof Error ? err.message : 'Unknown error'}`);
+      setJsonError(
+        `Invalid JSON: ${err instanceof Error ? err.message : "Unknown error"}`,
+      );
       return null;
     }
   }, []);
@@ -153,4 +171,4 @@ export function usePipelineForm({ initialPipeline }: UsePipelineFormProps): UseP
     validateJsonField,
     resetForm,
   };
-} 
+}

@@ -24,7 +24,5 @@ export default function AdminDashboard() {
     );
   }
 
-  return (
-    <AdminDashboardLayout email={email} />
-  );
-} 
+  return <AdminDashboardLayout email={email} />;
+}

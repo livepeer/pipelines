@@ -24,12 +24,12 @@ export async function verifyAdminAccess(request?: Request) {
   }
 
   if (request) {
-    const privyUser = request.headers.get('x-privy-user');
+    const privyUser = request.headers.get("x-privy-user");
     if (privyUser) {
       try {
         const userData = JSON.parse(privyUser);
         const email = userData.email?.address;
-        
+
         if (email && email.endsWith(`@${ADMIN_DOMAIN}`)) {
           return {
             authorized: true,
@@ -37,7 +37,7 @@ export async function verifyAdminAccess(request?: Request) {
           };
         }
       } catch (e) {
-        console.error('Error parsing Privy user data:', e);
+        console.error("Error parsing Privy user data:", e);
       }
     }
   }
@@ -51,13 +51,10 @@ export async function verifyAdminAccess(request?: Request) {
 
 export async function requireAdminAuth(request?: Request) {
   const auth = await verifyAdminAccess(request);
-  
+
   if (!auth.authorized) {
-    return NextResponse.json(
-      { error: auth.error },
-      { status: auth.status }
-    );
+    return NextResponse.json({ error: auth.error }, { status: auth.status });
   }
-  
+
   return { user: auth.user };
-} 
+}

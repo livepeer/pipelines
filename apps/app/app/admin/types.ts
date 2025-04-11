@@ -12,4 +12,4 @@ export interface Pipeline {
   created_at?: string;
   updated_at?: string;
   [key: string]: any;
-} 
+}

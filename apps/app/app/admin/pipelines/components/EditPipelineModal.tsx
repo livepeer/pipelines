@@ -2,9 +2,9 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Pipeline } from "@/app/admin/types";
-import { usePipelineForm } from "@/hooks/usePipelineForm"; 
-import { ImageUploadInput } from "@/components/admin/ImageUploadInput"; 
-import { JsonTextArea } from "@/components/admin/JsonTextArea"; 
+import { usePipelineForm } from "@/hooks/usePipelineForm";
+import { ImageUploadInput } from "@/components/admin/ImageUploadInput";
+import { JsonTextArea } from "@/components/admin/JsonTextArea";
 
 interface EditPipelineModalProps {
   pipeline: Pipeline | null;
@@ -45,7 +45,7 @@ export default function EditPipelineModal({
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
+
   useEffect(() => {
     if (uploadError) {
       setError(uploadError);
@@ -56,7 +56,7 @@ export default function EditPipelineModal({
 
   useEffect(() => {
     return () => {
-      if (imagePreview && imagePreview.startsWith('blob:')) {
+      if (imagePreview && imagePreview.startsWith("blob:")) {
         URL.revokeObjectURL(imagePreview);
       }
     };
@@ -67,66 +67,79 @@ export default function EditPipelineModal({
       resetForm();
       setError(null);
       setIsSaving(false);
-    } 
+    }
   }, [isOpen, resetForm]);
 
-  const handleChange = useCallback((
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  const handleChange = useCallback(
+    (
+      e: React.ChangeEvent<
+        HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+      >,
+    ) => {
+      const { name, value, type } = e.target;
+      const newValue =
+        type === "checkbox" ? (e.target as HTMLInputElement).checked : value;
+
+      setFormData(prev => ({
+        ...prev,
+        [name]: newValue,
+      }));
+
+      if (pipeline && pipeline[name as keyof Pipeline] !== newValue) {
+        setChangedFields(prev => {
+          const updated = new Set(prev);
+          updated.add(name);
+          return updated;
+        });
+      } else {
+        setChangedFields(prev => {
+          const updated = new Set(prev);
+          updated.delete(name);
+          return updated;
+        });
+      }
+    },
+    [pipeline, setFormData, setChangedFields],
+  );
+
+  const handleImageChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      const previewUrl = URL.createObjectURL(file);
+      setImageFile(file);
+      setImagePreview(previewUrl);
+
+      setChangedFields(prev => {
+        const updated = new Set(prev);
+        updated.add("cover_image");
+        return updated;
+      });
+    },
+    [setImageFile, setImagePreview, setChangedFields],
+  );
+
+  const handleConfigJsonChange = (
+    e: React.ChangeEvent<HTMLTextAreaElement>,
   ) => {
-    const { name, value, type } = e.target;
-    const newValue = type === "checkbox" ? (e.target as HTMLInputElement).checked : value;
-    
-    setFormData(prev => ({
-      ...prev,
-      [name]: newValue
-    }));
-
-    if (pipeline && (pipeline[name as keyof Pipeline] !== newValue)) {
-      setChangedFields(prev => {
-        const updated = new Set(prev);
-        updated.add(name);
-        return updated;
-      });
-    } else {
-      setChangedFields(prev => {
-        const updated = new Set(prev);
-        updated.delete(name);
-        return updated;
-      });
-    }
-  }, [pipeline, setFormData, setChangedFields]);
-
-  const handleImageChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const previewUrl = URL.createObjectURL(file);
-    setImageFile(file);
-    setImagePreview(previewUrl);
-
-    setChangedFields(prev => {
-      const updated = new Set(prev);
-      updated.add('cover_image');
-      return updated;
-    });
-  }, [setImageFile, setImagePreview, setChangedFields]);
-
-  const handleConfigJsonChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setConfigJson(e.target.value);
-    setJsonError(null); 
+    setJsonError(null);
     setChangedFields(prev => {
       const updated = new Set(prev);
-      updated.add('config');
+      updated.add("config");
       return updated;
     });
   };
 
-  const handlePrioritizedParamsChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+  const handlePrioritizedParamsChange = (
+    e: React.ChangeEvent<HTMLTextAreaElement>,
+  ) => {
     setPrioritizedParamsJson(e.target.value);
-    setJsonError(null); 
+    setJsonError(null);
     setChangedFields(prev => {
       const updated = new Set(prev);
-      updated.add('prioritized_params');
+      updated.add("prioritized_params");
       return updated;
     });
   };
@@ -138,18 +151,18 @@ export default function EditPipelineModal({
   const handleRemoveImage = () => {
     setImageFile(null);
     setImagePreview(null);
-    
+
     setFormData(prev => ({
       ...prev,
       cover_image: undefined,
     }));
-    
+
     setChangedFields(prev => {
       const updated = new Set(prev);
-      updated.add('cover_image');
+      updated.add("cover_image");
       return updated;
     });
-    
+
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -158,42 +171,54 @@ export default function EditPipelineModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!pipeline) return;
-    
+
     const configJsonObj = validateJsonField(configJson);
     const prioritizedParamsJsonObj = validateJsonField(prioritizedParamsJson);
-    
+
     if (configJsonObj === null || prioritizedParamsJsonObj === null) {
       setError("Invalid JSON in config or prioritized parameters");
       return;
     }
-    
+
     try {
       setIsSaving(true);
       setError(null);
-      
+
       const updates: Partial<Pipeline> & { id: string } = { id: pipeline.id };
-      
+
       const allowedFields = [
-        'name', 'description', 'is_private', 'is_featured', 
-        'version', 'type', 'cover_image', 'config', 'prioritized_params'
+        "name",
+        "description",
+        "is_private",
+        "is_featured",
+        "version",
+        "type",
+        "cover_image",
+        "config",
+        "prioritized_params",
       ];
-      
+
       for (const field of Array.from(changedFields)) {
-        if (allowedFields.includes(field) && field !== 'author' && 
-            field !== 'config' && field !== 'prioritized_params' && field !== 'cover_image') {
+        if (
+          allowedFields.includes(field) &&
+          field !== "author" &&
+          field !== "config" &&
+          field !== "prioritized_params" &&
+          field !== "cover_image"
+        ) {
           updates[field as keyof Pipeline] = formData[field as keyof Pipeline];
         }
       }
-      
-      if (changedFields.has('config')) {
+
+      if (changedFields.has("config")) {
         updates.config = configJsonObj;
       }
-      
-      if (changedFields.has('prioritized_params')) {
+
+      if (changedFields.has("prioritized_params")) {
         updates.prioritized_params = prioritizedParamsJsonObj;
       }
-      
-      if (changedFields.has('cover_image')) {
+
+      if (changedFields.has("cover_image")) {
         if (imageFile) {
           const coverImageUrl = await handleImageUpload();
           if (coverImageUrl) {
@@ -205,9 +230,9 @@ export default function EditPipelineModal({
           updates.cover_image = undefined;
         }
       }
-      
-      console.log('Changed fields:', Array.from(changedFields));
-      console.log('Sending update payload:', updates);
+
+      console.log("Changed fields:", Array.from(changedFields));
+      console.log("Sending update payload:", updates);
 
       await onSave(updates);
       onClose();
@@ -226,7 +251,7 @@ export default function EditPipelineModal({
       <div className="bg-white rounded-lg p-6 w-full max-w-3xl max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-bold">Edit Pipeline</h2>
-          <button 
+          <button
             onClick={onClose}
             className="text-gray-500 hover:text-gray-700"
           >
@@ -240,7 +265,7 @@ export default function EditPipelineModal({
           </div>
         )}
 
-        {/* Display JSON validation error from hook */} 
+        {/* Display JSON validation error from hook */}
         {jsonError && !error && (
           <div className="mb-4 p-2 bg-yellow-100 text-yellow-700 rounded">
             {jsonError}
@@ -306,8 +331,8 @@ export default function EditPipelineModal({
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Cover Image
               </label>
-              
-              <ImageUploadInput 
+
+              <ImageUploadInput
                 imagePreview={imagePreview}
                 onImageChange={handleImageChange}
                 onRemoveImage={handleRemoveImage}
@@ -327,11 +352,14 @@ export default function EditPipelineModal({
                     onChange={handleChange}
                     className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                   />
-                  <label htmlFor="is_private" className="ml-2 block text-sm text-gray-700">
+                  <label
+                    htmlFor="is_private"
+                    className="ml-2 block text-sm text-gray-700"
+                  >
                     Private
                   </label>
                 </div>
-                
+
                 <div className="flex items-center">
                   <input
                     type="checkbox"
@@ -341,7 +369,10 @@ export default function EditPipelineModal({
                     onChange={handleChange}
                     className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                   />
-                  <label htmlFor="is_featured" className="ml-2 block text-sm text-gray-700">
+                  <label
+                    htmlFor="is_featured"
+                    className="ml-2 block text-sm text-gray-700"
+                  >
                     Featured
                   </label>
                 </div>
@@ -349,24 +380,24 @@ export default function EditPipelineModal({
             </div>
           </div>
 
-          <JsonTextArea 
+          <JsonTextArea
             label="Config (JSON)"
             value={configJson}
             onChange={handleConfigJsonChange}
             rows={8}
             placeholder="{}"
             helpText="Enter valid JSON for the pipeline configuration"
-            hasError={!!jsonError && changedFields.has('config')} // Indicate error only if this field caused it
+            hasError={!!jsonError && changedFields.has("config")} // Indicate error only if this field caused it
           />
 
-          <JsonTextArea 
+          <JsonTextArea
             label="Prioritized Parameters (JSON)"
             value={prioritizedParamsJson}
             onChange={handlePrioritizedParamsChange}
             rows={4}
             placeholder="[]"
             helpText="Enter valid JSON array of prioritized parameters"
-            hasError={!!jsonError && changedFields.has('prioritized_params')} // Indicate error only if this field caused it
+            hasError={!!jsonError && changedFields.has("prioritized_params")} // Indicate error only if this field caused it
           />
 
           <div className="flex justify-end gap-2 mt-6">
@@ -382,11 +413,13 @@ export default function EditPipelineModal({
               disabled={isSaving || isUploading || changedFields.size === 0}
               className="px-4 py-2 bg-blue-600 text-white rounded text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
             >
-              {isSaving || isUploading ? `${isUploading ? "Uploading..." : "Saving..."}` : "Save Changes"}
+              {isSaving || isUploading
+                ? `${isUploading ? "Uploading..." : "Saving..."}`
+                : "Save Changes"}
             </button>
           </div>
         </form>
       </div>
     </div>
   );
-} 
+}

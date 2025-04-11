@@ -1,6 +1,14 @@
 import Link from "next/link";
 
-export function AdminCard({ title, description, link }: { title: string; description: string; link: string }) {
+export function AdminCard({
+  title,
+  description,
+  link,
+}: {
+  title: string;
+  description: string;
+  link: string;
+}) {
   return (
     <Link href={link}>
       <div className="bg-white shadow-md rounded-lg p-6 transition duration-200 hover:shadow-lg cursor-pointer">
@@ -10,4 +18,4 @@ export function AdminCard({ title, description, link }: { title: string; descrip
       </div>
     </Link>
   );
-} 
+}

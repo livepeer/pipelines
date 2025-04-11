@@ -29,15 +29,15 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
     const timer = setTimeout(() => {
       console.log("[Admin] Auth state:", authenticated);
       console.log("[Admin] User:", user);
-      
+
       if (!authenticated || !user) {
         setState({ isAdmin: false, isLoading: false });
         return;
       }
-      
+
       // Check email from all possible sources - using type narrowing
       let email: string | undefined = undefined;
-      
+
       if (user.email?.address) {
         email = user.email.address;
       } else if (user.google?.email) {
@@ -47,36 +47,34 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
         const accounts = user.linkedAccounts || [];
         for (const account of accounts) {
           // These are runtime checks that won't trigger TS errors
-          if (account && typeof account === 'object' && 'email' in account) {
+          if (account && typeof account === "object" && "email" in account) {
             email = account.email as string;
             break;
           }
         }
       }
-      
+
       console.log("[Admin] Found email:", email);
-      
+
       if (email && email.endsWith("@livepeer.org")) {
-        setState({ 
-          isAdmin: true, 
+        setState({
+          isAdmin: true,
           isLoading: false,
-          email
+          email,
         });
       } else {
         setState({ isAdmin: false, isLoading: false });
       }
     }, 800); // Slightly longer delay to ensure Privy is fully initialized
-    
+
     return () => clearTimeout(timer);
   }, [user, authenticated, ready]);
 
   return (
-    <AdminContext.Provider value={state}>
-      {children}
-    </AdminContext.Provider>
+    <AdminContext.Provider value={state}>{children}</AdminContext.Provider>
   );
 }
 
 export function useAdmin() {
   return useContext(AdminContext);
-} 
+}
