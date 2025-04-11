@@ -25,7 +25,10 @@ export default function PlayOnHoverVideo({
         muted
         loop
         playsInline
-        className={cn("size-full object-cover object-top", className)}
+        className={cn(
+          "size-full object-cover object-top cursor-pointer",
+          className,
+        )}
         onMouseEnter={onMouseEnter}
         onMouseLeave={onMouseLeave}
       />

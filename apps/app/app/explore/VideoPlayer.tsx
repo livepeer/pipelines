@@ -4,9 +4,8 @@ import { useEffect, useRef, useState } from "react";
 
 import { useVideoPlayer } from "./VideoProvider";
 import { Slider } from "./Slider";
-import { MuteButton } from "./MuteButton";
 import { PlayButton } from "./PlayButton";
-
+import { MuteButton } from "./MuteButton";
 function parseTime(seconds: number) {
   let hours = Math.floor(seconds / 3600);
   let minutes = Math.floor((seconds - hours * 3600) / 60);
@@ -59,6 +58,9 @@ export function VideoPlayer() {
               player.pause();
             }}
           />
+          <div className="flex flex-none items-center gap-4">
+            <MuteButton player={player} />
+          </div>
         </div>
       </div>
     </div>

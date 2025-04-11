@@ -22,7 +22,7 @@ export function PlayButton({ player }: { player: PlayerAPI }) {
   return (
     <button
       type="button"
-      className="group relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-700 hover:bg-slate-900 focus:ring-2 focus:ring-slate-700 focus:ring-offset-2 focus:outline-hidden md:h-14 md:w-14"
+      className="group relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-700 hover:bg-slate-900 focus:ring-2 focus:ring-slate-700 focus:ring-offset-2 focus:outline-none md:h-14 md:w-14"
       onClick={() => player.toggle()}
       aria-label={player.playing ? "Pause" : "Play"}
     >

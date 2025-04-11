@@ -142,7 +142,7 @@ export function Slider(
           isFocusVisible={isFocusVisible}
         />
       </div>
-      <div className="hidden items-center gap-2 md:flex">
+      <div className="hidden">
         <output
           {...outputProps}
           aria-live="off"

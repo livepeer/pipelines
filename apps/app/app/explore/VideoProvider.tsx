@@ -89,7 +89,7 @@ export function VideoProvider({
 }) {
   const [state, dispatch] = useReducer(videoReducer, {
     playing: false,
-    muted: false,
+    muted: true,
     duration: 0,
     currentTime: 0,
     video: null,
@@ -197,7 +197,7 @@ export function VideoProvider({
             payload: event.currentTarget.volume,
           });
         }}
-        muted={true}
+        muted={state.muted}
         src={src}
         autoPlay
         playsInline

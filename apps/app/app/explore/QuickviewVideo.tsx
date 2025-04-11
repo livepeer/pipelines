@@ -19,7 +19,7 @@ export default function QuickviewVideo({ children, src }: QuickviewVideoProps) {
     <Dialog>
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent
-        className="w-full h-full max-w-3xl border-none bg-transparent shadow-none overflow-y-auto py-16"
+        className="h-full max-w-xl max-h-[90vh] border-none bg-transparent shadow-none overflow-y-auto py-12"
         overlayClassName="bg-white sm:bg-[rgba(255,255,255,0.98)]"
         displayCloseButton={false}
       >
