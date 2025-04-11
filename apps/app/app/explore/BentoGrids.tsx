@@ -1,16 +1,12 @@
+"use client";
+
 import { db } from "@/lib/db";
 import { clips as clipsTable } from "@/lib/db/schema";
 import { cn } from "@repo/design-system/lib/utils";
-import { unstable_cache } from "next/cache";
-import PlayOnHoverVideo from "./PlayOnHoverVideo";
-
-const getClips = unstable_cache(
-  async () => {
-    return await db.select().from(clipsTable).orderBy(clipsTable.created_at);
-  },
-  ["clips"],
-  { revalidate: 36000, tags: ["clips"] },
-);
+import { useEffect, useRef } from "react";
+import useClipsFetcher from "./hooks/useClipsFetcher";
+import LoadingSpinner from "./LoadingSpinner";
+import OptimizedVideo from "./OptimizedVideo";
 
 function chunkArray<T>(array: T[], size: number): T[][] {
   const result: T[][] = [];
@@ -20,8 +16,43 @@ function chunkArray<T>(array: T[], size: number): T[][] {
   return result;
 }
 
-export async function BentoGrids() {
-  const clips = await getClips();
+interface BentoGridsProps {
+  initialClips: Array<{
+    id: string;
+    video_url: string;
+    created_at: string;
+  }>;
+}
+
+export function BentoGrids({ initialClips }: BentoGridsProps) {
+  const { clips, loading, hasMore, fetchClips } = useClipsFetcher(initialClips);
+  const loadingRef = useRef<HTMLDivElement>(null);
+  const initialFetchDone = useRef(false);
+
+  useEffect(() => {
+    if (!initialFetchDone.current && initialClips.length === 0) {
+      fetchClips();
+      initialFetchDone.current = true;
+    }
+  }, [fetchClips, initialClips.length]);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      entries => {
+        if (entries[0].isIntersecting && !loading && hasMore) {
+          fetchClips();
+        }
+      },
+      { threshold: 0.1 },
+    );
+
+    if (loadingRef.current) {
+      observer.observe(loadingRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [fetchClips, loading, hasMore]);
+
   const groupedClips = chunkArray(clips, 4);
 
   return (
@@ -59,16 +90,33 @@ export async function BentoGrids() {
               configuration={configuration}
               className={groupIndex === 0 ? "mt-10 sm:mt-16" : "mt-8"}
             >
-              {group.map((clip, index) => (
-                <GridItem
-                  key={clip.id || index}
-                  src={clip.video_url}
-                  className={index % 2 === 0 ? "lg:row-span-2" : ""}
-                />
-              ))}
+              {group.map((clip, index) => {
+                const typedClip = clip as {
+                  id: string;
+                  video_url: string;
+                  created_at: string;
+                };
+                return (
+                  <GridItem
+                    key={typedClip.id || index}
+                    src={typedClip.video_url}
+                    className={index % 2 === 0 ? "lg:row-span-2" : ""}
+                  />
+                );
+              })}
             </GridSet>
           );
         })}
+
+        <div ref={loadingRef} className="py-8 text-center">
+          {loading ? (
+            <LoadingSpinner />
+          ) : hasMore ? (
+            <p className="text-gray-500 font-light">Scroll for more</p>
+          ) : (
+            <p className="text-gray-500 font-light">No more clips</p>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -79,7 +127,7 @@ function GridItem({ src, className }: { src: string; className?: string }) {
     <div className={cn("relative", className)}>
       <div className="absolute inset-px rounded-xl bg-white"></div>
       <div className="relative flex h-full flex-col overflow-hidden rounded-[calc(theme(borderRadius.xl)+1px)]">
-        <PlayOnHoverVideo src={src} />
+        <OptimizedVideo src={src} />
       </div>
       <div className="pointer-events-none absolute inset-px rounded-xl shadow ring-1 ring-black/5"></div>
     </div>
