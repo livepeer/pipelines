@@ -2,10 +2,11 @@ import { createServerClient } from "@repo/supabase";
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdminAuth } from "../auth";
 
-export async function POST(request: NextRequest) {
-  const authResult = await requireAdminAuth(request);
-  if (authResult instanceof NextResponse) {
-    return authResult;
+export async function GET(request: NextRequest) {
+  const authResponse = await requireAdminAuth(request);
+
+  if (authResponse.status !== 200) {
+    return authResponse;
   }
 
   try {

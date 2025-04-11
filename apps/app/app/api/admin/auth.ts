@@ -56,5 +56,5 @@ export async function requireAdminAuth(request?: Request) {
     return NextResponse.json({ error: auth.error }, { status: auth.status });
   }
 
-  return { user: auth.user };
+  return NextResponse.json({ user: auth.user });
 }

@@ -6,9 +6,10 @@ import { eq } from "drizzle-orm";
 
 export async function PUT(request: Request) {
   try {
-    const auth = await requireAdminAuth(request);
-    if ("error" in auth) {
-      return auth;
+    const authResponse = await requireAdminAuth(request);
+
+    if (authResponse.status !== 200) {
+      return authResponse;
     }
 
     const body = await request.json();
