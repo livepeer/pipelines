@@ -1,4 +1,4 @@
-import { User } from "@privy-io/react-auth";
+import { User } from "@/hooks/usePrivy";
 
 export const sleep = (ms: number) =>
   new Promise(resolve => setTimeout(resolve, ms));

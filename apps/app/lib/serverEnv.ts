@@ -1,6 +1,10 @@
 import { z } from "zod";
 import { isProduction } from "./env";
 
+const DBConfig = z.object({
+  url: z.string().url(),
+});
+
 const SupabaseConfig = z.object({
   url: z.string().url().optional(),
   anonKey: z.string().min(1).optional(),
@@ -20,6 +24,7 @@ const KafkaConfig = z.object({
 });
 
 export const ServerEnvironmentConfig = z.object({
+  db: DBConfig,
   supabase: SupabaseConfig,
   gateway: GatewayConfig,
   gateway_secondary: GatewayConfig.optional(),
@@ -31,6 +36,7 @@ type ServerEnvironmentConfig = z.infer<typeof ServerEnvironmentConfig>;
 // This is the only environment configuration that is allowed to be server-only
 // by doing this, we ensure these props do not make their way to the client and expose secrets
 const serverOnlyEnvConfig = {
+  db: { url: process.env.DATABASE_URL }, // Will replace supabase
   supabase: {
     url: process.env.SUPABASE_URL,
     anonKey: process.env.SUPABASE_ANON_KEY,
