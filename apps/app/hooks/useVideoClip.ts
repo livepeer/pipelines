@@ -212,9 +212,7 @@ export const useVideoClip = () => {
 
       audioTracks.forEach(track => canvasStream.addTrack(track));
 
-      toast("Recording with synchronized microphone audio", {
-        description: "Your voice will be delayed to match the input video",
-      });
+      console.warn("Recording clip with audio");
     } catch (error) {
       console.error("Failed to capture microphone:", error);
     }
