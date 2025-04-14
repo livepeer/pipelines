@@ -45,29 +45,27 @@ export default function QuickviewVideo({
     >
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent
-        className="max-h-[90vh] max-w-[70vh] border-none bg-transparent shadow-none pt-6 pb-4"
+        className="max-h-[90vh] max-w-[70vh] border-none bg-transparent shadow-none pt-6 pb-4 backdrop-filter backdrop-blur-[4px]"
         overlayClassName="bg-white sm:bg-[rgba(255,255,255,0.90)]"
         displayCloseButton={false}
       >
         <DialogHeader className="space-y-4">
           <div className="relative w-full">
             <DialogClose asChild>
-              <button className="absolute left-0 top-1/2 -translate-y-1/2 flex items-center gap-1 text-xs font-medium text-[#09090B] outline-none hover:bg-zinc-100 rounded-lg px-2 py-1">
+              <button className="absolute left-0 top-1/2 -translate-y-1/2 flex items-center gap-1 text-xs font-medium text-[#09090B] outline-none hover:bg-zinc-100 px-2 py-1">
                 <ChevronLeft className="w-4 h-4" />
                 <span className="hidden sm:block">Back</span>
               </button>
             </DialogClose>
 
-            <div className="flex flex-col items-center gap-1">
+            <div className="flex flex-col items-center gap-1 py-2 px-4">
               <h2 className="text-2xl font-bold text-[#232323]">
                 Vincent Van Gogh
               </h2>
-              <div className="flex items-center gap-[15px]">
-                <span className="text-sm text-[#707070]">Mar 31, 8:41 AM</span>
-              </div>
+              <div className="text-sm text-[#707070]">Mar 31, 8:41 AM</div>
             </div>
           </div>
-          <div className="flex flex-row justify-between items-center">
+          <div className="flex flex-row justify-between items-center p-2">
             <div className="flex items-center gap-2">
               <div className="w-6 h-6 rounded-full bg-zinc-100 flex items-center justify-center">
                 <User2 className="w-4 h-4 text-[#09090B]" />
