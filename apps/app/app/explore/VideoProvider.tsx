@@ -181,11 +181,9 @@ export function VideoProvider({
     <VideoPlayerContext.Provider value={api}>
       <div className="relative w-full">
         <div className="relative w-full aspect-square rounded-xl overflow-hidden bg-zinc-100 loading-gradient">
-          {state.duration === 0 && (
-            <div className="absolute inset-0 flex items-center justify-center backdrop-blur-[125px] z-10">
-              <LoadingSpinner className="w-8 h-8 text-black" />
-            </div>
-          )}
+          <div className="absolute inset-0 flex items-center justify-center backdrop-blur-[125px] z-0">
+            <LoadingSpinner className="w-8 h-8 text-black" />
+          </div>
           <video
             ref={playerRef}
             onPlay={() => dispatch({ type: ActionKind.PLAY })}
@@ -214,7 +212,7 @@ export function VideoProvider({
             playsInline
             loop
             className={cn(
-              "absolute inset-0 w-full h-full object-cover z-0 transition-opacity duration-300",
+              "absolute inset-0 w-full h-full object-cover z-1 transition-opacity duration-300",
               state.duration === 0 ? "opacity-0" : "opacity-100",
             )}
           />
