@@ -40,7 +40,7 @@ export default function QuickviewVideo({
     >
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent
-        className="h-full max-w-xl max-h-[90vh] border-none bg-transparent shadow-none overflow-y-auto py-12"
+        className="h-full max-w-2xl max-h-[90vh] border-none bg-transparent shadow-none overflow-hidden pt-6 pb-12"
         overlayClassName="bg-white sm:bg-[rgba(255,255,255,0.98)]"
         displayCloseButton={false}
       >
@@ -58,7 +58,6 @@ export default function QuickviewVideo({
                 Vincent Van Gogh
               </h2>
               <div className="flex items-center gap-[15px]">
-                <span className="text-sm text-[#707070]">480p</span>
                 <span className="text-sm text-[#707070]">Mar 31, 8:41 AM</span>
               </div>
             </div>
