@@ -92,15 +92,11 @@ export function BentoGrids({ initialClips }: BentoGridsProps) {
               className={groupIndex === 0 ? "mt-10 sm:mt-16" : "mt-8"}
             >
               {group.map((clip, index) => {
-                const typedClip = clip as {
-                  id: string;
-                  video_url: string;
-                  created_at: string;
-                };
                 return (
                   <GridItem
-                    key={typedClip.id || index}
-                    src={typedClip.video_url}
+                    key={clip.id}
+                    clipId={clip.id}
+                    src={clip.video_url}
                     className={`${index % 2 === 0 ? "lg:row-span-2" : ""} cursor-pointer`}
                   />
                 );
@@ -123,12 +119,22 @@ export function BentoGrids({ initialClips }: BentoGridsProps) {
   );
 }
 
-function GridItem({ src, className }: { src: string; className?: string }) {
+function GridItem({
+  key,
+  clipId,
+  src,
+  className,
+}: {
+  key: string;
+  clipId: string;
+  src: string;
+  className?: string;
+}) {
   return (
     <div className={cn("relative", className)}>
       <div className="absolute inset-px rounded-xl bg-white"></div>
       <div className="relative flex h-full flex-col overflow-hidden rounded-[calc(theme(borderRadius.xl)+1px)]">
-        <OptimizedVideo src={src} />
+        <OptimizedVideo src={src} clipId={clipId} />
       </div>
       <div className="pointer-events-none absolute inset-px rounded-xl shadow ring-1 ring-black/5"></div>
     </div>

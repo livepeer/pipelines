@@ -8,15 +8,35 @@ import {
 import { ChevronLeft, Repeat, User2 } from "lucide-react";
 import { VideoProvider } from "./VideoProvider";
 import { VideoPlayer } from "./VideoPlayer";
+import { getAccessToken } from "@privy-io/react-auth";
 
 interface QuickviewVideoProps {
   children: React.ReactNode;
+  clipId: string;
   src: string;
 }
 
-export default function QuickviewVideo({ children, src }: QuickviewVideoProps) {
+export default function QuickviewVideo({
+  children,
+  clipId,
+  src,
+}: QuickviewVideoProps) {
   return (
-    <Dialog>
+    <Dialog
+      onOpenChange={async open => {
+        if (!open) return;
+
+        const response = await fetch(`/api/clips/${clipId}/views`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${await getAccessToken()}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({}),
+        });
+        console.log(response);
+      }}
+    >
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent
         className="h-full max-w-xl max-h-[90vh] border-none bg-transparent shadow-none overflow-y-auto py-12"
