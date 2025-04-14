@@ -26,10 +26,11 @@ export default function QuickviewVideo({
       onOpenChange={async open => {
         if (!open) return;
 
+        const accessToken = await getAccessToken();
         const response = await fetch(`/api/clips/${clipId}/views`, {
           method: "POST",
           headers: {
-            Authorization: `Bearer ${await getAccessToken()}`,
+            ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
             "Content-Type": "application/json",
           },
           body: JSON.stringify({}),
