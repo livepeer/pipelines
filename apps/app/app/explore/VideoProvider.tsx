@@ -178,24 +178,14 @@ export function VideoProvider({
   );
 
   return (
-    <>
-      <VideoPlayerContext.Provider value={api}>
-        {children}
-      </VideoPlayerContext.Provider>
+    <VideoPlayerContext.Provider value={api}>
       <div className="relative w-full">
-        <div className="relative w-full">
-          <div
-            className="top-0 left-0 w-full aspect-video rounded-t-xl md:rounded-b-xl loading-gradient z-0"
-            style={{ height: 0, paddingBottom: "100%" }}
-          ></div>
-          <div
-            className="top-0 left-0 w-full aspect-video rounded-t-xl md:rounded-b-xl backdrop-blur-[125px] z-10"
-            style={{ position: "absolute", height: 0, paddingBottom: "100%" }}
-          >
-            <div className="absolute inset-0 flex items-center justify-center">
+        <div className="relative w-full aspect-square rounded-xl overflow-hidden bg-zinc-100">
+          {state.duration === 0 && (
+            <div className="absolute inset-0 flex items-center justify-center backdrop-blur-md z-10">
               <LoadingSpinner className="w-8 h-8 text-black" />
             </div>
-          </div>
+          )}
           <video
             ref={playerRef}
             onPlay={() => dispatch({ type: ActionKind.PLAY })}
@@ -223,21 +213,18 @@ export function VideoProvider({
             autoPlay
             playsInline
             loop
-            className="relative w-full rounded-t-xl md:rounded-b-xl z-20"
-            style={{
-              position: "absolute",
-              paddingBottom: "100%",
-              top: 0,
-              zIndex: 10,
-            }}
+            className={cn(
+              "absolute inset-0 w-full h-full object-cover z-0 transition-opacity duration-300",
+              state.duration === 0 ? "opacity-0" : "opacity-100",
+            )}
           />
-          <div
-            className="pointer-events-none absolute top-0 left-0 w-full aspect-video rounded-t-xl md:rounded-b-xl shadow ring-1 ring-black/5 z-30"
-            style={{ height: 0, paddingBottom: "100%" }}
-          ></div>
+        </div>
+
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-[calc(100%-theme(spacing.8))] z-30">
+          {children}
         </div>
       </div>
-    </>
+    </VideoPlayerContext.Provider>
   );
 }
 
