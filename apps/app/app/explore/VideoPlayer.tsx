@@ -43,7 +43,7 @@ export function VideoPlayer() {
           <Slider
             label="Current time"
             maxValue={player.duration}
-            step={1}
+            step={0.001}
             value={[currentTime ?? player.currentTime]}
             onChange={([value]) => setCurrentTime(value)}
             onChangeEnd={([value]) => {

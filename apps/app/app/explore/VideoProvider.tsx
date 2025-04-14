@@ -1,6 +1,13 @@
 "use client";
 
-import { createContext, useContext, useMemo, useReducer, useRef } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useReducer,
+  useRef,
+} from "react";
 
 interface Video {
   id: number;
@@ -97,6 +104,7 @@ export function VideoProvider({
     volume: 1,
   });
   const playerRef = useRef<React.ElementRef<"video">>(null);
+  const animationFrameRef = useRef<number | null>(null);
 
   const actions = useMemo<PublicPlayerActions>(() => {
     return {
@@ -175,6 +183,34 @@ export function VideoProvider({
     [state, actions, playerRef, dispatch],
   );
 
+  useEffect(() => {
+    const updateCurrentTime = () => {
+      if (playerRef.current) {
+        dispatch({
+          type: ActionKind.SET_CURRENT_TIME,
+          payload: playerRef.current.currentTime,
+        });
+        animationFrameRef.current = requestAnimationFrame(updateCurrentTime);
+      }
+    };
+
+    if (state.playing) {
+      animationFrameRef.current = requestAnimationFrame(updateCurrentTime);
+    } else {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+        animationFrameRef.current = null;
+      }
+    }
+
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+        animationFrameRef.current = null;
+      }
+    };
+  }, [state.playing, dispatch]);
+
   return (
     <>
       <VideoPlayerContext.Provider value={api}>
@@ -184,12 +220,6 @@ export function VideoProvider({
         ref={playerRef}
         onPlay={() => dispatch({ type: ActionKind.PLAY })}
         onPause={() => dispatch({ type: ActionKind.PAUSE })}
-        onTimeUpdate={event => {
-          dispatch({
-            type: ActionKind.SET_CURRENT_TIME,
-            payload: Math.floor(event.currentTarget.currentTime),
-          });
-        }}
         onDurationChange={event => {
           dispatch({
             type: ActionKind.SET_DURATION,
