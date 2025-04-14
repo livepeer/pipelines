@@ -4,11 +4,13 @@ import QuickviewVideo from "./QuickviewVideo";
 
 interface OptimizedVideoProps {
   src: string;
+  clipId: string;
   className?: string;
 }
 
 export default function OptimizedVideo({
   src,
+  clipId,
   className,
 }: OptimizedVideoProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -56,7 +58,7 @@ export default function OptimizedVideo({
 
   return (
     <div ref={containerRef} className={cn("size-full", className)}>
-      <QuickviewVideo src={src}>
+      <QuickviewVideo src={src} clipId={clipId}>
         {isNearViewport ? (
           <video
             ref={videoRef}

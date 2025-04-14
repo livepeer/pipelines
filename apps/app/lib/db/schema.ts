@@ -290,7 +290,6 @@ export const clipViews = pgTable(
       .notNull(),
     ip_address: varchar("ip_address", { length: 45 }), // Nullable
     session_id: text("session_id"),
-    duration_watched_ms: integer("duration_watched_ms"),
   },
   table => [
     foreignKey({
