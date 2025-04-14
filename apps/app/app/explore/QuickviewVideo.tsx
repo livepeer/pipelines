@@ -35,7 +35,6 @@ export default function QuickviewVideo({
           },
           body: JSON.stringify({}),
         });
-        console.log(response);
       }}
     >
       <DialogTrigger asChild>{children}</DialogTrigger>
