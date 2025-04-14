@@ -29,7 +29,7 @@ export default function QuickviewVideo({
     <Dialog
       onOpenChange={async open => {
         setIsPreviewOpen(open);
-        
+
         if (!open) return;
 
         const accessToken = await getAccessToken();
