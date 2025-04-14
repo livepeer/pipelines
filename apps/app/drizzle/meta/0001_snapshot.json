@@ -1,5 +1,5 @@
 {
-  "id": "642aaecd-8b63-4a00-a3d5-c2df50995c6a",
+  "id": "e437f451-9e0a-4407-870d-4b70a6b49167",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -181,12 +181,6 @@
         "session_id": {
           "name": "session_id",
           "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "duration_watched_ms": {
-          "name": "duration_watched_ms",
-          "type": "integer",
           "primaryKey": false,
           "notNull": false
         }

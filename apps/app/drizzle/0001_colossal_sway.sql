@@ -4,8 +4,7 @@ CREATE TABLE "clip_views" (
 	"viewer_user_id" text,
 	"viewed_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"ip_address" varchar(45),
-	"session_id" text,
-	"duration_watched_ms" integer
+	"session_id" text
 );
 --> statement-breakpoint
 CREATE TABLE "clips" (

@@ -6,6 +6,16 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const page = Number(searchParams.get("page") || "0");
   const limit = Number(searchParams.get("limit") || "12");
+
+  if (limit > 100) {
+    return NextResponse.json(
+      {
+        error: "Limit cannot exceed 100",
+      },
+      { status: 400 },
+    );
+  }
+
   const offset = page * limit;
 
   try {

@@ -13,3 +13,16 @@ export interface Pipeline {
   updated_at?: string;
   [key: string]: any;
 }
+
+export interface Clip {
+  id: number;
+  video_url: string;
+  thumbnail_url?: string | null;
+  author_user_id: string;
+  source_clip_id?: number | null;
+  prompt: string;
+  priority?: number | null;
+  created_at: string;
+  deleted_at?: string | null;
+  author?: string | { id: string; name: string };
+}

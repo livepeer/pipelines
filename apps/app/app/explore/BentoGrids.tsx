@@ -7,6 +7,7 @@ import { useEffect, useRef } from "react";
 import useClipsFetcher from "./hooks/useClipsFetcher";
 import LoadingSpinner from "./LoadingSpinner";
 import OptimizedVideo from "./OptimizedVideo";
+import NoMoreClipsFooter from "./NoMoreClipsFooter";
 
 function chunkArray<T>(array: T[], size: number): T[][] {
   const result: T[][] = [];
@@ -56,26 +57,29 @@ export function BentoGrids({ initialClips }: BentoGridsProps) {
   const groupedClips = chunkArray(clips, 4);
 
   return (
-    <div className="bg-gray-50 py-8 z-10">
+    <div className="bg-transparent py-8 z-10">
       <div
         aria-hidden="true"
-        className="absolute inset-x-0 -top-40 z-10 transform-gpu overflow-hidden blur-3xl sm:-top-80"
+        className="fixed inset-x-0 -top-40 -z-10 transform-gpu overflow-hidden blur-3xl sm:-top-60"
       >
         <div
           style={{
             backgroundImage: "url(/background.png)",
           }}
-          className="relative left-[calc(50%-11rem)] aspect-[1155/678] w-[36.125rem] -translate-x-1/2 rotate-[30deg] opacity-30 sm:left-[calc(50%-30rem)] sm:w-[72.1875rem]"
+          className="w-[90vw] h-[50vh] mx-auto bg-cover bg-center opacity-40"
         />
       </div>
       <div className="max-w-7xl mx-auto px-8 lg:px-12">
         <p className="mx-auto mt-2 max-w-lg text-balance text-center text-4xl font-extralight tracking-tight text-gray-950 sm:text-6xl">
-          Discover how Others{" "}
-          <span className="font-playfair font-bold">daydream</span>
+          Discover How Others{" "}
+          <span className="font-playfair font-bold text-5xl sm:text-7xl">
+            daydream
+          </span>
         </p>
         <h2 className="text-center text-base/7 font-light text-zinc-500 max-w-lg mx-auto mt-6 leading-[135%]">
-          Explore work from the most talented and accomplished designers ready
-          to take on your next project
+          Explore a world where imagination becomes reality
+          <br />
+          and bring your own vision to life
         </h2>
 
         {groupedClips.map((group, groupIndex) => {
@@ -88,18 +92,14 @@ export function BentoGrids({ initialClips }: BentoGridsProps) {
             <GridSet
               key={groupIndex}
               configuration={configuration}
-              className={groupIndex === 0 ? "mt-10 sm:mt-16" : "mt-8"}
+              className={groupIndex === 0 ? "mt-10 sm:mt-16" : "mt-4"}
             >
               {group.map((clip, index) => {
-                const typedClip = clip as {
-                  id: string;
-                  video_url: string;
-                  created_at: string;
-                };
                 return (
                   <GridItem
-                    key={typedClip.id || index}
-                    src={typedClip.video_url}
+                    key={clip.id}
+                    clipId={clip.id}
+                    src={clip.video_url}
                     className={`${index % 2 === 0 ? "lg:row-span-2" : ""} cursor-pointer`}
                   />
                 );
@@ -108,28 +108,48 @@ export function BentoGrids({ initialClips }: BentoGridsProps) {
           );
         })}
 
-        <div ref={loadingRef} className="py-8 text-center">
+        <div ref={loadingRef} className="py-8 text-center relative z-50">
           {loading ? (
             <LoadingSpinner />
           ) : hasMore ? (
             <p className="text-gray-500 font-light">Scroll for more</p>
           ) : (
-            <p className="text-gray-500 font-light">No more clips</p>
+            <NoMoreClipsFooter />
           )}
+          <div
+            aria-hidden="true"
+            className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-gray-50 to-transparent pointer-events-none"
+          />
         </div>
       </div>
     </div>
   );
 }
 
-function GridItem({ src, className }: { src: string; className?: string }) {
+function GridItem({
+  key,
+  clipId,
+  src,
+  className,
+}: {
+  key: string;
+  clipId: string;
+  src: string;
+  className?: string;
+}) {
   return (
-    <div className={cn("relative", className)}>
-      <div className="absolute inset-px rounded-xl bg-white"></div>
-      <div className="relative flex h-full flex-col overflow-hidden rounded-[calc(theme(borderRadius.xl)+1px)]">
-        <OptimizedVideo src={src} />
+    <div
+      className={cn(
+        "relative aspect-square lg:min-h-[300px] lg:aspect-auto",
+        className,
+      )}
+    >
+      <div className="absolute inset-px rounded-xl loading-gradient z-0"></div>
+      <div className="absolute inset-px rounded-xl backdrop-blur-[125px] z-10"></div>
+      <div className="relative flex h-full flex-col overflow-hidden rounded-[calc(theme(borderRadius.xl)+1px)] z-20">
+        <OptimizedVideo src={src} clipId={clipId} />
       </div>
-      <div className="pointer-events-none absolute inset-px rounded-xl shadow ring-1 ring-black/5"></div>
+      <div className="pointer-events-none absolute inset-px rounded-xl shadow ring-1 ring-black/5 z-30"></div>
     </div>
   );
 }

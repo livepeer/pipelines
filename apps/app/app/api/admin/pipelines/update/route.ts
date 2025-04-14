@@ -3,10 +3,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAdminAuth } from "../../auth";
 
 export async function PUT(request: NextRequest) {
-  const authResult = await requireAdminAuth(request);
-  if (authResult instanceof NextResponse) {
-    return authResult;
+  const authResponse = await requireAdminAuth(request);
+
+  if (authResponse.status !== 200) {
+    return authResponse;
   }
+
+  const userData = await authResponse.json();
+  const userId = userData.user?.id;
 
   try {
     const data = await request.json();
