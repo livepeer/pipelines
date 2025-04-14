@@ -45,7 +45,7 @@ export default function QuickviewVideo({
     >
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent
-        className="max-h-[90vh] max-w-[70vh] border-none bg-transparent shadow-none pt-6 pb-4 backdrop-filter backdrop-blur-[4px]"
+        className="max-h-[90vh] max-w-[70vh] border-none bg-transparent shadow-none pt-6 pb-4 backdrop-filter backdrop-blur-[3px]"
         overlayClassName="bg-white sm:bg-[rgba(255,255,255,0.90)]"
         displayCloseButton={false}
       >
