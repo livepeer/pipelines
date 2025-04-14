@@ -106,7 +106,7 @@ export function BentoGrids({ initialClips }: BentoGridsProps) {
           );
         })}
 
-        <div ref={loadingRef} className="py-8 text-center">
+        <div ref={loadingRef} className="py-8 text-center relative z-50">
           {loading ? (
             <LoadingSpinner />
           ) : hasMore ? (
@@ -114,6 +114,10 @@ export function BentoGrids({ initialClips }: BentoGridsProps) {
           ) : (
             <NoMoreClipsFooter />
           )}
+          <div
+            aria-hidden="true"
+            className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-gray-50 to-transparent pointer-events-none"
+          />
         </div>
       </div>
     </div>
@@ -132,12 +136,18 @@ function GridItem({
   className?: string;
 }) {
   return (
-    <div className={cn("relative", className)}>
-      <div className="absolute inset-px rounded-xl bg-white"></div>
-      <div className="relative flex h-full flex-col overflow-hidden rounded-[calc(theme(borderRadius.xl)+1px)]">
+    <div
+      className={cn(
+        "relative aspect-square lg:min-h-[300px] lg:aspect-auto",
+        className,
+      )}
+    >
+      <div className="absolute inset-px rounded-xl loading-gradient z-0"></div>
+      <div className="absolute inset-px rounded-xl backdrop-blur-[125px] z-10"></div>
+      <div className="relative flex h-full flex-col overflow-hidden rounded-[calc(theme(borderRadius.xl)+1px)] z-20">
         <OptimizedVideo src={src} clipId={clipId} />
       </div>
-      <div className="pointer-events-none absolute inset-px rounded-xl shadow ring-1 ring-black/5"></div>
+      <div className="pointer-events-none absolute inset-px rounded-xl shadow ring-1 ring-black/5 z-30"></div>
     </div>
   );
 }

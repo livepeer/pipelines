@@ -10,6 +10,7 @@ import { VideoProvider } from "./VideoProvider";
 import { VideoPlayer } from "./VideoPlayer";
 import { getAccessToken } from "@privy-io/react-auth";
 import { handleSessionId } from "@/lib/analytics/mixpanel";
+import { usePreviewStore } from "@/hooks/usePreviewStore";
 
 interface QuickviewVideoProps {
   children: React.ReactNode;
@@ -22,9 +23,13 @@ export default function QuickviewVideo({
   clipId,
   src,
 }: QuickviewVideoProps) {
+  const setIsPreviewOpen = usePreviewStore(state => state.setIsPreviewOpen);
+
   return (
     <Dialog
       onOpenChange={async open => {
+        setIsPreviewOpen(open);
+
         if (!open) return;
 
         const accessToken = await getAccessToken();
@@ -40,7 +45,7 @@ export default function QuickviewVideo({
     >
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent
-        className="h-full max-w-xl max-h-[90vh] border-none bg-transparent shadow-none overflow-y-auto py-12"
+        className="max-h-[90vh] max-w-[70vh] border-none bg-transparent shadow-none pt-6 pb-4"
         overlayClassName="bg-white sm:bg-[rgba(255,255,255,0.98)]"
         displayCloseButton={false}
       >
@@ -58,7 +63,6 @@ export default function QuickviewVideo({
                 Vincent Van Gogh
               </h2>
               <div className="flex items-center gap-[15px]">
-                <span className="text-sm text-[#707070]">480p</span>
                 <span className="text-sm text-[#707070]">Mar 31, 8:41 AM</span>
               </div>
             </div>
@@ -78,7 +82,8 @@ export default function QuickviewVideo({
             </div>
           </div>
         </DialogHeader>
-        <div className="w-full h-fit relative z-[100]">
+
+        <div className="w-full h-fit relative">
           <VideoProvider src={src}>
             <VideoPlayerWrapper />
           </VideoProvider>
@@ -90,7 +95,7 @@ export default function QuickviewVideo({
 
 function VideoPlayerWrapper() {
   return (
-    <div className="absolute -bottom-8 left-0 right-0 md:left-2 md:right-2 z-[999]">
+    <div className="relative w-full">
       <VideoPlayer />
     </div>
   );

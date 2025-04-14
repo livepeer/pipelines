@@ -1,6 +1,8 @@
 "use client";
 
 import { createContext, useContext, useMemo, useReducer, useRef } from "react";
+import { cn } from "@repo/design-system/lib/utils";
+import LoadingSpinner from "./LoadingSpinner";
 
 interface Video {
   id: number;
@@ -176,40 +178,53 @@ export function VideoProvider({
   );
 
   return (
-    <>
-      <VideoPlayerContext.Provider value={api}>
-        {children}
-      </VideoPlayerContext.Provider>
-      <video
-        ref={playerRef}
-        onPlay={() => dispatch({ type: ActionKind.PLAY })}
-        onPause={() => dispatch({ type: ActionKind.PAUSE })}
-        onTimeUpdate={event => {
-          dispatch({
-            type: ActionKind.SET_CURRENT_TIME,
-            payload: Math.floor(event.currentTarget.currentTime),
-          });
-        }}
-        onDurationChange={event => {
-          dispatch({
-            type: ActionKind.SET_DURATION,
-            payload: Math.floor(event.currentTarget.duration),
-          });
-        }}
-        onVolumeChange={event => {
-          dispatch({
-            type: ActionKind.SET_VOLUME,
-            payload: event.currentTarget.volume,
-          });
-        }}
-        muted={state.muted}
-        src={src}
-        autoPlay
-        playsInline
-        loop
-        className="w-full rounded-t-xl md:rounded-b-xl z-10"
-      />
-    </>
+    <VideoPlayerContext.Provider value={api}>
+      <div className="relative w-full">
+        <div className="relative w-full aspect-square rounded-xl overflow-hidden bg-zinc-100 loading-gradient">
+          {state.duration === 0 && (
+            <div className="absolute inset-0 flex items-center justify-center backdrop-blur-[125px] z-10">
+              <LoadingSpinner className="w-8 h-8 text-black" />
+            </div>
+          )}
+          <video
+            ref={playerRef}
+            onPlay={() => dispatch({ type: ActionKind.PLAY })}
+            onPause={() => dispatch({ type: ActionKind.PAUSE })}
+            onTimeUpdate={event => {
+              dispatch({
+                type: ActionKind.SET_CURRENT_TIME,
+                payload: Math.floor(event.currentTarget.currentTime),
+              });
+            }}
+            onDurationChange={event => {
+              dispatch({
+                type: ActionKind.SET_DURATION,
+                payload: Math.floor(event.currentTarget.duration),
+              });
+            }}
+            onVolumeChange={event => {
+              dispatch({
+                type: ActionKind.SET_VOLUME,
+                payload: event.currentTarget.volume,
+              });
+            }}
+            muted={state.muted}
+            src={src}
+            autoPlay
+            playsInline
+            loop
+            className={cn(
+              "absolute inset-0 w-full h-full object-cover z-0 transition-opacity duration-300",
+              state.duration === 0 ? "opacity-0" : "opacity-100",
+            )}
+          />
+        </div>
+
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-[calc(100%-theme(spacing.8))] z-30">
+          {children}
+        </div>
+      </div>
+    </VideoPlayerContext.Provider>
   );
 }
 
