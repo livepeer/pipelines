@@ -7,7 +7,7 @@ export default function NoMoreClipsFooter() {
   return (
     <div className="relative w-full mt-[-12rem]">
       <div
-        className="relative flex flex-col items-center justify-center py-20 pt-40 px-4 text-center"
+        className="relative flex flex-col items-center justify-center py-20 pt-64 px-4 text-center"
         style={{
           background:
             "linear-gradient(to bottom, transparent 0%, #fafafb 20%, #fafafb 100%)",
