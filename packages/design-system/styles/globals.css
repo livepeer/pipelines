@@ -348,3 +348,24 @@
   opacity: 0.3;
   z-index: 1;
 }
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.loading-gradient {
+  background: linear-gradient(40deg, 
+    #ffffff 0%,
+    #f3f4f6 25%,
+    #b2cad1 50%,
+    #f3f4f6 75%,
+    #ffffff 100%
+  );
+  background-size: 200% 100%;
+  animation: loading 5s linear infinite;
+}
