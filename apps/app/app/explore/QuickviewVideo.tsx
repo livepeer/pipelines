@@ -9,6 +9,7 @@ import { ChevronLeft, Repeat, User2 } from "lucide-react";
 import { VideoProvider } from "./VideoProvider";
 import { VideoPlayer } from "./VideoPlayer";
 import { getAccessToken } from "@privy-io/react-auth";
+import { handleSessionId } from "@/lib/analytics/mixpanel";
 
 interface QuickviewVideoProps {
   children: React.ReactNode;
@@ -27,13 +28,13 @@ export default function QuickviewVideo({
         if (!open) return;
 
         const accessToken = await getAccessToken();
-        const response = await fetch(`/api/clips/${clipId}/views`, {
+        await fetch(`/api/clips/${clipId}/views`, {
           method: "POST",
           headers: {
             ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({}),
+          body: JSON.stringify({ sessionId: handleSessionId() }),
         });
       }}
     >
