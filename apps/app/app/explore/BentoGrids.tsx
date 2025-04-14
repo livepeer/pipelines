@@ -89,7 +89,7 @@ export function BentoGrids({ initialClips }: BentoGridsProps) {
             <GridSet
               key={groupIndex}
               configuration={configuration}
-              className={groupIndex === 0 ? "mt-10 sm:mt-16" : "mt-8"}
+              className={groupIndex === 0 ? "mt-10 sm:mt-16" : "mt-4"}
             >
               {group.map((clip, index) => {
                 const typedClip = clip as {
