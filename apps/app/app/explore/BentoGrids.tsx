@@ -132,7 +132,7 @@ function GridItem({
   className?: string;
 }) {
   return (
-    <div className={cn("relative", className)}>
+    <div className={cn("relative aspect-square lg:min-h-[300px] lg:aspect-auto", className)}>
       <div className="absolute inset-px rounded-xl bg-white"></div>
       <div className="relative flex h-full flex-col overflow-hidden rounded-[calc(theme(borderRadius.xl)+1px)]">
         <OptimizedVideo src={src} clipId={clipId} />
