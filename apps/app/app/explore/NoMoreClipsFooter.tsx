@@ -32,7 +32,9 @@ export default function NoMoreClipsFooter() {
 
         <h2 className="max-w-2xl text-balance text-center text-4xl font-extralight tracking-tight text-gray-950 sm:text-6xl whitespace-nowrap relative z-10">
           Your time to{" "}
-          <span className="font-playfair font-bold inline-block">daydream</span>
+          <span className="font-playfair font-bold inline-block text-5xl sm:text-7xl">
+            daydream
+          </span>
         </h2>
 
         <p className="text-center text-base/7 font-light text-zinc-500 max-w-lg mx-auto mt-6 leading-[135%] relative z-10">
