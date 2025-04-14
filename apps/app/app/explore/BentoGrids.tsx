@@ -66,7 +66,7 @@ export function BentoGrids({ initialClips }: BentoGridsProps) {
           style={{
             backgroundImage: "url(/background.png)",
           }}
-          className="w-screen h-[60vh] bg-cover bg-center opacity-30"
+          className="w-screen h-[50vh] bg-cover bg-center opacity-40"
         />
       </div>
       <div className="max-w-7xl mx-auto px-8 lg:px-12">
