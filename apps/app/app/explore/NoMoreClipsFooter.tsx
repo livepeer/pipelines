@@ -43,7 +43,7 @@ export default function NoMoreClipsFooter() {
           href="/"
           className="mt-8 px-8 py-3 bg-black text-white rounded-md font-medium hover:bg-gray-800 transition-colors relative z-10"
         >
-          Signup
+          Sign Up
         </Link>
       </div>
     </div>
