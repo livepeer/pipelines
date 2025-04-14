@@ -57,16 +57,16 @@ export function BentoGrids({ initialClips }: BentoGridsProps) {
   const groupedClips = chunkArray(clips, 4);
 
   return (
-    <div className="bg-gray-50 py-8 z-10">
+    <div className="bg-transparent py-8 z-10">
       <div
         aria-hidden="true"
-        className="absolute inset-x-0 -top-40 z-10 transform-gpu overflow-hidden blur-3xl sm:-top-80"
+        className="fixed inset-x-0 -top-40 -z-10 transform-gpu overflow-hidden blur-3xl sm:-top-60"
       >
         <div
           style={{
             backgroundImage: "url(/background.png)",
           }}
-          className="relative left-[calc(50%-11rem)] aspect-[1155/678] w-[36.125rem] -translate-x-1/2 rotate-[30deg] opacity-30 sm:left-[calc(50%-30rem)] sm:w-[72.1875rem]"
+          className="w-screen h-[60vh] bg-cover bg-center opacity-30"
         />
       </div>
       <div className="max-w-7xl mx-auto px-8 lg:px-12">
