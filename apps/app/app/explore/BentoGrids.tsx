@@ -71,7 +71,7 @@ export function BentoGrids({ initialClips }: BentoGridsProps) {
       </div>
       <div className="max-w-7xl mx-auto px-8 lg:px-12">
         <p className="mx-auto mt-2 max-w-lg text-balance text-center text-4xl font-extralight tracking-tight text-gray-950 sm:text-6xl">
-          Discover How Others{" "}
+          Discover how others{" "}
           <span className="font-playfair font-bold text-5xl sm:text-7xl">
             daydream
           </span>
