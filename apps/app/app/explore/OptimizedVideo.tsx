@@ -1,6 +1,7 @@
 import { cn } from "@repo/design-system/lib/utils";
 import { useEffect, useRef, useState } from "react";
 import QuickviewVideo from "./QuickviewVideo";
+import { usePreviewStore } from "@/hooks/usePreviewStore";
 
 interface OptimizedVideoProps {
   src: string;
@@ -17,6 +18,7 @@ export default function OptimizedVideo({
   const [isNearViewport, setIsNearViewport] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const isPreviewOpen = usePreviewStore(state => state.isPreviewOpen);
 
   const shortSrc = src.replace(/\.mp4$/, "-short.mp4");
 
@@ -35,9 +37,25 @@ export default function OptimizedVideo({
     return () => nearObserver.disconnect();
   }, []);
 
+  // Effect to handle preview state changes
   useEffect(() => {
     const videoElement = videoRef.current;
-    if (!videoElement || !containerRef.current || !isNearViewport) return;
+    if (!videoElement) return;
+
+    if (isPreviewOpen) {
+      videoElement.pause();
+    }
+  }, [isPreviewOpen]);
+
+  useEffect(() => {
+    const videoElement = videoRef.current;
+    if (
+      !videoElement ||
+      !containerRef.current ||
+      !isNearViewport ||
+      isPreviewOpen
+    )
+      return;
 
     const playbackObserver = new IntersectionObserver(
       entries => {
@@ -55,7 +73,7 @@ export default function OptimizedVideo({
     playbackObserver.observe(containerRef.current);
 
     return () => playbackObserver.disconnect();
-  }, [isNearViewport]);
+  }, [isNearViewport, isPreviewOpen]);
 
   return (
     <div ref={containerRef} className={cn("size-full", className)}>

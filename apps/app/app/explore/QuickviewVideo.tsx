@@ -10,6 +10,7 @@ import { VideoProvider } from "./VideoProvider";
 import { VideoPlayer } from "./VideoPlayer";
 import { getAccessToken } from "@privy-io/react-auth";
 import { handleSessionId } from "@/lib/analytics/mixpanel";
+import { usePreviewStore } from "@/hooks/usePreviewStore";
 
 interface QuickviewVideoProps {
   children: React.ReactNode;
@@ -22,9 +23,13 @@ export default function QuickviewVideo({
   clipId,
   src,
 }: QuickviewVideoProps) {
+  const setIsPreviewOpen = usePreviewStore(state => state.setIsPreviewOpen);
+
   return (
     <Dialog
       onOpenChange={async open => {
+        setIsPreviewOpen(open);
+        
         if (!open) return;
 
         const accessToken = await getAccessToken();
@@ -77,6 +82,7 @@ export default function QuickviewVideo({
             </div>
           </div>
         </DialogHeader>
+
         <div className="w-full h-fit relative z-[100]">
           <VideoProvider src={src}>
             <VideoPlayerWrapper />
