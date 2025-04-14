@@ -138,11 +138,12 @@ function GridItem({
         className,
       )}
     >
-      <div className="absolute inset-px rounded-xl bg-white"></div>
-      <div className="relative flex h-full flex-col overflow-hidden rounded-[calc(theme(borderRadius.xl)+1px)]">
+      <div className="absolute inset-px rounded-xl loading-gradient z-0"></div>
+      <div className="absolute inset-px rounded-xl backdrop-blur-[125px] z-10"></div>
+      <div className="relative flex h-full flex-col overflow-hidden rounded-[calc(theme(borderRadius.xl)+1px)] z-20">
         <OptimizedVideo src={src} clipId={clipId} />
       </div>
-      <div className="pointer-events-none absolute inset-px rounded-xl shadow ring-1 ring-black/5"></div>
+      <div className="pointer-events-none absolute inset-px rounded-xl shadow ring-1 ring-black/5 z-30"></div>
     </div>
   );
 }
