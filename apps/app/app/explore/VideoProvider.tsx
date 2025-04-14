@@ -180,9 +180,9 @@ export function VideoProvider({
   return (
     <VideoPlayerContext.Provider value={api}>
       <div className="relative w-full">
-        <div className="relative w-full aspect-square rounded-xl overflow-hidden bg-zinc-100">
+        <div className="relative w-full aspect-square rounded-xl overflow-hidden bg-zinc-100 loading-gradient">
           {state.duration === 0 && (
-            <div className="absolute inset-0 flex items-center justify-center backdrop-blur-md z-10">
+            <div className="absolute inset-0 flex items-center justify-center backdrop-blur-[125px] z-10">
               <LoadingSpinner className="w-8 h-8 text-black" />
             </div>
           )}
