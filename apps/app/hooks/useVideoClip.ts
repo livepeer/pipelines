@@ -15,7 +15,7 @@ export type ClipRecordingMode = "horizontal" | "vertical" | "output-only";
 export const CLIP_DURATION = 30000;
 
 const FRAME_RATE = 30;
-const INPUT_DELAY = 1000; // 1 second delay for input video - increase or decreas to sync
+const INPUT_DELAY = 1000;
 const BUFFER_SIZE = Math.ceil((INPUT_DELAY / 1000) * FRAME_RATE);
 
 export const useVideoClip = () => {
@@ -191,6 +191,34 @@ export const useVideoClip = () => {
 
     const canvasStream = canvas.captureStream(FRAME_RATE);
 
+    let audioTracks: MediaStreamTrack[] = [];
+    let micStream: MediaStream | null = null;
+    let audioContext: AudioContext | null = null;
+
+    try {
+      micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+      audioContext = new AudioContext();
+      const source = audioContext.createMediaStreamSource(micStream);
+
+      const delayNode = audioContext.createDelay(INPUT_DELAY / 1000 + 0.5); // Add some buffer
+      delayNode.delayTime.value = INPUT_DELAY / 1000; // Convert ms to seconds
+
+      const destination = audioContext.createMediaStreamDestination();
+      source.connect(delayNode);
+      delayNode.connect(destination);
+
+      audioTracks = destination.stream.getAudioTracks();
+
+      audioTracks.forEach(track => canvasStream.addTrack(track));
+
+      toast("Recording with synchronized microphone audio", {
+        description: "Your voice will be delayed to match the input video",
+      });
+    } catch (error) {
+      console.error("Failed to capture microphone:", error);
+    }
+
     const { mimeType, extension } = getSupportedVideoFormat();
     const mediaRecorder = new MediaRecorder(canvasStream, { mimeType });
 
@@ -200,6 +228,13 @@ export const useVideoClip = () => {
     };
 
     mediaRecorder.onstop = () => {
+      if (micStream) {
+        micStream.getTracks().forEach(track => track.stop());
+      }
+      if (audioContext) {
+        audioContext.close();
+      }
+
       const blob = new Blob(chunks, { type: mimeType });
       const url = URL.createObjectURL(blob);
       const filename = `daydream-clip-${new Date().toISOString()}.${extension}`;
