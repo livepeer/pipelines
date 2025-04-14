@@ -75,7 +75,8 @@ export function BentoGrids({ initialClips }: BentoGridsProps) {
           <span className="font-playfair font-bold">daydream</span>
         </p>
         <h2 className="text-center text-base/7 font-light text-zinc-500 max-w-lg mx-auto mt-6 leading-[135%]">
-          Explore a world where imagination becomes reality<br />
+          Explore a world where imagination becomes reality
+          <br />
           and bring your own vision to life
         </h2>
 
