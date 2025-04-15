@@ -21,11 +21,11 @@ export default function Header() {
           </a>
         </div>
         <div className="flex flex-1 justify-end">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             className={cn(
-              "alwaysAnimatedButton", 
-              isPreviewOpen && "opacity-0 pointer-events-none"
+              "alwaysAnimatedButton",
+              isPreviewOpen && "opacity-0 pointer-events-none",
             )}
           >
             Start Creating
