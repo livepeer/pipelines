@@ -15,7 +15,9 @@ export default function Header() {
           </a>
         </div>
         <div className="flex flex-1 justify-end">
-          <Button className="rounded-md">Start Creating</Button>
+          <Button variant="outline" className="alwaysAnimatedButton">
+            Start Creating
+          </Button>
         </div>
       </nav>
     </header>
