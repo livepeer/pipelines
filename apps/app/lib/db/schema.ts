@@ -311,6 +311,26 @@ export const clipViews = pgTable(
   ],
 );
 
+export const clipSlugs = pgTable(
+  "clip_slugs",
+  {
+    slug: text("slug").primaryKey(),
+
+    clip_id: integer("clip_id")
+      .notNull()
+      .references(() => clips.id, { onDelete: "cascade", onUpdate: "cascade" }),
+
+    created_at: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  },
+  table => [
+    {
+      clipIdUniqueConstraint: unique("unq_clip_slugs_clip_id").on(
+        table.clip_id,
+      ),
+    },
+  ],
+);
+
 export const pgStatMonitor = pgView("pg_stat_monitor", {
   // You can use { mode: "bigint" } if numbers are exceeding js number limitations
   bucket: bigint({ mode: "number" }),
