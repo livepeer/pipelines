@@ -1,7 +1,13 @@
+"use client";
+
 import { Logo } from "@/components/sidebar";
 import { Button } from "@repo/design-system/components/ui/button";
+import { usePreviewStore } from "@/hooks/usePreviewStore";
+import { cn } from "@repo/design-system/lib/utils";
 
 export default function Header() {
+  const { isPreviewOpen } = usePreviewStore();
+
   return (
     <header className="bg-transparent sticky top-0 z-50 backdrop-filter backdrop-blur-xl bg-opacity-50">
       <nav
@@ -15,7 +21,13 @@ export default function Header() {
           </a>
         </div>
         <div className="flex flex-1 justify-end">
-          <Button variant="outline" className="alwaysAnimatedButton">
+          <Button 
+            variant="outline" 
+            className={cn(
+              "alwaysAnimatedButton", 
+              isPreviewOpen && "opacity-0 pointer-events-none"
+            )}
+          >
             Start Creating
           </Button>
         </div>
