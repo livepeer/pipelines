@@ -12,16 +12,32 @@ import { getAccessToken } from "@privy-io/react-auth";
 import { handleSessionId } from "@/lib/analytics/mixpanel";
 import { usePreviewStore } from "@/hooks/usePreviewStore";
 
+const formatter = new Intl.DateTimeFormat("en-US", {
+  month: "short",
+  day: "numeric",
+  hour: "numeric",
+  minute: "2-digit",
+  hour12: true,
+});
+
 interface QuickviewVideoProps {
   children: React.ReactNode;
   clipId: string;
   src: string;
+  title: string;
+  createdAt: string;
+  authorName: string;
+  remixCount: number;
 }
 
 export default function QuickviewVideo({
   children,
   clipId,
   src,
+  title,
+  authorName,
+  createdAt,
+  remixCount,
 }: QuickviewVideoProps) {
   const setIsPreviewOpen = usePreviewStore(state => state.setIsPreviewOpen);
 
@@ -59,10 +75,10 @@ export default function QuickviewVideo({
             </DialogClose>
 
             <div className="flex flex-col items-center gap-1 py-2 px-4">
-              <h2 className="text-2xl font-bold text-[#232323]">
-                Vincent Van Gogh
-              </h2>
-              <div className="text-sm text-[#707070]">Mar 31, 8:41 AM</div>
+              <h2 className="text-2xl font-bold text-[#232323]">{title}</h2>
+              <div className="text-sm text-[#707070]">
+                {formatter.format(new Date(createdAt)).replace(" at ", ", ")}
+              </div>
             </div>
           </div>
           <div className="flex flex-row justify-between items-center p-2">
@@ -71,12 +87,12 @@ export default function QuickviewVideo({
                 <User2 className="w-4 h-4 text-[#09090B]" />
               </div>
               <span className="text-xs font-medium text-[#09090B]">
-                Luke Zembrzuski
+                {authorName}
               </span>
             </div>
             <div className="flex items-center gap-1">
               <Repeat className="w-4 h-4 text-[#09090B]" />
-              <span className="text-sm text-[#09090B]">123</span>
+              <span className="text-sm text-[#09090B]">{remixCount}</span>
             </div>
           </div>
         </DialogHeader>

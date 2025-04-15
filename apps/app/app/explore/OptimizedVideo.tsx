@@ -2,16 +2,25 @@ import { cn } from "@repo/design-system/lib/utils";
 import { useEffect, useRef, useState } from "react";
 import QuickviewVideo from "./QuickviewVideo";
 import { usePreviewStore } from "@/hooks/usePreviewStore";
+import { PocketKnife, Repeat } from "lucide-react";
 
 interface OptimizedVideoProps {
   src: string;
   clipId: string;
+  title: string;
+  authorName: string;
+  createdAt: string;
+  remixCount: number;
   className?: string;
 }
 
 export default function OptimizedVideo({
   src,
   clipId,
+  title,
+  authorName,
+  createdAt,
+  remixCount,
   className,
 }: OptimizedVideoProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -77,24 +86,59 @@ export default function OptimizedVideo({
 
   return (
     <div ref={containerRef} className={cn("size-full", className)}>
-      <QuickviewVideo src={src} clipId={clipId}>
+      <QuickviewVideo
+        src={src}
+        clipId={clipId}
+        title={title}
+        authorName={authorName}
+        createdAt={createdAt}
+        remixCount={remixCount}
+      >
         {isNearViewport ? (
-          <video
-            ref={videoRef}
-            src={shortSrc}
-            muted
-            loop
-            playsInline
-            onLoadedData={() => setIsLoaded(true)}
-            className={cn(
-              "size-full object-cover object-top bg-transparent",
-              !isLoaded && "opacity-0",
-            )}
-          />
+          <div className="size-full relative">
+            <video
+              ref={videoRef}
+              src={shortSrc}
+              muted
+              loop
+              playsInline
+              onLoadedData={() => setIsLoaded(true)}
+              className={cn(
+                "absolute inset-0 size-full object-cover object-top bg-transparent",
+                !isLoaded && "opacity-0",
+                "transition-opacity duration-300",
+              )}
+            />
+            <div className="absolute bottom-4 left-2 p-0 z-10 flex gap-2 items-center">
+              <img
+                src={`https://picsum.photos/id/${hash(authorName)}/200/200`}
+                className="w-6 h-6 rounded-full"
+              />
+              <span className="text-white text-[0.64rem]">{authorName}</span>
+            </div>
+
+            <div className="absolute bottom-4 right-4 p-0 z-10 flex gap-1 items-center">
+              <Repeat className="w-4 h-4 text-white" />
+              <span className="text-white text-[0.64rem]">{remixCount}</span>
+            </div>
+          </div>
         ) : (
           <div className="size-full bg-transparent" />
         )}
       </QuickviewVideo>
     </div>
   );
+}
+
+function hash(str: string) {
+  let hash = 0;
+  if (str.length === 0) {
+    return hash;
+  }
+  for (let i = 0; i < str.length; i++) {
+    const charCode = str.charCodeAt(i);
+    hash = (hash << 5) - hash + charCode;
+    hash |= 0;
+  }
+  return Math.abs(hash) % 1000;
 }

@@ -1,13 +1,11 @@
 "use client";
 
-import { db } from "@/lib/db";
-import { clips as clipsTable } from "@/lib/db/schema";
 import { cn } from "@repo/design-system/lib/utils";
 import { useEffect, useRef } from "react";
 import useClipsFetcher from "./hooks/useClipsFetcher";
 import LoadingSpinner from "./LoadingSpinner";
-import OptimizedVideo from "./OptimizedVideo";
 import NoMoreClipsFooter from "./NoMoreClipsFooter";
+import OptimizedVideo from "./OptimizedVideo";
 
 function chunkArray<T>(array: T[], size: number): T[][] {
   const result: T[][] = [];
@@ -21,7 +19,10 @@ interface BentoGridsProps {
   initialClips: Array<{
     id: string;
     video_url: string;
+    video_title: string | null;
     created_at: string;
+    author_name: string | null;
+    remix_count: number;
   }>;
 }
 
@@ -99,7 +100,11 @@ export function BentoGrids({ initialClips }: BentoGridsProps) {
                   <GridItem
                     key={clip.id}
                     clipId={clip.id}
+                    title={clip.video_title || "Vincent Van Gogh"}
+                    authorName={clip.author_name || "Livepeer"}
                     src={clip.video_url}
+                    createdAt={clip.created_at}
+                    remixCount={clip.remix_count}
                     className={`${index % 2 === 0 ? "lg:row-span-2" : ""} cursor-pointer`}
                   />
                 );
@@ -131,11 +136,19 @@ function GridItem({
   clipId,
   src,
   className,
+  title,
+  authorName,
+  createdAt,
+  remixCount,
 }: {
   key: string;
   clipId: string;
   src: string;
   className?: string;
+  title: string;
+  authorName: string;
+  createdAt: string;
+  remixCount: number;
 }) {
   return (
     <div
@@ -147,7 +160,14 @@ function GridItem({
       <div className="absolute inset-px rounded-xl loading-gradient z-0"></div>
       <div className="absolute inset-px rounded-xl backdrop-blur-[125px] z-10"></div>
       <div className="relative flex h-full flex-col overflow-hidden rounded-[calc(theme(borderRadius.xl)+1px)] z-20">
-        <OptimizedVideo src={src} clipId={clipId} />
+        <OptimizedVideo
+          src={src}
+          clipId={clipId}
+          title={title}
+          authorName={authorName}
+          createdAt={createdAt}
+          remixCount={remixCount}
+        />
       </div>
       <div className="pointer-events-none absolute inset-px rounded-xl shadow ring-1 ring-black/5 z-30"></div>
     </div>
