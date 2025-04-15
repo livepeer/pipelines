@@ -17,6 +17,7 @@ export interface Pipeline {
 export interface Clip {
   id: number;
   video_url: string;
+  video_title?: string;
   thumbnail_url?: string | null;
   author_user_id: string;
   source_clip_id?: number | null;

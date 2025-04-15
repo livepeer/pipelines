@@ -84,6 +84,7 @@ export default function ClipsAdminPage() {
 
       const allowedFields = [
         "video_url",
+        "video_title",
         "thumbnail_url",
         "author_user_id",
         "source_clip_id",

@@ -250,6 +250,7 @@ export const clips = pgTable(
   {
     id: serial("id").primaryKey(),
     video_url: text("video_url").notNull(),
+    video_title: text("video_title"),
     thumbnail_url: text("thumbnail_url"),
     author_user_id: text("author_user_id").notNull(),
     source_clip_id: integer("source_clip_id"),
