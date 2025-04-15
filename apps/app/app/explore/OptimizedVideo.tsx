@@ -1,8 +1,9 @@
+import { usePreviewStore } from "@/hooks/usePreviewStore";
+import { Button } from "@repo/design-system/components/ui/button";
 import { cn } from "@repo/design-system/lib/utils";
+import { Repeat, WandSparkles } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import QuickviewVideo from "./QuickviewVideo";
-import { usePreviewStore } from "@/hooks/usePreviewStore";
-import { PocketKnife, Repeat } from "lucide-react";
 
 interface OptimizedVideoProps {
   src: string;
@@ -109,7 +110,7 @@ export default function OptimizedVideo({
                 "transition-opacity duration-300",
               )}
             />
-            <div className="absolute bottom-4 left-2 p-0 z-10 flex gap-2 items-center">
+            <div className="absolute bottom-3 left-3 p-0 z-10 flex gap-2 items-center">
               <img
                 src={`https://picsum.photos/id/${hash(authorName)}/200/200`}
                 className="w-6 h-6 rounded-full"
@@ -117,9 +118,16 @@ export default function OptimizedVideo({
               <span className="text-white text-[0.64rem]">{authorName}</span>
             </div>
 
-            <div className="absolute bottom-4 right-4 p-0 z-10 flex gap-1 items-center">
-              <Repeat className="w-4 h-4 text-white" />
+            <div className="absolute bottom-4 right-5 p-0 z-10 flex gap-1 items-center">
+              <Repeat className="w-3 h-3 text-white" />
               <span className="text-white text-[0.64rem]">{remixCount}</span>
+            </div>
+
+            <div className="absolute top-3 right-3 p-0 z-10 flex gap-1 items-center">
+              <button className="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-black/30 backdrop-blur-sm text-white rounded-full hover:bg-black/90 transition-colors border-white border shadow-sm">
+                <WandSparkles className="w-3 h-3" />
+                <span className="text-[0.64rem] tracking-wide">Remix</span>
+              </button>
             </div>
           </div>
         ) : (
