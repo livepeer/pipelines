@@ -27,10 +27,11 @@ export async function GET(request: Request) {
         video_title: clipsTable.video_title,
         created_at: clipsTable.created_at,
         author_name: usersTable.name,
-        remix_count:
-          sql<number>`(SELECT count(*) FROM ${clipsTable} AS derived_clips WHERE derived_clips.source_clip_id = ${clipsTable.id})`.mapWith(
-            Number,
-          ),
+        remix_count: sql<number>`(
+            SELECT count(*)
+            FROM ${clipsTable} AS derived_clips
+            WHERE derived_clips.source_clip_id = ${clipsTable.id}
+          )`.mapWith(Number),
       })
       .from(clipsTable)
       .innerJoin(usersTable, eq(clipsTable.author_user_id, usersTable.id))
@@ -46,10 +47,11 @@ export async function GET(request: Request) {
         video_title: clipsTable.video_title,
         created_at: clipsTable.created_at,
         author_name: usersTable.name,
-        remix_count:
-          sql<number>`(SELECT count(*) FROM ${clipsTable} AS derived_clips WHERE derived_clips.source_clip_id = ${clipsTable.id})`.mapWith(
-            Number,
-          ),
+        remix_count: sql<number>`(
+          SELECT count(*)
+          FROM ${clipsTable} AS derived_clips
+          WHERE derived_clips.source_clip_id = ${clipsTable.id}
+        )`.mapWith(Number),
       })
       .from(clipsTable)
       .innerJoin(usersTable, eq(clipsTable.author_user_id, usersTable.id))
