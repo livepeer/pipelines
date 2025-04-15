@@ -25,14 +25,6 @@ export function VideoPlayer() {
 
   let wasPlayingRef = useRef(false);
 
-  let [currentTime, setCurrentTime] = useState<number | null>(
-    player.currentTime,
-  );
-
-  // useEffect(() => {
-  //   setCurrentTime(null);
-  // }, [player.currentTime]);
-
   return (
     <div className="flex items-center gap-6 bg-white px-2 py-2 shadow-sm ring-1 shadow-slate-200/80 ring-slate-900/5 backdrop-blur-xs md:px-4 rounded-b-xl md:rounded-t-xl">
       <div className="mb-[env(safe-area-inset-bottom)] flex flex-1 flex-col gap-3 overflow-hidden p-1">
@@ -43,12 +35,10 @@ export function VideoPlayer() {
           <Slider
             label="Current time"
             maxValue={player.duration}
-            step={0.01}
-            value={[player.currentTime]}
-            // onChange={([value]) => setCurrentTime(value)}
+            step={0.001}
+            value={[player.currentTime ?? 0]}
             onChangeEnd={([value]) => {
               player.seek(value);
-              setCurrentTime(null);
               if (wasPlayingRef.current) {
                 player.play();
               }
