@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { cn } from "@repo/design-system/lib/utils";
+import { Button } from "@repo/design-system/components/ui/button";
 
 export default function NoMoreClipsFooter() {
   return (
@@ -41,11 +42,21 @@ export default function NoMoreClipsFooter() {
           To see more dreamscapes create a free account
         </p>
 
-        <Link
-          href="/"
-          className="mt-8 px-8 py-3 bg-black text-white rounded-md font-medium hover:bg-gray-800 transition-colors relative z-10"
-        >
-          Sign Up
+        <Link href="/" className="relative z-10 mt-8">
+          <Button
+            variant="outline"
+            className="alwaysAnimatedButton"
+            style={{
+              paddingTop: "20px",
+              paddingRight: "53px",
+              paddingBottom: "20px",
+              paddingLeft: "53px",
+              gap: "4px",
+              borderRadius: "8px",
+            }}
+          >
+            Sign Up
+          </Button>
         </Link>
       </div>
     </div>
