@@ -30,10 +30,10 @@ export default function NoMoreClipsFooter() {
           </svg>
         </div>
 
-        <h2 className="max-w-2xl text-balance text-center text-4xl font-extralight tracking-tight text-gray-950 sm:text-6xl whitespace-nowrap relative z-10">
+        <h2 className="max-w-3xl text-balance text-center text-4xl font-extralight tracking-tight text-gray-950 sm:text-6xl whitespace-nowrap relative z-10">
           Your time to{" "}
           <span className="font-playfair font-bold inline-block text-5xl sm:text-7xl">
-            daydream
+            DAYDREAM
           </span>
         </h2>
 
