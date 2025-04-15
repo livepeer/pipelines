@@ -25,6 +25,10 @@ export function VideoPlayer() {
 
   let wasPlayingRef = useRef(false);
 
+  useEffect(() => {
+    console.log(">>>>>>", player.duration);
+  }, [player.duration]);
+
   return (
     <div className="flex items-center gap-6 bg-white px-2 py-2 shadow-sm ring-1 shadow-slate-200/80 ring-slate-900/5 backdrop-blur-xs md:px-4 rounded-b-xl md:rounded-t-xl">
       <div className="mb-[env(safe-area-inset-bottom)] flex flex-1 flex-col gap-3 overflow-hidden p-1">
