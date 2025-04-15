@@ -186,15 +186,32 @@ export function VideoProvider({
   useEffect(() => {
     const updateCurrentTime = () => {
       if (playerRef.current) {
-        dispatch({
-          type: ActionKind.SET_CURRENT_TIME,
-          payload: playerRef.current.currentTime,
-        });
+        const videoElement = playerRef.current;
+        const duration = videoElement.duration;
+
+        if (duration > 0 && Number.isFinite(duration)) {
+          let newTime = videoElement.currentTime;
+
+          if (videoElement.loop && newTime >= duration - 0.1) {
+            newTime = 0;
+          }
+
+          if (newTime !== state.currentTime) {
+            dispatch({
+              type: ActionKind.SET_CURRENT_TIME,
+              payload: newTime,
+            });
+          }
+        }
+
         animationFrameRef.current = requestAnimationFrame(updateCurrentTime);
       }
     };
 
     if (state.playing) {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
       animationFrameRef.current = requestAnimationFrame(updateCurrentTime);
     } else {
       if (animationFrameRef.current) {
@@ -210,7 +227,6 @@ export function VideoProvider({
       }
     };
   }, [state.playing, dispatch]);
-
   return (
     <>
       <VideoPlayerContext.Provider value={api}>
