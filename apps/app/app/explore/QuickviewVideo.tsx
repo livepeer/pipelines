@@ -5,12 +5,13 @@ import {
   DialogTrigger,
   DialogClose,
 } from "@repo/design-system/components/ui/dialog";
-import { ChevronLeft, Repeat, User2 } from "lucide-react";
+import { ChevronLeft, Repeat } from "lucide-react";
 import { VideoProvider } from "./VideoProvider";
 import { VideoPlayer } from "./VideoPlayer";
 import { getAccessToken } from "@privy-io/react-auth";
 import { handleSessionId } from "@/lib/analytics/mixpanel";
 import { usePreviewStore } from "@/hooks/usePreviewStore";
+import { GradientAvatar } from "@/components/GradientAvatar";
 
 interface QuickviewVideoProps {
   children: React.ReactNode;
@@ -67,9 +68,11 @@ export default function QuickviewVideo({
           </div>
           <div className="flex flex-row justify-between items-center p-2">
             <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-full bg-zinc-100 flex items-center justify-center">
-                <User2 className="w-4 h-4 text-[#09090B]" />
-              </div>
+              <GradientAvatar
+                seed="Luke Zembrzuski"
+                size={24}
+                className="h-6 w-6"
+              />
               <span className="text-xs font-medium text-[#09090B]">
                 Luke Zembrzuski
               </span>
