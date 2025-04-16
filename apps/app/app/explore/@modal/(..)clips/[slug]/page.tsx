@@ -7,7 +7,7 @@ import {
 import { eq, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 
-export async function getClipBySlug(slug: string) {
+async function getClipBySlug(slug: string) {
   const result = await db
     .select({
       id: clipsTable.id,
