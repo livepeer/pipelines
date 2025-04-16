@@ -1,11 +1,11 @@
 import QuickviewVideo from "@/app/explore/QuickviewVideo";
+import { db } from "@/lib/db";
 import {
+  clipSlugs as clipSlugsTable,
   clips as clipsTable,
   users as usersTable,
-  clipSlugs as clipSlugsTable,
 } from "@/lib/db/schema";
 import { eq, sql } from "drizzle-orm";
-import { db } from "@/lib/db";
 import { redirect } from "next/navigation";
 
 async function getClipBySlug(slug: string) {
@@ -40,15 +40,17 @@ export default async function Page({ params }: { params: { slug: string } }) {
     return redirect("/explore");
   }
   return (
-    <QuickviewVideo
-      src={clip.video_url}
-      clipId={String(clip.id)}
-      title={clip.video_title || "Vincent Van Gogh"}
-      authorName={clip.author_name || "Livepeer"}
-      createdAt={clip.created_at.toISOString()}
-      remixCount={clip.remix_count}
-    >
-      <></>
-    </QuickviewVideo>
+    <>
+      <QuickviewVideo
+        src={clip.video_url}
+        clipId={String(clip.id)}
+        title={clip.video_title || "Vincent Van Gogh"}
+        authorName={clip.author_name || "Livepeer"}
+        createdAt={clip.created_at.toISOString()}
+        remixCount={clip.remix_count}
+      >
+        <></>
+      </QuickviewVideo>
+    </>
   );
 }

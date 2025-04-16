@@ -10,7 +10,7 @@ import { eq, sql } from "drizzle-orm";
 import { ChevronLeft, Repeat, User2 } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { LogView } from "./LogView";
+import { RemixButton } from "./RemixButton";
 
 async function getClipBySlug(slug: string) {
   const result = await db
@@ -54,6 +54,9 @@ export default async function Page({ params }: { params: { slug: string } }) {
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-white sm:bg-[rgba(255,255,255,0.90)]">
+      <div className="absolute top-4 right-8 z-[999] cursor-pointer">
+        <RemixButton />
+      </div>
       <div className="max-h-[90vh] max-w-2xl w-full border-none bg-transparent shadow-none pt-0 pb-4 backdrop-filter backdrop-blur-[3px]">
         <div className="space-y-8">
           <div className="relative w-full">

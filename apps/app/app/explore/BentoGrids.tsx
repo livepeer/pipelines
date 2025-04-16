@@ -58,8 +58,6 @@ export function BentoGrids({ initialClips }: BentoGridsProps) {
     return () => observer.disconnect();
   }, [fetchClips, loading, hasMore]);
 
-  useEffect(() => {}, []);
-
   const groupedClips = chunkArray(clips, 4);
 
   return (
