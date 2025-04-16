@@ -6,6 +6,7 @@ import {
 } from "@/lib/db/schema";
 import { eq, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
+import { redirect } from "next/navigation";
 
 async function getClipBySlug(slug: string) {
   const result = await db
@@ -34,8 +35,10 @@ export default async function Page({ params }: { params: { slug: string } }) {
   const { slug } = params;
 
   const clip = await getClipBySlug(slug);
-  // TODO: No clip
 
+  if (!clip) {
+    return redirect("/explore");
+  }
   return (
     <QuickviewVideo
       src={clip.video_url}

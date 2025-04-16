@@ -9,6 +9,7 @@ import {
 import { eq, sql } from "drizzle-orm";
 import { ChevronLeft, Repeat, User2 } from "lucide-react";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
 async function getClipBySlug(slug: string) {
   const result = await db
@@ -45,7 +46,10 @@ export default async function Page({ params }: { params: { slug: string } }) {
   const { slug } = params;
 
   const clip = await getClipBySlug(slug);
-  // TODO: No clip
+
+  if (!clip) {
+    return redirect("/explore");
+  }
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-white sm:bg-[rgba(255,255,255,0.90)]">
