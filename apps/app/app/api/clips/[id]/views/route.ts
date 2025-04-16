@@ -48,7 +48,7 @@ export async function POST(
     await db.insert(clipViews).values({
       clip_id: Number(id),
       session_id: sessionId,
-      ...(userId && { user_id: userId }),
+      ...(userId && { viewer_user_id: userId }),
       ip_address: ip,
     });
 
