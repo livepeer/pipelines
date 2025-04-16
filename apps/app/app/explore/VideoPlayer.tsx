@@ -22,16 +22,7 @@ function formatHumanTime(seconds: number) {
 
 export function VideoPlayer() {
   let player = useVideoPlayer();
-
   let wasPlayingRef = useRef(false);
-
-  let [currentTime, setCurrentTime] = useState<number | null>(
-    player.currentTime,
-  );
-
-  useEffect(() => {
-    setCurrentTime(null);
-  }, [player.currentTime]);
 
   return (
     <div className="absolute left-0 right-0 bottom-0 translate-y-1/2 z-40">
@@ -43,9 +34,8 @@ export function VideoPlayer() {
           <Slider
             label="Current time"
             maxValue={player.duration}
-            step={1}
-            value={[currentTime ?? player.currentTime]}
-            onChange={([value]) => setCurrentTime(value)}
+            step={0.001}
+            value={[player.currentTime ?? 0]}
             onChangeEnd={([value]) => {
               player.seek(value);
               if (wasPlayingRef.current) {

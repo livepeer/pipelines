@@ -1,7 +1,14 @@
 "use client";
 
-import { createContext, useContext, useMemo, useReducer, useRef } from "react";
 import { cn } from "@repo/design-system/lib/utils";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useReducer,
+  useRef,
+} from "react";
 import LoadingSpinner from "./LoadingSpinner";
 
 interface Video {
@@ -99,6 +106,7 @@ export function VideoProvider({
     volume: 1,
   });
   const playerRef = useRef<React.ElementRef<"video">>(null);
+  const animationFrameRef = useRef<number | null>(null);
 
   const actions = useMemo<PublicPlayerActions>(() => {
     return {
@@ -177,6 +185,50 @@ export function VideoProvider({
     [state, actions, playerRef, dispatch],
   );
 
+  useEffect(() => {
+    const updateCurrentTime = () => {
+      if (playerRef.current) {
+        const videoElement = playerRef.current;
+        const duration = videoElement.duration;
+
+        if (duration > 0 && Number.isFinite(duration)) {
+          let newTime = videoElement.currentTime;
+
+          if (videoElement.loop && newTime >= duration - 0.1) {
+            newTime = 0;
+          }
+
+          if (newTime !== state.currentTime) {
+            dispatch({
+              type: ActionKind.SET_CURRENT_TIME,
+              payload: newTime,
+            });
+          }
+        }
+
+        animationFrameRef.current = requestAnimationFrame(updateCurrentTime);
+      }
+    };
+
+    if (state.playing) {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+      animationFrameRef.current = requestAnimationFrame(updateCurrentTime);
+    } else {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+        animationFrameRef.current = null;
+      }
+    }
+
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+        animationFrameRef.current = null;
+      }
+    };
+  }, [state.playing, dispatch]);
   return (
     <VideoPlayerContext.Provider value={api}>
       <div className="relative w-full">
