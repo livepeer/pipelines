@@ -127,7 +127,7 @@ export default function OptimizedVideo({
             </div>
 
             <div className="absolute top-3 right-3 p-0 z-10 flex gap-1 items-center">
-              <button className="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-black/30 backdrop-blur-sm text-white rounded-full hover:bg-black/90 transition-colors border-white border shadow-sm">
+              <button className="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-black/70 backdrop-blur-lg text-white rounded-full hover:bg-black/90 transition-colors border-white border shadow-sm">
                 <WandSparkles className="w-3 h-3" />
                 <span className="text-[0.64rem] tracking-wide">Remix</span>
               </button>
