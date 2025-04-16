@@ -3,8 +3,11 @@
 import Link from "next/link";
 import { cn } from "@repo/design-system/lib/utils";
 import { Button } from "@repo/design-system/components/ui/button";
+import { usePrivy } from "@/hooks/usePrivy";
 
 export default function NoMoreClipsFooter() {
+  const { authenticated } = usePrivy();
+
   return (
     <div className="relative w-full mt-[-12rem]">
       <div
@@ -55,7 +58,7 @@ export default function NoMoreClipsFooter() {
               borderRadius: "8px",
             }}
           >
-            Sign Up
+            {authenticated ? "Create" : "Sign Up"}
           </Button>
         </Link>
       </div>
