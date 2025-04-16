@@ -15,6 +15,7 @@ export interface GradientAvatarProps {
   fallbackText?: string;
   size?: number;
   className?: string;
+  style?: React.CSSProperties;
   alt?: string;
 }
 
@@ -24,6 +25,7 @@ export function GradientAvatar({
   fallbackText,
   size = 40,
   className,
+  style,
   alt = "Avatar",
 }: GradientAvatarProps) {
   const { generateAvatar } = useGradientAvatar({ size });
@@ -39,7 +41,10 @@ export function GradientAvatar({
   }, [fallbackText, seed]);
 
   return (
-    <BaseAvatar className={cn(`h-${size / 4} w-${size / 4}`, className)}>
+    <BaseAvatar
+      className={cn(className)}
+      style={{ width: size, height: size, ...style }}
+    >
       <AvatarImage src={avatarSrc} alt={alt} />
       <AvatarFallback>{fallback}</AvatarFallback>
     </BaseAvatar>
