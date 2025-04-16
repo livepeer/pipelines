@@ -230,7 +230,6 @@ export function VideoProvider({
     };
   }, [state.playing, dispatch]);
 
-  console.log(state.currentTime);
   return (
     <VideoPlayerContext.Provider value={api}>
       <div className="relative w-full">
