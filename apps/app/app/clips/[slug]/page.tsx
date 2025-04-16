@@ -100,8 +100,6 @@ export default async function Page({ params }: { params: { slug: string } }) {
             </div>
           </VideoProvider>
         </div>
-
-        <LogView clipId={String(clip.id)} />
       </div>
     </div>
   );
