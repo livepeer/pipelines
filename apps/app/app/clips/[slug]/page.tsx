@@ -10,6 +10,7 @@ import { eq, sql } from "drizzle-orm";
 import { ChevronLeft, Repeat, User2 } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { LogView } from "./LogView";
 
 async function getClipBySlug(slug: string) {
   const result = await db
@@ -99,6 +100,8 @@ export default async function Page({ params }: { params: { slug: string } }) {
             </div>
           </VideoProvider>
         </div>
+
+        <LogView clipId={String(clip.id)} />
       </div>
     </div>
   );
