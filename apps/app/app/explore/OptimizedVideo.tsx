@@ -6,12 +6,14 @@ import { usePreviewStore } from "@/hooks/usePreviewStore";
 interface OptimizedVideoProps {
   src: string;
   clipId: string;
+  prompt?: string;
   className?: string;
 }
 
 export default function OptimizedVideo({
   src,
   clipId,
+  prompt,
   className,
 }: OptimizedVideoProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -77,7 +79,7 @@ export default function OptimizedVideo({
 
   return (
     <div ref={containerRef} className={cn("size-full", className)}>
-      <QuickviewVideo src={src} clipId={clipId}>
+      <QuickviewVideo src={src} clipId={clipId} prompt={prompt}>
         {isNearViewport ? (
           <video
             ref={videoRef}

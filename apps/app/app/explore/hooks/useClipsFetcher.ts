@@ -4,6 +4,7 @@ export type Clip = {
   id: string;
   video_url: string;
   created_at: string;
+  prompt?: string;
 };
 
 export default function useClipsFetcher(initialClips: Clip[] = []) {
@@ -28,6 +29,7 @@ export default function useClipsFetcher(initialClips: Clip[] = []) {
             id: number | string;
             video_url: string;
             created_at?: string | Date;
+            prompt?: string;
             [key: string]: any;
           }) => ({
             ...clip,

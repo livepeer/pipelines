@@ -16,12 +16,14 @@ interface QuickviewVideoProps {
   children: React.ReactNode;
   clipId: string;
   src: string;
+  prompt?: string;
 }
 
 export default function QuickviewVideo({
   children,
   clipId,
   src,
+  prompt,
 }: QuickviewVideoProps) {
   const setIsPreviewOpen = usePreviewStore(state => state.setIsPreviewOpen);
 
@@ -59,9 +61,6 @@ export default function QuickviewVideo({
             </DialogClose>
 
             <div className="flex flex-col items-center gap-1 py-2 px-4">
-              <h2 className="text-2xl font-bold text-[#232323]">
-                Vincent Van Gogh
-              </h2>
               <div className="text-sm text-[#707070]">Mar 31, 8:41 AM</div>
             </div>
           </div>
@@ -85,6 +84,12 @@ export default function QuickviewVideo({
           <VideoProvider src={src}>
             <VideoPlayerWrapper />
           </VideoProvider>
+        </div>
+
+        <div className="w-full mt-8 px-4">
+          <p className="text-xs font-normal text-[#707070] italic text-center">
+            {prompt || "No prompt available"}
+          </p>
         </div>
       </DialogContent>
     </Dialog>

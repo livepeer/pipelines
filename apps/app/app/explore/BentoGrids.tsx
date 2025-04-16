@@ -23,6 +23,7 @@ interface BentoGridsProps {
     id: string;
     video_url: string;
     created_at: string;
+    prompt?: string;
   }>;
 }
 
@@ -112,6 +113,7 @@ export function BentoGrids({ initialClips }: BentoGridsProps) {
                     key={clip.id}
                     clipId={clip.id}
                     src={clip.video_url}
+                    prompt={clip.prompt}
                     className={`${index % 2 === 0 ? "lg:row-span-2" : ""} cursor-pointer`}
                   />
                 );
@@ -142,11 +144,13 @@ function GridItem({
   key,
   clipId,
   src,
+  prompt,
   className,
 }: {
   key: string;
   clipId: string;
   src: string;
+  prompt?: string;
   className?: string;
 }) {
   return (
@@ -159,7 +163,7 @@ function GridItem({
       <div className="absolute inset-px rounded-xl loading-gradient z-0"></div>
       <div className="absolute inset-px rounded-xl backdrop-blur-[125px] z-10"></div>
       <div className="relative flex h-full flex-col overflow-hidden rounded-[calc(theme(borderRadius.xl)+1px)] z-20">
-        <OptimizedVideo src={src} clipId={clipId} />
+        <OptimizedVideo src={src} clipId={clipId} prompt={prompt} />
       </div>
       <div className="pointer-events-none absolute inset-px rounded-xl shadow ring-1 ring-black/5 z-30"></div>
     </div>

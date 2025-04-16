@@ -14,6 +14,7 @@ async function getInitialClips() {
     id: String(clip.id),
     video_url: clip.video_url,
     created_at: clip.created_at.toISOString(),
+    prompt: clip.prompt,
   }));
 }
 
