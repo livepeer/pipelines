@@ -36,6 +36,7 @@ export async function GET(request: Request) {
             FROM ${clipsTable} AS derived_clips
             WHERE derived_clips.source_clip_id = ${clipsTable.id}
           )`.mapWith(Number),
+        slug: clipSlugsTable.slug,
       })
       .from(clipsTable)
       .innerJoin(usersTable, eq(clipsTable.author_user_id, usersTable.id))
@@ -57,6 +58,7 @@ export async function GET(request: Request) {
           FROM ${clipsTable} AS derived_clips
           WHERE derived_clips.source_clip_id = ${clipsTable.id}
         )`.mapWith(Number),
+        slug: clipSlugsTable.slug,
       })
       .from(clipsTable)
       .innerJoin(usersTable, eq(clipsTable.author_user_id, usersTable.id))
