@@ -1,5 +1,6 @@
 "use client";
 
+import { usePreviewStore } from "@/hooks/usePreviewStore";
 import { cn } from "@repo/design-system/lib/utils";
 import { useEffect, useRef } from "react";
 import useClipsFetcher from "./hooks/useClipsFetcher";
@@ -30,6 +31,7 @@ export function BentoGrids({ initialClips }: BentoGridsProps) {
   const { clips, loading, hasMore, fetchClips } = useClipsFetcher(initialClips);
   const loadingRef = useRef<HTMLDivElement>(null);
   const initialFetchDone = useRef(false);
+  const { isPreviewOpen } = usePreviewStore();
 
   useEffect(() => {
     if (!initialFetchDone.current && initialClips.length === 0) {
@@ -71,13 +73,23 @@ export function BentoGrids({ initialClips }: BentoGridsProps) {
         />
       </div>
       <div className="max-w-7xl mx-auto px-8 lg:px-12">
-        <p className="mx-auto mt-2 max-w-lg text-balance text-center text-4xl font-extralight tracking-tight text-gray-950 sm:text-6xl">
+        <p
+          className={cn(
+            "mx-auto mt-2 max-w-lg text-balance text-center text-4xl font-extralight tracking-tight text-gray-950 sm:text-6xl",
+            isPreviewOpen && "opacity-0",
+          )}
+        >
           Discover how others{" "}
           <span className="font-playfair font-bold text-5xl sm:text-7xl">
             daydream
           </span>
         </p>
-        <h2 className="text-center text-base/7 font-light text-zinc-500 max-w-lg mx-auto mt-6 leading-[135%]">
+        <h2
+          className={cn(
+            "text-center text-base/7 font-light text-zinc-500 max-w-lg mx-auto mt-6 leading-[135%]",
+            isPreviewOpen && "opacity-0",
+          )}
+        >
           Explore a world where imagination becomes reality
           <br />
           and bring your own vision to life
