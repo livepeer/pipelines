@@ -1,5 +1,9 @@
 import { db } from "@/lib/db";
-import { clips as clipsTable, users as usersTable } from "@/lib/db/schema";
+import {
+  clips as clipsTable,
+  users as usersTable,
+  clipSlugs as clipSlugsTable,
+} from "@/lib/db/schema";
 import { eq, sql } from "drizzle-orm";
 import { BentoGrids } from "./BentoGrids";
 import Header from "./Header";
@@ -17,9 +21,11 @@ async function getInitialClips() {
           WHERE remixed_clips.source_clip_id = ${clipsTable.id}
         )`.mapWith(Number),
       author_name: usersTable.name,
+      slug: clipSlugsTable.slug,
     })
     .from(clipsTable)
     .innerJoin(usersTable, eq(clipsTable.author_user_id, usersTable.id))
+    .leftJoin(clipSlugsTable, eq(clipsTable.id, clipSlugsTable.clip_id))
     .orderBy(clipsTable.created_at)
     .limit(12);
 
@@ -30,6 +36,7 @@ async function getInitialClips() {
     created_at: clip.created_at.toISOString(),
     author_name: clip.author_name,
     remix_count: clip.remix_count,
+    slug: clip.slug,
   }));
 }
 

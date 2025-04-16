@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Dialog,
   DialogHeader,
@@ -11,6 +13,8 @@ import { VideoPlayer } from "./VideoPlayer";
 import { getAccessToken } from "@privy-io/react-auth";
 import { handleSessionId } from "@/lib/analytics/mixpanel";
 import { usePreviewStore } from "@/hooks/usePreviewStore";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 const formatter = new Intl.DateTimeFormat("en-US", {
   month: "short",
@@ -39,40 +43,55 @@ export default function QuickviewVideo({
   createdAt,
   remixCount,
 }: QuickviewVideoProps) {
-  const setIsPreviewOpen = usePreviewStore(state => state.setIsPreviewOpen);
+  const { setIsPreviewOpen, isPreviewOpen } = usePreviewStore();
+  const router = useRouter();
+
+  useEffect(() => {
+    setIsPreviewOpen(true);
+
+    const log = async () => {
+      const accessToken = await getAccessToken();
+      await fetch(`/api/clips/${clipId}/views`, {
+        method: "POST",
+        headers: {
+          ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ sessionId: handleSessionId() }),
+      });
+    };
+
+    log();
+
+    return () => {
+      setIsPreviewOpen(false);
+    };
+  }, []);
 
   return (
-    <Dialog
-      onOpenChange={async open => {
-        setIsPreviewOpen(open);
-
-        if (!open) return;
-
-        const accessToken = await getAccessToken();
-        await fetch(`/api/clips/${clipId}/views`, {
-          method: "POST",
-          headers: {
-            ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ sessionId: handleSessionId() }),
-        });
-      }}
-    >
+    <Dialog open={isPreviewOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent
         className="max-h-[90vh] max-w-[70vh] border-none bg-transparent shadow-none pt-6 pb-4 backdrop-filter backdrop-blur-[3px]"
         overlayClassName="bg-white sm:bg-[rgba(255,255,255,0.90)]"
         displayCloseButton={false}
+        onInteractOutside={e => {
+          setIsPreviewOpen(false);
+          router.push("/explore", { scroll: false });
+        }}
       >
         <DialogHeader className="space-y-4">
           <div className="relative w-full">
-            <DialogClose asChild>
-              <button className="absolute left-0 top-1/2 -translate-y-1/2 flex items-center gap-1 text-xs font-medium text-[#09090B] outline-none hover:bg-zinc-100 px-2 py-1">
-                <ChevronLeft className="w-4 h-4" />
-                <span className="hidden sm:block">Back</span>
-              </button>
-            </DialogClose>
+            <button
+              className="absolute left-0 top-1/2 -translate-y-1/2 flex items-center gap-1 text-xs font-medium text-[#09090B] outline-none hover:bg-zinc-100 px-2 py-1"
+              onClick={() => {
+                setIsPreviewOpen(false);
+                router.push("/explore", { scroll: false });
+              }}
+            >
+              <ChevronLeft className="w-4 h-4" />
+              <span className="hidden sm:block">Back</span>
+            </button>
 
             <div className="flex flex-col items-center gap-1 py-2 px-4">
               <h2 className="text-2xl font-bold text-[#232323]">{title}</h2>

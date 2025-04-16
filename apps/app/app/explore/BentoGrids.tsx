@@ -24,6 +24,7 @@ interface BentoGridsProps {
     created_at: string;
     author_name: string | null;
     remix_count: number;
+    slug: string | null;
   }>;
 }
 
@@ -56,6 +57,8 @@ export function BentoGrids({ initialClips }: BentoGridsProps) {
 
     return () => observer.disconnect();
   }, [fetchClips, loading, hasMore]);
+
+  useEffect(() => {}, []);
 
   const groupedClips = chunkArray(clips, 4);
 
@@ -112,6 +115,7 @@ export function BentoGrids({ initialClips }: BentoGridsProps) {
                   <GridItem
                     key={clip.id}
                     clipId={clip.id}
+                    slug={clip.slug}
                     title={clip.video_title || "Vincent Van Gogh"}
                     authorName={clip.author_name || "Livepeer"}
                     src={clip.video_url}
@@ -148,6 +152,7 @@ function GridItem({
   clipId,
   src,
   className,
+  slug,
   title,
   authorName,
   createdAt,
@@ -157,6 +162,7 @@ function GridItem({
   clipId: string;
   src: string;
   className?: string;
+  slug: string | null;
   title: string;
   authorName: string;
   createdAt: string;
@@ -176,6 +182,7 @@ function GridItem({
           src={src}
           clipId={clipId}
           title={title}
+          slug={slug}
           authorName={authorName}
           createdAt={createdAt}
           remixCount={remixCount}

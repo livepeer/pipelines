@@ -7,6 +7,7 @@ export type Clip = {
   created_at: string;
   author_name: string | null;
   remix_count: number;
+  slug: string | null;
 };
 
 export default function useClipsFetcher(initialClips: Clip[] = []) {
@@ -34,6 +35,7 @@ export default function useClipsFetcher(initialClips: Clip[] = []) {
             created_at?: string | Date;
             author_name?: string | null;
             remix_count: number;
+            slug: string | null;
             [key: string]: any;
           }) => ({
             ...clip,
@@ -45,6 +47,7 @@ export default function useClipsFetcher(initialClips: Clip[] = []) {
             video_url: clip.video_url,
             author_name: clip.author_name || null,
             remix_count: clip.remix_count,
+            slug: clip.slug,
           }),
         );
 

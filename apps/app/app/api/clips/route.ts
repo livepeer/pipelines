@@ -1,7 +1,11 @@
 import { eq, sql } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { clips as clipsTable, users as usersTable } from "@/lib/db/schema";
+import {
+  clips as clipsTable,
+  users as usersTable,
+  clipSlugs as clipSlugsTable,
+} from "@/lib/db/schema";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -35,6 +39,7 @@ export async function GET(request: Request) {
       })
       .from(clipsTable)
       .innerJoin(usersTable, eq(clipsTable.author_user_id, usersTable.id))
+      .leftJoin(clipSlugsTable, eq(clipsTable.id, clipSlugsTable.clip_id))
       .orderBy(clipsTable.created_at)
       .limit(limit)
       .offset(offset);
@@ -55,6 +60,7 @@ export async function GET(request: Request) {
       })
       .from(clipsTable)
       .innerJoin(usersTable, eq(clipsTable.author_user_id, usersTable.id))
+      .leftJoin(clipSlugsTable, eq(clipsTable.id, clipSlugsTable.clip_id))
       .orderBy(clipsTable.created_at)
       .limit(1)
       .offset(offset + limit);

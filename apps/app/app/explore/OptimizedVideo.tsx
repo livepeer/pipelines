@@ -4,11 +4,13 @@ import { cn } from "@repo/design-system/lib/utils";
 import { Repeat, WandSparkles } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import QuickviewVideo from "./QuickviewVideo";
+import Link from "next/link";
 
 interface OptimizedVideoProps {
   src: string;
   clipId: string;
   title: string;
+  slug: string | null;
   authorName: string;
   createdAt: string;
   remixCount: number;
@@ -19,6 +21,7 @@ export default function OptimizedVideo({
   src,
   clipId,
   title,
+  slug,
   authorName,
   createdAt,
   remixCount,
@@ -87,15 +90,8 @@ export default function OptimizedVideo({
 
   return (
     <div ref={containerRef} className={cn("size-full", className)}>
-      <QuickviewVideo
-        src={src}
-        clipId={clipId}
-        title={title}
-        authorName={authorName}
-        createdAt={createdAt}
-        remixCount={remixCount}
-      >
-        {isNearViewport ? (
+      {isNearViewport ? (
+        <Link href={`/clips/${slug || clipId}`} scroll={false}>
           <div className="size-full relative">
             <video
               ref={videoRef}
@@ -130,10 +126,10 @@ export default function OptimizedVideo({
               </button>
             </div>
           </div>
-        ) : (
-          <div className="size-full bg-transparent" />
-        )}
-      </QuickviewVideo>
+        </Link>
+      ) : (
+        <div className="size-full bg-transparent" />
+      )}
     </div>
   );
 }
