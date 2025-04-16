@@ -8,6 +8,7 @@ import useClipsFetcher from "./hooks/useClipsFetcher";
 import LoadingSpinner from "./LoadingSpinner";
 import OptimizedVideo from "./OptimizedVideo";
 import NoMoreClipsFooter from "./NoMoreClipsFooter";
+import { usePreviewStore } from "@/hooks/usePreviewStore";
 
 function chunkArray<T>(array: T[], size: number): T[][] {
   const result: T[][] = [];
@@ -29,6 +30,7 @@ export function BentoGrids({ initialClips }: BentoGridsProps) {
   const { clips, loading, hasMore, fetchClips } = useClipsFetcher(initialClips);
   const loadingRef = useRef<HTMLDivElement>(null);
   const initialFetchDone = useRef(false);
+  const { isPreviewOpen } = usePreviewStore();
 
   useEffect(() => {
     if (!initialFetchDone.current && initialClips.length === 0) {
@@ -57,24 +59,36 @@ export function BentoGrids({ initialClips }: BentoGridsProps) {
   const groupedClips = chunkArray(clips, 4);
 
   return (
-    <div className="bg-gray-50 py-8 z-10">
+    <div className="bg-transparent py-8 z-10">
       <div
         aria-hidden="true"
-        className="absolute inset-x-0 -top-40 z-10 transform-gpu overflow-hidden blur-3xl sm:-top-80"
+        className="fixed inset-x-0 -top-40 -z-10 transform-gpu overflow-hidden blur-3xl sm:-top-60"
       >
         <div
           style={{
             backgroundImage: "url(/background.png)",
           }}
-          className="relative left-[calc(50%-11rem)] aspect-[1155/678] w-[36.125rem] -translate-x-1/2 rotate-[30deg] opacity-30 sm:left-[calc(50%-30rem)] sm:w-[72.1875rem]"
+          className="w-[90vw] h-[50vh] mx-auto bg-cover bg-center opacity-40"
         />
       </div>
       <div className="max-w-7xl mx-auto px-8 lg:px-12">
-        <p className="mx-auto mt-2 max-w-lg text-balance text-center text-4xl font-extralight tracking-tight text-gray-950 sm:text-6xl">
-          Discover how Others{" "}
-          <span className="font-playfair font-bold">daydream</span>
+        <p
+          className={cn(
+            "mx-auto mt-2 max-w-lg text-balance text-center text-4xl font-extralight tracking-tight text-gray-950 sm:text-6xl",
+            isPreviewOpen && "opacity-0",
+          )}
+        >
+          Discover how others{" "}
+          <span className="font-playfair font-bold text-5xl sm:text-7xl">
+            daydream
+          </span>
         </p>
-        <h2 className="text-center text-base/7 font-light text-zinc-500 max-w-lg mx-auto mt-6 leading-[135%]">
+        <h2
+          className={cn(
+            "text-center text-base/7 font-light text-zinc-500 max-w-lg mx-auto mt-6 leading-[135%]",
+            isPreviewOpen && "opacity-0",
+          )}
+        >
           Explore a world where imagination becomes reality
           <br />
           and bring your own vision to life
@@ -106,7 +120,7 @@ export function BentoGrids({ initialClips }: BentoGridsProps) {
           );
         })}
 
-        <div ref={loadingRef} className="py-8 text-center">
+        <div ref={loadingRef} className="py-8 text-center relative z-50">
           {loading ? (
             <LoadingSpinner />
           ) : hasMore ? (
@@ -114,6 +128,10 @@ export function BentoGrids({ initialClips }: BentoGridsProps) {
           ) : (
             <NoMoreClipsFooter />
           )}
+          <div
+            aria-hidden="true"
+            className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-gray-50 to-transparent pointer-events-none"
+          />
         </div>
       </div>
     </div>
@@ -132,12 +150,18 @@ function GridItem({
   className?: string;
 }) {
   return (
-    <div className={cn("relative", className)}>
-      <div className="absolute inset-px rounded-xl bg-white"></div>
-      <div className="relative flex h-full flex-col overflow-hidden rounded-[calc(theme(borderRadius.xl)+1px)]">
+    <div
+      className={cn(
+        "relative aspect-square lg:min-h-[300px] lg:aspect-auto",
+        className,
+      )}
+    >
+      <div className="absolute inset-px rounded-xl loading-gradient z-0"></div>
+      <div className="absolute inset-px rounded-xl backdrop-blur-[125px] z-10"></div>
+      <div className="relative flex h-full flex-col overflow-hidden rounded-[calc(theme(borderRadius.xl)+1px)] z-20">
         <OptimizedVideo src={src} clipId={clipId} />
       </div>
-      <div className="pointer-events-none absolute inset-px rounded-xl shadow ring-1 ring-black/5"></div>
+      <div className="pointer-events-none absolute inset-px rounded-xl shadow ring-1 ring-black/5 z-30"></div>
     </div>
   );
 }

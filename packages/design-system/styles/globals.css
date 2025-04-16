@@ -235,6 +235,51 @@
   initial-value: 0deg;
 }
 
+.alwaysAnimatedButton {
+  position: relative;
+  overflow: visible;
+  border: 1.5px solid transparent;
+  background-color: #FEFEFE !important;
+  border-radius: var(--radius);
+}
+
+.alwaysAnimatedButton::before {
+  content: "";
+  position: absolute;
+  inset: -1.5px;
+  border-radius: var(--radius);
+  padding: 1.5px;
+  background: conic-gradient(
+    from var(--gradient-angle),
+    #83a5b5 0deg,
+    #9a9a9a 50deg,
+    #333333 70deg,
+    #9a9a9a 90deg,
+    #A3DAF3 210deg,
+    #ffffff 240deg,
+    #83a5b5 280deg
+  );
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  opacity: 1;
+  z-index: 0;
+  pointer-events: none;
+
+  animation: rotate-gradient 5s linear infinite;
+  animation-play-state: running;
+}
+
+.alwaysAnimatedButton > * {
+  position: relative;
+  z-index: 2;
+}
+
 .animatedGradientButton {
   position: relative;
   border-radius: 9999px;
@@ -347,4 +392,29 @@
   background-image: url("/clouds/back_3_proc-min.png");
   opacity: 0.3;
   z-index: 1;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.loading-gradient {
+  background: linear-gradient(40deg, 
+    #ffffff 0%,
+    #f3f4f6 25%,
+    #b2cad1 50%,
+    #f3f4f6 75%,
+    #ffffff 100%
+  );
+  background-size: 200% 100%;
+  animation: loading 5s linear infinite;
+}
+
+.alwaysAnimatedButton.custom-signup::before {
+  border-radius: 8px;
 }
