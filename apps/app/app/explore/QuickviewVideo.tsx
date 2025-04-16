@@ -9,7 +9,7 @@ import {
   DialogHeader,
   DialogTrigger,
 } from "@repo/design-system/components/ui/dialog";
-import { ChevronLeft, Repeat, User2 } from "lucide-react";
+import { Repeat, User2, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { VideoPlayer } from "./VideoPlayer";
@@ -82,14 +82,13 @@ export default function QuickviewVideo({
         <DialogHeader className="space-y-4">
           <div className="relative w-full">
             <button
-              className="absolute left-0 top-1/2 -translate-y-1/2 flex items-center gap-1 text-xs font-medium text-[#09090B] outline-none hover:bg-zinc-100 px-2 py-1 rounded"
+              className="absolute right-0 -translate-y-1/2 flex items-center gap-1 text-xs font-medium text-[#09090B] outline-none hover:bg-zinc-100 p-2 rounded"
               onClick={() => {
                 setIsPreviewOpen(false);
                 router.push("/explore", { scroll: false });
               }}
             >
-              <ChevronLeft className="w-4 h-4" />
-              <span className="hidden sm:block">Back</span>
+              <X className="w-4 h-4" />
             </button>
 
             <div className="flex flex-col items-center gap-1 py-2 px-4">
