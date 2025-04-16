@@ -34,7 +34,6 @@ export default async function Page({ params }: { params: { slug: string } }) {
   const { slug } = params;
 
   const clip = await getClipBySlug(slug);
-  // TODO: No clip
 
   return (
     <QuickviewVideo
