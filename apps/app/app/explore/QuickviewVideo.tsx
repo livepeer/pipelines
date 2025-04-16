@@ -101,7 +101,7 @@ export default function QuickviewVideo({
             className="max-h-[90vh] max-w-2xl w-full"
             onClick={e => e.stopPropagation()}
           >
-            <DialogHeader className="space-y-4">
+            <DialogHeader className="space-y-8">
               <div className="relative w-full">
                 <button
                   className="absolute right-0 -translate-y-1/2 flex items-center gap-1 text-xs font-medium text-[#09090B] outline-none hover:bg-zinc-100 p-2 rounded"
@@ -137,7 +137,8 @@ export default function QuickviewVideo({
                 </div>
               </div>
             </DialogHeader>
-            <div className="w-full h-fit relative">
+
+            <div className="w-full h-fit relative mt-4">
               <VideoProvider src={src}>
                 <div className="relative w-full">
                   <VideoPlayer />
