@@ -1,20 +1,19 @@
 "use client";
 
+import { usePreviewStore } from "@/hooks/usePreviewStore";
+import { handleSessionId } from "@/lib/analytics/mixpanel";
+import { getAccessToken } from "@privy-io/react-auth";
 import {
   Dialog,
-  DialogHeader,
   DialogContent,
+  DialogHeader,
   DialogTrigger,
-  DialogClose,
 } from "@repo/design-system/components/ui/dialog";
 import { ChevronLeft, Repeat, User2 } from "lucide-react";
-import { VideoProvider } from "./VideoProvider";
-import { VideoPlayer } from "./VideoPlayer";
-import { getAccessToken } from "@privy-io/react-auth";
-import { handleSessionId } from "@/lib/analytics/mixpanel";
-import { usePreviewStore } from "@/hooks/usePreviewStore";
-import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { VideoPlayer } from "./VideoPlayer";
+import { VideoProvider } from "./VideoProvider";
 
 const formatter = new Intl.DateTimeFormat("en-US", {
   month: "short",
@@ -83,7 +82,7 @@ export default function QuickviewVideo({
         <DialogHeader className="space-y-4">
           <div className="relative w-full">
             <button
-              className="absolute left-0 top-1/2 -translate-y-1/2 flex items-center gap-1 text-xs font-medium text-[#09090B] outline-none hover:bg-zinc-100 px-2 py-1"
+              className="absolute left-0 top-1/2 -translate-y-1/2 flex items-center gap-1 text-xs font-medium text-[#09090B] outline-none hover:bg-zinc-100 px-2 py-1 rounded"
               onClick={() => {
                 setIsPreviewOpen(false);
                 router.push("/explore", { scroll: false });
@@ -118,18 +117,12 @@ export default function QuickviewVideo({
 
         <div className="w-full h-fit relative">
           <VideoProvider src={src}>
-            <VideoPlayerWrapper />
+            <div className="relative w-full">
+              <VideoPlayer />
+            </div>
           </VideoProvider>
         </div>
       </DialogContent>
     </Dialog>
-  );
-}
-
-function VideoPlayerWrapper() {
-  return (
-    <div className="relative w-full">
-      <VideoPlayer />
-    </div>
   );
 }
