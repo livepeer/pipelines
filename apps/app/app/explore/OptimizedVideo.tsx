@@ -4,6 +4,7 @@ import { cn } from "@repo/design-system/lib/utils";
 import { Repeat, WandSparkles } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import QuickviewVideo from "./QuickviewVideo";
+import { hash } from "@/lib/hash";
 
 interface OptimizedVideoProps {
   src: string;
@@ -115,10 +116,12 @@ export default function OptimizedVideo({
                 src={`https://picsum.photos/id/${hash(authorName)}/200/200`}
                 className="w-6 h-6 rounded-full"
               />
-              <span className="text-white text-[0.64rem]">{authorName}</span>
+              <span className="text-white text-[0.64rem] bg-black/20 backdrop-blur-sm px-2 py-1 rounded-lg">
+                {authorName}
+              </span>
             </div>
 
-            <div className="absolute bottom-4 right-5 p-0 z-10 flex gap-1 items-center">
+            <div className="absolute bottom-3 right-4 p-0 z-10 flex gap-1 items-center  bg-black/20 backdrop-blur-sm px-2 py-1 rounded-lg">
               <Repeat className="w-3 h-3 text-white" />
               <span className="text-white text-[0.64rem]">{remixCount}</span>
             </div>
@@ -136,17 +139,4 @@ export default function OptimizedVideo({
       </QuickviewVideo>
     </div>
   );
-}
-
-function hash(str: string) {
-  let hash = 0;
-  if (str.length === 0) {
-    return hash;
-  }
-  for (let i = 0; i < str.length; i++) {
-    const charCode = str.charCodeAt(i);
-    hash = (hash << 5) - hash + charCode;
-    hash |= 0;
-  }
-  return Math.abs(hash) % 1000;
 }

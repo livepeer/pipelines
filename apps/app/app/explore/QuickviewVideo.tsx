@@ -11,6 +11,7 @@ import { VideoPlayer } from "./VideoPlayer";
 import { getAccessToken } from "@privy-io/react-auth";
 import { handleSessionId } from "@/lib/analytics/mixpanel";
 import { usePreviewStore } from "@/hooks/usePreviewStore";
+import { hash } from "@/lib/hash";
 
 const formatter = new Intl.DateTimeFormat("en-US", {
   month: "short",
@@ -83,9 +84,10 @@ export default function QuickviewVideo({
           </div>
           <div className="flex flex-row justify-between items-center p-2">
             <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-full bg-zinc-100 flex items-center justify-center">
-                <User2 className="w-4 h-4 text-[#09090B]" />
-              </div>
+              <img
+                src={`https://picsum.photos/id/${hash(authorName)}/200/200`}
+                className="w-6 h-6 rounded-full"
+              />
               <span className="text-xs font-medium text-[#09090B]">
                 {authorName}
               </span>
