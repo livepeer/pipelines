@@ -1,5 +1,5 @@
 import Daydream from "@/components/daydream";
-import { getSharedParams } from "./api/streams/share-params";
+import { getSharedParams } from "../api/streams/share-params";
 import { cache } from "react";
 
 const getCachedSharedParams = cache(async (shareParamsId: string) => {

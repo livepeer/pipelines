@@ -4,6 +4,7 @@ import { Logo } from "@/components/sidebar";
 import { Button } from "@repo/design-system/components/ui/button";
 import { usePreviewStore } from "@/hooks/usePreviewStore";
 import { cn } from "@repo/design-system/lib/utils";
+import Link from "next/link";
 
 export default function Header() {
   const { isPreviewOpen } = usePreviewStore();
@@ -21,15 +22,17 @@ export default function Header() {
           </a>
         </div>
         <div className="flex flex-1 justify-end">
-          <Button
-            variant="outline"
-            className={cn(
-              "alwaysAnimatedButton",
-              isPreviewOpen && "opacity-0 pointer-events-none",
-            )}
-          >
-            Start Creating
-          </Button>
+          <Link href="/create">
+            <Button
+              variant="outline"
+              className={cn(
+                "alwaysAnimatedButton",
+                isPreviewOpen && "opacity-0 pointer-events-none",
+              )}
+            >
+              Start Creating
+            </Button>
+          </Link>
         </div>
       </nav>
     </header>

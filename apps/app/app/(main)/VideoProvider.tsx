@@ -9,7 +9,7 @@ import {
   useReducer,
   useRef,
 } from "react";
-import LoadingSpinner from "./LoadingSpinner";
+import LoadingSpinner from "../(main)/LoadingSpinner";
 
 interface Video {
   id: number;

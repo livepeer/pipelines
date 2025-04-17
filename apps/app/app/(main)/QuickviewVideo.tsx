@@ -92,7 +92,7 @@ export default function QuickviewVideo({
           }}
           key={clipId}
         >
-          <div className="absolute top-4 right-8 z-[999] cursor-pointer">
+          {/* <div className="absolute top-4 right-8 z-[999] cursor-pointer">
             <Button
               className={cn(
                 "flex items-center py-2 px-4 gap-2 font-medium cursor-pointer rounded-xl",
@@ -103,7 +103,7 @@ export default function QuickviewVideo({
 
               <span className="text-sm">Remix</span>
             </Button>
-          </div>
+          </div> */}
           <div
             className="max-h-[90vh] max-w-2xl w-full"
             onClick={e => e.stopPropagation()}
@@ -143,10 +143,10 @@ export default function QuickviewVideo({
                     {authorName}
                   </span>
                 </div>
-                <div className="flex items-center gap-1">
+                {/* <div className="flex items-center gap-1">
                   <Repeat className="w-4 h-4 text-[#09090B]" />
                   <span className="text-sm text-[#09090B]">{remixCount}</span>
-                </div>
+                </div> */}
               </div>
             </DialogHeader>
 

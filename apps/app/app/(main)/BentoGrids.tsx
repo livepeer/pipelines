@@ -17,7 +17,7 @@ function chunkArray<T>(array: T[], size: number): T[][] {
   return result;
 }
 
-interface BentoGridsProps {
+export interface BentoGridsProps {
   initialClips: Array<{
     id: string;
     video_url: string;

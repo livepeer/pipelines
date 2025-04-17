@@ -1,12 +1,12 @@
 import { db } from "@/lib/db";
 import {
+  clipSlugs as clipSlugsTable,
   clips as clipsTable,
   users as usersTable,
-  clipSlugs as clipSlugsTable,
 } from "@/lib/db/schema";
-import { eq, sql, isNull, isNotNull, asc, and } from "drizzle-orm";
-import { BentoGrids } from "./BentoGrids";
+import { and, asc, eq, isNotNull, isNull, sql } from "drizzle-orm";
 import Header from "./Header";
+import MainLayoutClient from "./MainLayoutClient";
 
 type InitialFetchedClip = {
   id: number;
@@ -133,14 +133,21 @@ async function getInitialClips() {
   }));
 }
 
-export default async function Explore() {
+export default async function MainLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const initialClips = await getInitialClips();
 
   return (
     <>
       <div className="bg-gray-50 relative isolate">
         <Header />
-        <BentoGrids initialClips={initialClips} />
+        <MainLayoutClient initialClips={initialClips}>
+          {children}
+        </MainLayoutClient>
+        {/* <BentoGrids initialClips={initialClips} /> */}
       </div>
     </>
   );
