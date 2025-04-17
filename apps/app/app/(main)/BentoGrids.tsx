@@ -85,9 +85,9 @@ export function BentoGrids({ initialClips }: BentoGridsProps) {
           style={{
             backgroundImage: "url(/background.png)",
             maskImage:
-              "linear-gradient(to bottom, black 60%, transparent 100%), linear-gradient(to right, black 80%, transparent 100%)",
+              "linear-gradient(to bottom, black 60%, transparent 100%)",
             WebkitMaskImage:
-              "linear-gradient(to bottom, black 60%, transparent 100%), linear-gradient(to right, black 80%, transparent 100%)",
+              "linear-gradient(to bottom, black 60%, transparent 100%)",
           }}
           className="w-full h-[70vh] mx-auto bg-cover bg-center opacity-50"
         />
