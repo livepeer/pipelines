@@ -11,7 +11,7 @@ import {
 } from "@repo/design-system/components/ui/dialog";
 import { cn } from "@repo/design-system/lib/utils";
 import { Repeat, User2, WandSparkles, X } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { VideoPlayer } from "./VideoPlayer";
 import { VideoProvider } from "./VideoProvider";
@@ -45,10 +45,9 @@ export default function QuickviewVideo({
 }: QuickviewVideoProps) {
   const { setIsPreviewOpen, isPreviewOpen } = usePreviewStore();
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
-    setIsPreviewOpen(true);
-
     const log = async () => {
       const accessToken = await getAccessToken();
       await fetch(`/api/clips/${clipId}/views`, {
@@ -62,11 +61,12 @@ export default function QuickviewVideo({
     };
 
     log();
-
-    return () => {
-      setIsPreviewOpen(false);
-    };
   }, []);
+
+  useEffect(() => {
+    if (pathname !== "/explore") setIsPreviewOpen(true);
+    else setIsPreviewOpen(false);
+  }, [pathname]);
 
   const handleClose = () => {
     setIsPreviewOpen(false);
@@ -85,6 +85,7 @@ export default function QuickviewVideo({
           onOpenAutoFocus={e => {
             e.preventDefault();
           }}
+          key={clipId}
         >
           <div className="absolute top-4 right-8 z-[999] cursor-pointer">
             <button

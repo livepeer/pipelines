@@ -39,9 +39,11 @@ export default async function Page({ params }: { params: { slug: string } }) {
   if (!clip) {
     return redirect("/explore");
   }
+
   return (
     <>
       <QuickviewVideo
+        key={String(clip.id)}
         src={clip.video_url}
         clipId={String(clip.id)}
         title={clip.video_title || "Vincent Van Gogh"}

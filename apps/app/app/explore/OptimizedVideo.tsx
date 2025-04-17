@@ -31,7 +31,7 @@ export default function OptimizedVideo({
   const [isNearViewport, setIsNearViewport] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  const isPreviewOpen = usePreviewStore(state => state.isPreviewOpen);
+  const { isPreviewOpen, setIsPreviewOpen } = usePreviewStore();
 
   const shortSrc = src.replace(/\.mp4$/, "-short.mp4");
 
