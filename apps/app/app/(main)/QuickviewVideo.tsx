@@ -159,8 +159,8 @@ export default function QuickviewVideo({
             </div>
 
             <DialogFooter className="mt-6">
-              <div className="w-full mt-6 px-4">
-                <p className="text-xs font-normal text-[#707070] italic text-center">
+              <div className="w-[70%] mt-6 mx-auto">
+                <p className="text-xs font-normal text-[#707070] text-center">
                   {prompt || "No prompt available"}
                 </p>
               </div>
