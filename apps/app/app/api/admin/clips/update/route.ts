@@ -11,15 +11,18 @@ import { customAlphabet } from "nanoid";
 const generateSlug = customAlphabet("abcdefghijklmnopqrstuvwxyz0123456789", 10);
 
 export async function PUT(request: Request) {
+  let operationType: "create" | "update" = "update";
+  let clipIdProvided: number | null = null;
+
   try {
     const authResponse = await requireAdminAuth(request);
-
     if (authResponse.status !== 200) {
       return authResponse;
     }
 
     const body = await request.json();
     const { id, ...updateValues } = body;
+    clipIdProvided = id;
 
     if (id === undefined || id === null) {
       return NextResponse.json(
@@ -28,58 +31,83 @@ export async function PUT(request: Request) {
       );
     }
 
-    if (id === 0) {
-      const [newClip] = await db
-        .insert(clipsTable)
-        .values(updateValues)
-        .returning();
+    operationType = id === 0 ? "create" : "update";
 
-      const slug = generateSlug();
-      await db.insert(clipSlugsTable).values({
-        slug,
-        clip_id: newClip.id,
-      });
+    const result = await db.transaction(async tx => {
+      let finalClipData: typeof clipsTable.$inferSelect | null = null;
+      let finalSlug: string | null = null;
 
-      return NextResponse.json({
-        message: "Clip created successfully",
-        clip: { ...newClip, slug },
-      });
-    }
+      if (id === 0) {
+        const [newClip] = await tx
+          .insert(clipsTable)
+          .values(updateValues)
+          .returning();
 
-    const [updatedClip] = await db
-      .update(clipsTable)
-      .set(updateValues)
-      .where(eq(clipsTable.id, id))
-      .returning();
+        if (!newClip) {
+          throw new Error("Failed to create clip entry.");
+        }
 
-    if (!updatedClip) {
-      return NextResponse.json({ error: "Clip not found" }, { status: 404 });
-    }
+        const slug = generateSlug();
 
-    const existingSlug = await db
-      .select({ slug: clipSlugsTable.slug })
-      .from(clipSlugsTable)
-      .where(eq(clipSlugsTable.clip_id, id))
-      .limit(1);
+        await tx.insert(clipSlugsTable).values({
+          slug,
+          clip_id: newClip.id,
+        });
 
-    let slug = existingSlug[0]?.slug;
+        finalClipData = newClip;
+        finalSlug = slug;
+      } else {
+        const [updatedClip] = await tx
+          .update(clipsTable)
+          .set(updateValues)
+          .where(eq(clipsTable.id, id))
+          .returning();
 
-    if (!slug) {
-      slug = generateSlug();
-      await db.insert(clipSlugsTable).values({
-        slug,
-        clip_id: id,
-      });
-    }
+        if (!updatedClip) {
+          return { status: 404, error: "Clip not found" };
+        }
 
-    return NextResponse.json({
-      message: "Clip updated successfully",
-      clip: { ...updatedClip, slug },
+        finalClipData = updatedClip;
+
+        const existingSlugResult = await tx
+          .select({ slug: clipSlugsTable.slug })
+          .from(clipSlugsTable)
+          .where(eq(clipSlugsTable.clip_id, id))
+          .limit(1);
+
+        finalSlug = existingSlugResult[0]?.slug;
+
+        if (!finalSlug) {
+          finalSlug = generateSlug();
+
+          await tx.insert(clipSlugsTable).values({
+            slug: finalSlug,
+            clip_id: id,
+          });
+        }
+      }
+
+      return { status: 200, clip: finalClipData, slug: finalSlug };
     });
-  } catch (error) {
-    console.error("Failed to update clip:", error);
+
+    if (result.status === 404) {
+      return NextResponse.json({ error: result.error }, { status: 404 });
+    }
+
+    const message =
+      id === 0 ? "Clip created successfully" : "Clip updated successfully";
+    return NextResponse.json({
+      message: message,
+      clip: result.clip ? { ...result.clip, slug: result.slug } : null,
+    });
+  } catch (error: any) {
+    console.error(
+      `Failed to ${operationType} clip (ID: ${clipIdProvided}):`,
+      error,
+    );
+
     return NextResponse.json(
-      { error: "Failed to update clip" },
+      { error: `Failed to ${operationType} clip` },
       { status: 500 },
     );
   }
