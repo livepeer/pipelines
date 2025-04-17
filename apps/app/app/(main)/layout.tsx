@@ -7,6 +7,7 @@ import {
 import { and, asc, eq, isNotNull, isNull, sql } from "drizzle-orm";
 import Header from "./Header";
 import MainLayoutClient from "./MainLayoutClient";
+import { PreviewController } from "./PreviewController";
 
 type InitialFetchedClip = {
   id: number;
@@ -147,7 +148,7 @@ export default async function MainLayout({
         <MainLayoutClient initialClips={initialClips}>
           {children}
         </MainLayoutClient>
-        {/* <BentoGrids initialClips={initialClips} /> */}
+        <PreviewController />
       </div>
     </>
   );

@@ -14,7 +14,7 @@ import {
 import { cn } from "@repo/design-system/lib/utils";
 import { Repeat, WandSparkles, X } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { VideoPlayer } from "./VideoPlayer";
 import { VideoProvider } from "./VideoProvider";
 import { Button } from "@repo/design-system/components/ui/button";
@@ -48,9 +48,9 @@ export default function QuickviewVideo({
   createdAt,
   remixCount,
 }: QuickviewVideoProps) {
-  const { setIsPreviewOpen, isPreviewOpen } = usePreviewStore();
+  const { isPreviewOpen } = usePreviewStore();
+  const [isClosing, setIsClosing] = useState(false);
   const router = useRouter();
-  const pathname = usePathname();
 
   useEffect(() => {
     const log = async () => {
@@ -68,19 +68,23 @@ export default function QuickviewVideo({
     log();
   }, []);
 
-  useEffect(() => {
-    if (pathname !== "/") setIsPreviewOpen(true);
-    else setIsPreviewOpen(false);
-  }, [pathname]);
-
   const handleClose = () => {
-    setIsPreviewOpen(false);
-    router.push("/", { scroll: false });
+    setIsClosing(true);
+    setTimeout(() => {
+      router.push("/", { scroll: false });
+    }, 150);
   };
 
   return (
     <>
-      <Dialog open={isPreviewOpen}>
+      <Dialog
+        open={isPreviewOpen && !isClosing}
+        onOpenChange={open => {
+          if (!open) {
+            handleClose();
+          }
+        }}
+      >
         <DialogTrigger asChild>{children}</DialogTrigger>
         <DialogContent
           className="h-screen max-w-screen border-none bg-transparent shadow-none pt-12 pb-4 backdrop-filter backdrop-blur-[3px] flex justify-center items-center"
@@ -112,10 +116,7 @@ export default function QuickviewVideo({
               <div className="relative w-full">
                 <button
                   className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center gap-1 text-xs font-medium text-[#09090B] outline-none hover:bg-zinc-100 p-2 rounded"
-                  onClick={() => {
-                    setIsPreviewOpen(false);
-                    router.push("/", { scroll: false });
-                  }}
+                  onClick={handleClose}
                 >
                   <X className="w-4 h-4" />
                 </button>
