@@ -27,19 +27,66 @@ export function VideoPlayer() {
   const [sliderValue, setSliderValue] = useState(player.currentTime ?? 0);
   const justFinishedDragging = useRef(false);
 
+  const animationFrameRef = useRef<number | null>(null);
+  const lastPlayerTimeRef = useRef<number>(0);
+  const lastPlayerTimeUpdateRef = useRef<number>(0);
+
+  const animateSlider = () => {
+    const now = performance.now();
+    const elapsed = (now - (lastPlayerTimeUpdateRef.current ?? now)) / 1000;
+    let interpolatedTime = (lastPlayerTimeRef.current ?? 0) + elapsed;
+
+    interpolatedTime = Math.max(
+      0,
+      Math.min(interpolatedTime, player.duration ?? Infinity),
+    );
+
+    if (Math.abs(sliderValue - interpolatedTime) > 0.01) {
+      setSliderValue(interpolatedTime);
+    }
+
+    animationFrameRef.current = requestAnimationFrame(animateSlider);
+  };
+
   useEffect(() => {
     const playerTime = player.currentTime ?? 0;
 
-    if (justFinishedDragging.current) {
+    const cleanupAnimation = () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+        animationFrameRef.current = null;
+      }
+    };
+
+    lastPlayerTimeRef.current = playerTime;
+    lastPlayerTimeUpdateRef.current = performance.now();
+
+    if (isDragging) {
+      cleanupAnimation();
+    } else if (justFinishedDragging.current) {
       if (Math.abs(playerTime - sliderValue) < 0.1) {
         justFinishedDragging.current = false;
+        if (player.playing) {
+          if (!animationFrameRef.current) {
+            animationFrameRef.current = requestAnimationFrame(animateSlider);
+          }
+        } else {
+          setSliderValue(playerTime);
+        }
+      } else {
+        cleanupAnimation();
       }
-    } else if (!isDragging) {
-      if (Math.abs(sliderValue - playerTime) > 0.1) {
-        setSliderValue(playerTime);
+    } else if (player.playing) {
+      if (!animationFrameRef.current) {
+        animationFrameRef.current = requestAnimationFrame(animateSlider);
       }
+    } else {
+      cleanupAnimation();
+      setSliderValue(playerTime);
     }
-  }, [player.currentTime, isDragging, sliderValue]);
+
+    return cleanupAnimation;
+  }, [player.currentTime, player.playing, isDragging, sliderValue]);
 
   return (
     <div className="absolute left-0 right-0 bottom-0 translate-y-1/2 z-40">

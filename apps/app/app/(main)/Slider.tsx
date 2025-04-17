@@ -62,12 +62,6 @@ function Thumb(props: {
           thumbProps.onPointerDown?.(...args);
           props.onChangeStart?.();
         }}
-        className={clsx(
-          "h-4 rounded-full",
-          isFocusVisible || state.isThumbDragging(index)
-            ? "w-1.5 bg-slate-900"
-            : "w-1 bg-slate-700",
-        )}
       >
         <VisuallyHidden>
           <input ref={inputRef} {...mergeProps(inputProps, focusProps)} />
@@ -102,22 +96,25 @@ export function Slider(
           {props.label}
         </label>
       )}
-      <div
-        {...trackProps}
-        onMouseDown={(...args) => {
-          trackProps.onMouseDown?.(...args);
-          props.onChangeStart?.();
-        }}
-        onPointerDown={(...args) => {
-          trackProps.onPointerDown?.(...args);
-          props.onChangeStart?.();
-        }}
-        ref={trackRef}
-        className="relative w-full touch-none bg-slate-100 md:rounded-full"
-      >
+      <div className="relative w-full h-1 bg-slate-100 md:rounded-full">
+        <div
+          {...trackProps}
+          onMouseDown={(...args) => {
+            trackProps.onMouseDown?.(...args);
+            props.onChangeStart?.();
+          }}
+          onPointerDown={(...args) => {
+            trackProps.onPointerDown?.(...args);
+            props.onChangeStart?.();
+          }}
+          ref={trackRef}
+          className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-8 touch-none cursor-pointer"
+          aria-hidden="true"
+        />
         <div
           className={clsx(
-            "h-2 md:rounded-l-xl md:rounded-r-md",
+            "pointer-events-none",
+            "absolute inset-y-0 left-0 h-1 md:rounded-full",
             isFocusVisible || state.isThumbDragging(0)
               ? "bg-slate-900"
               : "bg-slate-700",
@@ -126,11 +123,7 @@ export function Slider(
             width:
               state.getThumbValue(0) === 0
                 ? 0
-                : `calc(${state.getThumbPercent(0) * 100}% - ${
-                    isFocusVisible || state.isThumbDragging(0)
-                      ? "0.3125rem"
-                      : "0.25rem"
-                  })`,
+                : `${state.getThumbPercent(0) * 100}%`,
           }}
         />
         <Thumb
