@@ -96,9 +96,7 @@ export function BentoGrids({ initialClips }: BentoGridsProps) {
           )}
         >
           Discover how others{" "}
-          <span className="font-playfair font-bold text-5xl sm:text-7xl">
-            daydream
-          </span>
+          <span className="font-semibold text-4xl sm:text-6xl">daydream</span>
         </p>
         <h2
           className={cn(
