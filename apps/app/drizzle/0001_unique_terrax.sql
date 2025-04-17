@@ -10,6 +10,7 @@ CREATE TABLE "clip_views" (
 CREATE TABLE "clips" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"video_url" text NOT NULL,
+	"video_title" text,
 	"thumbnail_url" text,
 	"author_user_id" text NOT NULL,
 	"source_clip_id" integer,
