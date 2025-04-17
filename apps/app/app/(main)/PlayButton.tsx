@@ -22,12 +22,12 @@ export function PlayButton({ player }: { player: PlayerAPI }) {
   return (
     <button
       type="button"
-      className="group relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-700 hover:bg-slate-900 focus:ring-2 focus:ring-slate-700 focus:ring-offset-2 focus:outline-none my-1 mx-1"
+      className="group relative flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-700 hover:bg-slate-900 focus:ring-2 focus:ring-slate-700 focus:ring-offset-2 focus:outline-none my-1 mx-1"
       onClick={() => player.toggle()}
       aria-label={player.playing ? "Pause" : "Play"}
     >
       <div className="absolute -inset-3 md:hidden" />
-      <Icon className="h-5 w-5 fill-white group-active:fill-white/80" />
+      <Icon className="h-3 w-3 fill-white group-active:fill-white/80" />
     </button>
   );
 }

@@ -78,7 +78,7 @@ function Thumb(props: {
 }
 
 export function Slider(
-  props: SliderStateOptions<Array<number>> & { onChangeStart?: () => void },
+  props: SliderStateOptions<number> & { onChangeStart?: () => void },
 ) {
   let trackRef = useRef<React.ElementRef<"div">>(null);
   let state = useSliderState(props);
@@ -95,7 +95,7 @@ export function Slider(
   return (
     <div
       {...groupProps}
-      className="relative inset-x-0 bottom-full flex flex-auto touch-none items-center gap-6"
+      className="relative inset-x-0 bottom-full flex flex-auto items-center gap-6"
     >
       {props.label && (
         <label className="sr-only" {...labelProps}>
@@ -113,7 +113,7 @@ export function Slider(
           props.onChangeStart?.();
         }}
         ref={trackRef}
-        className="relative w-full bg-slate-100 md:rounded-full"
+        className="relative w-full touch-none bg-slate-100 md:rounded-full"
       >
         <div
           className={clsx(

@@ -23,11 +23,28 @@ function formatHumanTime(seconds: number) {
 export function VideoPlayer() {
   let player = useVideoPlayer();
   let wasPlayingRef = useRef(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [sliderValue, setSliderValue] = useState(player.currentTime ?? 0);
+  const justFinishedDragging = useRef(false);
+
+  useEffect(() => {
+    const playerTime = player.currentTime ?? 0;
+
+    if (justFinishedDragging.current) {
+      if (Math.abs(playerTime - sliderValue) < 0.1) {
+        justFinishedDragging.current = false;
+      }
+    } else if (!isDragging) {
+      if (Math.abs(sliderValue - playerTime) > 0.1) {
+        setSliderValue(playerTime);
+      }
+    }
+  }, [player.currentTime, isDragging, sliderValue]);
 
   return (
     <div className="absolute left-0 right-0 bottom-0 translate-y-1/2 z-40">
       <div className="mb-[env(safe-area-inset-bottom)] flex flex-1 flex-col gap-3 overflow-hidden p-1">
-        <div className="flex justify-between gap-6 rounded-xl bg-white px-2 py-2 shadow-sm ring-1 shadow-slate-200/80 ring-slate-900/5 backdrop-blur-xs md:px-4">
+        <div className="flex justify-between gap-6 rounded-lg bg-white px-2 py-2 shadow-sm ring-1 shadow-slate-200/80 ring-slate-900/5 backdrop-blur-xs md:px-4">
           <div className="flex flex-none items-center gap-4">
             <PlayButton player={player} />
           </div>
@@ -35,18 +52,23 @@ export function VideoPlayer() {
             label="Current time"
             maxValue={player.duration}
             step={0.001}
-            value={[player.currentTime ?? 0]}
-            onChangeEnd={([value]) => {
+            value={sliderValue}
+            onChange={setSliderValue}
+            onChangeEnd={value => {
               player.seek(value);
+              setSliderValue(value);
+              setIsDragging(false);
+              justFinishedDragging.current = true;
               if (wasPlayingRef.current) {
                 player.play();
               }
             }}
-            numberFormatter={{ format: formatHumanTime } as Intl.NumberFormat}
             onChangeStart={() => {
+              setIsDragging(true);
               wasPlayingRef.current = player.playing;
               player.pause();
             }}
+            numberFormatter={{ format: formatHumanTime } as Intl.NumberFormat}
           />
           <div className="flex flex-none items-center gap-4">
             <MuteButton player={player} />
