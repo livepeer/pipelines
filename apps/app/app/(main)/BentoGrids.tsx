@@ -85,16 +85,16 @@ export function BentoGrids({ initialClips }: BentoGridsProps) {
           style={{
             backgroundImage: "url(/background.png)",
             maskImage:
-              "linear-gradient(to bottom, black 60%, transparent 100%)",
+              "linear-gradient(to bottom, black 60%, transparent 100%), linear-gradient(to right, black 80%, transparent 100%)",
             WebkitMaskImage:
-              "linear-gradient(to bottom, black 60%, transparent 100%)",
+              "linear-gradient(to bottom, black 60%, transparent 100%), linear-gradient(to right, black 80%, transparent 100%)",
           }}
-          className="w-full h-[70vh] mx-auto bg-cover bg-center opacity-75"
+          className="w-full h-[70vh] mx-auto bg-cover bg-center opacity-50"
         />
       </div>
 
       {/* Backdrop blur layer */}
-      <div className="fixed inset-0 backdrop-blur-lg z-0"></div>
+      <div className="fixed inset-0 backdrop-blur z-0"></div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-8 lg:px-12">
         <p
