@@ -142,7 +142,7 @@ export default function QuickviewVideo({
                       handleClose();
                     }}
                   >
-                    Create
+                    Start creating
                   </TrackedButton>
                 </Link>
               </div>
