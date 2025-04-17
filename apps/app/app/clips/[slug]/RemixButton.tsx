@@ -1,18 +1,20 @@
 "use client";
 
+import { Button } from "@repo/design-system/components/ui/button";
 import { cn } from "@repo/design-system/lib/utils";
 import { WandSparkles } from "lucide-react";
 
 export const RemixButton = () => {
   return (
-    <button
+    <Button
       className={cn(
-        "alwaysAnimatedButton flex items-center py-2 px-4 gap-2 font-medium cursor-pointer",
+        "flex items-center py-2 px-4 gap-2 font-medium cursor-pointer rounded-xl",
       )}
       onClick={e => e.stopPropagation()}
     >
-      <WandSparkles className="w-4 h-4" />
+      <WandSparkles className="size-1" />
+
       <span className="text-sm">Remix</span>
-    </button>
+    </Button>
   );
 };

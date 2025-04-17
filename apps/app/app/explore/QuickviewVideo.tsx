@@ -17,6 +17,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { VideoPlayer } from "./VideoPlayer";
 import { VideoProvider } from "./VideoProvider";
+import { Button } from "@repo/design-system/components/ui/button";
 
 const formatter = new Intl.DateTimeFormat("en-US", {
   month: "short",
@@ -82,7 +83,7 @@ export default function QuickviewVideo({
       <Dialog open={isPreviewOpen}>
         <DialogTrigger asChild>{children}</DialogTrigger>
         <DialogContent
-          className="h-screen max-w-screen border-none bg-transparent shadow-none pt-6 pb-4 backdrop-filter backdrop-blur-[3px] flex justify-center items-center"
+          className="h-screen max-w-screen border-none bg-transparent shadow-none pt-12 pb-4 backdrop-filter backdrop-blur-[3px] flex justify-center items-center"
           overlayClassName="bg-white sm:bg-[rgba(255,255,255,0.90)]"
           displayCloseButton={false}
           onClick={handleClose}
@@ -92,21 +93,22 @@ export default function QuickviewVideo({
           key={clipId}
         >
           <div className="absolute top-4 right-8 z-[999] cursor-pointer">
-            <button
+            <Button
               className={cn(
-                "alwaysAnimatedButton flex items-center py-2 px-4 gap-2 font-medium cursor-pointer",
+                "flex items-center py-2 px-4 gap-2 font-medium cursor-pointer rounded-xl",
               )}
               onClick={e => e.stopPropagation()}
             >
-              <WandSparkles className="w-4 h-4" />
+              <WandSparkles className="size-1" />
+
               <span className="text-sm">Remix</span>
-            </button>
+            </Button>
           </div>
           <div
             className="max-h-[90vh] max-w-2xl w-full"
             onClick={e => e.stopPropagation()}
           >
-            <DialogHeader className="space-y-8">
+            <DialogHeader className="space-y-12">
               <div className="relative w-full">
                 <button
                   className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center gap-1 text-xs font-medium text-[#09090B] outline-none hover:bg-zinc-100 p-2 rounded"
