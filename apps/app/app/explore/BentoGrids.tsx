@@ -3,6 +3,7 @@
 import { usePreviewStore } from "@/hooks/usePreviewStore";
 import { cn } from "@repo/design-system/lib/utils";
 import { useEffect, useRef } from "react";
+import { useSearchParams } from "next/navigation";
 import useClipsFetcher from "./hooks/useClipsFetcher";
 import LoadingSpinner from "./LoadingSpinner";
 import NoMoreClipsFooter from "./NoMoreClipsFooter";
@@ -26,6 +27,7 @@ interface BentoGridsProps {
     author_name: string | null;
     remix_count: number;
     slug: string | null;
+    priority: number | null;
   }>;
 }
 
@@ -34,6 +36,9 @@ export function BentoGrids({ initialClips }: BentoGridsProps) {
   const loadingRef = useRef<HTMLDivElement>(null);
   const initialFetchDone = useRef(false);
   const { isPreviewOpen } = usePreviewStore();
+
+  const searchParams = useSearchParams();
+  const isDebug = searchParams.has('debug');
 
   useEffect(() => {
     if (!initialFetchDone.current && initialClips.length === 0) {
@@ -103,6 +108,8 @@ export function BentoGrids({ initialClips }: BentoGridsProps) {
               ? GridSetConfiguration.first
               : GridSetConfiguration.second;
 
+          const baseIndex = groupIndex * 4;
+
           return (
             <GridSet
               key={groupIndex}
@@ -110,6 +117,7 @@ export function BentoGrids({ initialClips }: BentoGridsProps) {
               className={groupIndex === 0 ? "mt-10 sm:mt-16" : "mt-4"}
             >
               {group.map((clip, index) => {
+                const overallIndex = baseIndex + index;
                 return (
                   <GridItem
                     key={clip.id}
@@ -122,6 +130,8 @@ export function BentoGrids({ initialClips }: BentoGridsProps) {
                     createdAt={clip.created_at}
                     remixCount={clip.remix_count}
                     className={`${index % 2 === 0 ? "lg:row-span-2" : ""} cursor-pointer`}
+                    isDebug={isDebug}
+                    overallIndex={overallIndex}
                   />
                 );
               })}
@@ -148,7 +158,6 @@ export function BentoGrids({ initialClips }: BentoGridsProps) {
 }
 
 function GridItem({
-  key,
   clipId,
   src,
   prompt,
@@ -158,8 +167,9 @@ function GridItem({
   authorName,
   createdAt,
   remixCount,
+  isDebug,
+  overallIndex,
 }: {
-  key: string;
   clipId: string;
   src: string;
   prompt?: string;
@@ -169,6 +179,8 @@ function GridItem({
   authorName: string;
   createdAt: string;
   remixCount: number;
+  isDebug: boolean;
+  overallIndex: number;
 }) {
   return (
     <div
@@ -177,6 +189,12 @@ function GridItem({
         className,
       )}
     >
+      {isDebug && (
+        <div className="absolute top-1 left-1 z-40 bg-black/60 text-white text-xs font-mono px-1.5 py-0.5 rounded">
+          #{overallIndex + 1}
+        </div>
+      )}
+
       <div className="absolute inset-px rounded-xl loading-gradient z-0"></div>
       <div className="absolute inset-px rounded-xl backdrop-blur-[125px] z-10"></div>
       <div className="relative flex h-full flex-col overflow-hidden rounded-[calc(theme(borderRadius.xl)+1px)] z-20">
@@ -195,7 +213,6 @@ function GridItem({
   );
 }
 
-// TODO: More systematic grid confituration
 enum GridSetConfiguration {
   first = "lg:grid-cols-[9fr_5fr_6fr]",
   second = "lg:grid-cols-[5fr_6fr_9fr]",
