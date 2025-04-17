@@ -48,6 +48,7 @@ export default function Header() {
               className={cn(
                 "alwaysAnimatedButton",
                 isPreviewOpen && "opacity-0 pointer-events-none",
+                "px-8",
               )}
             >
               Create
