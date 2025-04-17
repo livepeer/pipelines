@@ -105,32 +105,11 @@ export default function QuickviewVideo({
             </Button>
           </div> */}
           <div
-            className="max-h-[90vh] max-w-2xl w-full"
+            className="max-h-[90vh] max-w-2xl w-full aspect-video max-w-[73vh]"
             onClick={e => e.stopPropagation()}
           >
             <DialogHeader className="space-y-12">
-              <div className="relative w-full">
-                <button
-                  className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center gap-1 text-xs font-medium text-[#09090B] outline-none hover:bg-zinc-100 p-2 rounded"
-                  onClick={() => {
-                    setIsPreviewOpen(false);
-                    router.push("/", { scroll: false });
-                  }}
-                >
-                  <X className="w-4 h-4" />
-                </button>
-
-                <div className="absolute right-1/2 translate-x-1/2 top-1/2 -translate-y-1/2">
-                  <div className="flex flex-col items-center gap-1 px-4">
-                    <div className="text-sm text-[#707070]">
-                      {formatter
-                        .format(new Date(createdAt))
-                        .replace(" at ", ", ")}
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="flex flex-row justify-between items-center p-2">
+              <div className="relative w-full flex justify-between items-center py-2 pl-2 pr-1">
                 <div className="flex items-center gap-2">
                   <div className="w-6 h-6 rounded-full bg-zinc-100 flex items-center justify-center">
                     <GradientAvatar
@@ -139,18 +118,31 @@ export default function QuickviewVideo({
                       className="h-6 w-6"
                     />
                   </div>
-                  <span className="text-xs font-medium text-[#09090B]">
-                    {authorName}
-                  </span>
+                  <div className="flex flex-col">
+                    <span className="text-xs font-medium text-[#09090B]">
+                      {authorName}
+                    </span>
+                    <div className="text-[10px] text-[#707070]">
+                      {formatter
+                        .format(new Date(createdAt))
+                        .replace(" at ", ", ")}
+                    </div>
+                  </div>
                 </div>
-                {/* <div className="flex items-center gap-1">
-                  <Repeat className="w-4 h-4 text-[#09090B]" />
-                  <span className="text-sm text-[#09090B]">{remixCount}</span>
-                </div> */}
+
+                <button
+                  className="flex items-center gap-1 text-xs font-medium text-[#09090B] outline-none hover:bg-zinc-100 p-2 rounded"
+                  onClick={() => {
+                    setIsPreviewOpen(false);
+                    router.push("/", { scroll: false });
+                  }}
+                >
+                  <X className="w-4 h-4" />
+                </button>
               </div>
             </DialogHeader>
 
-            <div className="w-full h-fit relative mt-4">
+            <div className="w-full h-fit relative mt-2">
               <VideoProvider src={src}>
                 <div className="relative w-full">
                   <VideoPlayer />
@@ -160,7 +152,7 @@ export default function QuickviewVideo({
 
             <DialogFooter className="mt-6">
               <div className="w-[70%] mt-6 mx-auto">
-                <p className="text-xs font-normal text-[#707070] text-center">
+                <p className="text-xs font-normal text-[#707070] text-center line-clamp-2">
                   {prompt || "No prompt available"}
                 </p>
               </div>
