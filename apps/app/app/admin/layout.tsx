@@ -77,6 +77,7 @@ function AdminSidebar({ email }: { email: string | null | undefined }) {
     { name: "Pipelines", path: "/admin/pipelines" },
     { name: "Clips", path: "/admin/clips" },
     { name: "Users", path: "/admin/users" },
+    { name: "Tools", path: "/admin/tools" },
   ];
 
   return (
