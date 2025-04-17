@@ -14,7 +14,7 @@ export default function Header() {
   const menuItems = [
     {
       label: "Explore",
-      href: "/explore",
+      href: "/",
     },
     {
       label: "Learn",
