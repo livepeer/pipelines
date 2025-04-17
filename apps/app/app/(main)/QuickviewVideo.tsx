@@ -143,10 +143,10 @@ export default function QuickviewVideo({
                     {authorName}
                   </span>
                 </div>
-                <div className="flex items-center gap-1">
+                {/* <div className="flex items-center gap-1">
                   <Repeat className="w-4 h-4 text-[#09090B]" />
                   <span className="text-sm text-[#09090B]">{remixCount}</span>
-                </div>
+                </div> */}
               </div>
             </DialogHeader>
 

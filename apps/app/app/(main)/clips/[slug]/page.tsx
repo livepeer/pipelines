@@ -1,4 +1,4 @@
-import QuickviewVideo from "@/app/explore/QuickviewVideo";
+import QuickviewVideo from "@/app/(main)/QuickviewVideo";
 import { db } from "@/lib/db";
 import {
   clipSlugs as clipSlugsTable,
@@ -17,7 +17,7 @@ async function getClipBySlug(slug: string) {
       created_at: clipsTable.created_at,
       prompt: clipsTable.prompt,
       remix_count: sql<number>`(
-          SELECT count(*) 
+          SELECT count(*)
           FROM ${clipsTable} AS remixed_clips
           WHERE remixed_clips.source_clip_id = ${clipsTable.id}
         )`.mapWith(Number),
