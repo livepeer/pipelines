@@ -1,3 +1,4 @@
+import { GradientAvatar } from "@/components/GradientAvatar";
 import { usePreviewStore } from "@/hooks/usePreviewStore";
 import { hash } from "@/lib/hash";
 import { cn } from "@repo/design-system/lib/utils";
@@ -108,10 +109,7 @@ export default function OptimizedVideo({
               )}
             />
             <div className="absolute bottom-3 left-3 p-0 z-10 flex gap-2 items-center">
-              <img
-                src={`https://picsum.photos/id/${hash(authorName)}/200/200`}
-                className="w-6 h-6 rounded-full"
-              />
+              <GradientAvatar seed={authorName} size={24} className="h-6 w-6" />
               <span className="text-white text-[0.64rem] bg-black/20 backdrop-blur-sm px-2 py-1 rounded-lg">
                 {authorName}
               </span>

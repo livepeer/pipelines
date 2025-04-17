@@ -1,5 +1,6 @@
 "use client";
 
+import { GradientAvatar } from "@/components/GradientAvatar";
 import { usePreviewStore } from "@/hooks/usePreviewStore";
 import { handleSessionId } from "@/lib/analytics/mixpanel";
 import { getAccessToken } from "@privy-io/react-auth";
@@ -11,7 +12,7 @@ import {
   DialogTrigger,
 } from "@repo/design-system/components/ui/dialog";
 import { cn } from "@repo/design-system/lib/utils";
-import { Repeat, User2, WandSparkles, X } from "lucide-react";
+import { Repeat, WandSparkles, X } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { VideoPlayer } from "./VideoPlayer";
@@ -130,7 +131,11 @@ export default function QuickviewVideo({
               <div className="flex flex-row justify-between items-center p-2">
                 <div className="flex items-center gap-2">
                   <div className="w-6 h-6 rounded-full bg-zinc-100 flex items-center justify-center">
-                    <User2 className="w-4 h-4 text-[#09090B]" />
+                    <GradientAvatar
+                      seed={authorName}
+                      size={24}
+                      className="h-6 w-6"
+                    />
                   </div>
                   <span className="text-xs font-medium text-[#09090B]">
                     {authorName}
