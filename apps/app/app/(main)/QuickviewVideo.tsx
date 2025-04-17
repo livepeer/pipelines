@@ -105,7 +105,7 @@ export default function QuickviewVideo({
             </Button>
           </div> */}
           <div
-            className="max-h-[90vh] max-w-2xl w-full"
+            className="max-h-[90vh] max-w-2xl w-full aspect-video max-w-[73vh]"
             onClick={e => e.stopPropagation()}
           >
             <DialogHeader className="space-y-12">
@@ -152,7 +152,7 @@ export default function QuickviewVideo({
 
             <DialogFooter className="mt-6">
               <div className="w-[70%] mt-6 mx-auto">
-                <p className="text-xs font-normal text-[#707070] text-center">
+                <p className="text-xs font-normal text-[#707070] text-center line-clamp-2">
                   {prompt || "No prompt available"}
                 </p>
               </div>
