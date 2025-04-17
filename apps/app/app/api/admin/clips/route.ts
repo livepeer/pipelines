@@ -18,7 +18,7 @@ type AdminFetchedClip = {
   author: {
     id: string;
     name: string | null;
-  } | null; 
+  } | null;
 };
 
 export async function GET(request: Request) {
@@ -30,21 +30,21 @@ export async function GET(request: Request) {
     }
 
     const selectFields = {
-        id: clipsTable.id,
-        video_url: clipsTable.video_url,
-        video_title: clipsTable.video_title,
-        thumbnail_url: clipsTable.thumbnail_url,
-        author_user_id: clipsTable.author_user_id,
-        source_clip_id: clipsTable.source_clip_id,
-        prompt: clipsTable.prompt,
-        priority: clipsTable.priority,
-        created_at: clipsTable.created_at,
-        deleted_at: clipsTable.deleted_at,
-        author: {
-          id: users.id,
-          name: users.name,
-        },
-      };
+      id: clipsTable.id,
+      video_url: clipsTable.video_url,
+      video_title: clipsTable.video_title,
+      thumbnail_url: clipsTable.thumbnail_url,
+      author_user_id: clipsTable.author_user_id,
+      source_clip_id: clipsTable.source_clip_id,
+      prompt: clipsTable.prompt,
+      priority: clipsTable.priority,
+      created_at: clipsTable.created_at,
+      deleted_at: clipsTable.deleted_at,
+      author: {
+        id: users.id,
+        name: users.name,
+      },
+    };
 
     const prioritizedClips = (await db
       .select(selectFields)
@@ -70,35 +70,48 @@ export async function GET(request: Request) {
         if (position > maxPriority) {
           maxPriority = position;
         }
-         if (priorityMap.has(position)) {
-           console.warn(`[Admin API] Duplicate priority ${position} found for clips ${priorityMap.get(position)?.id} and ${clip.id}. Using clip ${clip.id}.`);
+        if (priorityMap.has(position)) {
+          console.warn(
+            `[Admin API] Duplicate priority ${position} found for clips ${priorityMap.get(position)?.id} and ${clip.id}. Using clip ${clip.id}.`,
+          );
         }
         priorityMap.set(position, clip);
       } else {
-         console.warn(`[Admin API] Clip ${clip.id} has invalid priority: ${clip.priority}. Ignoring priority.`);
-         nonPrioritizedClips.push(clip);
-         nonPrioritizedClips.sort((a, b) => a.created_at.getTime() - b.created_at.getTime());
+        console.warn(
+          `[Admin API] Clip ${clip.id} has invalid priority: ${clip.priority}. Ignoring priority.`,
+        );
+        nonPrioritizedClips.push(clip);
+        nonPrioritizedClips.sort(
+          (a, b) => a.created_at.getTime() - b.created_at.getTime(),
+        );
       }
     }
 
-    const initialLength = Math.max(maxPriority, nonPrioritizedClips.length + priorityMap.size)
+    const initialLength = Math.max(
+      maxPriority,
+      nonPrioritizedClips.length + priorityMap.size,
+    );
     for (let i = 0; i < initialLength; i++) {
-       finalClips[i] = null
+      finalClips[i] = null;
     }
 
-     for (const [position, clip] of priorityMap.entries()) {
-        if(position -1 >= 0) {
-             if (position - 1 >= finalClips.length) {
-                 for (let k = finalClips.length; k <= position - 1; k++) {
-                     finalClips[k] = null;
-                 }
-             }
-             finalClips[position - 1] = clip;
+    for (const [position, clip] of priorityMap.entries()) {
+      if (position - 1 >= 0) {
+        if (position - 1 >= finalClips.length) {
+          for (let k = finalClips.length; k <= position - 1; k++) {
+            finalClips[k] = null;
+          }
         }
+        finalClips[position - 1] = clip;
+      }
     }
 
     let nonPrioritizedIndex = 0;
-    for (let i = 0; i < finalClips.length && nonPrioritizedIndex < nonPrioritizedClips.length; i++) {
+    for (
+      let i = 0;
+      i < finalClips.length && nonPrioritizedIndex < nonPrioritizedClips.length;
+      i++
+    ) {
       if (finalClips[i] === null) {
         finalClips[i] = nonPrioritizedClips[nonPrioritizedIndex++];
       }
@@ -108,7 +121,9 @@ export async function GET(request: Request) {
       finalClips.push(nonPrioritizedClips[nonPrioritizedIndex++]);
     }
 
-    const finalNonNullClips = finalClips.filter(clip => clip !== null) as AdminFetchedClip[];
+    const finalNonNullClips = finalClips.filter(
+      clip => clip !== null,
+    ) as AdminFetchedClip[];
 
     return NextResponse.json(finalNonNullClips);
   } catch (error) {

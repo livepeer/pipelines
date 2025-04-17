@@ -15,7 +15,7 @@ type FetchedClip = {
   author_name: string | null;
   remix_count: number;
   slug: string | null;
-  priority: number | null; 
+  priority: number | null;
 };
 
 export async function GET(request: Request) {
@@ -23,7 +23,7 @@ export async function GET(request: Request) {
   const page = Number(searchParams.get("page") || "0");
   const limit = Number(searchParams.get("limit") || "12");
 
-  if (limit > 100 || limit <= 0) { 
+  if (limit > 100 || limit <= 0) {
     return NextResponse.json(
       {
         error: "Limit must be between 1 and 100",
@@ -32,7 +32,7 @@ export async function GET(request: Request) {
     );
   }
 
-  if (page < 0) { 
+  if (page < 0) {
     return NextResponse.json(
       { error: "Page cannot be negative" },
       { status: 400 },
@@ -54,7 +54,7 @@ export async function GET(request: Request) {
             WHERE derived_clips.source_clip_id = ${clipsTable.id}
           )`.mapWith(Number),
       slug: clipSlugsTable.slug,
-      priority: clipsTable.priority, 
+      priority: clipsTable.priority,
     };
 
     const prioritizedClips = (await db
@@ -62,16 +62,16 @@ export async function GET(request: Request) {
       .from(clipsTable)
       .innerJoin(usersTable, eq(clipsTable.author_user_id, usersTable.id))
       .leftJoin(clipSlugsTable, eq(clipsTable.id, clipSlugsTable.clip_id))
-      .where(and(isNull(clipsTable.deleted_at), isNotNull(clipsTable.priority))) 
-      .orderBy(asc(clipsTable.priority))) as FetchedClip[]; 
+      .where(and(isNull(clipsTable.deleted_at), isNotNull(clipsTable.priority)))
+      .orderBy(asc(clipsTable.priority))) as FetchedClip[];
 
     const nonPrioritizedClips = (await db
       .select(selectFields)
       .from(clipsTable)
       .innerJoin(usersTable, eq(clipsTable.author_user_id, usersTable.id))
       .leftJoin(clipSlugsTable, eq(clipsTable.id, clipSlugsTable.clip_id))
-      .where(and(isNull(clipsTable.deleted_at), isNull(clipsTable.priority))) 
-      .orderBy(asc(clipsTable.created_at))) as FetchedClip[]; 
+      .where(and(isNull(clipsTable.deleted_at), isNull(clipsTable.priority)))
+      .orderBy(asc(clipsTable.created_at))) as FetchedClip[];
 
     const finalClips: (FetchedClip | null)[] = [];
     const priorityMap = new Map<number, FetchedClip>();
@@ -84,38 +84,47 @@ export async function GET(request: Request) {
           maxPriority = position;
         }
         if (priorityMap.has(position)) {
-           console.warn(`Duplicate priority ${position} found for clips ${priorityMap.get(position)?.id} and ${clip.id}. Using clip ${clip.id}.`);
+          console.warn(
+            `Duplicate priority ${position} found for clips ${priorityMap.get(position)?.id} and ${clip.id}. Using clip ${clip.id}.`,
+          );
         }
         priorityMap.set(position, clip);
       } else {
-        console.warn(`Clip ${clip.id} has invalid priority: ${clip.priority}. Ignoring priority.`);
+        console.warn(
+          `Clip ${clip.id} has invalid priority: ${clip.priority}. Ignoring priority.`,
+        );
         nonPrioritizedClips.push(clip);
-        nonPrioritizedClips.sort((a, b) => a.created_at.getTime() - b.created_at.getTime());
-
+        nonPrioritizedClips.sort(
+          (a, b) => a.created_at.getTime() - b.created_at.getTime(),
+        );
       }
     }
 
-
-    const initialLength = Math.max(maxPriority, nonPrioritizedClips.length + priorityMap.size)
+    const initialLength = Math.max(
+      maxPriority,
+      nonPrioritizedClips.length + priorityMap.size,
+    );
     for (let i = 0; i < initialLength; i++) {
-       finalClips[i] = null 
+      finalClips[i] = null;
     }
-
 
     for (const [position, clip] of priorityMap.entries()) {
-        if(position -1 >= 0) { 
-             if (position - 1 >= finalClips.length) {
-                 for (let k = finalClips.length; k <= position - 1; k++) {
-                     finalClips[k] = null;
-                 }
-             }
-             finalClips[position - 1] = clip;
+      if (position - 1 >= 0) {
+        if (position - 1 >= finalClips.length) {
+          for (let k = finalClips.length; k <= position - 1; k++) {
+            finalClips[k] = null;
+          }
         }
+        finalClips[position - 1] = clip;
+      }
     }
 
-
     let nonPrioritizedIndex = 0;
-    for (let i = 0; i < finalClips.length && nonPrioritizedIndex < nonPrioritizedClips.length; i++) {
+    for (
+      let i = 0;
+      i < finalClips.length && nonPrioritizedIndex < nonPrioritizedClips.length;
+      i++
+    ) {
       if (finalClips[i] === null) {
         finalClips[i] = nonPrioritizedClips[nonPrioritizedIndex++];
       }
@@ -125,7 +134,9 @@ export async function GET(request: Request) {
       finalClips.push(nonPrioritizedClips[nonPrioritizedIndex++]);
     }
 
-    const finalNonNullClips = finalClips.filter(clip => clip !== null) as FetchedClip[];
+    const finalNonNullClips = finalClips.filter(
+      clip => clip !== null,
+    ) as FetchedClip[];
 
     const paginatedClips = finalNonNullClips.slice(offset, offset + limit);
 

@@ -76,17 +76,25 @@ export default function ClipsAdminPage() {
   const handleSaveClip = async (
     updatedClip: Partial<Clip> & { id: number },
   ) => {
-    if (updatedClip.priority !== null && updatedClip.priority !== undefined && updatedClip.priority > 0) {
+    if (
+      updatedClip.priority !== null &&
+      updatedClip.priority !== undefined &&
+      updatedClip.priority > 0
+    ) {
       const conflictingClip = clips.find(
         c => c.id !== updatedClip.id && c.priority === updatedClip.priority,
       );
 
       if (conflictingClip) {
-         throw new Error(
-            `Priority ${updatedClip.priority} is already assigned to Clip #${conflictingClip.id} ("${conflictingClip.prompt?.substring(0, 30)}..."). Please choose a different priority or remove it from the other clip first.`
-         );
+        throw new Error(
+          `Priority ${updatedClip.priority} is already assigned to Clip #${conflictingClip.id} ("${conflictingClip.prompt?.substring(0, 30)}..."). Please choose a different priority or remove it from the other clip first.`,
+        );
       }
-    } else if (updatedClip.priority !== null && updatedClip.priority !== undefined && updatedClip.priority <= 0) {
+    } else if (
+      updatedClip.priority !== null &&
+      updatedClip.priority !== undefined &&
+      updatedClip.priority <= 0
+    ) {
       throw new Error("Priority must be a positive number.");
     }
 
@@ -135,14 +143,13 @@ export default function ClipsAdminPage() {
       if (!response.ok) {
         const errorData = await response.json();
         console.error("Clip update error:", errorData);
-        throw new Error(errorData.error || "Failed to update clip"); 
+        throw new Error(errorData.error || "Failed to update clip");
       }
 
       await fetchClips();
-
     } catch (err) {
       console.error("Error in handleSaveClip:", err);
-      throw err; 
+      throw err;
     }
   };
 

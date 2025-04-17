@@ -38,7 +38,7 @@ export function BentoGrids({ initialClips }: BentoGridsProps) {
   const { isPreviewOpen } = usePreviewStore();
 
   const searchParams = useSearchParams();
-  const isDebug = searchParams.has('debug');
+  const isDebug = searchParams.has("debug");
 
   useEffect(() => {
     if (!initialFetchDone.current && initialClips.length === 0) {
