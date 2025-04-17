@@ -5,12 +5,30 @@ import { TrackedButton } from "@/components/analytics/TrackedButton";
 import { usePreviewStore } from "@/hooks/usePreviewStore";
 import { cn } from "@repo/design-system/lib/utils";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 export default function Header() {
   const { isPreviewOpen } = usePreviewStore();
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 0);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
 
   return (
-    <header className="bg-transparent sticky top-0 z-50 backdrop-filter backdrop-blur-xl bg-opacity-50">
+    <header
+      className={cn(
+        "bg-transparent sticky top-0 z-50 transition-colors duration-300 ease-in-out",
+        scrolled && "backdrop-filter backdrop-blur-xl bg-opacity-50",
+      )}
+    >
       <nav
         aria-label="Global"
         className="mx-auto flex items-center justify-between py-4 px-6 lg:px-8"
