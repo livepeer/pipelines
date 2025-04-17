@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useState, useRef, ChangeEvent, useEffect } from 'react';
+import { useState, useRef, ChangeEvent, useEffect } from "react";
 
 export default function ClipPreviewGeneratorPage() {
   const [videoSrc, setVideoSrc] = useState<string | null>(null);
@@ -14,7 +14,7 @@ export default function ClipPreviewGeneratorPage() {
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file && file.type === 'video/mp4') {
+    if (file && file.type === "video/mp4") {
       setDownloadUrl(null);
       setOriginalFileName(file.name);
       const url = URL.createObjectURL(file);
@@ -24,14 +24,14 @@ export default function ClipPreviewGeneratorPage() {
       }
       setVideoSrc(url);
     } else {
-      alert('Please select an MP4 file.');
+      alert("Please select an MP4 file.");
       setVideoSrc(null);
       setOriginalFileName(null);
-      event.target.value = ''; // Reset file input
+      event.target.value = ""; // Reset file input
       // Revoke URL if a non-MP4 file was previously selected
       if (videoSrc) {
-         URL.revokeObjectURL(videoSrc);
-         setVideoSrc(null);
+        URL.revokeObjectURL(videoSrc);
+        setVideoSrc(null);
       }
     }
   };
@@ -43,7 +43,7 @@ export default function ClipPreviewGeneratorPage() {
     return () => {
       if (currentVideoSrc) {
         URL.revokeObjectURL(currentVideoSrc);
-        console.log('Revoked object URL:', currentVideoSrc);
+        console.log("Revoked object URL:", currentVideoSrc);
       }
     };
   }, [videoSrc]); // Rerun cleanup logic if videoSrc changes
@@ -68,30 +68,42 @@ export default function ClipPreviewGeneratorPage() {
         if (originalWidth && originalHeight) {
           const targetWidth = Math.round(originalWidth * 0.33);
           const targetHeight = Math.round(originalHeight * 0.33);
-          console.log(`Attempting to constrain video track to ${targetWidth}x${targetHeight}`);
+          console.log(
+            `Attempting to constrain video track to ${targetWidth}x${targetHeight}`,
+          );
           try {
-             await videoTrack.applyConstraints({ width: targetWidth, height: targetHeight });
-             console.log('Successfully applied constraints.');
+            await videoTrack.applyConstraints({
+              width: targetWidth,
+              height: targetHeight,
+            });
+            console.log("Successfully applied constraints.");
           } catch (constraintError) {
-            console.warn('Could not apply resolution constraints:', constraintError);
+            console.warn(
+              "Could not apply resolution constraints:",
+              constraintError,
+            );
           }
         } else {
-           console.warn('Could not get original video dimensions to apply constraints.');
+          console.warn(
+            "Could not get original video dimensions to apply constraints.",
+          );
         }
       } else {
-         console.warn('Could not get video track from stream.');
+        console.warn("Could not get video track from stream.");
       }
 
-      mediaRecorderRef.current = new MediaRecorder(stream, { mimeType: 'video/mp4' });
+      mediaRecorderRef.current = new MediaRecorder(stream, {
+        mimeType: "video/mp4",
+      });
 
-      mediaRecorderRef.current.ondataavailable = (event) => {
+      mediaRecorderRef.current.ondataavailable = event => {
         if (event.data.size > 0) {
           recordedChunksRef.current.push(event.data);
         }
       };
 
       mediaRecorderRef.current.onstop = () => {
-        const blob = new Blob(recordedChunksRef.current, { type: 'video/mp4' });
+        const blob = new Blob(recordedChunksRef.current, { type: "video/mp4" });
         const url = URL.createObjectURL(blob);
         setDownloadUrl(url);
         setIsRecording(false);
@@ -106,32 +118,39 @@ export default function ClipPreviewGeneratorPage() {
 
       // Stop recording after 4 seconds
       setTimeout(() => {
-        if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+        if (
+          mediaRecorderRef.current &&
+          mediaRecorderRef.current.state === "recording"
+        ) {
           mediaRecorderRef.current.stop();
         }
       }, 4000);
-
     } catch (error) {
-      console.error('Error generating preview:', error);
-      alert('Failed to generate preview. Check console for details.');
+      console.error("Error generating preview:", error);
+      alert("Failed to generate preview. Check console for details.");
       setIsRecording(false);
       setIsProcessing(false);
     }
   };
 
   const getDownloadFileName = () => {
-    if (!originalFileName) return 'preview-short.mp4';
-    const nameWithoutExtension = originalFileName.replace(/\.mp4$/i, '');
+    if (!originalFileName) return "preview-short.mp4";
+    const nameWithoutExtension = originalFileName.replace(/\.mp4$/i, "");
     return `${nameWithoutExtension}-short.mp4`;
-  }
+  };
 
   return (
     <div>
       <h1 className="text-2xl font-bold mb-4">Clip Preview Generator</h1>
-      <p className="mb-6 text-gray-600">Upload an MP4 file, preview it, and generate a 5-second preview clip.</p>
+      <p className="mb-6 text-gray-600">
+        Upload an MP4 file, preview it, and generate a 5-second preview clip.
+      </p>
 
       <div className="bg-white p-6 rounded-lg shadow mb-6">
-        <label htmlFor="video-upload" className="block text-sm font-medium text-gray-700 mb-2">
+        <label
+          htmlFor="video-upload"
+          className="block text-sm font-medium text-gray-700 mb-2"
+        >
           Select MP4 File
         </label>
         <input
@@ -160,24 +179,42 @@ export default function ClipPreviewGeneratorPage() {
           >
             {isProcessing ? (
               <>
-                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                <svg
+                  className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
                 </svg>
-                {isRecording ? 'Recording...' : 'Processing...'}
+                {isRecording ? "Recording..." : "Processing..."}
               </>
             ) : (
-              'Generate Preview (5 seconds)'
+              "Generate Preview (5 seconds)"
             )}
           </button>
         </div>
       )}
 
       {downloadUrl && (
-         <div className="bg-white p-6 rounded-lg shadow">
+        <div className="bg-white p-6 rounded-lg shadow">
           <h2 className="text-lg font-semibold mb-4">Preview Ready</h2>
-          <p className="text-sm text-gray-600 mb-4">Your 5-second preview clip is ready for download.</p>
-           <a
+          <p className="text-sm text-gray-600 mb-4">
+            Your 5-second preview clip is ready for download.
+          </p>
+          <a
             href={downloadUrl}
             download={getDownloadFileName()}
             className="inline-flex items-center px-4 py-2 bg-green-600 text-white font-medium rounded-md hover:bg-green-700"
@@ -188,4 +225,4 @@ export default function ClipPreviewGeneratorPage() {
       )}
     </div>
   );
-} 
+}
