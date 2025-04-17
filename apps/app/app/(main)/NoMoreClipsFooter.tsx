@@ -42,7 +42,7 @@ export default function NoMoreClipsFooter() {
         </h2>
 
         <p className="text-center text-base/7 font-light text-zinc-500 max-w-lg mx-auto mt-6 leading-[135%] relative z-10">
-          To see more dreamscapes create a free account
+          Your adventure awaits
         </p>
 
         <Link href="/create" className="relative z-10 mt-8">

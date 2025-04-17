@@ -131,7 +131,7 @@ export default function WelcomeScreen() {
               </h1>
 
               <p className="font-playfair font-semibold text-[18px] sm:text-xl md:text-2xl text-[#1C1C1C]">
-                ✨ Dream it. Build it. Share it.
+                ✨ Explore a world where imagination becomes reality
               </p>
             </div>
 
