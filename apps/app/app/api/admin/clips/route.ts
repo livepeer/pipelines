@@ -16,6 +16,7 @@ export async function GET(request: Request) {
       .select({
         id: clipsTable.id,
         video_url: clipsTable.video_url,
+        video_title: clipsTable.video_title,
         thumbnail_url: clipsTable.thumbnail_url,
         author_user_id: clipsTable.author_user_id,
         source_clip_id: clipsTable.source_clip_id,

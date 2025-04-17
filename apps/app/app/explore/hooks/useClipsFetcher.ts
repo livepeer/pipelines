@@ -3,7 +3,11 @@ import { useCallback, useState } from "react";
 export type Clip = {
   id: string;
   video_url: string;
+  video_title: string | null;
   created_at: string;
+  author_name: string | null;
+  remix_count: number;
+  slug: string | null;
 };
 
 export default function useClipsFetcher(initialClips: Clip[] = []) {
@@ -27,7 +31,11 @@ export default function useClipsFetcher(initialClips: Clip[] = []) {
           (clip: {
             id: number | string;
             video_url: string;
+            video_title?: string;
             created_at?: string | Date;
+            author_name?: string | null;
+            remix_count: number;
+            slug: string | null;
             [key: string]: any;
           }) => ({
             ...clip,
@@ -35,6 +43,11 @@ export default function useClipsFetcher(initialClips: Clip[] = []) {
             created_at: clip.created_at
               ? new Date(clip.created_at).toISOString()
               : new Date().toISOString(),
+            video_title: clip.video_title,
+            video_url: clip.video_url,
+            author_name: clip.author_name || null,
+            remix_count: clip.remix_count,
+            slug: clip.slug,
           }),
         );
 

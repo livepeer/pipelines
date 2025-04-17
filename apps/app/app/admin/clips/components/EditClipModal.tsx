@@ -24,6 +24,7 @@ export default function EditClipModal({
       setFormData({
         id: clip.id,
         video_url: clip.video_url,
+        video_title: clip.video_title,
         thumbnail_url: clip.thumbnail_url,
         author_user_id: clip.author_user_id,
         source_clip_id: clip.source_clip_id,
