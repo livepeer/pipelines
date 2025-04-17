@@ -78,5 +78,6 @@ export default function useClipsFetcher(initialClips: Clip[] = []) {
     loading,
     hasMore,
     fetchClips,
+    page,
   };
 }
