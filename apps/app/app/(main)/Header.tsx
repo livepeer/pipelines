@@ -40,17 +40,19 @@ export default function Header() {
           </a>
         </div>
         <div className="flex flex-1 justify-end">
-          <TrackedButton
-            trackingEvent="explore_header_start_creating_clicked"
-            trackingProperties={{ location: "explore_header" }}
-            variant="outline"
-            className={cn(
-              "alwaysAnimatedButton",
-              isPreviewOpen && "opacity-0 pointer-events-none",
-            )}
-          >
-            Create
-          </TrackedButton>
+          <Link href="/create">
+            <TrackedButton
+              trackingEvent="explore_header_start_creating_clicked"
+              trackingProperties={{ location: "explore_header" }}
+              variant="outline"
+              className={cn(
+                "alwaysAnimatedButton",
+                isPreviewOpen && "opacity-0 pointer-events-none",
+              )}
+            >
+              Create
+            </TrackedButton>
+          </Link>
         </div>
       </nav>
     </header>
