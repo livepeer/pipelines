@@ -79,16 +79,24 @@ export function BentoGrids({ initialClips }: BentoGridsProps) {
     <div className="bg-transparent py-8 z-10">
       <div
         aria-hidden="true"
-        className="fixed inset-x-0 -top-40 -z-10 transform-gpu overflow-hidden blur-3xl sm:-top-60"
+        className="fixed inset-x-0 -top-40 -z-10 transform-gpu overflow-hidden sm:-top-60"
       >
         <div
           style={{
             backgroundImage: "url(/background.png)",
+            maskImage:
+              "linear-gradient(to bottom, black 60%, transparent 100%)",
+            WebkitMaskImage:
+              "linear-gradient(to bottom, black 60%, transparent 100%)",
           }}
-          className="w-[90vw] h-[50vh] mx-auto bg-cover bg-center opacity-40"
+          className="w-full h-[70vh] mx-auto bg-cover bg-center opacity-50"
         />
       </div>
-      <div className="max-w-7xl mx-auto px-8 lg:px-12">
+
+      {/* Backdrop blur layer */}
+      <div className="fixed inset-0 backdrop-blur z-0"></div>
+
+      <div className="relative z-10 max-w-7xl mx-auto px-8 lg:px-12">
         <p
           className={cn(
             "mx-auto mt-2 max-w-lg text-balance text-center text-4xl font-extralight tracking-tight text-gray-950 sm:text-6xl",
