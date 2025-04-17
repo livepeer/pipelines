@@ -45,7 +45,7 @@ export default function NoMoreClipsFooter() {
           To see more dreamscapes create a free account
         </p>
 
-        <Link href="/" className="relative z-10 mt-8">
+        <Link href="/create" className="relative z-10 mt-8">
           <Button
             variant="outline"
             className="alwaysAnimatedButton"
