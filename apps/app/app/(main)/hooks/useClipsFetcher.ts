@@ -9,6 +9,7 @@ export type Clip = {
   author_name: string | null;
   remix_count: number;
   slug: string | null;
+  priority: number | null;
 };
 
 export default function useClipsFetcher(initialClips: Clip[] = []) {

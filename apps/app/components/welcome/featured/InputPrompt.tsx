@@ -173,11 +173,20 @@ export const InputPrompt = () => {
               key={i}
               className={
                 part.isCommand && part.isValid
-                  ? "text-green-500 font-medium"
+                  ? "text-green-500"
                   : part.isValue && part.isValidCommand
-                    ? "text-foreground font-bold"
+                    ? "text-foreground"
                     : ""
               }
+              style={{
+                ...((part.isCommand && part.isValid) ||
+                (part.isValue && part.isValidCommand)
+                  ? {
+                      textShadow:
+                        "0 0 0.8px currentColor, 0 0 0.8px currentColor",
+                    }
+                  : {}),
+              }}
             >
               {part.text}
             </span>
