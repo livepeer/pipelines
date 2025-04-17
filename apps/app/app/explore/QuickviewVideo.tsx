@@ -6,6 +6,7 @@ import { getAccessToken } from "@privy-io/react-auth";
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTrigger,
 } from "@repo/design-system/components/ui/dialog";
@@ -28,6 +29,7 @@ interface QuickviewVideoProps {
   children: React.ReactNode;
   clipId: string;
   src: string;
+  prompt?: string;
   title: string;
   createdAt: string;
   authorName: string;
@@ -38,6 +40,7 @@ export default function QuickviewVideo({
   children,
   clipId,
   src,
+  prompt,
   title,
   authorName,
   createdAt,
@@ -105,7 +108,7 @@ export default function QuickviewVideo({
             <DialogHeader className="space-y-8">
               <div className="relative w-full">
                 <button
-                  className="absolute right-0 -translate-y-1/2 flex items-center gap-1 text-xs font-medium text-[#09090B] outline-none hover:bg-zinc-100 p-2 rounded"
+                  className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center gap-1 text-xs font-medium text-[#09090B] outline-none hover:bg-zinc-100 p-2 rounded"
                   onClick={() => {
                     setIsPreviewOpen(false);
                     router.push("/explore", { scroll: false });
@@ -114,12 +117,13 @@ export default function QuickviewVideo({
                   <X className="w-4 h-4" />
                 </button>
 
-                <div className="flex flex-col items-center gap-1 py-2 px-4">
-                  <h2 className="text-2xl font-bold text-[#232323]">{title}</h2>
-                  <div className="text-sm text-[#707070]">
-                    {formatter
-                      .format(new Date(createdAt))
-                      .replace(" at ", ", ")}
+                <div className="absolute right-1/2 translate-x-1/2 top-1/2 -translate-y-1/2">
+                  <div className="flex flex-col items-center gap-1 px-4">
+                    <div className="text-sm text-[#707070]">
+                      {formatter
+                        .format(new Date(createdAt))
+                        .replace(" at ", ", ")}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -146,6 +150,14 @@ export default function QuickviewVideo({
                 </div>
               </VideoProvider>
             </div>
+
+            <DialogFooter className="mt-6">
+              <div className="w-full mt-6 px-4">
+                <p className="text-xs font-normal text-[#707070] italic text-center">
+                  {prompt || "No prompt available"}
+                </p>
+              </div>
+            </DialogFooter>
           </div>
         </DialogContent>
       </Dialog>

@@ -18,6 +18,7 @@ async function getClipBySlug(slug: string) {
       id: clipsTable.id,
       video_url: clipsTable.video_url,
       video_title: clipsTable.video_title,
+      prompt: clipsTable.prompt,
       created_at: clipsTable.created_at,
       remix_count: sql<number>`(
           SELECT count(*) 
@@ -53,13 +54,13 @@ export default async function Page({ params }: { params: { slug: string } }) {
   }
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-white sm:bg-[rgba(255,255,255,0.90)]">
+    <div className="flex justify-center items-center min-h-screen bg-white sm:bg-[rgba(255,255,255,0.90)] pt-12">
       <div className="absolute top-4 right-8 z-[999] cursor-pointer">
         <RemixButton />
       </div>
       <div className="max-h-[90vh] max-w-2xl w-full border-none bg-transparent shadow-none pt-0 pb-4 backdrop-filter backdrop-blur-[3px]">
-        <div className="space-y-8">
-          <div className="relative w-full">
+        <div className="space-y-12">
+          <div className="relative w-full h-fit">
             <Link href="/explore">
               <button className="absolute left-0 top-1/2 -translate-y-1/2 flex items-center gap-1 text-xs font-medium text-[#09090B] outline-none hover:bg-zinc-100 px-2 py-1 rounded">
                 <ChevronLeft className="w-4 h-4" />
@@ -67,14 +68,13 @@ export default async function Page({ params }: { params: { slug: string } }) {
               </button>
             </Link>
 
-            <div className="flex flex-col items-center gap-1 py-2 px-4">
-              <h2 className="text-2xl font-bold text-[#232323]">
-                {clip.video_title || "Vincent Van Gogh"}
-              </h2>
-              <div className="text-sm text-[#707070]">
-                {formatter
-                  .format(new Date(clip.created_at))
-                  .replace(" at ", ", ")}
+            <div className="absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2">
+              <div className="flex flex-col items-center gap-1 py-2 px-4">
+                <div className="text-sm text-[#707070]">
+                  {formatter
+                    .format(new Date(clip.created_at))
+                    .replace(" at ", ", ")}
+                </div>
               </div>
             </div>
           </div>
@@ -102,6 +102,14 @@ export default async function Page({ params }: { params: { slug: string } }) {
               <VideoPlayer />
             </div>
           </VideoProvider>
+        </div>
+
+        <div className="mt-12 mb-0">
+          <div className="w-full px-4">
+            <p className="text-xs font-normal text-[#707070] italic text-center">
+              {clip.prompt || "No prompt available"}
+            </p>
+          </div>
         </div>
       </div>
     </div>

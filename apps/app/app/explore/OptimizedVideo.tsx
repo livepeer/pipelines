@@ -1,14 +1,13 @@
 import { usePreviewStore } from "@/hooks/usePreviewStore";
-import { Button } from "@repo/design-system/components/ui/button";
 import { cn } from "@repo/design-system/lib/utils";
 import { Repeat, WandSparkles } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
-import QuickviewVideo from "./QuickviewVideo";
 import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
 
 interface OptimizedVideoProps {
   src: string;
   clipId: string;
+  prompt?: string;
   title: string;
   slug: string | null;
   authorName: string;
@@ -20,6 +19,7 @@ interface OptimizedVideoProps {
 export default function OptimizedVideo({
   src,
   clipId,
+  prompt,
   title,
   slug,
   authorName,

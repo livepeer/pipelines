@@ -22,6 +22,7 @@ interface BentoGridsProps {
     video_url: string;
     video_title: string | null;
     created_at: string;
+    prompt?: string;
     author_name: string | null;
     remix_count: number;
     slug: string | null;
@@ -117,6 +118,7 @@ export function BentoGrids({ initialClips }: BentoGridsProps) {
                     title={clip.video_title || "Vincent Van Gogh"}
                     authorName={clip.author_name || "Livepeer"}
                     src={clip.video_url}
+                    prompt={clip.prompt}
                     createdAt={clip.created_at}
                     remixCount={clip.remix_count}
                     className={`${index % 2 === 0 ? "lg:row-span-2" : ""} cursor-pointer`}
@@ -149,6 +151,7 @@ function GridItem({
   key,
   clipId,
   src,
+  prompt,
   className,
   slug,
   title,
@@ -159,6 +162,7 @@ function GridItem({
   key: string;
   clipId: string;
   src: string;
+  prompt?: string;
   className?: string;
   slug: string | null;
   title: string;

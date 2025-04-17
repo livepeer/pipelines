@@ -15,6 +15,7 @@ async function getClipBySlug(slug: string) {
       video_url: clipsTable.video_url,
       video_title: clipsTable.video_title,
       created_at: clipsTable.created_at,
+      prompt: clipsTable.prompt,
       remix_count: sql<number>`(
           SELECT count(*) 
           FROM ${clipsTable} AS remixed_clips
@@ -46,6 +47,7 @@ export default async function Page({ params }: { params: { slug: string } }) {
         key={String(clip.id)}
         src={clip.video_url}
         clipId={String(clip.id)}
+        prompt={clip.prompt}
         title={clip.video_title || "Vincent Van Gogh"}
         authorName={clip.author_name || "Livepeer"}
         createdAt={clip.created_at.toISOString()}

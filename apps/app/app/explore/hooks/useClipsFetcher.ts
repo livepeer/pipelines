@@ -5,6 +5,7 @@ export type Clip = {
   video_url: string;
   video_title: string | null;
   created_at: string;
+  prompt?: string;
   author_name: string | null;
   remix_count: number;
   slug: string | null;
@@ -33,6 +34,7 @@ export default function useClipsFetcher(initialClips: Clip[] = []) {
             video_url: string;
             video_title?: string;
             created_at?: string | Date;
+            prompt?: string;
             author_name?: string | null;
             remix_count: number;
             slug: string | null;

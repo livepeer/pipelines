@@ -15,6 +15,7 @@ async function getInitialClips() {
       video_url: clipsTable.video_url,
       video_title: clipsTable.video_title,
       created_at: clipsTable.created_at,
+      prompt: clipsTable.prompt,
       remix_count: sql<number>`(
           SELECT count(*) 
           FROM ${clipsTable} AS remixed_clips
@@ -34,6 +35,7 @@ async function getInitialClips() {
     video_url: clip.video_url,
     video_title: clip.video_title,
     created_at: clip.created_at.toISOString(),
+    prompt: clip.prompt,
     author_name: clip.author_name,
     remix_count: clip.remix_count,
     slug: clip.slug,
