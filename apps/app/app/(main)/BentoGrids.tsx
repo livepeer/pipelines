@@ -4,6 +4,8 @@ import { usePreviewStore } from "@/hooks/usePreviewStore";
 import { cn } from "@repo/design-system/lib/utils";
 import { useEffect, useRef } from "react";
 import { useSearchParams } from "next/navigation";
+import { TrackedLink } from "@/components/analytics/TrackedLink";
+import { useTrackEvent } from "@/hooks/useTrackEvent";
 import useClipsFetcher from "./hooks/useClipsFetcher";
 import LoadingSpinner from "./LoadingSpinner";
 import NoMoreClipsFooter from "./NoMoreClipsFooter";
@@ -32,10 +34,14 @@ export interface BentoGridsProps {
 }
 
 export function BentoGrids({ initialClips }: BentoGridsProps) {
-  const { clips, loading, hasMore, fetchClips } = useClipsFetcher(initialClips);
+  const { clips, loading, hasMore, fetchClips, page } =
+    useClipsFetcher(initialClips);
   const loadingRef = useRef<HTMLDivElement>(null);
   const initialFetchDone = useRef(false);
   const { isPreviewOpen } = usePreviewStore();
+  const { trackAction } = useTrackEvent("explore_scroll_interaction", {
+    location: "explore_bento_grid_scroll",
+  });
 
   const searchParams = useSearchParams();
   const isDebug = searchParams.has("debug");
@@ -51,6 +57,9 @@ export function BentoGrids({ initialClips }: BentoGridsProps) {
     const observer = new IntersectionObserver(
       entries => {
         if (entries[0].isIntersecting && !loading && hasMore) {
+          trackAction("explore_clips_loaded_on_scroll", {
+            page_index: page,
+          });
           fetchClips();
         }
       },
@@ -62,7 +71,7 @@ export function BentoGrids({ initialClips }: BentoGridsProps) {
     }
 
     return () => observer.disconnect();
-  }, [fetchClips, loading, hasMore]);
+  }, [fetchClips, loading, hasMore, page, trackAction]);
 
   const groupedClips = chunkArray(clips, 4);
 
@@ -182,10 +191,20 @@ function GridItem({
   isDebug: boolean;
   overallIndex: number;
 }) {
+  const href = slug ? `/clip/${slug}` : `/clip/id/${clipId}`;
+
   return (
-    <div
+    <TrackedLink
+      href={href}
+      trackingEvent="explore_clip_clicked"
+      trackingProperties={{
+        clip_id: clipId,
+        clip_slug: slug,
+        clip_author_name: authorName,
+        location: "explore_bento_grid",
+      }}
       className={cn(
-        "relative aspect-square lg:min-h-[300px] lg:aspect-auto",
+        "relative aspect-square lg:min-h-[300px] lg:aspect-auto block",
         className,
       )}
     >
@@ -208,8 +227,14 @@ function GridItem({
           remixCount={remixCount}
         />
       </div>
+      <div className="absolute inset-0 z-10 flex items-end justify-between p-4 text-white">
+        <div className="flex items-center space-x-2">
+          <div className="text-sm font-light">{title}</div>
+          <div className="text-sm font-light">{authorName}</div>
+        </div>
+      </div>
       <div className="pointer-events-none absolute inset-px rounded-xl shadow ring-1 ring-black/5 z-30"></div>
-    </div>
+    </TrackedLink>
   );
 }
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { Logo } from "@/components/sidebar";
-import { Button } from "@repo/design-system/components/ui/button";
+import { TrackedButton } from "@/components/analytics/TrackedButton";
 import { usePreviewStore } from "@/hooks/usePreviewStore";
 import { cn } from "@repo/design-system/lib/utils";
 import Link from "next/link";
@@ -22,17 +22,17 @@ export default function Header() {
           </a>
         </div>
         <div className="flex flex-1 justify-end">
-          <Link href="/create">
-            <Button
-              variant="outline"
-              className={cn(
-                "alwaysAnimatedButton",
-                isPreviewOpen && "opacity-0 pointer-events-none",
-              )}
-            >
-              Start Creating
-            </Button>
-          </Link>
+          <TrackedButton
+            trackingEvent="explore_header_start_creating_clicked"
+            trackingProperties={{ location: "explore_header" }}
+            variant="outline"
+            className={cn(
+              "alwaysAnimatedButton",
+              isPreviewOpen && "opacity-0 pointer-events-none",
+            )}
+          >
+            Start Creating
+          </TrackedButton>
         </div>
       </nav>
     </header>
