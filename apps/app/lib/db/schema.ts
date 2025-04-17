@@ -250,6 +250,7 @@ export const clips = pgTable(
   {
     id: serial("id").primaryKey(),
     video_url: text("video_url").notNull(),
+    video_title: text("video_title"),
     thumbnail_url: text("thumbnail_url"),
     author_user_id: text("author_user_id").notNull(),
     source_clip_id: integer("source_clip_id"),
@@ -307,6 +308,26 @@ export const clipViews = pgTable(
     })
       .onUpdate("cascade")
       .onDelete("set null"),
+  ],
+);
+
+export const clipSlugs = pgTable(
+  "clip_slugs",
+  {
+    slug: text("slug").primaryKey(),
+
+    clip_id: integer("clip_id")
+      .notNull()
+      .references(() => clips.id, { onDelete: "cascade", onUpdate: "cascade" }),
+
+    created_at: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  },
+  table => [
+    {
+      clipIdUniqueConstraint: unique("unq_clip_slugs_clip_id").on(
+        table.clip_id,
+      ),
+    },
   ],
 );
 
