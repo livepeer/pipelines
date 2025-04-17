@@ -139,7 +139,6 @@ export default function QuickviewVideo({
                     )}
                     onClick={e => {
                       e.stopPropagation();
-                      handleClose();
                     }}
                   >
                     Start creating
