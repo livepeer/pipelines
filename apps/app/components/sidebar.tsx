@@ -98,7 +98,7 @@ export const GlobalSidebar = ({ children }: GlobalSidebarProperties) => {
       },
       {
         title: "Explore Pipelines",
-        url: `/explore`,
+        url: `/`,
         icon: Map,
       },
       ...(isLivepeerEmail

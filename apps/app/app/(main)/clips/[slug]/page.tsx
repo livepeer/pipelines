@@ -38,7 +38,7 @@ export default async function Page({ params }: { params: { slug: string } }) {
   const clip = await getClipBySlug(slug);
 
   if (!clip) {
-    return redirect("/explore");
+    return redirect("/");
   }
 
   return (

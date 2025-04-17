@@ -69,13 +69,13 @@ export default function QuickviewVideo({
   }, []);
 
   useEffect(() => {
-    if (pathname !== "/explore") setIsPreviewOpen(true);
+    if (pathname !== "/") setIsPreviewOpen(true);
     else setIsPreviewOpen(false);
   }, [pathname]);
 
   const handleClose = () => {
     setIsPreviewOpen(false);
-    router.push("/explore", { scroll: false });
+    router.push("/", { scroll: false });
   };
 
   return (
@@ -114,7 +114,7 @@ export default function QuickviewVideo({
                   className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center gap-1 text-xs font-medium text-[#09090B] outline-none hover:bg-zinc-100 p-2 rounded"
                   onClick={() => {
                     setIsPreviewOpen(false);
-                    router.push("/explore", { scroll: false });
+                    router.push("/", { scroll: false });
                   }}
                 >
                   <X className="w-4 h-4" />
