@@ -229,6 +229,7 @@ export function VideoProvider({
       }
     };
   }, [state.playing, dispatch]);
+
   return (
     <VideoPlayerContext.Provider value={api}>
       <div className="relative w-full">
@@ -240,12 +241,6 @@ export function VideoProvider({
             ref={playerRef}
             onPlay={() => dispatch({ type: ActionKind.PLAY })}
             onPause={() => dispatch({ type: ActionKind.PAUSE })}
-            onTimeUpdate={event => {
-              dispatch({
-                type: ActionKind.SET_CURRENT_TIME,
-                payload: Math.floor(event.currentTarget.currentTime),
-              });
-            }}
             onDurationChange={event => {
               dispatch({
                 type: ActionKind.SET_DURATION,

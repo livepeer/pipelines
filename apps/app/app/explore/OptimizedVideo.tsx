@@ -1,15 +1,15 @@
 import { usePreviewStore } from "@/hooks/usePreviewStore";
-import { Button } from "@repo/design-system/components/ui/button";
 import { cn } from "@repo/design-system/lib/utils";
 import { Repeat, WandSparkles } from "lucide-react";
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import QuickviewVideo from "./QuickviewVideo";
-import { hash } from "@/lib/hash";
 
 interface OptimizedVideoProps {
   src: string;
   clipId: string;
+  prompt?: string;
   title: string;
+  slug: string | null;
   authorName: string;
   createdAt: string;
   remixCount: number;
@@ -19,7 +19,9 @@ interface OptimizedVideoProps {
 export default function OptimizedVideo({
   src,
   clipId,
+  prompt,
   title,
+  slug,
   authorName,
   createdAt,
   remixCount,
@@ -29,7 +31,7 @@ export default function OptimizedVideo({
   const [isNearViewport, setIsNearViewport] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  const isPreviewOpen = usePreviewStore(state => state.isPreviewOpen);
+  const { isPreviewOpen, setIsPreviewOpen } = usePreviewStore();
 
   const shortSrc = src.replace(/\.mp4$/, "-short.mp4");
 
@@ -88,15 +90,8 @@ export default function OptimizedVideo({
 
   return (
     <div ref={containerRef} className={cn("size-full", className)}>
-      <QuickviewVideo
-        src={src}
-        clipId={clipId}
-        title={title}
-        authorName={authorName}
-        createdAt={createdAt}
-        remixCount={remixCount}
-      >
-        {isNearViewport ? (
+      {isNearViewport ? (
+        <Link href={`/clips/${slug || clipId}`} scroll={false}>
           <div className="size-full relative">
             <video
               ref={videoRef}
@@ -116,27 +111,38 @@ export default function OptimizedVideo({
                 src={`https://picsum.photos/id/${hash(authorName)}/200/200`}
                 className="w-6 h-6 rounded-full"
               />
-              <span className="text-white text-[0.64rem] bg-black/20 backdrop-blur-sm px-2 py-1 rounded-lg">
-                {authorName}
-              </span>
+              <span className="text-white text-[0.64rem]">{authorName}</span>
             </div>
 
-            <div className="absolute bottom-3 right-4 p-0 z-10 flex gap-1 items-center  bg-black/20 backdrop-blur-sm px-2 py-1 rounded-lg">
+            <div className="absolute bottom-4 right-5 p-0 z-10 flex gap-1 items-center">
               <Repeat className="w-3 h-3 text-white" />
               <span className="text-white text-[0.64rem]">{remixCount}</span>
             </div>
 
             <div className="absolute top-3 right-3 p-0 z-10 flex gap-1 items-center">
-              <button className="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-black/70 backdrop-blur-lg text-white rounded-full hover:bg-black/90 transition-colors border-white border shadow-sm">
+              <button className="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-black/30 backdrop-blur-sm text-white rounded-full hover:bg-black/90 transition-colors border-white border shadow-sm">
                 <WandSparkles className="w-3 h-3" />
                 <span className="text-[0.64rem] tracking-wide">Remix</span>
               </button>
             </div>
           </div>
-        ) : (
-          <div className="size-full bg-transparent" />
-        )}
-      </QuickviewVideo>
+        </Link>
+      ) : (
+        <div className="size-full bg-transparent" />
+      )}
     </div>
   );
+}
+
+function hash(str: string) {
+  let hash = 0;
+  if (str.length === 0) {
+    return hash;
+  }
+  for (let i = 0; i < str.length; i++) {
+    const charCode = str.charCodeAt(i);
+    hash = (hash << 5) - hash + charCode;
+    hash |= 0;
+  }
+  return Math.abs(hash) % 1000;
 }

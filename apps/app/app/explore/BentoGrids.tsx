@@ -1,12 +1,12 @@
 "use client";
 
+import { usePreviewStore } from "@/hooks/usePreviewStore";
 import { cn } from "@repo/design-system/lib/utils";
 import { useEffect, useRef } from "react";
 import useClipsFetcher from "./hooks/useClipsFetcher";
 import LoadingSpinner from "./LoadingSpinner";
 import NoMoreClipsFooter from "./NoMoreClipsFooter";
 import OptimizedVideo from "./OptimizedVideo";
-import { usePreviewStore } from "@/hooks/usePreviewStore";
 
 function chunkArray<T>(array: T[], size: number): T[][] {
   const result: T[][] = [];
@@ -22,8 +22,10 @@ interface BentoGridsProps {
     video_url: string;
     video_title: string | null;
     created_at: string;
+    prompt?: string;
     author_name: string | null;
     remix_count: number;
+    slug: string | null;
   }>;
 }
 
@@ -112,9 +114,11 @@ export function BentoGrids({ initialClips }: BentoGridsProps) {
                   <GridItem
                     key={clip.id}
                     clipId={clip.id}
+                    slug={clip.slug}
                     title={clip.video_title || "Vincent Van Gogh"}
                     authorName={clip.author_name || "Livepeer"}
                     src={clip.video_url}
+                    prompt={clip.prompt}
                     createdAt={clip.created_at}
                     remixCount={clip.remix_count}
                     className={`${index % 2 === 0 ? "lg:row-span-2" : ""} cursor-pointer`}
@@ -147,7 +151,9 @@ function GridItem({
   key,
   clipId,
   src,
+  prompt,
   className,
+  slug,
   title,
   authorName,
   createdAt,
@@ -156,7 +162,9 @@ function GridItem({
   key: string;
   clipId: string;
   src: string;
+  prompt?: string;
   className?: string;
+  slug: string | null;
   title: string;
   authorName: string;
   createdAt: string;
@@ -176,6 +184,7 @@ function GridItem({
           src={src}
           clipId={clipId}
           title={title}
+          slug={slug}
           authorName={authorName}
           createdAt={createdAt}
           remixCount={remixCount}
