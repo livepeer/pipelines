@@ -107,8 +107,6 @@ export function BentoGrids({ initialClips }: BentoGridsProps) {
           )}
         >
           Explore a world where imagination becomes reality
-          <br />
-          and bring your own vision to life
         </h2>
 
         {groupedClips.map((group, groupIndex) => {

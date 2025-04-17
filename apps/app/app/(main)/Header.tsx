@@ -31,7 +31,7 @@ export default function Header() {
               isPreviewOpen && "opacity-0 pointer-events-none",
             )}
           >
-            Start Creating
+            Create
           </TrackedButton>
         </div>
       </nav>
