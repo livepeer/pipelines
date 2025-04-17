@@ -132,7 +132,7 @@ export default function QuickviewVideo({
                 <div className="flex items-center gap-2">
                   <div className="w-6 h-6 rounded-full bg-zinc-100 flex items-center justify-center">
                     <GradientAvatar
-                      seed="Luke Zembrzuski"
+                      seed={authorName}
                       size={24}
                       className="h-6 w-6"
                     />

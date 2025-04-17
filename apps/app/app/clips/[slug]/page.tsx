@@ -11,6 +11,7 @@ import { ChevronLeft, Repeat, User2 } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { RemixButton } from "./RemixButton";
+import { GradientAvatar } from "@/components/GradientAvatar";
 
 async function getClipBySlug(slug: string) {
   const result = await db
@@ -81,7 +82,11 @@ export default async function Page({ params }: { params: { slug: string } }) {
           <div className="flex flex-row justify-between items-center p-2">
             <div className="flex items-center gap-2">
               <div className="w-6 h-6 rounded-full bg-zinc-100 flex items-center justify-center">
-                <User2 className="w-4 h-4 text-[#09090B]" />
+                <GradientAvatar
+                  seed={clip.author_name || "Livepeer"}
+                  size={24}
+                  className="h-6 w-6"
+                />
               </div>
               <span className="text-xs font-medium text-[#09090B]">
                 {clip.author_name || "Livepeer"}
