@@ -35,6 +35,7 @@ export default function OptimizedVideo({
   const { isPreviewOpen, setIsPreviewOpen } = usePreviewStore();
 
   const shortSrc = src.replace(/\.mp4$/, "-short.mp4");
+  const [effectiveSrc, setEffectiveSrc] = useState(shortSrc);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -51,7 +52,33 @@ export default function OptimizedVideo({
     return () => nearObserver.disconnect();
   }, []);
 
-  // Effect to handle preview state changes
+  useEffect(() => {
+    if (!isNearViewport || !shortSrc || !src) return;
+
+    let isCancelled = false;
+
+    if (effectiveSrc === shortSrc) {
+      fetch(shortSrc, { method: "HEAD" })
+        .then(response => {
+          if (!isCancelled && !response.ok) {
+            console.log(
+              `Short video not found for ${shortSrc}, falling back to ${src}`,
+            );
+            setEffectiveSrc(src);
+          }
+        })
+        .catch(error => {
+          if (!isCancelled) {
+            console.error(`Error checking short video ${shortSrc}:`, error);
+            setEffectiveSrc(src);
+          }
+        });
+    }
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [isNearViewport, shortSrc, src, effectiveSrc]);
   useEffect(() => {
     const videoElement = videoRef.current;
     if (!videoElement) return;
@@ -96,7 +123,7 @@ export default function OptimizedVideo({
           <div className="size-full relative">
             <video
               ref={videoRef}
-              src={shortSrc}
+              src={effectiveSrc}
               muted
               loop
               playsInline
