@@ -18,6 +18,8 @@ import { useEffect } from "react";
 import { VideoPlayer } from "./VideoPlayer";
 import { VideoProvider } from "./VideoProvider";
 import { Button } from "@repo/design-system/components/ui/button";
+import { TrackedButton } from "@/components/analytics/TrackedButton";
+import Link from "next/link";
 
 const formatter = new Intl.DateTimeFormat("en-US", {
   month: "short",
@@ -109,7 +111,7 @@ export default function QuickviewVideo({
             onClick={e => e.stopPropagation()}
           >
             <DialogHeader className="space-y-12">
-              <div className="relative w-full flex justify-between items-center py-2 pl-2 pr-1">
+              <div className="relative w-full flex justify-between items-center py-2 pl-2">
                 <div className="flex items-center gap-2">
                   <div className="w-6 h-6 rounded-full bg-zinc-100 flex items-center justify-center">
                     <GradientAvatar
@@ -130,15 +132,22 @@ export default function QuickviewVideo({
                   </div>
                 </div>
 
-                <button
-                  className="flex items-center gap-1 text-xs font-medium text-[#09090B] outline-none hover:bg-zinc-100 p-2 rounded"
-                  onClick={() => {
-                    setIsPreviewOpen(false);
-                    router.push("/", { scroll: false });
-                  }}
-                >
-                  <X className="w-4 h-4" />
-                </button>
+                <Link href="/create">
+                  <TrackedButton
+                    trackingEvent="quickview_create_clicked"
+                    trackingProperties={{ location: "quickview_video" }}
+                    variant="outline"
+                    className={cn(
+                      "alwaysAnimatedButton text-xs py-2 px-8 h-auto",
+                    )}
+                    onClick={e => {
+                      e.stopPropagation();
+                      handleClose();
+                    }}
+                  >
+                    Create
+                  </TrackedButton>
+                </Link>
               </div>
             </DialogHeader>
 
