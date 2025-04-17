@@ -68,7 +68,7 @@ export default function EditClipModal({
 
       const updatedClip = {
         ...formData,
-        id: clip.id,
+        id: clip.id || 0,
       } as Partial<Clip> & { id: number };
 
       await onSave(updatedClip);
