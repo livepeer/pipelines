@@ -94,18 +94,15 @@ export default function QuickviewVideo({
           }}
           key={clipId}
         >
-          {/* <div className="absolute top-4 right-8 z-[999] cursor-pointer">
-            <Button
-              className={cn(
-                "flex items-center py-2 px-4 gap-2 font-medium cursor-pointer rounded-xl",
-              )}
-              onClick={e => e.stopPropagation()}
-            >
-              <WandSparkles className="size-1" />
-
-              <span className="text-sm">Remix</span>
-            </Button>
-          </div> */}
+          <button
+            className="absolute top-4 right-4 z-[999] flex items-center justify-center w-8 h-8 rounded-full bg-zinc-100 text-[#09090B] outline-none hover:bg-zinc-200 transition-colors"
+            onClick={e => {
+              e.stopPropagation();
+              handleClose();
+            }}
+          >
+            <X className="w-4 h-4" />
+          </button>
           <div
             className="max-h-[90vh] max-w-2xl w-full aspect-video max-w-[73vh]"
             onClick={e => e.stopPropagation()}
