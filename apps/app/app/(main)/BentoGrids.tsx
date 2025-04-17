@@ -225,12 +225,7 @@ function GridItem({
           remixCount={remixCount}
         />
       </div>
-      <div className="absolute inset-0 z-10 flex items-end justify-between p-4 text-white">
-        <div className="flex items-center space-x-2">
-          <div className="text-sm font-light">{title}</div>
-          <div className="text-sm font-light">{authorName}</div>
-        </div>
-      </div>
+
       <div className="pointer-events-none absolute inset-px rounded-xl shadow ring-1 ring-black/5 z-30"></div>
     </TrackedLink>
   );
