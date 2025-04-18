@@ -8,16 +8,24 @@ import { useEffect, useRef, useState } from "react";
 interface OptimizedVideoProps {
   src: string;
   clipId: string;
+  prompt?: string;
+  title: string;
   slug: string | null;
   authorName: string;
+  createdAt: string;
+  remixCount: number;
   className?: string;
 }
 
 export default function OptimizedVideo({
   src,
   clipId,
+  prompt,
+  title,
   slug,
   authorName,
+  createdAt,
+  remixCount,
   className,
 }: OptimizedVideoProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
