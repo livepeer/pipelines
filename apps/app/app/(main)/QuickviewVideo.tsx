@@ -129,7 +129,11 @@ export default function QuickviewVideo({
                   </div>
                 </div>
 
-                <Link href="/create">
+                <Link
+                  href={
+                    prompt ? `/create?inputPrompt=${btoa(prompt)}` : "/create"
+                  }
+                >
                   <TrackedButton
                     trackingEvent="quickview_create_clicked"
                     trackingProperties={{ location: "quickview_video" }}
@@ -141,7 +145,7 @@ export default function QuickviewVideo({
                       e.stopPropagation();
                     }}
                   >
-                    Start creating
+                    Try this prompt
                   </TrackedButton>
                 </Link>
               </div>
