@@ -10,7 +10,12 @@ import {
   SCREENSHOT_INTERVAL_MS,
   SEND_METRICS,
 } from "./common";
-import { pushMetrics, testDurationGauge, testResultGauge } from "./metrics";
+import {
+  pushMetrics,
+  testSuccessCounter,
+  testFailureCounter,
+  testDurationGauge,
+} from "./metrics";
 
 const EMAIL = process.env.TEST_EMAIL;
 const OTP_CODE = process.env.TEST_OTP_CODE;
@@ -43,14 +48,12 @@ test.describe("Daydream Page Tests", () => {
   test.afterEach(async ({}, testInfo) => {
     const fullTestName = testInfo.titlePath.join(" > ");
 
-    const status = testInfo.status === "passed" ? 1 : 0;
-    const statusLabel = testInfo.status || "unknown";
-
     if (SEND_METRICS) {
-      testResultGauge.set(
-        { test_name: fullTestName, status: statusLabel },
-        status,
-      );
+      if (testInfo.status === "passed") {
+        testSuccessCounter.inc({ test_name: fullTestName });
+      } else {
+        testFailureCounter.inc({ test_name: fullTestName });
+      }
 
       testDurationGauge.set(
         { test_name: fullTestName },

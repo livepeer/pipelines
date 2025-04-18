@@ -12,10 +12,17 @@ const INSTANCE_ID = process.env.GITHUB_RUN_ID
 
 export const gateway = new client.Pushgateway(PUSHGATEWAY_URL, {}, registry);
 
-export const testResultGauge = new client.Gauge({
-  name: "e2e_test_result",
-  help: "Result of the E2E test run (1 = success, 0 = failure)",
-  labelNames: ["test_name", "status"],
+export const testSuccessCounter = new client.Counter({
+  name: "e2e_test_success_total",
+  help: "Total number of successful E2E test runs",
+  labelNames: ["test_name"],
+  registers: [registry],
+});
+
+export const testFailureCounter = new client.Counter({
+  name: "e2e_test_failure_total",
+  help: "Total number of failed E2E test runs",
+  labelNames: ["test_name"],
   registers: [registry],
 });
 
