@@ -40,19 +40,26 @@ export const getStreamUrl = (
   storedWhipUrl?: string | null,
 ): string => {
   const customWhipServer = searchParams.get("whipServer");
+  const customOrchestrator = searchParams.get("orchestrator");
 
   const app = getAppConfig(searchParams);
 
   if (customWhipServer) {
     if (customWhipServer.includes("<STREAM_KEY>")) {
-      const res = customWhipServer.replace("<STREAM_KEY>", streamKey)
-      return `${res}?test-param=test`;
+      return addOrchestratorParam(customWhipServer.replace("<STREAM_KEY>", streamKey), customOrchestrator);
     }
-    return `${customWhipServer}${streamKey}/whip?test-param=test`;
+    return addOrchestratorParam(`${customWhipServer}${streamKey}/whip`, customOrchestrator);
   }
 
-  return `${app.newWhipUrl}${streamKey}/whip?test-param=test`;
+  return addOrchestratorParam(`${app.newWhipUrl}${streamKey}/whip`, customOrchestrator);
 };
+
+const addOrchestratorParam = (url: string, orchestrator: string | null): string => {
+  if (!orchestrator) {
+    return url;
+  }
+  return `${url}&orchestrator=${orchestrator}`;
+}
 
 const processInputValues = (inputValues: any) => {
   return Object.fromEntries(
