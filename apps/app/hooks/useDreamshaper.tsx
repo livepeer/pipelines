@@ -8,14 +8,13 @@ import { updateParams } from "@/app/api/streams/update-params";
 import { Stream, upsertStream } from "@/app/api/streams/upsert";
 import { useGatewayHost } from "@/hooks/useGatewayHost";
 import { getAppConfig } from "@/lib/env";
-import { usePathname, useSearchParams, useRouter } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { create } from "zustand";
 import { useStreamStatus } from "./useStreamStatus";
 import track from "@/lib/track";
 import { usePrivy } from "@/hooks/usePrivy";
-import { usePromptStore } from "@/hooks/usePromptStore";
 
 export const DEFAULT_PIPELINE_ID = "pip_DRQREDnSei4HQyC8"; // Staging Dreamshaper ID
 export const DUMMY_USER_ID_FOR_NON_AUTHENTICATED_USERS =
@@ -193,33 +192,70 @@ export const useDreamshaperStore = create<DreamshaperStore>(set => ({
   setSharedPrompt: prompt => set({ sharedPrompt: prompt }),
 }));
 
+export function useInputPromptHandling() {
+  const searchParams = useSearchParams();
+  const { stream, pipeline, setSharedPrompt } = useDreamshaperStore();
+  const [inputPromptApplied, setInputPromptApplied] = useState(false);
+  const { gatewayHost, ready: gatewayHostReady } = useGatewayHost(
+    stream?.id || null,
+  );
+  const { handleStreamUpdate } = useStreamUpdates();
+
+  useEffect(() => {
+    const applyInputPrompt = async () => {
+      const inputPromptB64 = searchParams.get("inputPrompt");
+
+      if (
+        !inputPromptB64 ||
+        inputPromptApplied ||
+        !stream ||
+        !gatewayHostReady
+      ) {
+        return;
+      }
+
+      try {
+        const decodedPrompt = atob(inputPromptB64);
+        await handleStreamUpdate(decodedPrompt, { silent: true });
+
+        setInputPromptApplied(true);
+      } catch (error) {
+        console.error("Error applying input prompt:", error);
+      }
+    };
+
+    applyInputPrompt();
+  }, [
+    searchParams,
+    stream,
+    inputPromptApplied,
+    gatewayHostReady,
+    handleStreamUpdate,
+  ]);
+
+  return { inputPromptApplied };
+}
+
 export function useParamsHandling() {
   const searchParams = useSearchParams();
-  const router = useRouter();
-  const pathname = usePathname();
   const {
     stream,
     pipeline,
     sharedParamsApplied,
     setSharedParamsApplied,
     setSharedPrompt,
-    setLoading,
   } = useDreamshaperStore();
-  const { authenticated } = usePrivy();
-  const { setLastSubmittedPrompt, setHasSubmittedPrompt } = usePromptStore();
-  const { handleStreamUpdate } = useStreamUpdates();
-  const [inputPromptProcessed, setInputPromptProcessed] = useState(false);
 
   const { gatewayHost, ready: gatewayHostReady } = useGatewayHost(
     stream?.id || null,
   );
 
-  // Shared params handling
+  useInputPromptHandling();
   useEffect(() => {
     const applySharedParams = async () => {
       const sharedId = searchParams.get("shared");
 
-      if (!sharedId || sharedParamsApplied || !stream || !gatewayHostReady) {
+      if (!sharedId || sharedParamsApplied || !stream) {
         return;
       }
 
@@ -291,53 +327,14 @@ export function useParamsHandling() {
       }
     };
 
-    const applyInputPrompt = async () => {
-      const inputPromptBase64 = searchParams.get("inputPrompt");
-
-      if (inputPromptBase64 && !inputPromptProcessed && stream && pipeline && gatewayHostReady) {
-        setInputPromptProcessed(true);
-        try {
-          const decodedPrompt = atob(inputPromptBase64);
-
-          setSharedPrompt(decodedPrompt);
-          setHasSubmittedPrompt(true);
-
-          const newSearchParams = new URLSearchParams(searchParams.toString());
-          newSearchParams.delete("inputPrompt");
-          router.replace(`${pathname}?${newSearchParams.toString()}`, {
-            scroll: false,
-          });
-        } catch (e) {
-          console.error("Error decoding or processing inputPrompt:", e);
-          toast.error("Failed to apply shared prompt.");
-          const newSearchParams = new URLSearchParams(searchParams.toString());
-          newSearchParams.delete("inputPrompt");
-          router.replace(`${pathname}?${newSearchParams.toString()}`, {
-            scroll: false,
-          });
-        } finally {
-        }
-      }
-    };
-
-    applyInputPrompt();
     applySharedParams();
   }, [
     searchParams,
     stream,
-    pipeline,
     sharedParamsApplied,
-    inputPromptProcessed,
     gatewayHostReady,
-    setSharedParamsApplied,
-    setSharedPrompt,
-    setLastSubmittedPrompt,
-    setHasSubmittedPrompt,
-    handleStreamUpdate,
-    router,
-    pathname,
-    authenticated,
-    setLoading,
+    gatewayHost,
+    pipeline,
   ]);
 
   // Local storage params handling
@@ -758,3 +755,18 @@ export const useCapacityMonitor = () => {
     }
   }, [capacityReached, timeoutReached, live, stream]);
 };
+
+export function useDreamshaper() {
+  useInitialization();
+  useParamsHandling();
+  useCapacityMonitor();
+  const { handleStreamUpdate } = useStreamUpdates();
+  const { createShareLink } = useShareLink();
+  const store = useDreamshaperStore();
+
+  return {
+    ...store,
+    handleStreamUpdate,
+    createShareLink,
+  };
+}
