@@ -15,6 +15,7 @@ import { create } from "zustand";
 import { useStreamStatus } from "./useStreamStatus";
 import track from "@/lib/track";
 import { usePrivy } from "@/hooks/usePrivy";
+import { usePromptStore } from "@/hooks/usePromptStore";
 
 export const DEFAULT_PIPELINE_ID = "pip_DRQREDnSei4HQyC8"; // Staging Dreamshaper ID
 export const DUMMY_USER_ID_FOR_NON_AUTHENTICATED_USERS =
@@ -194,7 +195,8 @@ export const useDreamshaperStore = create<DreamshaperStore>(set => ({
 
 export function useInputPromptHandling() {
   const searchParams = useSearchParams();
-  const { stream, pipeline, setSharedPrompt } = useDreamshaperStore();
+  const { stream, pipeline } = useDreamshaperStore();
+  const { setLastSubmittedPrompt, setHasSubmittedPrompt } = usePromptStore();
   const [inputPromptApplied, setInputPromptApplied] = useState(false);
   const { gatewayHost, ready: gatewayHostReady } = useGatewayHost(
     stream?.id || null,
@@ -217,7 +219,8 @@ export function useInputPromptHandling() {
       try {
         const decodedPrompt = atob(inputPromptB64);
 
-        setSharedPrompt(decodedPrompt);
+        setLastSubmittedPrompt(decodedPrompt);
+        setHasSubmittedPrompt(true);
 
         await handleStreamUpdate(decodedPrompt, { silent: true });
 
@@ -234,7 +237,8 @@ export function useInputPromptHandling() {
     inputPromptApplied,
     gatewayHostReady,
     handleStreamUpdate,
-    setSharedPrompt,
+    setLastSubmittedPrompt,
+    setHasSubmittedPrompt,
   ]);
 
   return { inputPromptApplied };
