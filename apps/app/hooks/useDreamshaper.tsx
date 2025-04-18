@@ -216,6 +216,9 @@ export function useInputPromptHandling() {
 
       try {
         const decodedPrompt = atob(inputPromptB64);
+
+        setSharedPrompt(decodedPrompt);
+
         await handleStreamUpdate(decodedPrompt, { silent: true });
 
         setInputPromptApplied(true);
@@ -231,6 +234,7 @@ export function useInputPromptHandling() {
     inputPromptApplied,
     gatewayHostReady,
     handleStreamUpdate,
+    setSharedPrompt,
   ]);
 
   return { inputPromptApplied };
