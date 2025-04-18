@@ -4,6 +4,7 @@ import { cn } from "@repo/design-system/lib/utils";
 import { Repeat, WandSparkles } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { TrackedButton } from "@/components/analytics/TrackedButton";
 
 interface OptimizedVideoProps {
   src: string;
@@ -121,7 +122,7 @@ export default function OptimizedVideo({
     <div ref={containerRef} className={cn("size-full", className)}>
       {isNearViewport ? (
         <Link href={`/clips/${slug || clipId}`} scroll={false}>
-          <div className="size-full relative">
+          <div className="size-full relative group">
             <video
               ref={videoRef}
               src={effectiveSrc + "#t=0.5"}
@@ -147,12 +148,22 @@ export default function OptimizedVideo({
               <span className="text-white text-[0.64rem]">{remixCount}</span>
             </div> */}
 
-            {/* <div className="absolute top-3 right-3 p-0 z-10 flex gap-1 items-center">
-              <button className="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-black/20 backdrop-blur-sm text-white rounded-full hover:bg-black/90 transition-colors border-white border shadow-sm">
-                <WandSparkles className="w-3 h-3" />
-                <span className="text-[0.64rem] tracking-wide">Remix</span>
-              </button>
-            </div> */}
+            <div
+              className="absolute top-3 right-2 p-0 z-10 flex gap-1 items-center opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-150"
+              onClick={e => e.stopPropagation()}
+            >
+              <Link href={prompt ? `/create?inputPrompt=${btoa(prompt)}` : "/create"}>
+                <TrackedButton
+                  trackingEvent="explore_try_prompt_clicked"
+                  trackingProperties={{ location: "video_card" }}
+                  variant="outline"
+                  className="inline-flex items-center space-x-0.5 px-3 py-0.5 h-6 bg-black/20 backdrop-blur-md text-white rounded-full border-white border shadow-sm scale-90"
+                >
+                  <WandSparkles className="w-1.5 h-1.5" />
+                  <span className="text-[0.7rem] tracking-wide">Try this prompt</span>
+                </TrackedButton>
+              </Link>
+            </div>
           </div>
         </Link>
       ) : (
