@@ -2,6 +2,7 @@ import { expect, Locator, test } from "@playwright/test";
 import pixelmatch from "pixelmatch";
 import sharp from "sharp";
 import {
+  ENVIRONMENT,
   videoEntropyGauge,
   videoFrameDiffGauge,
   videoVarianceGauge,
@@ -245,15 +246,27 @@ export async function assertVideoContentChanging(
 
     if (SEND_METRICS) {
       videoVarianceGauge.set(
-        { test_name: testName, video_type: videoType },
+        {
+          test_name: testName,
+          video_type: videoType,
+          environment: ENVIRONMENT,
+        },
         avgVariance,
       );
       videoEntropyGauge.set(
-        { test_name: testName, video_type: videoType },
+        {
+          test_name: testName,
+          video_type: videoType,
+          environment: ENVIRONMENT,
+        },
         avgEntropy,
       );
       videoFrameDiffGauge.set(
-        { test_name: testName, video_type: videoType },
+        {
+          test_name: testName,
+          video_type: videoType,
+          environment: ENVIRONMENT,
+        },
         avgDiffRatio,
       );
     }

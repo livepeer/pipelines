@@ -15,6 +15,7 @@ import {
   testSuccessCounter,
   testFailureCounter,
   testDurationGauge,
+  ENVIRONMENT,
 } from "./metrics";
 
 const EMAIL = process.env.TEST_EMAIL;
@@ -50,13 +51,19 @@ test.describe("Daydream Page Tests", () => {
 
     if (SEND_METRICS) {
       if (testInfo.status === "passed") {
-        testSuccessCounter.inc({ test_name: fullTestName });
+        testSuccessCounter.inc({
+          test_name: fullTestName,
+          environment: ENVIRONMENT,
+        });
       } else {
-        testFailureCounter.inc({ test_name: fullTestName });
+        testFailureCounter.inc({
+          test_name: fullTestName,
+          environment: ENVIRONMENT,
+        });
       }
 
       testDurationGauge.set(
-        { test_name: fullTestName },
+        { test_name: fullTestName, environment: ENVIRONMENT },
         testInfo.duration / 1000,
       );
 
