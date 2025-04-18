@@ -79,6 +79,7 @@ export default function OptimizedVideo({
       isCancelled = true;
     };
   }, [isNearViewport, shortSrc, src, effectiveSrc]);
+
   useEffect(() => {
     const videoElement = videoRef.current;
     if (!videoElement) return;
@@ -123,7 +124,7 @@ export default function OptimizedVideo({
           <div className="size-full relative">
             <video
               ref={videoRef}
-              src={effectiveSrc}
+              src={effectiveSrc + "#t=0.5"}
               muted
               loop
               playsInline
