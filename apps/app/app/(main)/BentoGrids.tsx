@@ -224,6 +224,7 @@ function GridItem({
         <OptimizedVideo
           src={src}
           clipId={clipId}
+          prompt={prompt}
           title={title}
           slug={slug}
           authorName={authorName}
