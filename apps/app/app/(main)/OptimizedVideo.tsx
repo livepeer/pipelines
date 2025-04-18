@@ -128,7 +128,6 @@ export default function OptimizedVideo({
               muted
               loop
               playsInline
-              preload="auto"
               onLoadedData={() => setIsLoaded(true)}
               className={cn(
                 "absolute inset-0 size-full object-cover object-top bg-transparent",
