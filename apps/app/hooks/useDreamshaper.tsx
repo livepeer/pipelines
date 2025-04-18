@@ -296,13 +296,10 @@ export function useParamsHandling() {
 
       if (inputPromptBase64 && !inputPromptProcessed && stream && pipeline) {
         setInputPromptProcessed(true);
-        setLoading(true);
         try {
           const decodedPrompt = atob(inputPromptBase64);
 
-          await handleStreamUpdate(decodedPrompt, { silent: true });
-
-          setLastSubmittedPrompt(decodedPrompt);
+          setSharedPrompt(decodedPrompt);
           setHasSubmittedPrompt(true);
 
           const newSearchParams = new URLSearchParams(searchParams.toString());
