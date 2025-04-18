@@ -55,7 +55,10 @@ jobs:
           TEST_APP_URL: ${{ secrets.TEST_APP_URL }}
           TEST_EMAIL: ${{ secrets.TEST_EMAIL }}
           TEST_OTP_CODE: ${{ secrets.TEST_OTP_CODE }}
-        run: pnpm --filter app-e2e test
+          LIVEPEER_PROMETHEUS_JOB_NAME: e2e
+          LIVEPEER_PROMETHEUS_URL: ${{ secrets.LIVEPEER_PROMETHEUS_URL }}
+          ENVIRONMENT: staging
+        run: pnpm --filter app-e2e monitor
         continue-on-error: true
 
       - name: Upload test screenshots for staging
@@ -111,7 +114,10 @@ jobs:
           TEST_APP_URL: ${{ secrets.TEST_APP_URL }}
           TEST_EMAIL: ${{ secrets.TEST_EMAIL }}
           TEST_OTP_CODE: ${{ secrets.TEST_OTP_CODE }}
-        run: pnpm --filter app-e2e test
+          LIVEPEER_PROMETHEUS_JOB_NAME: e2e
+          LIVEPEER_PROMETHEUS_URL: ${{ secrets.LIVEPEER_PROMETHEUS_URL }}
+          ENVIRONMENT: production
+        run: pnpm --filter app-e2e monitor
         continue-on-error: true
 
       - name: Upload test screenshots for production
