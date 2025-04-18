@@ -1,6 +1,11 @@
+import { expect, Locator, test } from "@playwright/test";
 import pixelmatch from "pixelmatch";
 import sharp from "sharp";
-import { expect, Locator, test } from "@playwright/test";
+import {
+  videoEntropyGauge,
+  videoFrameDiffGauge,
+  videoVarianceGauge,
+} from "./metrics";
 
 export const HAVE_ENOUGH_DATA = 4;
 
@@ -18,12 +23,14 @@ export const PLAYBACK_VIDEO_TEST_ID = "playback-video";
 
 export const NUM_SCREENSHOTS = 4;
 export const SCREENSHOT_INTERVAL_MS = 250;
-export const MIN_DIFF_THRESHOLD = 300;
 
+export const MIN_DIFF_RATIO_THRESHOLD = 0.05;
 export const MIN_VARIANCE_THRESHOLD = 100;
 export const MIN_ENTROPY_THRESHOLD = 0.5;
 
 export const EXTENSION = "png";
+
+export const SEND_METRICS = process.env.SEND_METRICS === "true";
 
 /**
  * Asserts that a video element is visible, loaded, playing, and progressing.
@@ -105,6 +112,8 @@ export async function assertVideoPlaying(
  */
 export async function assertVideoContentChanging(
   video: Locator,
+  testName: string,
+  videoType: "broadcast" | "playback",
   numFrames = NUM_SCREENSHOTS,
   intervalMs = SCREENSHOT_INTERVAL_MS,
   varianceThreshold = MIN_VARIANCE_THRESHOLD,
@@ -119,6 +128,12 @@ export async function assertVideoContentChanging(
   const videoTitle = await video.evaluate(
     v => (v as HTMLVideoElement).ariaLabel || (v as HTMLVideoElement).title,
   );
+
+  let totalVariance = 0;
+  let totalEntropy = 0;
+  let totalDiffRatio = 0;
+  let frameCount = 0;
+  let pairCount = 0;
 
   await test.step(`Capture ${numFrames} video frames`, async () => {
     for (let i = 0; i < numFrames; i++) {
@@ -158,34 +173,32 @@ export async function assertVideoContentChanging(
       const variance =
         stats.channels.reduce((sum, ch) => sum + ch.stdev * ch.stdev, 0) /
         stats.channels.length;
+      const entropy = stats.entropy;
+
+      totalVariance += variance;
+      totalEntropy += entropy;
+      frameCount++;
 
       const processedBuffer = await croppedSharp.png().toBuffer();
       processedFrames.push({
         buffer: processedBuffer,
         variance,
-        entropy: stats.entropy,
+        entropy,
       });
-    }
-    expect(processedFrames.length).toBe(numFrames);
-  });
 
-  await test.step("Verify intra-frame variance (non-blank)", async () => {
-    for (let i = 0; i < processedFrames.length; i++) {
-      const { entropy, variance } = processedFrames[i];
       console.log(
-        `Frame ${i} - Center Square Entropy: ${entropy.toFixed(2)}, Variance: ${variance.toFixed(2)}`,
+        `Frame ${i} (${videoType}) - Center Square Entropy: ${entropy.toFixed(2)}, Variance: ${variance.toFixed(2)}`,
       );
-
       expect(
         variance,
-        `Frame <span class="math-inline">\{i\} center square variance \(</span>{variance.toFixed(2)}) should be above threshold (${varianceThreshold})`,
+        `Frame ${i} (${videoType}) center square variance (${variance.toFixed(2)}) should be above threshold (${varianceThreshold})`,
       ).toBeGreaterThan(varianceThreshold);
-
       expect(
         entropy,
-        `Frame <span class="math-inline">\{i\} center square entropy \(</span>{entropy.toFixed(2)}) should be above threshold (${entropyThreshold})`,
+        `Frame ${i} (${videoType}) center square entropy (${entropy.toFixed(2)}) should be above threshold (${entropyThreshold})`,
       ).toBeGreaterThan(entropyThreshold);
     }
+    expect(processedFrames.length).toBe(numFrames);
   });
 
   await test.step("Verify inter-frame differences (content changing)", async () => {
@@ -208,10 +221,41 @@ export async function assertVideoContentChanging(
         threshold: 0.1,
       });
 
+      const totalPixels = width * height;
+      const diffPercent = diffPixelCount / totalPixels;
+
+      totalDiffRatio += diffPercent;
+      pairCount++;
+
       expect(
-        diffPixelCount,
-        `Consecutive frames ${i} and ${i + 1} have insufficient differences (${diffPixelCount} differing pixels)`,
-      ).toBeGreaterThan(MIN_DIFF_THRESHOLD);
+        diffPercent,
+        `Frames ${i}→${i + 1} (${videoType}) changed only ${(diffPercent * 100).toFixed(2)}%, should exceed ${(MIN_DIFF_RATIO_THRESHOLD * 100).toFixed(2)}%`,
+      ).toBeGreaterThan(MIN_DIFF_RATIO_THRESHOLD);
+    }
+  });
+
+  await test.step("Calculate averages and set Prometheus metrics", async () => {
+    const avgVariance = frameCount > 0 ? totalVariance / frameCount : 0;
+    const avgEntropy = frameCount > 0 ? totalEntropy / frameCount : 0;
+    const avgDiffRatio = pairCount > 0 ? totalDiffRatio / pairCount : 0;
+
+    console.log(
+      `Averages for ${videoType}: Variance=${avgVariance.toFixed(2)}, Entropy=${avgEntropy.toFixed(2)}, DiffRatio=${(avgDiffRatio * 100).toFixed(2)}%`,
+    );
+
+    if (SEND_METRICS) {
+      videoVarianceGauge.set(
+        { test_name: testName, video_type: videoType },
+        avgVariance,
+      );
+      videoEntropyGauge.set(
+        { test_name: testName, video_type: videoType },
+        avgEntropy,
+      );
+      videoFrameDiffGauge.set(
+        { test_name: testName, video_type: videoType },
+        avgDiffRatio,
+      );
     }
   });
 }

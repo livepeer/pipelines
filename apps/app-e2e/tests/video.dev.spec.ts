@@ -17,6 +17,7 @@ test.describe("Daydream Page Tests", () => {
 
   test("video elements load and play correctly", async ({ page }) => {
     test.setTimeout(OVERALL_TEST_TIMEOUT_MS);
+    const testName = test.info().titlePath.join(" > ");
 
     const broadcast = page.getByTestId(BROADCAST_VIDEO_TEST_ID);
     const playback = page.getByTestId(PLAYBACK_VIDEO_TEST_ID);
@@ -26,6 +27,8 @@ test.describe("Daydream Page Tests", () => {
 
     await assertVideoContentChanging(
       broadcast,
+      testName,
+      "broadcast",
       NUM_SCREENSHOTS,
       SCREENSHOT_INTERVAL_MS,
       100,
@@ -36,6 +39,8 @@ test.describe("Daydream Page Tests", () => {
     });
     await assertVideoContentChanging(
       playback,
+      testName,
+      "playback",
       NUM_SCREENSHOTS,
       SCREENSHOT_INTERVAL_MS,
       5000,
