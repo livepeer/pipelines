@@ -5,6 +5,7 @@ export const registry = new client.Registry();
 const PUSHGATEWAY_URL =
   process.env.LIVEPEER_PROMETHEUS_URL || "http://localhost:9091";
 const JOB_NAME = process.env.LIVEPEER_PROMETHEUS_JOB_NAME || "test";
+const ENVIRONMENT = process.env.ENVIRONMENT || "local";
 const INSTANCE_ID = process.env.GITHUB_RUN_ID
   ? `${process.env.GITHUB_WORKFLOW}-${process.env.GITHUB_RUN_ID}`
   : "local-instance";
@@ -52,10 +53,11 @@ export async function pushMetrics() {
       jobName: JOB_NAME,
       groupings: {
         instance: INSTANCE_ID,
+        environment: ENVIRONMENT,
       },
     });
     console.log(
-      `Metrics pushed to Pushgateway (${PUSHGATEWAY_URL}) for job ${JOB_NAME}, instance ${INSTANCE_ID}`,
+      `Metrics pushed to Pushgateway (${PUSHGATEWAY_URL}) for job ${JOB_NAME}, instance ${INSTANCE_ID}, environment ${ENVIRONMENT}`,
     );
   } catch (error) {
     console.error("Failed to push metrics to Pushgateway:", error);
