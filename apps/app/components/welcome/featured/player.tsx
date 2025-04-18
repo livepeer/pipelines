@@ -102,7 +102,7 @@ export const LivepeerPlayer = () => {
 
   if (!src) {
     return (
-      <div className="w-full relative h-full bg-transparent backdrop-blur-0 data-[visible=true]:animate-in data-[visible=false]:animate-out data-[visible=false]:fade-out-0 data-[visible=true]:fade-in-0">
+      <div className="w-full relative h-full bg-black/50 backdrop-blur data-[visible=true]:animate-in data-[visible=false]:animate-out data-[visible=false]:fade-out-0 data-[visible=true]:fade-in-0">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
           <LoadingIcon className="w-8 h-8 animate-spin" />
         </div>
@@ -145,7 +145,7 @@ export const LivepeerPlayer = () => {
           className="h-full w-full transition-all object-contain relative z-0"
         />
 
-        <Player.LoadingIndicator className="w-full relative h-full bg-transparent backdrop-blur-0 data-[visible=true]:animate-in data-[visible=false]:animate-out data-[visible=false]:fade-out-0 data-[visible=true]:fade-in-0 z-[6]">
+        <Player.LoadingIndicator className="w-full relative h-full bg-black/50 backdrop-blur data-[visible=true]:animate-in data-[visible=false]:animate-out data-[visible=false]:fade-out-0 data-[visible=true]:fade-in-0 z-[6]">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
             <LoadingIcon className="w-8 h-8 animate-spin" />
           </div>
@@ -154,7 +154,7 @@ export const LivepeerPlayer = () => {
 
         <Player.ErrorIndicator
           matcher="all"
-          className="absolute select-none inset-0 text-center bg-transparent backdrop-blur-0 flex flex-col items-center justify-center gap-4 duration-1000 data-[visible=true]:animate-in data-[visible=false]:animate-out data-[visible=false]:fade-out-0 data-[visible=true]:fade-in-0 z-[6]"
+          className="absolute select-none inset-0 text-center bg-black/80 backdrop-blur-lg flex flex-col items-center justify-center gap-4 duration-1000 data-[visible=true]:animate-in data-[visible=false]:animate-out data-[visible=false]:fade-out-0 data-[visible=true]:fade-in-0 z-[6]"
         >
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
             <LoadingIcon className="w-8 h-8 animate-spin" />
@@ -164,7 +164,7 @@ export const LivepeerPlayer = () => {
 
         <Player.ErrorIndicator
           matcher="offline"
-          className="absolute select-none animate-in fade-in-0 inset-0 text-center bg-transparent backdrop-blur-0 flex flex-col items-center justify-center gap-4 duration-1000 data-[visible=true]:animate-in data-[visible=false]:animate-out data-[visible=false]:fade-out-0 data-[visible=true]:fade-in-0 z-[6]"
+          className="absolute select-none animate-in fade-in-0 inset-0 text-center bg-black/80 backdrop-blur-lg flex flex-col items-center justify-center gap-4 duration-1000 data-[visible=true]:animate-in data-[visible=false]:animate-out data-[visible=false]:fade-out-0 data-[visible=true]:fade-in-0 z-[6]"
         >
           <PlayerLoading
             title="ALMOST THERE"
