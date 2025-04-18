@@ -3,11 +3,13 @@
 import { useCommandSuggestions } from "@/hooks/useCommandSuggestions";
 import useFullscreenStore from "@/hooks/useFullscreenStore";
 import useMobileStore from "@/hooks/useMobileStore";
+import { usePrivy } from "@/hooks/usePrivy";
 import { usePromptStore } from "@/hooks/usePromptStore";
 import { usePromptVersionStore } from "@/hooks/usePromptVersionStore";
 import track from "@/lib/track";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Input } from "@repo/design-system/components/ui/input";
+import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   Tooltip,
   TooltipContent,
@@ -17,11 +19,12 @@ import { cn } from "@repo/design-system/lib/utils";
 import {
   CircleDot,
   Loader2,
+  Shuffle,
   SlidersHorizontal,
+  Vibrate,
   WandSparkles,
-  X,
 } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import TextareaAutosize from "react-textarea-autosize";
 import {
   useDreamshaperStore,
@@ -29,10 +32,6 @@ import {
 } from "../../../hooks/useDreamshaper";
 import SettingsMenu from "./prompt-settings";
 import { MAX_PROMPT_LENGTH, useValidateInput } from "./useValidateInput";
-import { Separator } from "@repo/design-system/components/ui/separator";
-import { usePrivy } from "@/hooks/usePrivy";
-
-const PROMPT_PLACEHOLDER = "Enter your prompt...";
 
 // Define type for command options
 type CommandOption = {
@@ -50,6 +49,34 @@ type PipelineParam = {
   // Add other fields if needed
 };
 
+const SHAKE_THRESHOLD = 25;
+const SHAKE_TIMEOUT = 1000;
+
+const SHAKE_PROMPTS = [
+  `((Surreal dreamscape)), floating objects, melting clocks, impossible architecture, vibrant colors, dreamlike atmosphere, Salvador Dali influence --quality 3 --negative-prompt "realistic, ordinary, mundane" --creativity 0.9`,
+  `(Mystical creature), ethereal glow, intricate details, fantasy environment, otherworldly features --quality 3 --negative-prompt "blurry, low resolution, anatomically incorrect" --creativity 0.4`,
+  `((Cosmic landscape)) with (swirling nebulae), distant galaxies, stellar formations, dark matter wisps, foreground asteroid field, cosmic dust catching starlight --quality 3 --negative-prompt "oversaturated, cartoonish, low resolution" --creativity 0.7`,
+  `(Futuristic cityscape), towering skyscrapers, flying vehicles, (holographic advertisements), gleaming architecture, neon lighting, reflective surfaces --quality 3 --negative-prompt "low quality, blurry, dystopian" --creativity 0.7`,
+  `((Enchanted garden)), magical atmosphere, dappled sunlight through ancient trees, glowing flowers, hidden pathways, fairy lights, vibrant colors --quality 3 --negative-prompt "artificial looking, oversaturated" --creativity 0.7`,
+  `((Alien landscape)), psychedelic flora, twin moons in sky, otherworldly terrain, unusual rock formations, strange atmospheric conditions --quality 3 --negative-prompt "earth-like, familiar plants, humans" --creativity 0.8`,
+  `((Underwater kingdom)), bioluminescent architecture, coral reefs, merfolk civilization, floating bubbles, azure lighting --quality 3 --negative-prompt "low quality, cartoon-style" --creativity 0.7`,
+  `((Ancient civilization ruins)), overgrown with vegetation, hidden temples, mysterious symbols, fog-shrouded monuments, archaeologist's discovery, golden artifacts --quality 3 --negative-prompt "modern elements, tourists, clean and restored" --creativity 0.8`,
+  `((Steampunk laboratory)), brass instruments, gears and clockwork, steam-powered inventions, Victorian aesthetic, amber lighting, mechanical contraptions --quality 3 --negative-prompt "digital technology, modern elements" --creativity 0.7`,
+  `((Crystalline cavern)), geometric formations, refracting light beams, translucent structures, glowing minerals, subterranean wonder --quality 3 --negative-prompt "cluttered, chaotic, dull colors" --creativity 0.6`,
+  `((Floating islands)) in the sky, cascading waterfalls, ancient ruins, lush vegetation, flying creatures, suspension bridges between islands --quality 3 --negative-prompt "ground-based, desert, barren" --creativity 0.8`,
+  `((Cybernetic organism)), fusion of biological and mechanical parts, glowing circuitry, exposed machinery, organic-synthetic interface --quality 3 --negative-prompt "fully organic, fully robotic, crude design" --creativity 0.7`,
+  `((Abandoned space station)), zero gravity debris, flickering emergency lights, overgrown vegetation modules, damaged technology, distant stars visible through breached hull --quality 3 --negative-prompt "clean, functional, inhabited" --creativity 0.6`,
+  `((Microscopic world)), cellular structures, vibrant organelles, pulsing membranes, intricate biological patterns, dynamic interactions --quality 3 --negative-prompt "macro photography, visible humans, medical imagery" --creativity 0.75`,
+  `((Ghost ship)) on foggy sea, tattered sails, weathered wood, ethereal glow, mysterious figures, abandoned treasures --quality 3 --negative-prompt "sunny weather, modern vessel, crowded" --creativity 0.65`,
+  `((Mythological battle)), epic confrontation, divine weapons, legendary creatures, atmospheric lighting, dramatic poses --quality 3 --negative-prompt "modern warfare, realistic proportions" --creativity 0.8`,
+  `((Dimensional portal)), swirling energies, glimpses of parallel worlds, reality distortion, cosmic bridge, ethereal guardians --quality 3 --negative-prompt "solid structure, single reality, static image" --creativity 0.85`,
+  `((Volcanic landscape)), rivers of lava, obsidian formations, heat distortion, ash plumes, fire-resistant organisms --quality 3 --negative-prompt "cold climate, lush vegetation, human structures" --creativity 0.6`,
+  `((Sentient plant civilization)), living architecture, bioluminescent communication, symbiotic relationships, organic technology, flowering consciousness --quality 3 --negative-prompt "mechanical, human-centric, winter scene" --creativity 0.75`,
+  `((Quantum realm)), probability waves, subatomic particles, energy fluctuations, fractal patterns, dimensional shifting --quality 3 --negative-prompt "macroscopic, solid objects, definite shapes" --creativity 0.9`,
+  `((Elemental convergence)), clashing forces of nature, fire meeting water, earth splitting to reveal magma, air vortices, primal energy --quality 3 --negative-prompt "peaceful scene, single element dominance" --creativity 0.8`,
+  `((Time-worn library)), ancient tomes, dust motes in sunbeams, forgotten knowledge, magical manuscripts, labyrinthine shelves --quality 3 --negative-prompt "modern books, electronic devices, clean and organized" --creativity 0.7`,
+];
+
 export const InputPrompt = () => {
   const { pipeline, stream, updating } = useDreamshaperStore();
   const { handleStreamUpdate } = useStreamUpdates();
@@ -58,9 +85,11 @@ export const InputPrompt = () => {
   const { lastSubmittedPrompt, setLastSubmittedPrompt, setHasSubmittedPrompt } =
     usePromptStore();
   const { promptVersion, incrementPromptVersion } = usePromptVersionStore();
-
   const { authenticated } = usePrivy();
 
+  // Move hasMotionPermission state here with other state declarations
+  const [hasMotionPermission, setHasMotionPermission] = useState(false);
+  const [motionPermissionDenied, setMotionPermissionDenied] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const [isInputHovered, setInputHovered] = useState(false);
   const [settingsOpened, setSettingsOpened] = useState(false);
@@ -79,21 +108,22 @@ export const InputPrompt = () => {
     }));
   }, [pipeline?.prioritized_params]);
 
-  const restoreLastPrompt = () => {
+  const restoreLastPrompt = useCallback(() => {
     if (lastSubmittedPrompt) {
       setInputValue(lastSubmittedPrompt);
       setTimeout(() => {
         if (ref && typeof ref !== "function" && ref.current) {
           ref.current.focus();
-
           if ("setSelectionRange" in ref.current) {
-            const length = lastSubmittedPrompt.length;
-            ref.current.setSelectionRange(length, length);
+            ref.current.setSelectionRange(
+              lastSubmittedPrompt.length,
+              lastSubmittedPrompt.length,
+            );
           }
         }
       }, 0);
     }
-  };
+  }, [lastSubmittedPrompt]);
 
   const {
     commandMenuOpen,
@@ -250,6 +280,156 @@ export const InputPrompt = () => {
     }
   };
 
+  // Add this function to generate random prompts
+  const generateRandomPrompt = () => {
+    const randomIndex = Math.floor(Math.random() * SHAKE_PROMPTS.length);
+    return SHAKE_PROMPTS[randomIndex];
+  };
+
+  // Memoize handleShake to prevent recreation on every render
+  const handleShake = useCallback(() => {
+    if (!updating) {
+      const randomPrompt = generateRandomPrompt();
+      track("daydream_prompt_submitted", {
+        is_authenticated: authenticated,
+        prompt: randomPrompt,
+        stream_id: stream?.id,
+        source: "shake",
+      });
+      handleStreamUpdate(randomPrompt, { silent: true });
+      setLastSubmittedPrompt(randomPrompt);
+      setHasSubmittedPrompt(true);
+      incrementPromptVersion(promptVersion + 1);
+    }
+  }, [
+    updating,
+    authenticated,
+    stream?.id,
+    handleStreamUpdate,
+    setLastSubmittedPrompt,
+    setHasSubmittedPrompt,
+    incrementPromptVersion,
+    promptVersion,
+  ]);
+
+  // Update the motion detection useEffect
+  useEffect(() => {
+    if (!hasMotionPermission || !isMobile) return;
+
+    let lastX: number = 0,
+      lastY: number = 0,
+      lastZ: number = 0;
+    let lastShake = 0;
+
+    const handleMotion = (event: DeviceMotionEvent) => {
+      const current = Date.now();
+
+      const acceleration = event.accelerationIncludingGravity;
+      if (!acceleration) return;
+
+      const x = acceleration.x || 0;
+      const y = acceleration.y || 0;
+      const z = acceleration.z || 0;
+
+      const deltaX = Math.abs(x - lastX);
+      const deltaY = Math.abs(y - lastY);
+      const deltaZ = Math.abs(z - lastZ);
+
+      const totalAcceleration = deltaX + deltaY + deltaZ;
+
+      if (totalAcceleration > SHAKE_THRESHOLD) {
+        if (current - lastShake > SHAKE_TIMEOUT) {
+          handleShake();
+          lastShake = current;
+        }
+      }
+
+      lastX = x;
+      lastY = y;
+      lastZ = z;
+    };
+
+    window.addEventListener("devicemotion", handleMotion, true);
+
+    return () => {
+      window.removeEventListener("devicemotion", handleMotion, true);
+    };
+  }, [hasMotionPermission, isMobile, handleShake]);
+
+  // Update the permission request
+  const requestMotionPermission = useCallback(async () => {
+    try {
+      if (
+        typeof DeviceMotionEvent !== "undefined" &&
+        // @ts-ignore - iOS specific request method
+        typeof DeviceMotionEvent.requestPermission === "function"
+      ) {
+        // @ts-ignore
+        const permissionState = await DeviceMotionEvent.requestPermission();
+        if (permissionState === "granted") {
+          setHasMotionPermission(true);
+          setMotionPermissionDenied(false);
+        } else {
+          setMotionPermissionDenied(true);
+        }
+      } else {
+        // Android or older iOS that doesn't need permission
+        setHasMotionPermission(true);
+        setMotionPermissionDenied(false);
+      }
+    } catch (error) {
+      console.error("Error requesting motion permission:", error);
+      setMotionPermissionDenied(true);
+      alert(
+        "Unable to access motion sensors. You can still use the shuffle feature!",
+      );
+    }
+  }, []);
+
+  // Update the shuffle button handler
+  const handleShuffleClick = useCallback(async () => {
+    if (isMobile && !hasMotionPermission && !motionPermissionDenied) {
+      await requestMotionPermission();
+      return;
+    }
+
+    // If we're on desktop or permissions were denied, just submit a random prompt
+    if (updating) {
+      return;
+    }
+
+    const randomPrompt = generateRandomPrompt();
+
+    track("daydream_prompt_submitted", {
+      is_authenticated: authenticated,
+      prompt: randomPrompt,
+      stream_id: stream?.id,
+      source: motionPermissionDenied ? "shuffle-fallback" : "shuffle",
+    });
+
+    handleStreamUpdate(randomPrompt, { silent: true });
+    setLastSubmittedPrompt(randomPrompt);
+    setHasSubmittedPrompt(true);
+    incrementPromptVersion(promptVersion + 1);
+  }, [
+    isMobile,
+    hasMotionPermission,
+    motionPermissionDenied,
+    updating,
+    authenticated,
+    stream?.id,
+    requestMotionPermission,
+    handleStreamUpdate,
+    promptVersion,
+  ]);
+
+  const getPlaceholderText = () => {
+    if (isMobile && hasMotionPermission && !motionPermissionDenied) {
+      return "Shake for a random prompt or write your own";
+    }
+    return "Enter your prompt...";
+  };
+
   return (
     <div
       className={cn(
@@ -285,7 +465,7 @@ export const InputPrompt = () => {
               }
             }}
           >
-            <span>{lastSubmittedPrompt || PROMPT_PLACEHOLDER}</span>
+            <span>{lastSubmittedPrompt || getPlaceholderText()}</span>
             {isInputHovered && lastSubmittedPrompt && (
               <Tooltip delayDuration={0}>
                 <TooltipTrigger asChild>
@@ -465,6 +645,43 @@ export const InputPrompt = () => {
 
       {!isMobile && <Separator orientation="vertical" className="h-6 mr-2" />}
 
+      {/* Only show the button if we either don't have permission yet, or if permission was denied, or if we're on desktop */}
+      {(isMobile || !hasMotionPermission || motionPermissionDenied) && (
+        <Tooltip delayDuration={50}>
+          <TooltipTrigger asChild>
+            <div className="relative inline-block">
+              <Button
+                disabled={updating}
+                onClick={handleShuffleClick}
+                className={cn(
+                  "border-none items-center justify-center font-semibold text-xs bg-[#000000] flex disabled:bg-[#000000] disabled:opacity-80 mr-2",
+                  "w-auto h-9 aspect-square rounded-md",
+                )}
+              >
+                {isMobile && !motionPermissionDenied && !hasMotionPermission ? (
+                  <Vibrate className="h-4 w-4 stroke-[2]" />
+                ) : (
+                  <Shuffle className="h-4 w-4 stroke-[2]" />
+                )}
+              </Button>
+            </div>
+          </TooltipTrigger>
+          <TooltipContent
+            side="top"
+            className="bg-white text-black border border-gray-200 shadow-md dark:bg-zinc-900 dark:text-white dark:border-zinc-700"
+          >
+            {isMobile
+              ? motionPermissionDenied
+                ? "Random prompt"
+                : hasMotionPermission
+                  ? "Shake to generate"
+                  : "Enable shake to generate"
+              : "Random prompt"}
+          </TooltipContent>
+        </Tooltip>
+      )}
+
+      {/* Existing submit button */}
       <Tooltip delayDuration={50}>
         <TooltipTrigger asChild>
           <div className="relative inline-block">
