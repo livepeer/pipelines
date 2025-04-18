@@ -26,7 +26,7 @@ export const SCREENSHOT_INTERVAL_MS = 250;
 
 export const MIN_DIFF_RATIO_THRESHOLD = 0.05;
 export const MIN_VARIANCE_THRESHOLD = 100;
-export const MIN_ENTROPY_THRESHOLD = 0.5;
+export const MIN_ENTROPY_THRESHOLD = 0.3;
 
 export const EXTENSION = "png";
 
