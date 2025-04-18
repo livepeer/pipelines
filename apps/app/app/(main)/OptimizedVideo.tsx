@@ -8,31 +8,23 @@ import { useEffect, useRef, useState } from "react";
 interface OptimizedVideoProps {
   src: string;
   clipId: string;
-  prompt?: string;
-  title: string;
   slug: string | null;
   authorName: string;
-  createdAt: string;
-  remixCount: number;
   className?: string;
 }
 
 export default function OptimizedVideo({
   src,
   clipId,
-  prompt,
-  title,
   slug,
   authorName,
-  createdAt,
-  remixCount,
   className,
 }: OptimizedVideoProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isNearViewport, setIsNearViewport] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  const { isPreviewOpen, setIsPreviewOpen } = usePreviewStore();
+  const { isPreviewOpen } = usePreviewStore();
 
   const shortSrc = src.replace(/\.mp4$/, "-short.mp4");
   const [effectiveSrc, setEffectiveSrc] = useState(shortSrc);
@@ -127,6 +119,7 @@ export default function OptimizedVideo({
               muted
               loop
               playsInline
+              preload="auto"
               onLoadedData={() => setIsLoaded(true)}
               className={cn(
                 "absolute inset-0 size-full object-cover object-top bg-transparent",
