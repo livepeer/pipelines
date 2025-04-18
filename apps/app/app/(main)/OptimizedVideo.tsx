@@ -161,7 +161,7 @@ export default function OptimizedVideo({
                   trackingEvent="explore_try_prompt_clicked"
                   trackingProperties={{ location: "video_card" }}
                   variant="outline"
-                  className="inline-flex items-center space-x-0.5 px-3 py-0.5 h-6 bg-black/20 backdrop-blur-md text-white rounded-full border-white border shadow-sm scale-90"
+                  className="inline-flex items-center space-x-0.5 px-3 py-2 h-8 bg-black/20 backdrop-blur-md text-white rounded-full border-white border shadow-sm scale-90"
                 >
                   <WandSparkles className="w-1.5 h-1.5" />
                   <span className="text-[0.7rem] tracking-wide">
