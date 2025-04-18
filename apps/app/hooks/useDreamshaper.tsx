@@ -219,7 +219,7 @@ export function useParamsHandling() {
     const applySharedParams = async () => {
       const sharedId = searchParams.get("shared");
 
-      if (!sharedId || sharedParamsApplied || !stream) {
+      if (!sharedId || sharedParamsApplied || !stream || !gatewayHostReady) {
         return;
       }
 
@@ -294,7 +294,7 @@ export function useParamsHandling() {
     const applyInputPrompt = async () => {
       const inputPromptBase64 = searchParams.get("inputPrompt");
 
-      if (inputPromptBase64 && !inputPromptProcessed && stream && pipeline) {
+      if (inputPromptBase64 && !inputPromptProcessed && stream && pipeline && gatewayHostReady) {
         setInputPromptProcessed(true);
         try {
           const decodedPrompt = atob(inputPromptBase64);
@@ -328,6 +328,7 @@ export function useParamsHandling() {
     pipeline,
     sharedParamsApplied,
     inputPromptProcessed,
+    gatewayHostReady,
     setSharedParamsApplied,
     setSharedPrompt,
     setLastSubmittedPrompt,
