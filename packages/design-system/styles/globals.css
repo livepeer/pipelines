@@ -247,7 +247,7 @@
   content: "";
   position: absolute;
   inset: -1.5px;
-  border-radius: 8px;
+  border-radius: 8px; /* HARDCODED - Does not work with var(--radius) on some apple mobile devices */
   padding: 1.5px;
   background: conic-gradient(
     from var(--gradient-angle),
