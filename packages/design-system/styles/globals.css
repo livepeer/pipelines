@@ -240,14 +240,14 @@
   overflow: visible;
   border: 1.5px solid transparent;
   background-color: #FEFEFE !important;
-  border-radius: var(--radius);
+  border-radius: 8px;
 }
 
 .alwaysAnimatedButton::before {
   content: "";
   position: absolute;
   inset: -1.5px;
-  border-radius: var(--radius);
+  border-radius: 8px;
   padding: 1.5px;
   background: conic-gradient(
     from var(--gradient-angle),
