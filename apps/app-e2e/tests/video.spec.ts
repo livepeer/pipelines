@@ -37,7 +37,7 @@ if (!APP_URL) {
 test.describe("Daydream Page Tests", () => {
   test.beforeEach(async ({ page, context }) => {
     await context.grantPermissions(["camera", "microphone"]);
-    await page.goto("/");
+    await page.goto("/create");
   });
 
   test.afterEach(async ({}, testInfo) => {
