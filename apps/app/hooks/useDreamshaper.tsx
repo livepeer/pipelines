@@ -45,12 +45,13 @@ export const getStreamUrl = (
 
   if (customWhipServer) {
     if (customWhipServer.includes("<STREAM_KEY>")) {
-      return customWhipServer.replace("<STREAM_KEY>", streamKey);
+      const res = customWhipServer.replace("<STREAM_KEY>", streamKey)
+      return `${res}?test-param=test`;
     }
-    return `${customWhipServer}${streamKey}/whip`;
+    return `${customWhipServer}${streamKey}/whip?test-param=test`;
   }
 
-  return `${app.newWhipUrl}${streamKey}/whip`;
+  return `${app.newWhipUrl}${streamKey}/whip?test-param=test`;
 };
 
 const processInputValues = (inputValues: any) => {
