@@ -111,9 +111,9 @@ export default function WelcomeScreen() {
               transition: getCloudTransition(5),
             }}
           ></div>
-          <div className="bg-gradient-to-b from-transparent to-[rgba(0,0,0,0.2)] absolute inset-0 z-[7] opacity-[55%]"></div>
+          <div className="bg-gradient-to-b from-transparent to-white absolute inset-0 z-[7] opacity-[55%]"></div>
         </div>
-        <div className="absolute inset-0 w-full h-full backdrop-blur-sm z-[8]"></div>
+        <div className="absolute inset-0 w-full h-full backdrop-blur-md z-[8]"></div>
       </div>
 
       <div className="min-h-screen flex flex-col items-center justify-center relative overflow-y-auto">
