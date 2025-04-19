@@ -66,18 +66,19 @@ export const users = pgTable(
   "users",
   {
     id: text().primaryKey().notNull(),
-    name: varchar({ length: 255 }),
-    email: varchar({ length: 255 }),
-    createdAt: timestamp("created_at", { mode: "string" }).default(
-      sql`CURRENT_TIMESTAMP`,
-    ),
-    lastLogin: timestamp("last_login", { mode: "string" }),
+    name: varchar(),
+    email: varchar(),
+    createdAt: timestamp("created_at", {
+      withTimezone: true,
+      mode: "string",
+    }).default(sql`CURRENT_TIMESTAMP`),
+    lastLogin: timestamp("last_login", { withTimezone: true, mode: "string" }),
     isActive: boolean("is_active").default(true),
-    provider: varchar({ length: 50 }),
+    provider: varchar("provider"),
     additionalDetails: jsonb("additional_details").default({}),
   },
   table => [
-    unique("users_email_key").on(table.email),
+    // unique("users_email_key").on(table.email), // ⛑️
     check(
       "users_provider_check",
       sql`(provider)::text = ANY (ARRAY[('discord'::character varying)::text, ('email'::character varying)::text, ('github'::character varying)::text, ('google'::character varying)::text])`,
@@ -89,26 +90,28 @@ export const pipelines = pgTable(
   "pipelines",
   {
     id: text().primaryKey().notNull(),
-    createdAt: timestamp("created_at", { mode: "string" }).default(
-      sql`CURRENT_TIMESTAMP`,
-    ),
-    updatedAt: timestamp("updated_at", { mode: "string" }).default(
-      sql`CURRENT_TIMESTAMP`,
-    ),
-    lastUsed: timestamp("last_used", { mode: "string" }),
-    name: varchar({ length: 255 }),
+    createdAt: timestamp("created_at", {
+      withTimezone: true,
+      mode: "string",
+    }).default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: timestamp("updated_at", {
+      withTimezone: true,
+      mode: "string",
+    }).default(sql`CURRENT_TIMESTAMP`),
+    lastUsed: timestamp("last_used", { withTimezone: true, mode: "string" }),
+    name: varchar(),
     description: text(),
     isPrivate: boolean("is_private").default(true),
-    coverImage: varchar("cover_image", { length: 255 }),
-    type: varchar({ length: 50 }).default("comfyUI"),
-    sampleCodeRepo: varchar("sample_code_repo", { length: 255 }),
+    coverImage: varchar("cover_image"),
+    type: varchar().default("comfyUI"),
+    sampleCodeRepo: varchar("sample_code_repo"),
     isFeatured: boolean("is_featured").default(false),
-    sampleInputVideo: varchar("sample_input_video", { length: 255 }),
+    sampleInputVideo: varchar("sample_input_video"),
     author: text(),
     modelCard: jsonb("model_card").default({}),
     key: text(),
     config: jsonb(),
-    comfyUiJson: jsonb("comfy_ui_json"),
+    comfyUiJson: json("comfy_ui_json"),
     version: text().default("1.0.0").notNull(),
     validationStatus: validationStatus("validation_status")
       .default("pending")
@@ -130,9 +133,9 @@ export const apiKeys = pgTable(
     id: uuid().defaultRandom().primaryKey().notNull(),
     userId: text("user_id"),
     apiKey: text("api_key").notNull(),
-    createdAt: timestamp("created_at", { mode: "string" }).default(
-      sql`CURRENT_TIMESTAMP`,
-    ),
+    createdAt: timestamp("created_at", {
+      mode: "string",
+    }).default(sql`CURRENT_TIMESTAMP`),
     lastUsed: timestamp("last_used", { mode: "string" }),
     isActive: boolean("is_active").default(true),
     name: varchar(),
@@ -143,7 +146,7 @@ export const apiKeys = pgTable(
       foreignColumns: [users.id],
       name: "api_keys_user_id_fkey",
     }),
-    unique("api_keys_api_key_key").on(table.apiKey),
+    // unique("api_keys_api_key_key").on(table.apiKey), // ⛑️
   ],
 );
 
@@ -157,7 +160,10 @@ export const jobs = pgTable(
     creditCost: numeric("credit_cost", { precision: 10, scale: 2 }).notNull(),
     ethFees: numeric("eth_fees", { precision: 10, scale: 2 }),
     status: varchar({ length: 50 }).notNull(),
-    createdAt: timestamp("created_at", { mode: "string" }).defaultNow(),
+    createdAt: timestamp("created_at", {
+      withTimezone: true,
+      mode: "string",
+    }).defaultNow(),
   },
   table => [
     foreignKey({
@@ -182,7 +188,10 @@ export const purchases = pgTable(
       scale: 2,
     }).notNull(),
     amountPaid: numeric("amount_paid", { precision: 10, scale: 2 }).notNull(),
-    createdAt: timestamp("created_at", { mode: "string" }).defaultNow(),
+    createdAt: timestamp("created_at", {
+      withTimezone: true,
+      mode: "string",
+    }).defaultNow(),
   },
   table => [
     foreignKey({
@@ -203,7 +212,10 @@ export const auditLogs = pgTable(
       scale: 2,
     }).notNull(),
     reason: varchar({ length: 255 }).notNull(),
-    createdAt: timestamp("created_at", { mode: "string" }).defaultNow(),
+    createdAt: timestamp("created_at", {
+      withTimezone: true,
+      mode: "string",
+    }).defaultNow(),
   },
   table => [
     foreignKey({
@@ -221,7 +233,10 @@ export const streams = pgTable(
     streamKey: text("stream_key").notNull(),
     outputStreamUrl: text("output_stream_url").notNull(),
     pipelineParams: jsonb("pipeline_params"),
-    createdAt: timestamp("created_at", { mode: "string" }).defaultNow(),
+    createdAt: timestamp("created_at", {
+      withTimezone: true,
+      mode: "string",
+    }).defaultNow(),
     pipelineId: text("pipeline_id"),
     outputPlaybackId: text("output_playback_id"),
     name: text(),
