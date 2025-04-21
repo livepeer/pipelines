@@ -1,5 +1,4 @@
 import { Storage } from "@google-cloud/storage";
-import { v4 as uuidv4 } from "uuid";
 import { gcpConfig } from "../serverEnv";
 
 let storage: Storage;
@@ -66,11 +65,18 @@ export function buildClipPath(
   return `clips/${userId}/${id}/${filename}`;
 }
 
-export function buildThumbnailPath(
+function buildThumbnailPath(userId: string, clipId: string | number): string {
+  return `clips/${userId}/${clipId}/thumbnail.jpg`;
+}
+
+export function buildThumbnailUrl(
   userId: string,
   clipId: string | number,
 ): string {
-  return `clips/${userId}/${clipId}/thumbnail.jpg`;
+  return `https://storage.googleapis.com/${bucketName}/${buildThumbnailPath(
+    userId,
+    clipId,
+  )}`;
 }
 
 export async function deleteFromGCS(path: string): Promise<void> {
