@@ -12,7 +12,7 @@ on:
   workflow_dispatch:
 
 env:
-  GCP_REGION: "us-central1"
+  GCP_REGION: "us"
   FUNCTION_NAME: "generateThumbnail"
   WORK_DIR: "workers/clips"
   GCS_BUCKET_NAME: "livepeer-clips-staging"
