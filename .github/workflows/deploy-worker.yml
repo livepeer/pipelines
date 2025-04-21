@@ -1,0 +1,61 @@
+name: Deploy Clips Worker
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches:
+      - main
+    paths:
+      - "workers/clips/**"
+      - ".github/workflows/deploy-worker.yml"
+  workflow_dispatch:
+
+env:
+  GCP_REGION: "us-central1"
+  FUNCTION_NAME: "generateThumbnail"
+  WORK_DIR: "workers/clips"
+
+jobs:
+  deploy:
+    name: Build and Deploy Cloud Function
+    environment: "Preview"
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: "read"
+      id-token: "write"
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.GCP_SA_EMAIL }}
+
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+
+      - name: Deploy Cloud Function
+        run: |
+          gcloud functions deploy ${{ env.FUNCTION_NAME }} \
+            --gen2 \
+            --region=${{ env.GCP_REGION }} \
+            --runtime=nodejs20 \
+            --source=. \
+            --entry-point=${{ env.FUNCTION_NAME }} \
+            --trigger-event-filters="type=google.cloud.storage.object.v1.finalized" \
+            --trigger-event-filters="attribute=bucket,value=${{ secrets.GCS_BUCKET_NAME }}" \
+            --timeout=300s \
+            --memory=1GiB # Adjust memory as needed for FFmpeg and video processing
+        working-directory: ${{ env.WORK_DIR }}
+
+      - name: Deployment Summary
+        run: |
+          echo "Successfully deployed function '${{ env.FUNCTION_NAME }}' to region '${{ env.GCP_REGION }}'."
+          echo "Triggered by uploads to bucket: gs://${{ secrets.GCS_BUCKET_NAME }}"
