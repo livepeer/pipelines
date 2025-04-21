@@ -12,7 +12,7 @@ declare global {
 
 export type ClipRecordingMode = "horizontal" | "vertical" | "output-only";
 
-export const CLIP_DURATION = 30000;
+export const CLIP_DURATION = 60000;
 
 const FRAME_RATE = 30;
 const INPUT_DELAY = 1000; // 1 second delay for input video - increase or decreas to sync

@@ -20,6 +20,7 @@ import { VideoProvider } from "./VideoProvider";
 import { Button } from "@repo/design-system/components/ui/button";
 import { TrackedButton } from "@/components/analytics/TrackedButton";
 import Link from "next/link";
+import React from "react";
 
 const formatter = new Intl.DateTimeFormat("en-US", {
   month: "short",
@@ -53,6 +54,7 @@ export default function QuickviewVideo({
   const { setIsPreviewOpen, isPreviewOpen } = usePreviewStore();
   const router = useRouter();
   const pathname = usePathname();
+  const [isClosing, setIsClosing] = React.useState(false);
 
   useEffect(() => {
     const log = async () => {
@@ -71,13 +73,32 @@ export default function QuickviewVideo({
   }, []);
 
   useEffect(() => {
-    if (pathname !== "/") setIsPreviewOpen(true);
-    else setIsPreviewOpen(false);
+    if (pathname !== "/") {
+      setIsPreviewOpen(true);
+      setIsClosing(false);
+    } else {
+      setIsPreviewOpen(false);
+    }
   }, [pathname]);
 
+  const prevIsOpenRef = React.useRef(isPreviewOpen);
+  useEffect(() => {
+    if (prevIsOpenRef.current && !isPreviewOpen) {
+      setIsClosing(true);
+    }
+    prevIsOpenRef.current = isPreviewOpen;
+  }, [isPreviewOpen]);
+
   const handleClose = () => {
+    if (isClosing) return;
+
+    setIsClosing(true);
     setIsPreviewOpen(false);
-    router.push("/", { scroll: false });
+
+    setTimeout(() => {
+      router.push("/", { scroll: false });
+      setIsClosing(false);
+    }, 500);
   };
 
   return (
