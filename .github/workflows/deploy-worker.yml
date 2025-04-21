@@ -50,7 +50,7 @@ jobs:
             --source=. \
             --entry-point=${{ env.FUNCTION_NAME }} \
             --trigger-event-filters="type=google.cloud.storage.object.v1.finalized" \
-            --trigger-event-filters="attribute=bucket,value=${{ env.GCS_BUCKET_NAME }}" \
+            --trigger-bucket=${{ env.GCS_BUCKET_NAME }} \
             --timeout=300s \
             --memory=1GiB
 
