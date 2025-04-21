@@ -15,6 +15,7 @@ env:
   GCP_REGION: "us-central1"
   FUNCTION_NAME: "generateThumbnail"
   WORK_DIR: "workers/clips"
+  GCS_BUCKET_NAME: "livepeer-clips-staging"
 
 jobs:
   deploy:
@@ -49,12 +50,13 @@ jobs:
             --source=. \
             --entry-point=${{ env.FUNCTION_NAME }} \
             --trigger-event-filters="type=google.cloud.storage.object.v1.finalized" \
-            --trigger-event-filters="attribute=bucket,value=${{ secrets.GCS_BUCKET_NAME }}" \
+            --trigger-event-filters="attribute=bucket,value=${{ env.GCS_BUCKET_NAME }}" \
             --timeout=300s \
-            --memory=1GiB # Adjust memory as needed for FFmpeg and video processing
+            --memory=1GiB
+
         working-directory: ${{ env.WORK_DIR }}
 
       - name: Deployment Summary
         run: |
           echo "Successfully deployed function '${{ env.FUNCTION_NAME }}' to region '${{ env.GCP_REGION }}'."
-          echo "Triggered by uploads to bucket: gs://${{ secrets.GCS_BUCKET_NAME }}"
+          echo "Triggered by uploads to bucket: gs://${{ env.GCS_BUCKET_NAME }}"
