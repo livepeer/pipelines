@@ -33,6 +33,7 @@ jobs:
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:
+          project_id: livepeer-firestore-staging
           workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
 
       - name: Set up Google Cloud SDK
