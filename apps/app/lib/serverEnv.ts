@@ -23,12 +23,18 @@ const KafkaConfig = z.object({
   password: z.string().min(1),
 });
 
+const GCPConfig = z.object({
+  bucketName: z.string().min(1).optional(),
+  credentials: z.string().optional(),
+});
+
 export const ServerEnvironmentConfig = z.object({
   db: DBConfig,
   supabase: SupabaseConfig,
   gateway: GatewayConfig,
   gateway_secondary: GatewayConfig.optional(),
   kafka: KafkaConfig,
+  gcp: GCPConfig,
 });
 
 type ServerEnvironmentConfig = z.infer<typeof ServerEnvironmentConfig>;
@@ -63,6 +69,10 @@ const serverOnlyEnvConfig = {
     username: process.env.KAFKA_USER,
     password: process.env.KAFKA_PASSWORD,
   },
+  gcp: {
+    bucketName: process.env.GCP_BUCKET_NAME,
+    credentials: process.env.GCP_CREDENTIALS,
+  },
 } as const;
 
 const serverOnlyConfig = ServerEnvironmentConfig.parse(serverOnlyEnvConfig);
@@ -94,3 +104,5 @@ export const validateServerEnv = async () => {
     console.log("Server environment validation failed");
   }
 };
+
+export const gcpConfig = serverOnlyConfig.gcp;
