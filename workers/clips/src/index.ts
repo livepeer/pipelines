@@ -6,9 +6,14 @@ import * as path from "path";
 import * as os from "os";
 
 const FFMPEG_COMMAND = "ffmpeg";
+const FFPROBE_COMMAND = "ffprobe";
 const FONT_PATH = "/usr/share/fonts/truetype/freefont/FreeSans.ttf";
 
 const storage = new Storage();
+
+const VIDEO_HEIGHT_TO_FONT_SIZE_RATIO = 30;
+const MIN_FONT_SIZE = 10;
+const MAX_FONT_SIZE = 50;
 
 interface GcsEvent {
   bucket: string;
@@ -19,37 +24,65 @@ interface GcsEvent {
   contentType?: string;
 }
 
-const runFFmpeg = (args: string[]): Promise<string> => {
+const runCommand = (command: string, args: string[]): Promise<string> => {
   return new Promise((resolve, reject) => {
-    console.log(`Running FFmpeg with args: ${args.join(" ")}`);
-    const ffmpegProcess = spawn(FFMPEG_COMMAND, args);
+    console.log(`Running command: ${command} ${args.join(" ")}`);
+    const process = spawn(command, args);
 
     let stdout = "";
     let stderr = "";
 
-    ffmpegProcess.stdout.on("data", data => {
+    process.stdout.on("data", data => {
       stdout += data;
     });
-    ffmpegProcess.stderr.on("data", data => {
-      console.error(`FFmpeg stderr: ${data}`);
+    process.stderr.on("data", data => {
+      console.error(`${command} stderr: ${data}`);
       stderr += data;
     });
 
-    ffmpegProcess.on("close", code => {
+    process.on("close", code => {
       if (code === 0) {
-        console.log("FFmpeg execution successful.");
+        console.log(`${command} execution successful.`);
         resolve(stdout);
       } else {
-        console.error(`FFmpeg process exited with code ${code}`);
-        reject(new Error(`FFmpeg failed with code ${code}: ${stderr}`));
+        console.error(`${command} process exited with code ${code}`);
+        reject(new Error(`${command} failed with code ${code}: ${stderr}`));
       }
     });
 
-    ffmpegProcess.on("error", err => {
-      console.error("Failed to start FFmpeg process.", err);
+    process.on("error", err => {
+      console.error(`Failed to start ${command} process.`, err);
       reject(err);
     });
   });
+};
+
+const getVideoHeight = async (videoPath: string): Promise<number> => {
+  const args = [
+    "-v",
+    "error",
+    "-select_streams",
+    "v:0",
+    "-show_entries",
+    "stream=height",
+    "-of",
+    "csv=s=x:p=0",
+    videoPath,
+  ];
+  try {
+    const output = await runCommand(FFPROBE_COMMAND, args);
+    const height = parseInt(output.trim(), 10);
+    if (isNaN(height)) {
+      throw new Error(
+        `Failed to parse video height from ffprobe output: ${output}`,
+      );
+    }
+    console.log(`Detected video height: ${height}`);
+    return height;
+  } catch (error) {
+    console.error("Error getting video height:", error);
+    throw error;
+  }
 };
 
 functions.cloudEvent(
@@ -77,11 +110,11 @@ functions.cloudEvent(
       return;
     }
 
-    const parsedPath = path.parse(fileName); // { dir: 'videos', base: 'myclip.mp4', ext: '.mp4', name: 'myclip' }
-    const baseName = parsedPath.base; // 'myclip.mp4'
-    const baseNameWithoutExt = parsedPath.name; // 'myclip'
-    const originalDir = parsedPath.dir; // 'videos'
-    const originalExt = parsedPath.ext; // '.mp4'
+    const parsedPath = path.parse(fileName);
+    const baseName = parsedPath.base;
+    const baseNameWithoutExt = parsedPath.name;
+    const originalDir = parsedPath.dir;
+    const originalExt = parsedPath.ext;
 
     if (baseNameWithoutExt.endsWith("-watermark")) {
       console.log(
@@ -107,7 +140,7 @@ functions.cloudEvent(
     );
 
     const watermarkedVideoBlobName = path.join(
-      originalDir, // 'videos'
+      originalDir,
       `${baseNameWithoutExt}-watermark${originalExt}`,
     );
 
@@ -117,6 +150,24 @@ functions.cloudEvent(
       );
       await sourceFile.download({ destination: tempVideoPath });
       console.log("Download complete.");
+
+      const videoHeight = await getVideoHeight(tempVideoPath);
+
+      let dynamicFontSize = Math.round(
+        videoHeight / VIDEO_HEIGHT_TO_FONT_SIZE_RATIO,
+      );
+      dynamicFontSize = Math.max(
+        MIN_FONT_SIZE,
+        Math.min(dynamicFontSize, MAX_FONT_SIZE),
+      );
+
+      const dynamicMargin = Math.round(dynamicFontSize * 1.3);
+      const dynamicBottomMargin = Math.round(dynamicFontSize * 0.7);
+      const dynamicBoxPadding = Math.round(dynamicFontSize * 0.3);
+
+      console.log(
+        `Calculated dynamic font size: ${dynamicFontSize}, margin: ${dynamicMargin}, bottomMargin: ${dynamicBottomMargin}, boxPadding: ${dynamicBoxPadding}`,
+      );
 
       console.log(`Generating thumbnail for ${tempVideoPath}...`);
       const thumbnailArgs = [
@@ -133,26 +184,22 @@ functions.cloudEvent(
         "-y",
         tempThumbnailPath,
       ];
-      await runFFmpeg(thumbnailArgs);
+      await runCommand(FFMPEG_COMMAND, thumbnailArgs);
       console.log("Thumbnail generation complete.");
 
       console.log(`Generating watermarked video for ${tempVideoPath}...`);
       const watermarkText = "daydream.live";
-      const margin = 16;
-      const bottomMargin = 8;
-      const fontSize = 12;
-      const boxPadding = 4;
 
       const drawtextFilter = [
         `drawtext=text='${watermarkText}'`,
         `fontfile=${FONT_PATH}`,
-        `fontsize=${fontSize}`,
+        `fontsize=${dynamicFontSize}`,
         `fontcolor=white`,
-        `x=${margin}`,
-        `y=h-line_h-${bottomMargin}`,
+        `x=${dynamicMargin}`,
+        `y=h-line_h-${dynamicBottomMargin}`,
         `box=1`,
         `boxcolor=black@0.4`,
-        `boxborderw=${boxPadding}`,
+        `boxborderw=${dynamicBoxPadding}`,
       ].join(":");
 
       const watermarkArgs = [
@@ -175,7 +222,7 @@ functions.cloudEvent(
         "-y",
         tempWatermarkedVideoPath,
       ];
-      await runFFmpeg(watermarkArgs);
+      await runCommand(FFMPEG_COMMAND, watermarkArgs);
       console.log("Watermarked video generation complete.");
 
       console.log(
