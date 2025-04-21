@@ -12,7 +12,7 @@ on:
   workflow_dispatch:
 
 env:
-  GCP_REGION: "us"
+  GCP_REGION: "us-central1"
   FUNCTION_NAME: "generateThumbnail"
   WORK_DIR: "workers/clips"
   GCS_BUCKET_NAME: "livepeer-clips-staging"
@@ -46,6 +46,7 @@ jobs:
           gcloud functions deploy ${{ env.FUNCTION_NAME }} \
             --gen2 \
             --region=${{ env.GCP_REGION }} \
+            --trigger-location=us \
             --runtime=nodejs20 \
             --source=. \
             --entry-point=${{ env.FUNCTION_NAME }} \
