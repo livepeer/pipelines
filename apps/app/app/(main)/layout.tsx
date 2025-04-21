@@ -8,6 +8,8 @@ import { and, asc, eq, isNotNull, isNull, sql } from "drizzle-orm";
 import Header from "./Header";
 import MainLayoutClient from "./MainLayoutClient";
 
+export const dynamic = "force-dynamic";
+
 type InitialFetchedClip = {
   id: number;
   video_url: string;
