@@ -13,7 +13,7 @@ on:
 
 env:
   GCP_REGION: "us-central1"
-  FUNCTION_NAME: "generateThumbnail"
+  FUNCTION_NAME: "postprocessClips"
   WORK_DIR: "workers/clips"
   GCS_BUCKET_NAME: "livepeer-clips-staging"
 

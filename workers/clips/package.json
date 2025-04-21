@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
-    "start": "functions-framework --target=generateThumbnail",
+    "start": "functions-framework --target=postprocessClips",
     "prestart": "npm run build"
   },
   "keywords": [],

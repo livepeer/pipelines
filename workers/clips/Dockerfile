@@ -3,7 +3,7 @@ FROM node:20-slim AS base
 WORKDIR /usr/src/app
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends ffmpeg \
+    && apt-get install -y --no-install-recommends ffmpeg fonts-freefont-ttf \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
