@@ -8,7 +8,10 @@ import { requireAdminAuth } from "@/app/api/admin/auth";
 import { eq } from "drizzle-orm";
 import { customAlphabet } from "nanoid";
 
-const generateSlug = customAlphabet("abcdefghijklmnopqrstuvwxyz0123456789", 10);
+const generateSlug = customAlphabet(
+  "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789",
+  10,
+);
 
 export async function PUT(request: Request) {
   let operationType: "create" | "update" = "update";

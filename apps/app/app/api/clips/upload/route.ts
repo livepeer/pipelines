@@ -14,7 +14,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { customAlphabet } from "nanoid";
 
-const generateSlug = customAlphabet("abcdefghijklmnopqrstuvwxyz0123456789", 10);
+const generateSlug = customAlphabet(
+  "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789",
+  6,
+);
 
 const ClipUploadSchema = z.object({
   title: z.string().optional(),
@@ -61,7 +64,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // --- 1단계: 빠른 DB 트랜잭션 (메타데이터 및 슬러그 삽입, 상태: uploading) ---
     const { initialClipId, slug } = await db.transaction(async tx => {
       const [newClip] = await tx
         .insert(clipsTable)
