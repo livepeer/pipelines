@@ -34,12 +34,19 @@ export const Header = () => {
     <>
       {!isMobile && (
         <div className="fixed top-4 right-4 z-50">
-          <Link
-            target="_blank"
-            href="https://discord.com/invite/hxyNHeSzCK"
-            className="bg-transparent hover:bg-black/10 border border-muted-foreground/30 text-foreground px-3 py-1 text-xs rounded-lg font-semibold h-[36px] flex items-center"
-          >
-            Join Community
+          <Link target="_blank" href="https://discord.com/invite/hxyNHeSzCK">
+            <TrackedButton
+              trackingEvent="daydream_join_community_clicked"
+              trackingProperties={{
+                is_authenticated: authenticated,
+                location: "welcome_header",
+              }}
+              variant="outline"
+              className="alwaysAnimatedButton"
+              size="sm"
+            >
+              Join Community
+            </TrackedButton>
           </Link>
         </div>
       )}
