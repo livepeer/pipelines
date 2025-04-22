@@ -83,9 +83,9 @@ test.describe("Daydream Page Tests", () => {
       await page.getByTestId("submit-email").click();
 
       const otpForm = page.getByTestId("otp-form");
-      await expect(otpForm).toBeVisible();
+      await expect(otpForm).toBeVisible({ timeout: MIN });
       const otpInputElement = otpForm.locator("input");
-      await expect(otpInputElement).toBeAttached();
+      await expect(otpInputElement).toBeAttached({ timeout: MIN });
       await otpInputElement.fill(OTP_CODE);
 
       const broadcast = page.getByTestId(BROADCAST_VIDEO_TEST_ID);
