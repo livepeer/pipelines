@@ -116,7 +116,7 @@ test.describe("Daydream Page Tests", () => {
         5,
       );
     } catch (error) {
-      page.screenshot({ path: `./screenshots/${testName}.png` });
+      page.screenshot({ path: `./screenshots/error.png` });
       console.error("Error in test:", error);
       throw error;
     }
