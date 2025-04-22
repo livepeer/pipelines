@@ -8,7 +8,15 @@ import {
   OVERALL_TEST_TIMEOUT_MS,
   PLAYBACK_VIDEO_TEST_ID,
   SCREENSHOT_INTERVAL_MS,
+  SEND_METRICS,
 } from "./common";
+import {
+  ENVIRONMENT,
+  pushMetrics,
+  testDurationGauge,
+  testFailureCounter,
+  testSuccessCounter,
+} from "./metrics";
 
 const EMAIL = process.env.TEST_EMAIL;
 const OTP_CODE = process.env.TEST_OTP_CODE;
@@ -38,43 +46,78 @@ test.describe("Daydream Page Tests", () => {
     await page.goto("/create");
   });
 
+  test.afterEach(async ({}, testInfo) => {
+    const fullTestName = testInfo.titlePath.join(" > ");
+
+    if (SEND_METRICS) {
+      if (testInfo.status === "passed") {
+        testSuccessCounter.inc({
+          test_name: fullTestName,
+          environment: ENVIRONMENT,
+        });
+      } else {
+        testFailureCounter.inc({
+          test_name: fullTestName,
+          environment: ENVIRONMENT,
+        });
+      }
+
+      testDurationGauge.set(
+        { test_name: fullTestName, environment: ENVIRONMENT },
+        testInfo.duration / 1000,
+      );
+
+      await pushMetrics();
+    }
+  });
+
   test("video elements load and play correctly", async ({ page }) => {
     test.setTimeout(OVERALL_TEST_TIMEOUT_MS);
+    const testName = test.info().titlePath.join(" > ");
 
-    const emailInput = page.getByTestId("email-input");
-    await expect(emailInput).toBeVisible({ timeout: 10 * MIN }); // Might still be building
-    await emailInput.fill(EMAIL);
+    try {
+      const emailInput = page.getByTestId("email-input");
+      await expect(emailInput).toBeVisible({ timeout: 10 * MIN }); // Might still be building
+      await emailInput.fill(EMAIL);
 
-    await page.getByTestId("submit-email").click();
+      await page.getByTestId("submit-email").click();
 
-    const otpForm = page.getByTestId("otp-form");
-    await expect(otpForm).toBeVisible();
-    const otpInputElement = otpForm.locator("input");
-    await expect(otpInputElement).toBeAttached();
-    await otpInputElement.fill(OTP_CODE);
+      const otpForm = page.getByTestId("otp-form");
+      await expect(otpForm).toBeVisible();
+      const otpInputElement = otpForm.locator("input");
+      await expect(otpInputElement).toBeAttached();
+      await otpInputElement.fill(OTP_CODE);
 
-    const broadcast = page.getByTestId(BROADCAST_VIDEO_TEST_ID);
-    const playback = page.getByTestId(PLAYBACK_VIDEO_TEST_ID);
+      const broadcast = page.getByTestId(BROADCAST_VIDEO_TEST_ID);
+      const playback = page.getByTestId(PLAYBACK_VIDEO_TEST_ID);
 
-    await assertVideoPlaying(broadcast);
-    await assertVideoPlaying(playback);
+      await assertVideoPlaying(broadcast);
+      await assertVideoPlaying(playback);
 
-    await assertVideoContentChanging(
-      broadcast,
-      NUM_SCREENSHOTS,
-      SCREENSHOT_INTERVAL_MS,
-      100,
-      0.5,
-    );
-    await broadcast.evaluate(el => {
-      (el as HTMLElement).style.visibility = "hidden";
-    });
-    await assertVideoContentChanging(
-      playback,
-      NUM_SCREENSHOTS,
-      SCREENSHOT_INTERVAL_MS,
-      5000,
-      5,
-    );
+      await assertVideoContentChanging(
+        broadcast,
+        testName,
+        "broadcast",
+        NUM_SCREENSHOTS,
+        SCREENSHOT_INTERVAL_MS,
+        100,
+        0.5,
+      );
+      await broadcast.evaluate(el => {
+        (el as HTMLElement).style.visibility = "hidden";
+      });
+      await assertVideoContentChanging(
+        playback,
+        testName,
+        "playback",
+        NUM_SCREENSHOTS,
+        SCREENSHOT_INTERVAL_MS,
+        5000,
+        5,
+      );
+    } catch (error) {
+      console.error("Error in test:", error);
+      throw error;
+    }
   });
 });
