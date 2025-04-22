@@ -42,7 +42,7 @@ export default function ShareClipContent({
   };
 
   return (
-    <DialogContent className="max-w-3xl mx-auto rounded-xl overflow-hidden flex flex-col gap-6 items-center py-12 px-6">
+    <DialogContent className="max-w-lg mx-auto rounded-xl overflow-hidden flex flex-col gap-6 items-center py-12 px-6">
       <DialogHeader className="flex items-center">
         <DialogTitle className="text-2xl">Share your clip</DialogTitle>
         <DialogDescription className="font-light text-center">

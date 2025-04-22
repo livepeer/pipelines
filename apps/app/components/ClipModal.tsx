@@ -16,6 +16,7 @@ import {
   TooltipTrigger,
 } from "@repo/design-system/components/ui/tooltip";
 import { InfoIcon } from "lucide-react";
+import { usePhoneRotation } from "@/hooks/usePhoneRotation";
 
 interface ClipModalProps {
   isOpen: boolean;
@@ -35,6 +36,8 @@ export function ClipModal({
   clipUrl,
   clipFilename,
 }: ClipModalProps) {
+  const isRotating = usePhoneRotation();
+
   const handleDownload = () => {
     if (clipUrl && clipFilename) {
       const downloadLink = document.createElement("a");
@@ -49,9 +52,15 @@ export function ClipModal({
     }
   };
 
+  const handleOpenChange = (open: boolean) => {
+    if (!open && !isRotating) {
+      onClose();
+    }
+  };
+
   return (
-    <Dialog open={isOpen} onOpenChange={open => !open && onClose()}>
-      <DialogContent className="max-h-full h-fit sm:max-h-[90vh] max-w-[73vh] mx-auto overflow-y-auto rounded-xl">
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+      <DialogContent className="h-fit max-h-[90vh] max-w-[55vh] mx-auto overflow-y-auto rounded-xl">
         <DialogHeader className="flex items-center">
           <DialogTitle className="text-2xl">Clip Summary</DialogTitle>
           <DialogDescription className="font-light text-center">
@@ -71,7 +80,7 @@ export function ClipModal({
               muted={false}
               playsInline
               controls
-              className="w-full h-fit sm:h-[50vh] aspect-square rounded-md"
+              className="w-full sm:h-[50dvh] aspect-square rounded-md"
             />
           )}
         </div>
