@@ -23,7 +23,9 @@ export default function ShareClipContent({
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(promptCode);
+      await navigator.clipboard.write([
+        new ClipboardItem({ "text/plain": promptCode }),
+      ]);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (error) {
