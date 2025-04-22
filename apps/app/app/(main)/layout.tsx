@@ -147,7 +147,6 @@ export default async function MainLayout({
         <MainLayoutClient initialClips={initialClips}>
           {children}
         </MainLayoutClient>
-        {/* <BentoGrids initialClips={initialClips} /> */}
       </div>
     </>
   );
