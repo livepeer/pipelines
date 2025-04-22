@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
     if (!eventType || !data || !app || !host) {
       return NextResponse.json(
         { error: "Missing required fields" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -45,19 +45,18 @@ export async function POST(request: NextRequest) {
         : forwardedFor
           ? forwardedFor.split(",")[0].trim()
           : "";
-
+    
     const userAgent = request.headers.get("user-agent") || "";
 
-    const geoData =
-      ip && ip !== "127.0.0.1" && ip !== "::1"
-        ? await getGeoData(ip)
-        : {
-            city: "",
-            region: "",
-            country: "",
-            latitude: "",
-            longitude: "",
-          };
+    const geoData = ip && ip !== "127.0.0.1" && ip !== "::1" 
+      ? await getGeoData(ip) 
+      : {
+          city: "",
+          region: "",
+          country: "",
+          latitude: "",
+          longitude: "",
+        };
 
     const { viewer_info, broadcaster_info, ...cleanData } = data;
 
@@ -78,7 +77,7 @@ export async function POST(request: NextRequest) {
     console.error("Error processing Kafka request:", error);
     return NextResponse.json(
       { error: "Failed to process Kafka request" },
-      { status: 500 },
+      { status: 500 }
     );
   }
-}
+} 

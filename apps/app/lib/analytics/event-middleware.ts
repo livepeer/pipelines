@@ -24,7 +24,7 @@ export function standardizeEventData(
   data: any,
   app: string,
   host: string,
-  user?: User,
+  user?: User
 ): StandardizedEvent {
   const standardizedData: BaseEventData = {
     type: data.type,
@@ -51,20 +51,14 @@ export function sendBeaconEvent(
   data: any,
   app: string,
   host: string,
-  user?: User,
+  user?: User
 ): boolean {
   if (typeof navigator === "undefined" || !navigator.sendBeacon) {
     console.warn("Beacon API not supported");
     return false;
   }
 
-  const standardizedEvent = standardizeEventData(
-    eventType,
-    data,
-    app,
-    host,
-    user,
-  );
+  const standardizedEvent = standardizeEventData(eventType, data, app, host, user);
   const blob = new Blob([JSON.stringify(standardizedEvent)], {
     type: "application/json",
   });
@@ -80,16 +74,10 @@ export async function sendKafkaEvent(
   data: any,
   app: string,
   host: string,
-  user?: User,
+  user?: User
 ): Promise<string> {
-  const standardizedEvent = standardizeEventData(
-    eventType,
-    data,
-    app,
-    host,
-    user,
-  );
-
+  const standardizedEvent = standardizeEventData(eventType, data, app, host, user);
+  
   try {
     const response = await fetch("/api/metrics/log", {
       method: "POST",
@@ -108,4 +96,4 @@ export async function sendKafkaEvent(
     console.error("Error sending Kafka event:", error);
     return `Error sending event: ${error instanceof Error ? error.message : String(error)}`;
   }
-}
+} 
