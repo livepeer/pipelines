@@ -70,7 +70,13 @@ export async function GET(request: Request) {
       .from(clipsTable)
       .innerJoin(usersTable, eq(clipsTable.author_user_id, usersTable.id))
       .leftJoin(clipSlugsTable, eq(clipsTable.id, clipSlugsTable.clip_id))
-      .where(and(isNull(clipsTable.deleted_at), isNotNull(clipsTable.priority)))
+      .where(
+        and(
+          isNull(clipsTable.deleted_at),
+          isNotNull(clipsTable.priority),
+          eq(clipsTable.status, "completed"),
+        ),
+      )
       .orderBy(asc(clipsTable.priority))) as FetchedClip[];
 
     const nonPrioritizedClips = (await db
@@ -78,7 +84,13 @@ export async function GET(request: Request) {
       .from(clipsTable)
       .innerJoin(usersTable, eq(clipsTable.author_user_id, usersTable.id))
       .leftJoin(clipSlugsTable, eq(clipsTable.id, clipSlugsTable.clip_id))
-      .where(and(isNull(clipsTable.deleted_at), isNull(clipsTable.priority)))
+      .where(
+        and(
+          isNull(clipsTable.deleted_at),
+          isNull(clipsTable.priority),
+          eq(clipsTable.status, "completed"),
+        ),
+      )
       .orderBy(asc(clipsTable.created_at))) as FetchedClip[];
 
     const finalClips: (FetchedClip | null)[] = [];

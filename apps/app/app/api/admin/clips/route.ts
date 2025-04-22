@@ -50,14 +50,26 @@ export async function GET(request: Request) {
       .select(selectFields)
       .from(clipsTable)
       .leftJoin(users, eq(clipsTable.author_user_id, users.id)) // Left join for author
-      .where(and(isNull(clipsTable.deleted_at), isNotNull(clipsTable.priority)))
+      .where(
+        and(
+          isNull(clipsTable.deleted_at),
+          isNotNull(clipsTable.priority),
+          // eq(clipsTable.status, "completed"),
+        ),
+      )
       .orderBy(asc(clipsTable.priority))) as AdminFetchedClip[];
 
     const nonPrioritizedClips = (await db
       .select(selectFields)
       .from(clipsTable)
       .leftJoin(users, eq(clipsTable.author_user_id, users.id)) // Left join for author
-      .where(and(isNull(clipsTable.deleted_at), isNull(clipsTable.priority)))
+      .where(
+        and(
+          isNull(clipsTable.deleted_at),
+          isNull(clipsTable.priority),
+          // eq(clipsTable.status, "completed"),
+        ),
+      )
       .orderBy(asc(clipsTable.created_at))) as AdminFetchedClip[]; // Older first
 
     const finalClips: (AdminFetchedClip | null)[] = [];
