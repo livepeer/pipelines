@@ -5,8 +5,9 @@ import { Button } from "@repo/design-system/components/ui/button";
 import { usePrivy } from "@/hooks/usePrivy";
 import { cn } from "@repo/design-system/lib/utils";
 import track from "@/lib/track";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import useMobileStore from "@/hooks/useMobileStore";
+import { useRouter } from "next/navigation";
 
 interface UnifiedSignupModalProps {
   open: boolean;
@@ -36,42 +37,26 @@ export function UnifiedSignupModal({
   const getTitle = () => {
     switch (reason) {
       case "trial_expired":
-        return (
-          <>
-            Your time to <span className="font-semibold">Daydream</span>
-          </>
-        );
+        return <>Your creative journey is just beginning</>;
       case "prompt_limit":
-        return (
-          <>
-            Your time to <span className="font-semibold">Daydream</span>
-          </>
-        );
+        return <>Your creative journey is just beginning</>;
       case "share":
-        return (
-          <>
-            Your time to <span className="font-semibold">Daydream</span>
-          </>
-        );
+        return <>Your creative journey is just beginning</>;
       default:
-        return (
-          <>
-            Your time to <span className="font-semibold">Daydream</span>
-          </>
-        );
+        return <>Your creative journey is just beginning</>;
     }
   };
 
   const getDescription = () => {
     switch (reason) {
       case "trial_expired":
-        return "Sign up to continue creating";
+        return "Create a free account to continue";
       case "prompt_limit":
-        return "Sign up to continue creating";
+        return "Create a free account to continue";
       case "share":
-        return "Sign up to continue creating";
+        return "Create a free account to continue";
       default:
-        return "Sign up to continue creating";
+        return "Create a free account to continue";
     }
   };
 
@@ -191,28 +176,36 @@ export function UnifiedSignupModal({
               {getDescription()}
             </p>
 
-            <div className="mt-6 flex flex-col gap-4 w-full items-center">
+            <div className="mt-6 flex flex-row gap-4 w-full items-center justify-center">
+              <Button className="w-48 px-12 h-12 rounded-md bg-black text-white hover:bg-gray-800">
+                <a
+                  href="#"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-white"
+                >
+                  Join community
+                </a>
+              </Button>
               <Button
                 onClick={e => {
-                  e.preventDefault();
-                  track("signup_button_clicked", {
-                    location: "unified_signup_modal",
-                    reason,
-                  });
-                  login();
+                  location.href = "https://discord.com/invite/hxyNHeSzCK";
                 }}
-                className="w-auto px-12 h-12 rounded-full alwaysAnimatedButton text-black"
+                className="w-48 px-12 h-12 rounded-md alwaysAnimatedButton text-black"
               >
-                Try it out
+                Sign up
               </Button>
             </div>
           </div>
         </div>
 
         <div className="absolute bottom-10 z-10 text-center">
-          <p className="text-gray-500 font-light text-sm tracking-wide">
-            Completely free, no credit card required
-          </p>
+          <a
+            href="/"
+            className="text-gray-500 font-light text-sm tracking-wide"
+          >
+            Back to browsing
+          </a>
         </div>
       </div>
     </div>
