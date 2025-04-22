@@ -76,6 +76,7 @@ export async function GET(request: Request) {
           isNull(clipsTable.deleted_at),
           isNotNull(clipsTable.priority),
           eq(clipsTable.status, "completed"),
+          eq(clipsTable.approval_status, "approved"),
         ),
       )
       .orderBy(asc(clipsTable.priority))) as FetchedClip[];
@@ -90,6 +91,7 @@ export async function GET(request: Request) {
           isNull(clipsTable.deleted_at),
           isNull(clipsTable.priority),
           eq(clipsTable.status, "completed"),
+          eq(clipsTable.approval_status, "approved"),
         ),
       )
       .orderBy(asc(clipsTable.created_at))) as FetchedClip[];

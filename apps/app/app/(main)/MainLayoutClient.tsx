@@ -8,8 +8,6 @@ export default function MainLayoutClient({
   initialClips,
   children,
 }: BentoGridsProps & { children: React.ReactNode }) {
-  const pathname = usePathname();
-
   return (
     <>
       <PageViewTracker eventName="explore_page_viewed" />
