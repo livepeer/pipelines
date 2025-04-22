@@ -164,12 +164,14 @@ export async function POST(request: NextRequest) {
     userId = privyUser.userId;
 
     const formData = await request.formData();
+
     const sourceClip = formData.get("sourceClip") as File | null;
     const watermarkedClip = formData.get("watermarkedClip") as File | null;
     const thumbnail = formData.get("thumbnail") as File | null;
 
     const title = formData.get("title") as string | null;
     const prompt = (formData.get("prompt") as string) || "";
+
     const sourceClipId = formData.get("sourceClipId")
       ? Number(formData.get("sourceClipId"))
       : null;
@@ -221,9 +223,10 @@ export async function POST(request: NextRequest) {
 
     const clipBuffer = Buffer.from(await sourceClip.arrayBuffer());
     const fileType = sourceClip.type || "video/mp4";
-    const clipPath = buildClipPath(userId, clipId, "clip.mp4");
+    const clipPath = buildClipPath(userId, clipId, "clip-nowatermark.mp4");
 
     let clipUrl: string;
+
     try {
       clipUrl = await uploadToGCS(clipBuffer, clipPath, fileType);
     } catch (uploadError) {
@@ -252,11 +255,7 @@ export async function POST(request: NextRequest) {
           await watermarkedClip.arrayBuffer(),
         );
         const watermarkedFileType = watermarkedClip.type || "video/mp4";
-        const watermarkedPath = buildClipPath(
-          userId,
-          clipId,
-          "watermarked-clip.mp4",
-        );
+        const watermarkedPath = buildClipPath(userId, clipId, "clip.mp4");
         watermarkedClipUrl = await uploadToGCS(
           watermarkedBuffer,
           watermarkedPath,
