@@ -49,6 +49,7 @@ export default function useClipsFetcher(initialClips: Clip[] = []) {
               : new Date().toISOString(),
             video_title: clip.video_title,
             video_url: clip.video_url,
+            prompt: clip.prompt || "",
             author_name: clip.author_name || null,
             remix_count: clip.remix_count,
             slug: clip.slug,

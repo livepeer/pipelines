@@ -57,6 +57,7 @@ export async function GET(request: Request) {
       video_title: clipsTable.video_title,
       created_at: clipsTable.created_at,
       author_name: usersTable.name,
+      prompt: clipsTable.prompt,
       remix_count: sql<number>`(
             SELECT count(*)
             FROM ${clipsTable} AS derived_clips

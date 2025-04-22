@@ -122,13 +122,15 @@ export const LivepeerPlayer = () => {
         backoffMax={1000}
         timeout={300000}
         lowLatency="force"
-        {...{iceServers: {
-          urls: [
-            "stun:stun.l.google.com:19302",
-            "stun:stun1.l.google.com:19302",
-            "stun:stun.cloudflare.com:3478",
-          ],
-        }} as any}
+        {...({
+          iceServers: {
+            urls: [
+              "stun:stun.l.google.com:19302",
+              "stun:stun1.l.google.com:19302",
+              "stun:stun.cloudflare.com:3478",
+            ],
+          },
+        } as any)}
         onError={handleError}
       >
         <div
@@ -139,7 +141,7 @@ export const LivepeerPlayer = () => {
         <Player.Video
           title="Live stream"
           data-testid="playback-video"
-          className="h-full w-full transition-all object-contain relative z-0 -scale-x-100"
+          className="h-full w-full transition-all object-contain relative z-0 -scale-x-100 bg-[#fefefe]"
         />
 
         <Player.LoadingIndicator className="w-full relative h-full bg-black/50 backdrop-blur data-[visible=true]:animate-in data-[visible=false]:animate-out data-[visible=false]:fade-out-0 data-[visible=true]:fade-in-0 z-[6]">
@@ -260,9 +262,7 @@ export const PlayerLoading = ({
   </div>
 );
 
-const useFirstFrameLoaded = ({
-  __scopeMedia,
-}: Player.MediaScopedProps) => {
+const useFirstFrameLoaded = ({ __scopeMedia }: Player.MediaScopedProps) => {
   const { user } = usePrivy();
   const { stream, pipeline } = useDreamshaperStore();
   const startTime = useRef(Date.now());
@@ -285,7 +285,7 @@ const useFirstFrameLoaded = ({
         },
         "daydream",
         "server",
-        user || undefined
+        user || undefined,
       );
     };
     sendEvent();
@@ -310,7 +310,7 @@ const useFirstFrameLoaded = ({
           },
           "daydream",
           "server",
-          user || undefined
+          user || undefined,
         );
       sendEvent();
     }

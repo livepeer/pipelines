@@ -42,7 +42,7 @@ export const Header = () => {
                 location: "welcome_header",
               }}
               variant="outline"
-              className="alwaysAnimatedButton"
+              className="alwaysAnimatedButton rounded-md"
               size="sm"
             >
               Join Community
@@ -63,13 +63,21 @@ export const Header = () => {
         {!isMobile && !isFullscreen && (
           <>
             <div className="absolute bottom-3 left-0 flex items-center">
-              <Link
-                href="/"
-                className="flex items-center text-xs text-foreground hover:underline h-8"
+              <TrackedButton
+                trackingEvent="daydream_back_to_explore_clicked"
+                trackingProperties={{
+                  is_authenticated: authenticated,
+                }}
+                variant="ghost"
+                size="sm"
+                className="h-8 gap-2 rounded-md"
+                asChild
               >
-                <ChevronLeft className="h-3 w-3 mr-1" />
-                Back to explore
-              </Link>
+                <Link href="/">
+                  <ChevronLeft className="h-4 w-4" />
+                  <span>Back to explore</span>
+                </Link>
+              </TrackedButton>
             </div>
 
             <div
@@ -82,7 +90,7 @@ export const Header = () => {
                 {live && stream?.output_playback_id && streamUrl && (
                   <ClipButton
                     disabled={!stream?.output_playback_id || !streamUrl}
-                    className="mr-2"
+                    className="mr-2 rounded-md"
                     trackAnalytics={track}
                     isAuthenticated={authenticated}
                   />
@@ -94,7 +102,7 @@ export const Header = () => {
                   }}
                   variant="ghost"
                   size="sm"
-                  className="h-8 gap-2"
+                  className="h-8 gap-2 rounded-md"
                   onClick={openModal}
                 >
                   <Share className="h-4 w-4" />
@@ -119,6 +127,7 @@ export const Header = () => {
                 trackAnalytics={track}
                 isAuthenticated={authenticated}
                 isMobile={true}
+                className="rounded-md"
               />
             )}
 
@@ -126,7 +135,7 @@ export const Header = () => {
               <Button
                 variant="ghost"
                 size="icon"
-                className="p-0 m-0 bg-transparent border-none hover:bg-transparent focus:outline-none"
+                className="p-0 m-0 bg-transparent border-none hover:bg-transparent focus:outline-none rounded-md"
                 onClick={openModal}
               >
                 <Share2 className="h-4 w-4" />
@@ -137,7 +146,7 @@ export const Header = () => {
               <Button
                 variant="ghost"
                 size="icon"
-                className="p-0 m-0 bg-transparent border-none hover:bg-transparent focus:outline-none"
+                className="p-0 m-0 bg-transparent border-none hover:bg-transparent focus:outline-none rounded-md"
               >
                 <Users2 className="h-4 w-4" />
               </Button>
@@ -147,7 +156,7 @@ export const Header = () => {
               <Button
                 variant="ghost"
                 size="icon"
-                className="p-0 m-0 bg-transparent border-none hover:bg-transparent focus:outline-none"
+                className="p-0 m-0 bg-transparent border-none hover:bg-transparent focus:outline-none rounded-md"
               >
                 <Search className="h-4 w-4" />
               </Button>
