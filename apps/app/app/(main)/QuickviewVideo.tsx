@@ -1,5 +1,6 @@
 "use client";
 
+import { TrackedButton } from "@/components/analytics/TrackedButton";
 import { GradientAvatar } from "@/components/GradientAvatar";
 import { usePreviewStore } from "@/hooks/usePreviewStore";
 import { handleSessionId } from "@/lib/analytics/mixpanel";
@@ -12,15 +13,12 @@ import {
   DialogTrigger,
 } from "@repo/design-system/components/ui/dialog";
 import { cn } from "@repo/design-system/lib/utils";
-import { Repeat, WandSparkles, X } from "lucide-react";
+import { X } from "lucide-react";
+import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect } from "react";
+import React, { useEffect } from "react";
 import { VideoPlayer } from "./VideoPlayer";
 import { VideoProvider } from "./VideoProvider";
-import { Button } from "@repo/design-system/components/ui/button";
-import { TrackedButton } from "@/components/analytics/TrackedButton";
-import Link from "next/link";
-import React from "react";
 
 const formatter = new Intl.DateTimeFormat("en-US", {
   month: "short",
@@ -54,7 +52,6 @@ export default function QuickviewVideo({
   const { setIsPreviewOpen, isPreviewOpen } = usePreviewStore();
   const router = useRouter();
   const pathname = usePathname();
-  const [isClosing, setIsClosing] = React.useState(false);
 
   useEffect(() => {
     const log = async () => {
@@ -75,30 +72,14 @@ export default function QuickviewVideo({
   useEffect(() => {
     if (pathname !== "/") {
       setIsPreviewOpen(true);
-      setIsClosing(false);
     } else {
       setIsPreviewOpen(false);
     }
   }, [pathname]);
 
-  const prevIsOpenRef = React.useRef(isPreviewOpen);
-  useEffect(() => {
-    if (prevIsOpenRef.current && !isPreviewOpen) {
-      setIsClosing(true);
-    }
-    prevIsOpenRef.current = isPreviewOpen;
-  }, [isPreviewOpen]);
-
   const handleClose = () => {
-    if (isClosing) return;
-
-    setIsClosing(true);
     setIsPreviewOpen(false);
-
-    setTimeout(() => {
-      router.push("/", { scroll: false });
-      setIsClosing(false);
-    }, 500);
+    router.push("/", { scroll: false });
   };
 
   return (
