@@ -260,6 +260,12 @@ export const streams = pgTable(
   ],
 );
 
+export const clipStatusEnum = pgEnum("clip_status", [
+  "uploading",
+  "completed",
+  "failed",
+]);
+
 export const clips = pgTable(
   "clips",
   {
@@ -271,6 +277,7 @@ export const clips = pgTable(
     source_clip_id: integer("source_clip_id"),
     prompt: text("prompt").notNull(),
     priority: integer("priority"),
+    status: clipStatusEnum("status").default("uploading").notNull(),
     created_at: timestamp("created_at", { withTimezone: true })
       .defaultNow()
       .notNull(),
