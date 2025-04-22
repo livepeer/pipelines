@@ -18,10 +18,12 @@ import {
 } from "@repo/design-system/components/ui/dropdown-menu";
 import { cn } from "@repo/design-system/lib/utils";
 import { LogOut, UserIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function User({ className }: { className?: string }) {
   const { ready, authenticated, user, login, logout } = usePrivy();
   const { isMobile } = useMobileStore();
+  const router = useRouter();
 
   const name =
     user?.discord?.username || user?.google?.name || user?.email?.address;
@@ -32,6 +34,16 @@ export default function User({ className }: { className?: string }) {
       : "Email";
 
   const disableLogin = !ready || authenticated;
+
+  const handleLoginClick = () => {
+    track("login_clicked", undefined, user || undefined);
+
+    if (!authenticated) {
+      router.push("/create");
+    } else {
+      login();
+    }
+  };
 
   return authenticated ? (
     <DropdownMenu>
@@ -84,19 +96,17 @@ export default function User({ className }: { className?: string }) {
     </DropdownMenu>
   ) : (
     <Button
-      onClick={() => {
-        track("login_clicked", undefined, user || undefined);
-        login();
-      }}
+      onClick={handleLoginClick}
       disabled={disableLogin}
       variant="ghost"
       size="icon"
       className={cn(
         "flex items-center justify-start w-full gap-2 px-2",
         isMobile && "ml-4",
+        "text-foreground",
       )}
     >
-      <UserIcon />
+      <UserIcon className="text-foreground" />
       <span className="block md:hidden">Sign in</span>
     </Button>
   );

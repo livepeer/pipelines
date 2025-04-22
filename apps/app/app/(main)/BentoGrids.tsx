@@ -72,6 +72,10 @@ export function BentoGrids({
   }, [fetchClips, isOverlayMode, initialClips.length]);
 
   useEffect(() => {
+    if (isOverlayMode && initialClips.length > 0) {
+      return;
+    }
+
     const observer = new IntersectionObserver(
       entries => {
         if (entries[0].isIntersecting && !loading && hasMore) {
@@ -89,7 +93,15 @@ export function BentoGrids({
     }
 
     return () => observer.disconnect();
-  }, [fetchClips, loading, hasMore, page, trackAction]);
+  }, [
+    fetchClips,
+    loading,
+    hasMore,
+    page,
+    trackAction,
+    isOverlayMode,
+    initialClips.length,
+  ]);
 
   const groupedClips = chunkArray(clips, 4);
 
@@ -175,7 +187,7 @@ export function BentoGrids({
         <div ref={loadingRef} className="py-8 text-center relative z-50">
           {loading ? (
             <LoadingSpinner />
-          ) : hasMore ? (
+          ) : hasMore && (!isOverlayMode || initialClips.length === 0) ? (
             <p className="text-gray-500 font-light">Scroll for more</p>
           ) : (
             <NoMoreClipsFooter />

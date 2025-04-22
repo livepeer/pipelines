@@ -23,6 +23,8 @@ export const BentoGridOverlay = () => {
     closeOverlay,
     setCachedClips,
     setScrollPosition,
+    setOverlayType,
+    setSelectedClipId,
   } = useOverlayStore();
   const { stream } = useDreamshaperStore();
   const { handleStreamUpdate } = useStreamUpdates();
@@ -147,6 +149,19 @@ export const BentoGridOverlay = () => {
     }
   };
 
+  const handleBackButton = (e: React.MouseEvent) => {
+    e.stopPropagation();
+
+    if (overlayType === "clip") {
+      // If in clip view, go back to bento grid
+      setOverlayType("bento");
+      setSelectedClipId(null);
+    } else {
+      // Otherwise close the overlay completely
+      closeOverlay();
+    }
+  };
+
   if (!isOverlayOpen) {
     return (
       <div
@@ -200,19 +215,16 @@ export const BentoGridOverlay = () => {
         className="bg-transparent sticky top-0 z-[51] transition-colors duration-300 ease-in-out w-full backdrop-filter backdrop-blur-xl"
         onClick={e => e.stopPropagation()}
       >
-        <div className="w-full flex items-center justify-end py-4 px-6 lg:px-8">
+        <div className="w-full flex items-center justify-start py-4 px-6 lg:px-8">
           <Button
             variant="ghost"
             size="sm"
-            onClick={e => {
-              e.stopPropagation();
-              closeOverlay();
-            }}
+            onClick={handleBackButton}
             className="h-8 gap-2 rounded-md"
-            aria-label="Back to creating"
+            aria-label={overlayType === "clip" ? "Back" : "Back to creating"}
           >
             <ChevronLeft className="h-4 w-4" />
-            <span>Back to creating</span>
+            <span>{overlayType === "clip" ? "Back" : "Back to creating"}</span>
           </Button>
         </div>
       </header>
@@ -228,9 +240,7 @@ export const BentoGridOverlay = () => {
                 onClipsLoaded={handleReportClips}
               />
             ) : (
-              <div className="flex justify-center py-8">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-              </div>
+              <div className="flex justify-center py-8"></div>
             )}
           </div>
         )}
@@ -250,9 +260,7 @@ export const BentoGridOverlay = () => {
                 onTryPrompt={handleTryPrompt}
               />
             ) : (
-              <div className="flex items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-              </div>
+              <div className="flex items-center justify-center"></div>
             )}
           </div>
         )}
