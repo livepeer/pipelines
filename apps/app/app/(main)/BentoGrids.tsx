@@ -112,7 +112,7 @@ export function BentoGrids({ initialClips }: BentoGridsProps) {
             isPreviewOpen && "opacity-0",
           )}
         >
-          From spark to story, your imagination starts here.
+          From imagination to creation — all in real time.
         </h2>
 
         {groupedClips.map((group, groupIndex) => {
