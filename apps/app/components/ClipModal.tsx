@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -9,6 +9,7 @@ import {
 import { Button } from "@repo/design-system/components/ui/button";
 import { Separator } from "@repo/design-system/components/ui/separator";
 import { usePhoneRotation } from "@/hooks/usePhoneRotation";
+import { toast } from "sonner";
 
 interface ClipModalProps {
   isOpen: boolean;
@@ -30,6 +31,7 @@ export function ClipModal({
   clipFilename,
 }: ClipModalProps) {
   const isRotating = usePhoneRotation();
+  const [isUploading, setIsUploading] = useState(false);
 
   const handleDownload = () => {
     if (clipUrl && clipFilename) {
@@ -48,6 +50,47 @@ export function ClipModal({
   const handleOpenChange = (open: boolean) => {
     if (!open && !isRotating) {
       onClose();
+    }
+  };
+
+  const handleContinue = async () => {
+    // NOTE: This function assumes that the POST handler for /api/clips is implemented
+    // to receive a FormData with a 'sourceClip' file field. If the API endpoint
+    // is not yet implemented, you'll need to create it to handle this FormData.
+    if (clipUrl && clipFilename) {
+      try {
+        setIsUploading(true);
+        // First, fetch the blob from the URL
+        const response = await fetch(clipUrl);
+        const blob = await response.blob();
+
+        // Create a FormData object to send the file
+        const formData = new FormData();
+        formData.append(
+          "sourceClip",
+          new File([blob], clipFilename, { type: blob.type }),
+        );
+
+        // Make the API request
+        const apiResponse = await fetch("/api/clips", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (apiResponse.ok) {
+          onClose();
+          toast.success("Clip uploaded successfully");
+        } else {
+          const errorData = await apiResponse.json();
+          console.error("Failed to upload clip:", errorData);
+          toast.error("Failed to upload clip");
+        }
+      } catch (error) {
+        console.error("Error uploading clip:", error);
+        toast.error("Failed to upload clip");
+      } finally {
+        setIsUploading(false);
+      }
     }
   };
 
@@ -104,12 +147,15 @@ export function ClipModal({
         <Separator className="my-2" />
 
         <div className="w-full">
-          <Button
-            onClick={handleDownload}
-            className="w-full flex items-center justify-center gap-2 rounded-md h-[46px]"
-          >
-            Download
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              onClick={handleContinue}
+              className="flex-1 items-center justify-center gap-2 rounded-md h-[46px]"
+              disabled={isUploading}
+            >
+              {isUploading ? "Uploading..." : "Continue"}
+            </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
