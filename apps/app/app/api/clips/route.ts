@@ -194,7 +194,6 @@ export async function POST(request: NextRequest) {
 
   try {
     const privyUser = await getPrivyUser();
-    console.log("privyUser", privyUser);
     if (!privyUser) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
