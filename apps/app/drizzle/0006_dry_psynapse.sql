@@ -1,0 +1,1 @@
+CREATE INDEX "streams_stream_key_idx" ON "streams" USING hash ("stream_key");
