@@ -33,16 +33,22 @@ export const generateMetadata = async ({
 export default function HomePage({
   searchParams,
 }: {
-  searchParams: { shared: string; privy_oauth_code: string };
+  searchParams: {
+    shared: string;
+    privy_oauth_code: string;
+    inputPrompt: string;
+  };
 }) {
-  const { shared, privy_oauth_code } = searchParams;
+  const { shared, privy_oauth_code, inputPrompt } = searchParams;
+  const isGuestAccess = !!inputPrompt; // If there's an inputPrompt, the user is coming from "Try this prompt"
 
   return (
     <Daydream
-      hasSharedPrompt={!!shared}
+      hasSharedPrompt={!!shared || !!inputPrompt}
       isOAuthSuccessRedirect={
         privy_oauth_code?.length > 0 && privy_oauth_code !== "error"
       }
+      allowGuestAccess={isGuestAccess}
     />
   );
 }

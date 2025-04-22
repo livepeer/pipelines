@@ -12,16 +12,34 @@ import { Dialog } from "@repo/design-system/components/ui/dialog";
 import { Separator } from "@repo/design-system/components/ui/separator";
 import { SidebarTrigger } from "@repo/design-system/components/ui/sidebar";
 import { cn } from "@repo/design-system/lib/utils";
-import { ChevronLeft, Search, Share, Share2, Users2 } from "lucide-react";
+import {
+  ChevronLeft,
+  Scissors,
+  Search,
+  Share,
+  Share2,
+  Users2,
+} from "lucide-react";
 import { Inter } from "next/font/google";
 import Link from "next/link";
 import { useDreamshaperStore } from "../../../hooks/useDreamshaper";
 import { ShareModalContent, useShareModal } from "./ShareModal";
 import { usePrivy } from "@/hooks/usePrivy";
+import { useState } from "react";
+import { GuestSignupModal } from "@/components/guest/GuestSignupModal";
+import { useGuestUserStore } from "@/hooks/useGuestUser";
 
 const inter = Inter({ subsets: ["latin"] });
 
-export const Header = () => {
+interface HeaderProps {
+  isGuestMode?: boolean;
+  onShareAttempt?: () => boolean;
+}
+
+export const Header = ({
+  isGuestMode = false,
+  onShareAttempt,
+}: HeaderProps) => {
   const { authenticated } = usePrivy();
   const { isFullscreen } = useFullscreenStore();
   const { isMobile, isMinHeightScreen } = useMobileStore();
@@ -29,6 +47,36 @@ export const Header = () => {
   const { live } = useStreamStatus(stream?.id);
   const { hasSubmittedPrompt } = usePromptStore();
   const { open, setOpen, openModal } = useShareModal();
+  const { setHasRecordedClip, lastPrompt } = useGuestUserStore();
+
+  const [showGuestModal, setShowGuestModal] = useState(false);
+  const [guestModalReason, setGuestModalReason] = useState<
+    "prompt_limit" | "record_clip" | "share" | null
+  >(null);
+
+  const handleShare = () => {
+    if (isGuestMode && onShareAttempt) {
+      const shouldBlock = onShareAttempt();
+      if (shouldBlock) {
+        return;
+      }
+    }
+
+    openModal();
+  };
+
+  const handleGuestRecordClip = () => {
+    if (isGuestMode) {
+      setHasRecordedClip(true);
+      setGuestModalReason("record_clip");
+      setShowGuestModal(true);
+      track("guest_record_attempt", {
+        last_prompt: lastPrompt,
+      });
+      return true;
+    }
+    return false;
+  };
 
   return (
     <>
@@ -39,6 +87,7 @@ export const Header = () => {
               trackingEvent="daydream_join_community_clicked"
               trackingProperties={{
                 is_authenticated: authenticated,
+                is_guest_mode: isGuestMode,
                 location: "welcome_header",
               }}
               variant="outline"
@@ -67,6 +116,7 @@ export const Header = () => {
                 trackingEvent="daydream_back_to_explore_clicked"
                 trackingProperties={{
                   is_authenticated: authenticated,
+                  is_guest_mode: isGuestMode,
                 }}
                 variant="ghost"
                 size="sm"
@@ -87,23 +137,45 @@ export const Header = () => {
               )}
             >
               <div className="flex items-center gap-2">
-                {live && stream?.output_playback_id && streamUrl && (
-                  <ClipButton
-                    disabled={!stream?.output_playback_id || !streamUrl}
-                    className="mr-2 rounded-md"
-                    trackAnalytics={track}
-                    isAuthenticated={authenticated}
-                  />
+                {isGuestMode ? (
+                  <TrackedButton
+                    trackingEvent="daydream_clip_button_clicked"
+                    trackingProperties={{
+                      is_authenticated: false,
+                      is_guest_mode: true,
+                    }}
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 gap-2 relative overflow-hidden mr-2 rounded-md"
+                    onClick={() => handleGuestRecordClip()}
+                  >
+                    <div className="z-20 relative flex items-center gap-2">
+                      <Scissors size={16} />
+                      <span>Create Clip</span>
+                    </div>
+                  </TrackedButton>
+                ) : (
+                  live &&
+                  stream?.output_playback_id &&
+                  streamUrl && (
+                    <ClipButton
+                      disabled={!stream?.output_playback_id || !streamUrl}
+                      className="mr-2 rounded-md"
+                      trackAnalytics={track}
+                      isAuthenticated={authenticated}
+                    />
+                  )
                 )}
                 <TrackedButton
                   trackingEvent="daydream_share_button_clicked"
                   trackingProperties={{
                     is_authenticated: authenticated,
+                    is_guest_mode: isGuestMode,
                   }}
                   variant="ghost"
                   size="sm"
                   className="h-8 gap-2 rounded-md"
-                  onClick={openModal}
+                  onClick={handleShare}
                 >
                   <Share className="h-4 w-4" />
                   <span>Share</span>
@@ -121,14 +193,27 @@ export const Header = () => {
           </div>
 
           <div className="flex gap-2 justify-end max-w-[60%]">
-            {live && stream?.output_playback_id && streamUrl && (
-              <ClipButton
-                disabled={!stream?.output_playback_id || !streamUrl}
-                trackAnalytics={track}
-                isAuthenticated={authenticated}
-                isMobile={true}
-                className="rounded-md"
-              />
+            {isGuestMode ? (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="p-0 m-0 bg-transparent border-none hover:bg-transparent focus:outline-none rounded-md"
+                onClick={() => handleGuestRecordClip()}
+              >
+                <Scissors className="h-4 w-4" />
+              </Button>
+            ) : (
+              live &&
+              stream?.output_playback_id &&
+              streamUrl && (
+                <ClipButton
+                  disabled={!stream?.output_playback_id || !streamUrl}
+                  trackAnalytics={track}
+                  isAuthenticated={authenticated}
+                  isMobile={true}
+                  className="rounded-md"
+                />
+              )
             )}
 
             {hasSubmittedPrompt && (
@@ -136,7 +221,7 @@ export const Header = () => {
                 variant="ghost"
                 size="icon"
                 className="p-0 m-0 bg-transparent border-none hover:bg-transparent focus:outline-none rounded-md"
-                onClick={openModal}
+                onClick={handleShare}
               >
                 <Share2 className="h-4 w-4" />
               </Button>
@@ -168,6 +253,13 @@ export const Header = () => {
       <Dialog open={open} onOpenChange={setOpen}>
         <ShareModalContent />
       </Dialog>
+
+      {/* Guest user signup modal */}
+      <GuestSignupModal
+        isOpen={showGuestModal}
+        onClose={() => setShowGuestModal(false)}
+        reason={guestModalReason}
+      />
     </>
   );
 };

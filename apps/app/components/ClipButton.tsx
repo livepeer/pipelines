@@ -11,6 +11,7 @@ interface ClipButtonProps {
   trackAnalytics?: (event: string, props?: Record<string, any>) => void;
   isAuthenticated?: boolean;
   isMobile?: boolean;
+  onRecordAttempt?: () => boolean;
 }
 
 const RecordingProgressIcon = ({ progress }: { progress: number }) => {
@@ -38,6 +39,7 @@ export const ClipButton = ({
   trackAnalytics,
   isAuthenticated = false,
   isMobile = false,
+  onRecordAttempt,
 }: ClipButtonProps) => {
   const {
     recordClip,
@@ -63,6 +65,13 @@ export const ClipButton = ({
       }
       stopRecording();
       return;
+    }
+
+    if (onRecordAttempt) {
+      const isAllowed = !onRecordAttempt();
+      if (!isAllowed) {
+        return;
+      }
     }
 
     if (trackAnalytics) {

@@ -19,6 +19,8 @@ import { usePathname, useRouter } from "next/navigation";
 import React, { useEffect } from "react";
 import { VideoPlayer } from "./VideoPlayer";
 import { VideoProvider } from "./VideoProvider";
+import { useGuestUserStore } from "@/hooks/useGuestUser";
+import { usePrivy } from "@/hooks/usePrivy";
 
 const formatter = new Intl.DateTimeFormat("en-US", {
   month: "short",
@@ -52,6 +54,8 @@ export default function QuickviewVideo({
   const { setIsPreviewOpen, isPreviewOpen } = usePreviewStore();
   const router = useRouter();
   const pathname = usePathname();
+  const { setIsGuestUser, setLastPrompt } = useGuestUserStore();
+  const { authenticated } = usePrivy();
 
   useEffect(() => {
     const log = async () => {
@@ -80,6 +84,24 @@ export default function QuickviewVideo({
   const handleClose = () => {
     setIsPreviewOpen(false);
     router.push("/", { scroll: false });
+  };
+
+  const handleTryPrompt = (e: React.MouseEvent) => {
+    e.stopPropagation();
+
+    if (prompt) {
+      setLastPrompt(prompt);
+
+      if (!authenticated) {
+        setIsGuestUser(true);
+      }
+
+      setIsPreviewOpen(false);
+      router.push(`/create?inputPrompt=${btoa(prompt)}`);
+    } else {
+      setIsPreviewOpen(false);
+      router.push("/create");
+    }
   };
 
   return (
@@ -135,6 +157,14 @@ export default function QuickviewVideo({
                   href={
                     prompt ? `/create?inputPrompt=${btoa(prompt)}` : "/create"
                   }
+                  onClick={e => {
+                    e.stopPropagation();
+                    if (prompt && !authenticated) {
+                      setIsGuestUser(true);
+                      setLastPrompt(prompt);
+                    }
+                    setIsPreviewOpen(false);
+                  }}
                 >
                   <TrackedButton
                     trackingEvent="quickview_create_clicked"
@@ -143,9 +173,6 @@ export default function QuickviewVideo({
                     className={cn(
                       "alwaysAnimatedButton text-xs py-2 px-8 h-auto",
                     )}
-                    onClick={e => {
-                      e.stopPropagation();
-                    }}
                   >
                     Try this prompt
                   </TrackedButton>

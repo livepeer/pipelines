@@ -5,6 +5,9 @@ import { Repeat, WandSparkles } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { TrackedButton } from "@/components/analytics/TrackedButton";
+import { useGuestUserStore } from "@/hooks/useGuestUser";
+import { usePrivy } from "@/hooks/usePrivy";
+import { useRouter } from "next/navigation";
 
 interface OptimizedVideoProps {
   src: string;
@@ -34,6 +37,9 @@ export default function OptimizedVideo({
   const [isLoaded, setIsLoaded] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const { isPreviewOpen } = usePreviewStore();
+  const { setIsGuestUser, setLastPrompt } = useGuestUserStore();
+  const { authenticated } = usePrivy();
+  const router = useRouter();
 
   const shortSrc = src.replace(/\.mp4$/, "-short.mp4");
   const [effectiveSrc, setEffectiveSrc] = useState(shortSrc);
@@ -118,6 +124,22 @@ export default function OptimizedVideo({
     return () => playbackObserver.disconnect();
   }, [isNearViewport, isPreviewOpen]);
 
+  const handleTryPrompt = (e: React.MouseEvent) => {
+    e.stopPropagation();
+
+    if (prompt) {
+      setLastPrompt(prompt);
+
+      if (!authenticated) {
+        setIsGuestUser(true);
+      }
+
+      router.push(`/create?inputPrompt=${btoa(prompt)}`);
+    } else {
+      router.push("/create");
+    }
+  };
+
   return (
     <div ref={containerRef} className={cn("size-full", className)}>
       {isNearViewport ? (
@@ -156,6 +178,13 @@ export default function OptimizedVideo({
                 href={
                   prompt ? `/create?inputPrompt=${btoa(prompt)}` : "/create"
                 }
+                onClick={e => {
+                  e.stopPropagation();
+                  if (prompt && !authenticated) {
+                    setIsGuestUser(true);
+                    setLastPrompt(prompt);
+                  }
+                }}
               >
                 <TrackedButton
                   trackingEvent="explore_try_prompt_clicked"

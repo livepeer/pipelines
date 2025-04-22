@@ -11,7 +11,13 @@ import Footer from "./Footer";
 import Personas from "./Personas";
 import SelectPrompt from "./SelectPrompt";
 
-export default function WelcomeScreen() {
+interface WelcomeScreenProps {
+  simplified?: boolean;
+}
+
+export default function WelcomeScreen({
+  simplified = false,
+}: WelcomeScreenProps) {
   const { currentStep, isFadingOut } = useOnboard();
   const { setTheme } = useTheme();
 
@@ -130,33 +136,39 @@ export default function WelcomeScreen() {
                 Welcome to Daydream
               </h1>
 
-              <p className="font-playfair font-semibold text-[18px] sm:text-xl md:text-2xl text-[#1C1C1C]">
-                ✨ From spark to story, your imagination starts here.
-              </p>
+              {!simplified && (
+                <p className="font-playfair font-semibold text-[18px] sm:text-xl md:text-2xl text-[#1C1C1C]">
+                  ✨ From spark to story, your imagination starts here.
+                </p>
+              )}
             </div>
 
             <div className="w-full h-px bg-[#D2D2D2]"></div>
 
-            <div className="flex flex-col gap-[16px]">
-              <p className="font-open-sans text-base sm:text-lg leading-[1.35em] text-[#232323]">
-                Come experience the magic of Daydream 🎭
-              </p>
-              <p className="font-open-sans text-base sm:text-lg leading-[1.35em] text-[#232323]">
-                Create without limits. Whether you&apos;re crafting stories,
-                building experiences, or experimenting with something entirely
-                new, this is your playground!
-              </p>
-            </div>
+            {!simplified ? (
+              <div className="flex flex-col gap-[16px]">
+                <p className="font-open-sans text-base sm:text-lg leading-[1.35em] text-[#232323]">
+                  Come experience the magic of Daydream 🎭
+                </p>
+                <p className="font-open-sans text-base sm:text-lg leading-[1.35em] text-[#232323]">
+                  Create without limits. Whether you&apos;re crafting stories,
+                  building experiences, or experimenting with something entirely
+                  new, this is your playground!
+                </p>
+              </div>
+            ) : null}
 
             <p className="font-playfair font-semibold text-[18px] sm:text-xl md:text-2xl text-[#1C1C1C]">
-              But first, let&apos;s get to know you!
+              {!simplified
+                ? "But first, let's get to know you!"
+                : "Let's get to know you!"}
             </p>
 
             <Personas />
 
-            <CameraAccess />
+            {!simplified && <CameraAccess />}
 
-            <SelectPrompt />
+            {!simplified && <SelectPrompt />}
           </div>
         </div>
         <Footer isFadingOut={isFadingOut} />

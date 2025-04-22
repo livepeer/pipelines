@@ -25,8 +25,14 @@ import { usePlayerPositionUpdater } from "./usePlayerPosition";
 import { usePrivy } from "@/hooks/usePrivy";
 import useMount from "@/hooks/useMount";
 import { sendBeaconEvent } from "@/lib/analytics/event-middleware";
+import { useGuestUserStore } from "@/hooks/useGuestUser";
+import { GuestSignupModal } from "@/components/guest/GuestSignupModal";
 
-export default function Dreamshaper() {
+interface DreamshaperProps {
+  isGuestMode?: boolean;
+}
+
+export default function Dreamshaper({ isGuestMode = false }: DreamshaperProps) {
   useInitialization();
   useParamsHandling();
   useCapacityMonitor();
@@ -36,17 +42,29 @@ export default function Dreamshaper() {
   const { status, live } = useStreamStatus(stream?.id, false);
   const { currentStep, selectedPrompt, setSelectedPrompt } = useOnboard();
   const { setLastSubmittedPrompt, setHasSubmittedPrompt } = usePromptStore();
-  const { user, authenticated } = usePrivy();
+  const { user, authenticated, login } = usePrivy();
   const { isFullscreen } = useFullscreenStore();
   const playerRef = useRef<HTMLDivElement>(null);
+  const {
+    promptCount,
+    incrementPromptCount,
+    setHasRecordedClip,
+    setHasShared,
+    lastPrompt,
+  } = useGuestUserStore();
 
   usePlayerPositionUpdater(playerRef);
 
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [showGuestModal, setShowGuestModal] = useState(false);
+  const [guestModalReason, setGuestModalReason] = useState<
+    "prompt_limit" | "record_clip" | "share" | null
+  >(null);
 
   useMount(() => {
     track("daydream_page_view", {
       is_authenticated: authenticated,
+      is_guest_mode: isGuestMode,
     });
   });
 
@@ -56,9 +74,10 @@ export default function Dreamshaper() {
         is_authenticated: authenticated,
         playback_id: stream?.output_playback_id,
         stream_id: stream?.id,
+        is_guest_mode: isGuestMode,
       });
     }
-  }, [stream, live]);
+  }, [stream, live, isGuestMode]);
 
   useEffect(() => {
     // Track page unload events
@@ -72,6 +91,7 @@ export default function Dreamshaper() {
         playback_id: stream?.output_playback_id,
         pipeline_id: pipeline?.id,
         event_type: "unload",
+        is_guest_mode: isGuestMode,
       };
 
       sendBeaconEvent(
@@ -92,6 +112,7 @@ export default function Dreamshaper() {
           playback_id: stream?.output_playback_id,
           pipeline_id: pipeline?.id,
           event_type: "visibility_change",
+          is_guest_mode: isGuestMode,
         };
 
         sendBeaconEvent(
@@ -122,6 +143,7 @@ export default function Dreamshaper() {
     stream?.output_playback_id,
     pipeline?.id,
     isRefreshing,
+    isGuestMode,
   ]);
 
   useEffect(() => {
@@ -159,11 +181,52 @@ export default function Dreamshaper() {
     }
   }, [pipeline]);
 
+  const handleGuestPromptSubmit = () => {
+    if (isGuestMode) {
+      if (promptCount >= 5) {
+        setGuestModalReason("prompt_limit");
+        setShowGuestModal(true);
+        track("guest_prompt_limit_reached", {
+          prompt_count: promptCount,
+          last_prompt: lastPrompt,
+        });
+        return true;
+      }
+
+      incrementPromptCount();
+
+      // Show signup modal after 5 prompts
+      if (promptCount >= 4) {
+        setGuestModalReason("prompt_limit");
+        setShowGuestModal(true);
+        track("guest_prompt_limit_reached", {
+          prompt_count: promptCount + 1,
+          last_prompt: lastPrompt,
+        });
+      }
+    }
+    return false;
+  };
+
+  const handleGuestShare = () => {
+    if (isGuestMode) {
+      setHasShared(true);
+      setGuestModalReason("share");
+      setShowGuestModal(true);
+      track("guest_share_attempt", {
+        prompt_count: promptCount,
+        last_prompt: lastPrompt,
+      });
+      return true;
+    }
+    return false;
+  };
+
   return (
     <div className="relative">
       <div className={currentStep !== "main" ? "hidden" : "block"}>
         <div className="relative flex flex-col min-h-screen overflow-y-auto">
-          <Header />
+          <Header isGuestMode={isGuestMode} onShareAttempt={handleGuestShare} />
 
           <div
             className={cn(
@@ -185,11 +248,18 @@ export default function Dreamshaper() {
 
           {/* Input and Broadcast Section */}
           <ManagedBroadcast />
-          <InputPrompt />
+          <InputPrompt onPromptSubmit={handleGuestPromptSubmit} />
           <StreamDebugPanel />
           <StreamInfo />
         </div>
       </div>
+
+      {/* Guest user signup modal */}
+      <GuestSignupModal
+        isOpen={showGuestModal}
+        onClose={() => setShowGuestModal(false)}
+        reason={guestModalReason}
+      />
     </div>
   );
 }

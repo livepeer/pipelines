@@ -13,15 +13,31 @@ import { handleDistinctId, identifyUser } from "@/lib/analytics/mixpanel";
 import { submitToHubspot } from "@/lib/analytics/hubspot";
 import track from "@/lib/track";
 import { usePrivy } from "@/hooks/usePrivy";
+import { useGuestUserStore } from "@/hooks/useGuestUser";
+import { useSearchParams } from "next/navigation";
+
+interface DaydreamProps {
+  hasSharedPrompt: boolean;
+  isOAuthSuccessRedirect: boolean;
+  allowGuestAccess?: boolean;
+}
 
 export default function Daydream({
   hasSharedPrompt,
   isOAuthSuccessRedirect,
-}: {
-  hasSharedPrompt: boolean;
-  isOAuthSuccessRedirect: boolean;
-}) {
+  allowGuestAccess = false,
+}: DaydreamProps) {
   const { user, ready } = usePrivy();
+  const { isGuestUser, setIsGuestUser } = useGuestUserStore();
+  const searchParams = useSearchParams();
+  const inputPrompt = searchParams.get("inputPrompt");
+
+  // If guest access is allowed and input prompt exists, enable guest mode
+  useEffect(() => {
+    if (allowGuestAccess && inputPrompt && !user) {
+      setIsGuestUser(true);
+    }
+  }, [allowGuestAccess, inputPrompt, user, setIsGuestUser]);
 
   // If the user is not ready, show a loading screen
   if (!ready) {
@@ -31,6 +47,15 @@ export default function Daydream({
           <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
         </div>
       </LayoutWrapper>
+    );
+  }
+
+  // If in guest mode and coming from "Try this prompt", allow access to create page
+  if (isGuestUser && inputPrompt) {
+    return (
+      <OnboardProvider hasSharedPrompt={hasSharedPrompt || !!inputPrompt}>
+        <DaydreamRenderer isGuestMode={true} />
+      </OnboardProvider>
     );
   }
 
@@ -47,13 +72,13 @@ export default function Daydream({
 
   // If the user is logged in, show the onboarding screen and main experience
   return (
-    <OnboardProvider hasSharedPrompt={hasSharedPrompt}>
-      <DaydreamRenderer />
+    <OnboardProvider hasSharedPrompt={hasSharedPrompt || !!inputPrompt}>
+      <DaydreamRenderer isGuestMode={false} />
     </OnboardProvider>
   );
 }
 
-function DaydreamRenderer() {
+function DaydreamRenderer({ isGuestMode = false }: { isGuestMode?: boolean }) {
   const {
     isInitializing,
     setIsInitializing,
@@ -66,9 +91,35 @@ function DaydreamRenderer() {
   const { user } = usePrivy();
 
   useEffect(() => {
+    // For guest mode, skip directly to main experience
+    if (isGuestMode) {
+      setCurrentStep("main");
+      setIsInitializing(false);
+      track("guest_mode_started", {
+        is_authenticated: false,
+      });
+      return;
+    }
+
     const initUser = async () => {
       try {
         if (!user?.id) {
+          return;
+        }
+
+        const isFromGuestExperience =
+          localStorage.getItem("daydream_from_guest_experience") === "true";
+
+        if (isFromGuestExperience) {
+          localStorage.removeItem("daydream_from_guest_experience");
+
+          setCurrentStep("persona");
+          setIsInitializing(false);
+
+          track("user_from_guest_experience", {
+            user_id: user.id,
+          });
+
           return;
         }
 
@@ -127,7 +178,7 @@ function DaydreamRenderer() {
     };
 
     initUser();
-  }, [user]);
+  }, [user, isGuestMode]);
 
   if (isInitializing) {
     return (
@@ -141,8 +192,14 @@ function DaydreamRenderer() {
 
   return (
     <>
-      <WelcomeScreen />
-      {["main", "prompt"].includes(currentStep) && <MainExperience />}
+      <WelcomeScreen
+        simplified={
+          localStorage.getItem("daydream_from_guest_experience") === "true"
+        }
+      />
+      {["main", "prompt"].includes(currentStep) && (
+        <MainExperience isGuestMode={isGuestMode} />
+      )}
     </>
   );
 }
