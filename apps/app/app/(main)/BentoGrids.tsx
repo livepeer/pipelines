@@ -47,11 +47,11 @@ export function BentoGrids({ initialClips }: BentoGridsProps) {
   const isDebug = searchParams.has("debug");
 
   useEffect(() => {
-    if (!initialFetchDone.current && initialClips.length === 0) {
+    if (!initialFetchDone.current) {
       fetchClips();
       initialFetchDone.current = true;
     }
-  }, [fetchClips, initialClips.length]);
+  }, [fetchClips]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -224,6 +224,7 @@ function GridItem({
         <OptimizedVideo
           src={src}
           clipId={clipId}
+          prompt={prompt}
           title={title}
           slug={slug}
           authorName={authorName}

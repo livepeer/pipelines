@@ -81,7 +81,7 @@ export default function LoginScreen({
       </div>
 
       {/* Login container */}
-      <div className="z-10 relative bg-white h-[55vh] sm:h-full p-6 rounded-t-[20px] sm:rounded-none w-full sm:w-1/2 shadow-lg flex flex-col items-center justify-center">
+      <div className="z-10 relative bg-white h-auto sm:h-full p-6 rounded-t-[20px] sm:rounded-none w-full sm:w-1/2 shadow-lg flex flex-col items-center justify-center">
         <h1
           className={cn(
             "font-inter text-lg md:text-xl flex flex-col uppercase font-light",

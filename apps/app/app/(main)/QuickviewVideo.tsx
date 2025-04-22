@@ -1,5 +1,6 @@
 "use client";
 
+import { TrackedButton } from "@/components/analytics/TrackedButton";
 import { GradientAvatar } from "@/components/GradientAvatar";
 import { usePreviewStore } from "@/hooks/usePreviewStore";
 import { handleSessionId } from "@/lib/analytics/mixpanel";
@@ -12,14 +13,12 @@ import {
   DialogTrigger,
 } from "@repo/design-system/components/ui/dialog";
 import { cn } from "@repo/design-system/lib/utils";
-import { Repeat, WandSparkles, X } from "lucide-react";
+import { X } from "lucide-react";
+import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect } from "react";
+import React, { useEffect } from "react";
 import { VideoPlayer } from "./VideoPlayer";
 import { VideoProvider } from "./VideoProvider";
-import { Button } from "@repo/design-system/components/ui/button";
-import { TrackedButton } from "@/components/analytics/TrackedButton";
-import Link from "next/link";
 
 const formatter = new Intl.DateTimeFormat("en-US", {
   month: "short",
@@ -71,8 +70,11 @@ export default function QuickviewVideo({
   }, []);
 
   useEffect(() => {
-    if (pathname !== "/") setIsPreviewOpen(true);
-    else setIsPreviewOpen(false);
+    if (pathname !== "/") {
+      setIsPreviewOpen(true);
+    } else {
+      setIsPreviewOpen(false);
+    }
   }, [pathname]);
 
   const handleClose = () => {
@@ -129,7 +131,11 @@ export default function QuickviewVideo({
                   </div>
                 </div>
 
-                <Link href="/create">
+                <Link
+                  href={
+                    prompt ? `/create?inputPrompt=${btoa(prompt)}` : "/create"
+                  }
+                >
                   <TrackedButton
                     trackingEvent="quickview_create_clicked"
                     trackingProperties={{ location: "quickview_video" }}
@@ -141,7 +147,7 @@ export default function QuickviewVideo({
                       e.stopPropagation();
                     }}
                   >
-                    Start creating
+                    Try this prompt
                   </TrackedButton>
                 </Link>
               </div>

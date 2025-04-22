@@ -58,7 +58,7 @@ export default function WelcomeScreen() {
         <div
           className={cn(
             "cloud-container absolute inset-0 w-full h-full",
-            isFadingOut ? "opacity-0" : "opacity-100",
+            isFadingOut ? "opacity-0" : "opacity-50",
             "transition-opacity duration-1000",
           )}
           ref={containerRef}
@@ -111,7 +111,7 @@ export default function WelcomeScreen() {
               transition: getCloudTransition(5),
             }}
           ></div>
-          <div className="bg-gradient-to-b from-transparent to-[rgba(0,0,0,0.2)] absolute inset-0 z-[7] opacity-[55%]"></div>
+          <div className="bg-gradient-to-b from-transparent to-white absolute inset-0 z-[7] opacity-[55%]"></div>
         </div>
         <div className="absolute inset-0 w-full h-full backdrop-blur-md z-[8]"></div>
       </div>
@@ -131,7 +131,7 @@ export default function WelcomeScreen() {
               </h1>
 
               <p className="font-playfair font-semibold text-[18px] sm:text-xl md:text-2xl text-[#1C1C1C]">
-                ✨ Explore a world where imagination becomes reality
+                ✨ From spark to story, your imagination starts here.
               </p>
             </div>
 

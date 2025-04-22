@@ -1,6 +1,8 @@
 import { Dialog, Transition } from "@headlessui/react";
 import { Fragment, useState, useEffect } from "react";
 import { Clip } from "../../types";
+import { usePrivy } from "@/hooks/usePrivy";
+import { useAdmin } from "@/hooks/useAdmin";
 
 interface EditClipModalProps {
   clip: Clip | null;
@@ -15,9 +17,13 @@ export default function EditClipModal({
   onClose,
   onSave,
 }: EditClipModalProps) {
+  const { user } = usePrivy();
+  const { email } = useAdmin();
   const [formData, setFormData] = useState<Partial<Clip>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isLoadingLivepeerUser, setIsLoadingLivepeerUser] = useState(false);
+  const [selectedUserName, setSelectedUserName] = useState<string | null>(null);
 
   useEffect(() => {
     if (clip) {
@@ -31,8 +37,10 @@ export default function EditClipModal({
         prompt: clip.prompt,
         priority: clip.priority,
       });
+      setSelectedUserName(null);
     } else {
       setFormData({});
+      setSelectedUserName(null);
     }
     setError(null);
   }, [clip]);
@@ -50,11 +58,55 @@ export default function EditClipModal({
         ...prev,
         [name]: numValue,
       }));
+    } else if (name === "author_user_id") {
+      setSelectedUserName(null);
+      setFormData(prev => ({
+        ...prev,
+        [name]: value,
+      }));
     } else {
       setFormData(prev => ({
         ...prev,
         [name]: value,
       }));
+    }
+  };
+
+  const handleRandomLivepeerUser = async () => {
+    setIsLoadingLivepeerUser(true);
+    try {
+      const headers = new Headers();
+      if (user && email) {
+        const userData = {
+          id: user.id,
+          email: { address: email },
+        };
+        headers.append("x-privy-user", JSON.stringify(userData));
+      }
+
+      const response = await fetch("/api/admin/users/random-livepeer", {
+        headers,
+      });
+      if (!response.ok) {
+        throw new Error("Failed to fetch random Livepeer user");
+      }
+      const randomUser = await response.json();
+
+      setSelectedUserName(randomUser.name || "Unknown");
+
+      setFormData(prev => ({
+        ...prev,
+        author_user_id: randomUser.id,
+      }));
+    } catch (err) {
+      console.error("Error fetching random Livepeer user:", err);
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to fetch random Livepeer user",
+      );
+    } finally {
+      setIsLoadingLivepeerUser(false);
     }
   };
 
@@ -156,14 +208,56 @@ export default function EditClipModal({
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Author User ID *
                       </label>
-                      <input
-                        type="text"
-                        name="author_user_id"
-                        value={formData.author_user_id || ""}
-                        onChange={handleChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                        required
-                      />
+                      <div className="flex space-x-2">
+                        {selectedUserName ? (
+                          <div className="relative flex-1">
+                            <input
+                              type="text"
+                              value={selectedUserName}
+                              readOnly
+                              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50 focus:outline-none"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedUserName(null);
+                                setFormData(prev => ({
+                                  ...prev,
+                                  author_user_id: "",
+                                }));
+                              }}
+                              className="absolute right-3 top-2.5 text-gray-500 hover:text-gray-700"
+                            >
+                              ×
+                            </button>
+                            <input
+                              type="hidden"
+                              name="author_user_id"
+                              value={formData.author_user_id || ""}
+                              required
+                            />
+                          </div>
+                        ) : (
+                          <input
+                            type="text"
+                            name="author_user_id"
+                            value={formData.author_user_id || ""}
+                            onChange={handleChange}
+                            className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                            required
+                          />
+                        )}
+                        <button
+                          type="button"
+                          onClick={handleRandomLivepeerUser}
+                          disabled={isLoadingLivepeerUser}
+                          className="px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                        >
+                          {isLoadingLivepeerUser
+                            ? "Loading..."
+                            : "Random @livepeer"}
+                        </button>
+                      </div>
                     </div>
 
                     <div>

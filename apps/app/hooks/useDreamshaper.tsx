@@ -15,6 +15,7 @@ import { create } from "zustand";
 import { useStreamStatus } from "./useStreamStatus";
 import track from "@/lib/track";
 import { usePrivy } from "@/hooks/usePrivy";
+import { usePromptStore } from "@/hooks/usePromptStore";
 
 export const DEFAULT_PIPELINE_ID = "pip_DRQREDnSei4HQyC8"; // Staging Dreamshaper ID
 export const DUMMY_USER_ID_FOR_NON_AUTHENTICATED_USERS =
@@ -40,17 +41,39 @@ export const getStreamUrl = (
   storedWhipUrl?: string | null,
 ): string => {
   const customWhipServer = searchParams.get("whipServer");
+  const customOrchestrator = searchParams.get("orchestrator");
 
   const app = getAppConfig(searchParams);
 
   if (customWhipServer) {
     if (customWhipServer.includes("<STREAM_KEY>")) {
-      return customWhipServer.replace("<STREAM_KEY>", streamKey);
+      return addOrchestratorParam(
+        customWhipServer.replace("<STREAM_KEY>", streamKey),
+        customOrchestrator,
+      );
     }
-    return `${customWhipServer}${streamKey}/whip`;
+    return addOrchestratorParam(
+      `${customWhipServer}${streamKey}/whip`,
+      customOrchestrator,
+    );
   }
 
-  return `${app.newWhipUrl}${streamKey}/whip`;
+  return addOrchestratorParam(
+    `${app.newWhipUrl}${streamKey}/whip`,
+    customOrchestrator,
+  );
+};
+
+const addOrchestratorParam = (
+  url: string,
+  orchestrator: string | null,
+): string => {
+  if (orchestrator) {
+    const urlObj = new URL(url);
+    urlObj.searchParams.set("orchestrator", orchestrator);
+    return urlObj.toString();
+  }
+  return url;
 };
 
 const processInputValues = (inputValues: any) => {
@@ -170,6 +193,57 @@ export const useDreamshaperStore = create<DreamshaperStore>(set => ({
   setSharedPrompt: prompt => set({ sharedPrompt: prompt }),
 }));
 
+export function useInputPromptHandling() {
+  const searchParams = useSearchParams();
+  const { stream, pipeline } = useDreamshaperStore();
+  const { setLastSubmittedPrompt, setHasSubmittedPrompt } = usePromptStore();
+  const [inputPromptApplied, setInputPromptApplied] = useState(false);
+  const { gatewayHost, ready: gatewayHostReady } = useGatewayHost(
+    stream?.id || null,
+  );
+  const { handleStreamUpdate } = useStreamUpdates();
+
+  useEffect(() => {
+    const applyInputPrompt = async () => {
+      const inputPromptB64 = searchParams.get("inputPrompt");
+
+      if (
+        !inputPromptB64 ||
+        inputPromptApplied ||
+        !stream ||
+        !gatewayHostReady
+      ) {
+        return;
+      }
+
+      try {
+        const decodedPrompt = atob(inputPromptB64);
+
+        setLastSubmittedPrompt(decodedPrompt);
+        setHasSubmittedPrompt(true);
+
+        await handleStreamUpdate(decodedPrompt, { silent: true });
+
+        setInputPromptApplied(true);
+      } catch (error) {
+        console.error("Error applying input prompt:", error);
+      }
+    };
+
+    applyInputPrompt();
+  }, [
+    searchParams,
+    stream,
+    inputPromptApplied,
+    gatewayHostReady,
+    handleStreamUpdate,
+    setLastSubmittedPrompt,
+    setHasSubmittedPrompt,
+  ]);
+
+  return { inputPromptApplied };
+}
+
 export function useParamsHandling() {
   const searchParams = useSearchParams();
   const {
@@ -184,7 +258,7 @@ export function useParamsHandling() {
     stream?.id || null,
   );
 
-  // Shared params handling
+  useInputPromptHandling();
   useEffect(() => {
     const applySharedParams = async () => {
       const sharedId = searchParams.get("shared");
@@ -689,3 +763,18 @@ export const useCapacityMonitor = () => {
     }
   }, [capacityReached, timeoutReached, live, stream]);
 };
+
+export function useDreamshaper() {
+  useInitialization();
+  useParamsHandling();
+  useCapacityMonitor();
+  const { handleStreamUpdate } = useStreamUpdates();
+  const { createShareLink } = useShareLink();
+  const store = useDreamshaperStore();
+
+  return {
+    ...store,
+    handleStreamUpdate,
+    createShareLink,
+  };
+}

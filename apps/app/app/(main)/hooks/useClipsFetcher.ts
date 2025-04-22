@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useState, useRef } from "react";
 
 export type Clip = {
   id: string;
@@ -17,6 +17,7 @@ export default function useClipsFetcher(initialClips: Clip[] = []) {
   const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
+  const isFirstFetch = useRef(true);
 
   const fetchClips = useCallback(async () => {
     if (loading || !hasMore) return;
@@ -55,6 +56,11 @@ export default function useClipsFetcher(initialClips: Clip[] = []) {
         );
 
         setClips(prev => {
+          if (isFirstFetch.current) {
+            isFirstFetch.current = false;
+            return newClips;
+          }
+
           const existingIds = new Set(prev.map(clip => clip.id));
           const uniqueNewClips = newClips.filter(
             (clip: Clip) => !existingIds.has(clip.id),
