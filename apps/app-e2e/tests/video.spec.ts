@@ -11,11 +11,11 @@ import {
   SEND_METRICS,
 } from "./common";
 import {
-  pushMetrics,
-  testSuccessCounter,
-  testFailureCounter,
-  testDurationGauge,
   ENVIRONMENT,
+  pushMetrics,
+  testDurationGauge,
+  testFailureCounter,
+  testSuccessCounter,
 } from "./metrics";
 
 const EMAIL = process.env.TEST_EMAIL;
