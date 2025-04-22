@@ -192,10 +192,10 @@ function ClipUploader() {
         <br />
         <input
           id="sourceClipId"
-          type="number" // Use type="number" for better UX on some devices
+          type="number"
           value={sourceClipId}
-          onChange={e => setSourceClipId(e.target.value)} // Keep value as string for controlled input
-          min="0" // Optional: prevent negative numbers if applicable
+          onChange={e => setSourceClipId(e.target.value)}
+          min="0"
           style={{ width: "95%", padding: "8px" }}
         />
       </div>

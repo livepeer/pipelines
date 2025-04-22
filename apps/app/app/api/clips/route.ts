@@ -14,6 +14,7 @@ import { and, asc, eq, isNotNull, isNull, sql } from "drizzle-orm";
 import { customAlphabet } from "nanoid";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import mime from "mime-types";
 
 type FetchedClip = {
   id: number;
@@ -259,7 +260,12 @@ export async function POST(request: NextRequest) {
 
     const clipBuffer = Buffer.from(await sourceClip.arrayBuffer());
     const fileType = sourceClip.type || "video/mp4";
-    const clipPath = buildClipPath(userId, clipId, "source-clip.mp4");
+    const sourceExtension = mime.extension(fileType) || "mp4";
+    const clipPath = buildClipPath(
+      userId,
+      clipId,
+      `source-clip.${sourceExtension}`,
+    );
 
     let clipUrl: string;
 
@@ -291,7 +297,13 @@ export async function POST(request: NextRequest) {
           await watermarkedClip.arrayBuffer(),
         );
         const watermarkedFileType = watermarkedClip.type || "video/mp4";
-        const watermarkedPath = buildClipPath(userId, clipId, "clip.mp4");
+        const watermarkedExtension =
+          mime.extension(watermarkedFileType) || "mp4";
+        const watermarkedPath = buildClipPath(
+          userId,
+          clipId,
+          `clip.${watermarkedExtension}`,
+        );
         watermarkedClipUrl = await uploadToGCS(
           watermarkedBuffer,
           watermarkedPath,
@@ -310,7 +322,12 @@ export async function POST(request: NextRequest) {
       try {
         const thumbnailBuffer = Buffer.from(await thumbnail.arrayBuffer());
         const thumbnailFileType = thumbnail.type || "image/jpeg";
-        const thumbnailPath = buildClipPath(userId, clipId, "thumbnail.jpg");
+        const thumbnailExtension = mime.extension(thumbnailFileType) || "jpg";
+        const thumbnailPath = buildClipPath(
+          userId,
+          clipId,
+          `thumbnail.${thumbnailExtension}`,
+        );
         thumbnailUrl = await uploadToGCS(
           thumbnailBuffer,
           thumbnailPath,
