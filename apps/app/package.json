@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@arcjet/next": "1.0.0-alpha.28",
+    "@google-cloud/storage": "^7.16.0",
     "@headlessui/react": "^2.2.0",
     "@intercom/messenger-js-sdk": "^0.0.14",
     "@livepeer/react": "^4.3.2",
@@ -43,6 +44,7 @@
     "kafkajs": "^2.2.4",
     "livepeer": "^3.5.0",
     "lucide-react": "^0.469.0",
+    "mime-types": "^3.0.1",
     "mixpanel": "^0.18.0",
     "nanoid": "^5.0.8",
     "next": "14.2.5",
@@ -68,6 +70,7 @@
     "@testing-library/dom": "^10.4.0",
     "@testing-library/react": "^16.1.0",
     "@types/humps": "^2.0.6",
+    "@types/mime-types": "^2.1.4",
     "@types/mixpanel-browser": "^2.50.2",
     "@types/node": "22.9.0",
     "@types/pg": "^8.11.11",
