@@ -10,6 +10,10 @@ import CameraAccess from "./CameraAccess";
 import Footer from "./Footer";
 import Personas from "./Personas";
 import SelectPrompt from "./SelectPrompt";
+import { usePrivy } from "@/hooks/usePrivy";
+import { updateUserAdditionalDetails } from "@/app/actions/user";
+import { Separator } from "@repo/design-system/components/ui/separator";
+import track from "@/lib/track";
 
 interface WelcomeScreenProps {
   simplified?: boolean;
@@ -18,8 +22,10 @@ interface WelcomeScreenProps {
 export default function WelcomeScreen({
   simplified = false,
 }: WelcomeScreenProps) {
-  const { currentStep, isFadingOut } = useOnboard();
+  const { currentStep, isFadingOut, setCurrentStep, setFadingOut } =
+    useOnboard();
   const { setTheme } = useTheme();
+  const { user } = usePrivy();
 
   useMount(() => {
     setTheme("light");
@@ -51,6 +57,25 @@ export default function WelcomeScreen({
   const getCloudTransition = (cloudIndex: number): string => {
     if (!isFadingOut) return "transform 2s ease-out";
     return "transform 0.8s ease-out, opacity 0.7s ease-out";
+  };
+
+  const handleContinueFromSimplifiedFlow = async () => {
+    track("daydream_simplified_continue_clicked", {
+      user_id: user?.id,
+    });
+
+    setFadingOut(true);
+
+    setTimeout(() => {
+      setCurrentStep("main");
+      window && window.scrollTo({ top: 0, behavior: "instant" });
+    }, 1000);
+
+    if (user) {
+      await updateUserAdditionalDetails(user, {
+        next_onboarding_step: "main",
+      });
+    }
   };
 
   if (currentStep === "main") {
@@ -136,11 +161,9 @@ export default function WelcomeScreen({
                 Welcome to Daydream
               </h1>
 
-              {!simplified && (
-                <p className="font-playfair font-semibold text-[18px] sm:text-xl md:text-2xl text-[#1C1C1C]">
-                  ✨ From spark to story, your imagination starts here.
-                </p>
-              )}
+              <p className="font-playfair font-semibold text-[18px] sm:text-xl md:text-2xl text-[#1C1C1C]">
+                ✨ From spark to story, your imagination starts here.
+              </p>
             </div>
 
             <div className="w-full h-px bg-[#D2D2D2]"></div>
@@ -164,11 +187,25 @@ export default function WelcomeScreen({
                 : "Let's get to know you!"}
             </p>
 
-            <Personas />
+            <Personas simplified={simplified} />
 
             {!simplified && <CameraAccess />}
 
             {!simplified && <SelectPrompt />}
+
+            {simplified && currentStep === "persona" && (
+              <>
+                <Separator className="bg-[#D2D2D2]" />
+                <div className="flex justify-end w-full">
+                  <button
+                    onClick={handleContinueFromSimplifiedFlow}
+                    className="bg-[#161616] w-full sm:max-w-[187px] text-[#EDEDED] px-6 py-3 rounded-md font-inter font-semibold text-[15px] hover:bg-[#2D2D2D] transition-colors"
+                  >
+                    Continue
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
         <Footer isFadingOut={isFadingOut} />

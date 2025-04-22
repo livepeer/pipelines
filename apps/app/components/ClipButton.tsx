@@ -12,6 +12,7 @@ interface ClipButtonProps {
   isAuthenticated?: boolean;
   isMobile?: boolean;
   onRecordAttempt?: () => boolean;
+  isGuestMode?: boolean;
 }
 
 const RecordingProgressIcon = ({ progress }: { progress: number }) => {
@@ -40,6 +41,7 @@ export const ClipButton = ({
   isAuthenticated = false,
   isMobile = false,
   onRecordAttempt,
+  isGuestMode = false,
 }: ClipButtonProps) => {
   const {
     recordClip,
@@ -136,6 +138,7 @@ export const ClipButton = ({
         onClose={closeClipModal}
         clipUrl={clipUrl}
         clipFilename={clipFilename}
+        isGuestMode={isGuestMode}
       />
 
       <ClipOptionsModal

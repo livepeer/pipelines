@@ -68,12 +68,10 @@ export const Header = ({
   const handleGuestRecordClip = () => {
     if (isGuestMode) {
       setHasRecordedClip(true);
-      setGuestModalReason("record_clip");
-      setShowGuestModal(true);
       track("guest_record_attempt", {
         last_prompt: lastPrompt,
       });
-      return true;
+      return false;
     }
     return false;
   };
@@ -138,22 +136,13 @@ export const Header = ({
             >
               <div className="flex items-center gap-2">
                 {isGuestMode ? (
-                  <TrackedButton
-                    trackingEvent="daydream_clip_button_clicked"
-                    trackingProperties={{
-                      is_authenticated: false,
-                      is_guest_mode: true,
-                    }}
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 gap-2 relative overflow-hidden mr-2 rounded-md"
-                    onClick={() => handleGuestRecordClip()}
-                  >
-                    <div className="z-20 relative flex items-center gap-2">
-                      <Scissors size={16} />
-                      <span>Create Clip</span>
-                    </div>
-                  </TrackedButton>
+                  <ClipButton
+                    trackAnalytics={track}
+                    isAuthenticated={false}
+                    isGuestMode={true}
+                    onRecordAttempt={handleGuestRecordClip}
+                    className="mr-2 rounded-md"
+                  />
                 ) : (
                   live &&
                   stream?.output_playback_id &&
@@ -194,14 +183,14 @@ export const Header = ({
 
           <div className="flex gap-2 justify-end max-w-[60%]">
             {isGuestMode ? (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="p-0 m-0 bg-transparent border-none hover:bg-transparent focus:outline-none rounded-md"
-                onClick={() => handleGuestRecordClip()}
-              >
-                <Scissors className="h-4 w-4" />
-              </Button>
+              <ClipButton
+                trackAnalytics={track}
+                isAuthenticated={false}
+                isGuestMode={true}
+                onRecordAttempt={handleGuestRecordClip}
+                isMobile={true}
+                className="rounded-md"
+              />
             ) : (
               live &&
               stream?.output_playback_id &&

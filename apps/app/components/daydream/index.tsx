@@ -5,7 +5,7 @@ import WelcomeScreen from "./WelcomeScreen";
 import { OnboardProvider, useOnboard } from "./OnboardContext";
 import { Loader2 } from "lucide-react";
 import MainExperience from "./MainExperience";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import LayoutWrapper from "./LayoutWrapper";
 import { AuthProvider } from "./LoginScreen/AuthContext";
 import { createUser } from "@/app/actions/user";
@@ -89,6 +89,7 @@ function DaydreamRenderer({ isGuestMode = false }: { isGuestMode?: boolean }) {
     setCustomPersona,
   } = useOnboard();
   const { user } = usePrivy();
+  const [isFromGuestExperience, setIsFromGuestExperience] = useState(false);
 
   useEffect(() => {
     // For guest mode, skip directly to main experience
@@ -107,12 +108,12 @@ function DaydreamRenderer({ isGuestMode = false }: { isGuestMode?: boolean }) {
           return;
         }
 
-        const isFromGuestExperience =
+        const fromGuestExperience =
           localStorage.getItem("daydream_from_guest_experience") === "true";
 
-        if (isFromGuestExperience) {
-          localStorage.removeItem("daydream_from_guest_experience");
+        setIsFromGuestExperience(fromGuestExperience);
 
+        if (fromGuestExperience) {
           setCurrentStep("persona");
           setIsInitializing(false);
 
@@ -180,6 +181,13 @@ function DaydreamRenderer({ isGuestMode = false }: { isGuestMode?: boolean }) {
     initUser();
   }, [user, isGuestMode]);
 
+  useEffect(() => {
+    if (currentStep === "main" && isFromGuestExperience) {
+      localStorage.removeItem("daydream_from_guest_experience");
+      setIsFromGuestExperience(false);
+    }
+  }, [currentStep, isFromGuestExperience]);
+
   if (isInitializing) {
     return (
       <LayoutWrapper>
@@ -192,11 +200,7 @@ function DaydreamRenderer({ isGuestMode = false }: { isGuestMode?: boolean }) {
 
   return (
     <>
-      <WelcomeScreen
-        simplified={
-          localStorage.getItem("daydream_from_guest_experience") === "true"
-        }
-      />
+      <WelcomeScreen simplified={isFromGuestExperience} />
       {["main", "prompt"].includes(currentStep) && (
         <MainExperience isGuestMode={isGuestMode} />
       )}

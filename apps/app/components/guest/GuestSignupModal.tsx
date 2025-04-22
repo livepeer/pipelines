@@ -10,7 +10,6 @@ import {
 import { Button } from "@repo/design-system/components/ui/button";
 import { Sparkles } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { usePrivy } from "@/hooks/usePrivy";
 import { useGuestUserStore } from "@/hooks/useGuestUser";
 import track from "@/lib/track";
 
