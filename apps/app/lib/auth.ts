@@ -1,5 +1,5 @@
 import { PrivyClient } from "@privy-io/server-auth";
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
 import "server-only";
 
 const privy = new PrivyClient(
@@ -11,12 +11,17 @@ export async function getPrivyUser() {
   const headersList = headers();
   const accessToken = headersList.get("Authorization")?.replace(/^Bearer /, "");
 
-  if (!accessToken) {
+  const cookieStore = cookies();
+  const privyCookie = cookieStore.get("privy-token");
+
+  if (!accessToken && !privyCookie) {
     return null;
   }
 
   try {
-    const verifiedUser = await privy.verifyAuthToken(accessToken);
+    const verifiedUser = await privy.verifyAuthToken(
+      accessToken || privyCookie?.value || "",
+    );
     return verifiedUser;
   } catch (error) {
     console.error("Failed to verify Privy auth token:", error);
