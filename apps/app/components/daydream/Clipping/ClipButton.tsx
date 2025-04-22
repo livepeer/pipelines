@@ -1,5 +1,5 @@
 import { Button } from "@repo/design-system/components/ui/button";
-import { useVideoClip } from "../hooks/useVideoClip";
+import { useVideoClip } from "../../../hooks/useVideoClip";
 import { cn } from "@repo/design-system/lib/utils";
 import { ClipModal } from "./ClipModal";
 import { ClipOptionsModal, ClipRecordingMode } from "./ClipOptionsModal";

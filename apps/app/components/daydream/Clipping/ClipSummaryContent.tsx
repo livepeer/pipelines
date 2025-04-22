@@ -10,12 +10,12 @@ import { Button } from "@repo/design-system/components/ui/button";
 import { Separator } from "@repo/design-system/components/ui/separator";
 import { usePhoneRotation } from "@/hooks/usePhoneRotation";
 import { toast } from "sonner";
+import { ClipData } from "./types";
 
-interface ClipModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  clipUrl: string | null;
-  clipFilename: string | null;
+interface ClipSummaryContentProps {
+  clipData: ClipData;
+  setClipStep: (step: "summary" | "share") => void;
+  setClipData: (clipData: ClipData) => void;
 }
 
 /**
@@ -24,51 +24,29 @@ interface ClipModalProps {
  * 2. Enable Switch toggle and upload logic to post to leaderboard
  * 3. Add a button to share the clip to the leaderboard
  */
-export function ClipModal({
-  isOpen,
-  onClose,
-  clipUrl,
-  clipFilename,
-}: ClipModalProps) {
-  const isRotating = usePhoneRotation();
+export function ClipSummaryContent({
+  clipData,
+  setClipStep,
+  setClipData,
+}: ClipSummaryContentProps) {
   const [isUploading, setIsUploading] = useState(false);
-
-  const handleDownload = () => {
-    if (clipUrl && clipFilename) {
-      const downloadLink = document.createElement("a");
-      downloadLink.href = clipUrl;
-      downloadLink.download = clipFilename;
-      document.body.appendChild(downloadLink);
-      downloadLink.click();
-
-      setTimeout(() => {
-        document.body.removeChild(downloadLink);
-      }, 100);
-    }
-  };
-
-  const handleOpenChange = (open: boolean) => {
-    if (!open && !isRotating) {
-      onClose();
-    }
-  };
 
   const handleContinue = async () => {
     // NOTE: This function assumes that the POST handler for /api/clips is implemented
     // to receive a FormData with a 'sourceClip' file field. If the API endpoint
     // is not yet implemented, you'll need to create it to handle this FormData.
-    if (clipUrl && clipFilename) {
+    if (clipData.clipUrl && clipData.clipFilename) {
       try {
         setIsUploading(true);
         // First, fetch the blob from the URL
-        const response = await fetch(clipUrl);
+        const response = await fetch(clipData.clipUrl);
         const blob = await response.blob();
 
         // Create a FormData object to send the file
         const formData = new FormData();
         formData.append(
           "sourceClip",
-          new File([blob], clipFilename, { type: blob.type }),
+          new File([blob], clipData.clipFilename, { type: blob.type }),
         );
 
         // Make the API request
@@ -78,11 +56,17 @@ export function ClipModal({
         });
 
         if (apiResponse.ok) {
-          onClose();
-          toast.success("Clip uploaded successfully");
+          const data = await apiResponse.json();
+          if (!data.success) {
+            throw new Error("Failed to upload clip");
+          }
+          setClipData({
+            ...clipData,
+            serverClipUrl: data.clip?.videoUrl,
+          });
+          setClipStep("share");
         } else {
-          const errorData = await apiResponse.json();
-          console.error("Failed to upload clip:", errorData);
+          console.error("Failed to upload clip:");
           toast.error("Failed to upload clip");
         }
       } catch (error) {
@@ -95,33 +79,32 @@ export function ClipModal({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      <DialogContent className="h-fit max-h-[90dvh] max-w-[55dvh] mx-auto overflow-y-auto rounded-xl">
-        <DialogHeader className="flex items-center">
-          <DialogTitle className="text-2xl">Clip Summary</DialogTitle>
-          <DialogDescription className="font-light text-center">
-            Post the clip to Daydream leaderboard, download or share with your
-            friends
-          </DialogDescription>
-        </DialogHeader>
+    <DialogContent className="h-fit max-h-[90dvh] max-w-[55dvh] mx-auto overflow-y-auto rounded-xl">
+      <DialogHeader className="flex items-center">
+        <DialogTitle className="text-2xl">Clip Summary</DialogTitle>
+        <DialogDescription className="font-light text-center">
+          Post the clip to Daydream leaderboard, download or share with your
+          friends
+        </DialogDescription>
+      </DialogHeader>
 
-        <Separator className="my-2" />
+      <Separator className="my-2" />
 
-        <div className="flex justify-center">
-          {clipUrl && (
-            <video
-              src={clipUrl}
-              autoPlay
-              loop
-              muted={false}
-              playsInline
-              controls
-              className="w-full sm:h-[50dvh] aspect-square rounded-md"
-            />
-          )}
-        </div>
+      <div className="flex justify-center">
+        {clipData.clipUrl && (
+          <video
+            src={clipData.clipUrl}
+            autoPlay
+            loop
+            muted={false}
+            playsInline
+            controls
+            className="w-full sm:h-[50dvh] aspect-square rounded-md"
+          />
+        )}
+      </div>
 
-        {/* <div className="flex items-center justify-between mt-2">
+      {/* <div className="flex items-center justify-between mt-2">
           <div className="flex flex-col items-start">
             <div className="text-sm font-medium">Post to Leaderboard</div>
             <div className="text-sm text-muted-foreground font-light">
@@ -144,20 +127,19 @@ export function ClipModal({
           </div>
         </div> */}
 
-        <Separator className="my-2" />
+      <Separator className="my-2" />
 
-        <div className="w-full">
-          <div className="flex gap-2">
-            <Button
-              onClick={handleContinue}
-              className="flex-1 items-center justify-center gap-2 rounded-md h-[46px]"
-              disabled={isUploading}
-            >
-              {isUploading ? "Uploading..." : "Continue"}
-            </Button>
-          </div>
+      <div className="w-full">
+        <div className="flex gap-2">
+          <Button
+            onClick={handleContinue}
+            className="flex-1 items-center justify-center gap-2 rounded-md h-[46px]"
+            disabled={isUploading}
+          >
+            {isUploading ? "Processing..." : "Continue"}
+          </Button>
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </DialogContent>
   );
 }

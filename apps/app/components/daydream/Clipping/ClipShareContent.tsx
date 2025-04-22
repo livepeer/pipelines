@@ -8,17 +8,17 @@ import {
 import { Button } from "@repo/design-system/components/ui/button";
 import { Input } from "@repo/design-system/components/ui/input";
 import { CheckIcon, CopyIcon, DownloadIcon } from "lucide-react";
+import { ClipData } from "./types";
 
-interface ShareClipContentProps {
+interface ClipShareContentProps {
   promptCode?: string;
-  clipUrl?: string;
+  clipData: ClipData;
 }
 
-// TODO: Remove the default values and plug with API based values.
-export default function ShareClipContent({
+export default function ClipShareContent({
   promptCode = "152313Aezcz12Qczff9eaeawdz",
-  clipUrl = "https://daydream.live/clips/my-clip",
-}: ShareClipContentProps) {
+  clipData,
+}: ClipShareContentProps) {
   const [copied, setCopied] = React.useState(false);
 
   const handleCopy = async () => {
@@ -39,8 +39,17 @@ export default function ShareClipContent({
   };
 
   const handleDownload = () => {
-    // In a real implementation, this would download the clip
-    console.log("Downloading clip");
+    if (clipData.clipUrl && clipData.clipFilename) {
+      const downloadLink = document.createElement("a");
+      downloadLink.href = clipData.clipUrl;
+      downloadLink.download = clipData.clipFilename;
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+
+      setTimeout(() => {
+        document.body.removeChild(downloadLink);
+      }, 100);
+    }
   };
 
   return (
@@ -63,7 +72,7 @@ export default function ShareClipContent({
       <div className="flex relative gap-2 items-center w-full">
         <Input
           readOnly
-          value={clipUrl}
+          value={clipData.serverClipUrl || ""}
           className="flex-1 rounded-full py-6 px-8 pr-12 overflow-ellipsis"
         />
         <Button
