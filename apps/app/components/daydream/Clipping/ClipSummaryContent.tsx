@@ -8,7 +8,6 @@ import {
 } from "@repo/design-system/components/ui/dialog";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Separator } from "@repo/design-system/components/ui/separator";
-import { usePhoneRotation } from "@/hooks/usePhoneRotation";
 import { toast } from "sonner";
 import { ClipData } from "./types";
 
