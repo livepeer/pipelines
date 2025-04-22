@@ -13,6 +13,7 @@ import { Download } from "lucide-react";
 import { useRouter } from "next/navigation";
 import track from "@/lib/track";
 import { cn } from "@repo/design-system/lib/utils";
+import { storeClip } from "@/lib/clipStorage";
 
 export const Logo = ({ className }: { className?: string }) => (
   <svg
@@ -96,6 +97,24 @@ export function ClipModal({
   const handleJoinDaydream = () => {
     track("guest_join_from_clip_modal", {});
     localStorage.setItem("daydream_from_guest_experience", "true");
+
+    if (clipUrl && clipFilename) {
+      fetch(clipUrl)
+        .then(response => response.blob())
+        .then(blobData => {
+          storeClip(blobData, clipFilename)
+            .then(() => {
+              console.log("Clip stored successfully in IndexedDB");
+            })
+            .catch(error => {
+              console.error("Failed to store clip in IndexedDB:", error);
+            });
+        })
+        .catch(error => {
+          console.error("Error fetching clip data:", error);
+        });
+    }
+
     onClose();
     router.push("/create");
   };

@@ -15,6 +15,8 @@ import track from "@/lib/track";
 import { usePrivy } from "@/hooks/usePrivy";
 import { useGuestUserStore } from "@/hooks/useGuestUser";
 import { useSearchParams } from "next/navigation";
+import { ClipModal } from "../ClipModal";
+import { retrieveClip, deleteClip } from "@/lib/clipStorage";
 
 interface DaydreamProps {
   hasSharedPrompt: boolean;
@@ -90,6 +92,11 @@ function DaydreamRenderer({ isGuestMode = false }: { isGuestMode?: boolean }) {
   } = useOnboard();
   const { user } = usePrivy();
   const [isFromGuestExperience, setIsFromGuestExperience] = useState(false);
+  const [pendingClipUrl, setPendingClipUrl] = useState<string | null>(null);
+  const [pendingClipFilename, setPendingClipFilename] = useState<string | null>(
+    null,
+  );
+  const [showPendingClipModal, setShowPendingClipModal] = useState(false);
 
   useEffect(() => {
     // For guest mode, skip directly to main experience
@@ -157,14 +164,12 @@ function DaydreamRenderer({ isGuestMode = false }: { isGuestMode?: boolean }) {
         setCurrentStep(initialStep);
         setIsInitializing(false);
 
-        // 3. Handle tracking after initialization
         const distinctId = handleDistinctId();
         localStorage.setItem("mixpanel_user_id", user.id);
 
         await Promise.all([
           identifyUser(user.id, distinctId || "", user),
 
-          // TODO: only submit to Hubspot on production
           isNewUser ? submitToHubspot(user) : Promise.resolve(),
         ]);
 
@@ -185,8 +190,36 @@ function DaydreamRenderer({ isGuestMode = false }: { isGuestMode?: boolean }) {
     if (currentStep === "main" && isFromGuestExperience) {
       localStorage.removeItem("daydream_from_guest_experience");
       setIsFromGuestExperience(false);
+
+      retrieveClip()
+        .then(clipData => {
+          if (clipData) {
+            const { blob, filename } = clipData;
+            const blobUrl = URL.createObjectURL(blob);
+
+            setPendingClipUrl(blobUrl);
+            setPendingClipFilename(filename);
+            setShowPendingClipModal(true);
+
+            deleteClip().catch(err => {
+              console.error("Error deleting clip from IndexedDB:", err);
+            });
+          }
+        })
+        .catch(error => {
+          console.error("Error retrieving clip from IndexedDB:", error);
+        });
     }
   }, [currentStep, isFromGuestExperience]);
+
+  const handleClosePendingClipModal = () => {
+    setShowPendingClipModal(false);
+    if (pendingClipUrl) {
+      URL.revokeObjectURL(pendingClipUrl);
+      setPendingClipUrl(null);
+      setPendingClipFilename(null);
+    }
+  };
 
   if (isInitializing) {
     return (
@@ -203,6 +236,14 @@ function DaydreamRenderer({ isGuestMode = false }: { isGuestMode?: boolean }) {
       <WelcomeScreen simplified={isFromGuestExperience} />
       {["main", "prompt"].includes(currentStep) && (
         <MainExperience isGuestMode={isGuestMode} />
+      )}
+      {showPendingClipModal && (
+        <ClipModal
+          isOpen={showPendingClipModal}
+          onClose={handleClosePendingClipModal}
+          clipUrl={pendingClipUrl}
+          clipFilename={pendingClipFilename}
+        />
       )}
     </>
   );
