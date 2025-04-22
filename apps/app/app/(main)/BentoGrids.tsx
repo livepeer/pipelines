@@ -62,17 +62,22 @@ export function BentoGrids({
   }, [clips, onClipsLoaded]);
 
   useEffect(() => {
-    if (
-      !initialFetchDone.current &&
-      !(isOverlayMode && initialClips.length > 0)
-    ) {
-      fetchClips();
+    if (!initialFetchDone.current) {
+      if (
+        isOverlayMode &&
+        initialClips.length > 0 &&
+        initialClips.length < 16
+      ) {
+        fetchClips();
+      } else if (!isOverlayMode || initialClips.length === 0) {
+        fetchClips();
+      }
       initialFetchDone.current = true;
     }
   }, [fetchClips, isOverlayMode, initialClips.length]);
 
   useEffect(() => {
-    if (isOverlayMode && initialClips.length > 0) {
+    if (isOverlayMode && initialClips.length >= 16) {
       return;
     }
 
@@ -124,26 +129,35 @@ export function BentoGrids({
       </div>
 
       {/* Backdrop blur layer */}
-      <div className="fixed inset-0 backdrop-blur z-0"></div>
+      <div
+        className="fixed inset-0 backdrop-blur z-0"
+        style={{ background: "transparent!important" }}
+      ></div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-8 lg:px-12">
-        <p
-          className={cn(
-            "mx-auto mt-2 max-w-lg text-balance text-center text-4xl font-extralight tracking-tight text-gray-950 sm:text-6xl",
-            isPreviewOpen && "opacity-0",
-          )}
-        >
-          Discover how others{" "}
-          <span className="font-semibold text-4xl sm:text-6xl">Daydream</span>
-        </p>
-        <h2
-          className={cn(
-            "text-center text-base/7 font-light text-zinc-500 max-w-lg mx-auto mt-6 leading-[135%]",
-            isPreviewOpen && "opacity-0",
-          )}
-        >
-          From imagination to creation — all in real time.
-        </h2>
+        {!isOverlayMode && (
+          <>
+            <p
+              className={cn(
+                "mx-auto mt-2 max-w-lg text-balance text-center text-4xl font-extralight tracking-tight text-gray-950 sm:text-6xl",
+                isPreviewOpen && "opacity-0",
+              )}
+            >
+              Discover how others{" "}
+              <span className="font-semibold text-4xl sm:text-6xl">
+                Daydream
+              </span>
+            </p>
+            <h2
+              className={cn(
+                "text-center text-base/7 font-light text-zinc-500 max-w-lg mx-auto mt-6 leading-[135%]",
+                isPreviewOpen && "opacity-0",
+              )}
+            >
+              From imagination to creation — all in real time.
+            </h2>
+          </>
+        )}
 
         {groupedClips.map((group, groupIndex) => {
           const configuration =
@@ -157,7 +171,13 @@ export function BentoGrids({
             <GridSet
               key={groupIndex}
               configuration={configuration}
-              className={groupIndex === 0 ? "mt-10 sm:mt-16" : "mt-4"}
+              className={
+                groupIndex === 0
+                  ? isOverlayMode
+                    ? "mt-0"
+                    : "mt-10 sm:mt-16"
+                  : "mt-4"
+              }
             >
               {group.map((clip, index) => {
                 const overallIndex = baseIndex + index;

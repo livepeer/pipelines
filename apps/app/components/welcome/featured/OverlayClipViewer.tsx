@@ -32,7 +32,10 @@ export const OverlayClipViewer = ({
   });
 
   return (
-    <div className="h-screen w-[70vh] border-none bg-transparent shadow-none pt-6 pb-4 backdrop-filter backdrop-blur-[3px] flex justify-center items-center">
+    <div
+      className="h-screen w-[70vh] border-none bg-transparent shadow-none pt-6 pb-4 backdrop-filter backdrop-blur-[3px] flex justify-center items-center"
+      style={{ background: "transparent!important" }}
+    >
       <div className="max-h-[90vh] max-w-[90vh] w-full aspect-video">
         <div className="space-y-12">
           <div className="relative w-full flex justify-between items-center py-2 pl-2">
