@@ -28,6 +28,7 @@ import { usePrivy } from "@/hooks/usePrivy";
 import { useState } from "react";
 import { GuestSignupModal } from "@/components/guest/GuestSignupModal";
 import { useGuestUserStore } from "@/hooks/useGuestUser";
+import { useOverlayStore } from "@/hooks/useOverlayStore";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -48,6 +49,7 @@ export const Header = ({
   const { hasSubmittedPrompt } = usePromptStore();
   const { open, setOpen, openModal } = useShareModal();
   const { setHasRecordedClip, lastPrompt } = useGuestUserStore();
+  const { setIsOverlayOpen, setOverlayType } = useOverlayStore();
 
   const [showGuestModal, setShowGuestModal] = useState(false);
   const [guestModalReason, setGuestModalReason] = useState<
@@ -74,6 +76,21 @@ export const Header = ({
       return false;
     }
     return false;
+  };
+
+  const handleExploreClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+
+    // First set type, then open overlay for smoother transition
+    // Only set overlayType if it's not already set
+    setOverlayType("bento");
+    setIsOverlayOpen(true);
+
+    track("daydream_back_to_explore_clicked", {
+      is_authenticated: authenticated,
+      is_guest_mode: isGuestMode,
+      via_overlay: true,
+    });
   };
 
   return (
@@ -115,16 +132,15 @@ export const Header = ({
                 trackingProperties={{
                   is_authenticated: authenticated,
                   is_guest_mode: isGuestMode,
+                  via_overlay: true,
                 }}
                 variant="ghost"
                 size="sm"
                 className="h-8 gap-2 rounded-md"
-                asChild
+                onClick={handleExploreClick}
               >
-                <Link href="/">
-                  <ChevronLeft className="h-4 w-4" />
-                  <span>Back to explore</span>
-                </Link>
+                <ChevronLeft className="h-4 w-4" />
+                <span>Back to explore</span>
               </TrackedButton>
             </div>
 

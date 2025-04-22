@@ -27,6 +27,7 @@ import useMount from "@/hooks/useMount";
 import { sendBeaconEvent } from "@/lib/analytics/event-middleware";
 import { useGuestUserStore } from "@/hooks/useGuestUser";
 import { GuestSignupModal } from "@/components/guest/GuestSignupModal";
+import { BentoGridOverlay } from "./BentoGridOverlay";
 
 interface DreamshaperProps {
   isGuestMode?: boolean;
@@ -260,6 +261,9 @@ export default function Dreamshaper({ isGuestMode = false }: DreamshaperProps) {
         onClose={() => setShowGuestModal(false)}
         reason={guestModalReason}
       />
+
+      {/* BentoGrid overlay for never-ending prompt cloning */}
+      <BentoGridOverlay />
     </div>
   );
 }

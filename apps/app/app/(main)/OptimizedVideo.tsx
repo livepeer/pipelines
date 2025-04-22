@@ -1,5 +1,6 @@
 import { GradientAvatar } from "@/components/GradientAvatar";
 import { usePreviewStore } from "@/hooks/usePreviewStore";
+import { useOverlayStore } from "@/hooks/useOverlayStore";
 import { cn } from "@repo/design-system/lib/utils";
 import { Repeat, WandSparkles } from "lucide-react";
 import Link from "next/link";
@@ -19,6 +20,8 @@ interface OptimizedVideoProps {
   createdAt: string;
   remixCount: number;
   className?: string;
+  isOverlayMode?: boolean;
+  onTryPrompt?: (prompt: string) => void;
 }
 
 export default function OptimizedVideo({
@@ -31,6 +34,8 @@ export default function OptimizedVideo({
   createdAt,
   remixCount,
   className,
+  isOverlayMode = false,
+  onTryPrompt,
 }: OptimizedVideoProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isNearViewport, setIsNearViewport] = useState(false);
@@ -40,6 +45,7 @@ export default function OptimizedVideo({
   const { setIsGuestUser, setLastPrompt } = useGuestUserStore();
   const { authenticated } = usePrivy();
   const router = useRouter();
+  const { isOverlayOpen } = useOverlayStore();
 
   const shortSrc = src.replace(/\.mp4$/, "-short.mp4");
   const [effectiveSrc, setEffectiveSrc] = useState(shortSrc);
@@ -134,16 +140,26 @@ export default function OptimizedVideo({
         setIsGuestUser(true);
       }
 
-      router.push(`/create?inputPrompt=${btoa(prompt)}`);
+      if (isOverlayMode && onTryPrompt) {
+        onTryPrompt(prompt);
+      } else {
+        router.push(`/create?inputPrompt=${btoa(prompt)}`);
+      }
     } else {
-      router.push("/create");
+      if (!isOverlayMode) {
+        router.push("/create");
+      }
     }
   };
 
   return (
     <div ref={containerRef} className={cn("size-full", className)}>
       {isNearViewport ? (
-        <Link href={`/clips/${slug || clipId}`} scroll={false}>
+        <Link
+          href={isOverlayMode ? "#" : `/clips/${slug || clipId}`}
+          scroll={false}
+          onClick={isOverlayMode ? e => e.preventDefault() : undefined}
+        >
           <div className="size-full relative group">
             <video
               ref={videoRef}
@@ -174,30 +190,45 @@ export default function OptimizedVideo({
               className="absolute top-3 right-2 p-0 z-10 flex gap-1 items-center opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-150"
               onClick={e => e.stopPropagation()}
             >
-              <Link
-                href={
-                  prompt ? `/create?inputPrompt=${btoa(prompt)}` : "/create"
-                }
-                onClick={e => {
-                  e.stopPropagation();
-                  if (prompt && !authenticated) {
-                    setIsGuestUser(true);
-                    setLastPrompt(prompt);
-                  }
-                }}
-              >
+              {isOverlayMode && onTryPrompt && prompt ? (
                 <TrackedButton
-                  trackingEvent="explore_try_prompt_clicked"
-                  trackingProperties={{ location: "video_card" }}
+                  trackingEvent="overlay_try_prompt_clicked"
+                  trackingProperties={{ location: "overlay_video_card" }}
                   variant="outline"
                   className="inline-flex items-center space-x-0.5 px-3 py-2 h-8 bg-black/20 backdrop-blur-md text-white rounded-full border-white border shadow-sm scale-90"
+                  onClick={handleTryPrompt}
                 >
                   <WandSparkles className="w-1.5 h-1.5" />
                   <span className="text-[0.7rem] tracking-wide">
                     Try this prompt
                   </span>
                 </TrackedButton>
-              </Link>
+              ) : (
+                <Link
+                  href={
+                    prompt ? `/create?inputPrompt=${btoa(prompt)}` : "/create"
+                  }
+                  onClick={e => {
+                    e.stopPropagation();
+                    if (prompt && !authenticated) {
+                      setIsGuestUser(true);
+                      setLastPrompt(prompt);
+                    }
+                  }}
+                >
+                  <TrackedButton
+                    trackingEvent="explore_try_prompt_clicked"
+                    trackingProperties={{ location: "video_card" }}
+                    variant="outline"
+                    className="inline-flex items-center space-x-0.5 px-3 py-2 h-8 bg-black/20 backdrop-blur-md text-white rounded-full border-white border shadow-sm scale-90"
+                  >
+                    <WandSparkles className="w-1.5 h-1.5" />
+                    <span className="text-[0.7rem] tracking-wide">
+                      Try this prompt
+                    </span>
+                  </TrackedButton>
+                </Link>
+              )}
             </div>
           </div>
         </Link>
