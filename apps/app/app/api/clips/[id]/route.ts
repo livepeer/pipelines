@@ -164,14 +164,17 @@ export async function POST(request: NextRequest) {
     userId = privyUser.userId;
 
     const formData = await request.formData();
-    const file = formData.get("file") as File | null;
+    const sourceClip = formData.get("sourceClip") as File | null;
+    const watermarkedClip = formData.get("watermarkedClip") as File | null;
+    const thumbnail = formData.get("thumbnail") as File | null;
+
     const title = formData.get("title") as string | null;
     const prompt = (formData.get("prompt") as string) || "";
     const sourceClipId = formData.get("sourceClipId")
       ? Number(formData.get("sourceClipId"))
       : null;
 
-    if (!file) {
+    if (!sourceClip) {
       return NextResponse.json(
         { error: "Invalid request", details: "No clip file provided" },
         { status: 400 },
@@ -216,8 +219,8 @@ export async function POST(request: NextRequest) {
 
     clipId = initialClipId;
 
-    const clipBuffer = Buffer.from(await file.arrayBuffer());
-    const fileType = file.type || "video/mp4";
+    const clipBuffer = Buffer.from(await sourceClip.arrayBuffer());
+    const fileType = sourceClip.type || "video/mp4";
     const clipPath = buildClipPath(userId, clipId, "clip.mp4");
 
     let clipUrl: string;
@@ -242,12 +245,57 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const thumbnailUrl = buildThumbnailUrl(userId, clipId);
+    let watermarkedClipUrl = "";
+    if (watermarkedClip) {
+      try {
+        const watermarkedBuffer = Buffer.from(
+          await watermarkedClip.arrayBuffer(),
+        );
+        const watermarkedFileType = watermarkedClip.type || "video/mp4";
+        const watermarkedPath = buildClipPath(
+          userId,
+          clipId,
+          "watermarked-clip.mp4",
+        );
+        watermarkedClipUrl = await uploadToGCS(
+          watermarkedBuffer,
+          watermarkedPath,
+          watermarkedFileType,
+        );
+      } catch (uploadError) {
+        console.error(
+          `Watermarked clip upload failed for clipId ${clipId}:`,
+          uploadError,
+        );
+      }
+    }
+
+    let thumbnailUrl;
+    if (thumbnail) {
+      try {
+        const thumbnailBuffer = Buffer.from(await thumbnail.arrayBuffer());
+        const thumbnailFileType = thumbnail.type || "image/jpeg";
+        const thumbnailPath = buildClipPath(userId, clipId, "thumbnail.jpg");
+        thumbnailUrl = await uploadToGCS(
+          thumbnailBuffer,
+          thumbnailPath,
+          thumbnailFileType,
+        );
+      } catch (uploadError) {
+        console.error(
+          `Thumbnail upload failed for clipId ${clipId}:`,
+          uploadError,
+        );
+        thumbnailUrl = buildThumbnailUrl(userId, clipId);
+      }
+    } else {
+      thumbnailUrl = buildThumbnailUrl(userId, clipId);
+    }
 
     await db
       .update(clipsTable)
       .set({
-        video_url: clipUrl,
+        video_url: watermarkedClipUrl || clipUrl,
         thumbnail_url: thumbnailUrl,
         status: "completed",
       })
@@ -257,7 +305,7 @@ export async function POST(request: NextRequest) {
       success: true,
       clip: {
         id: clipId,
-        videoUrl: clipUrl,
+        videoUrl: watermarkedClipUrl || clipUrl,
         thumbnailUrl: thumbnailUrl,
         title: title,
         slug: slug,
