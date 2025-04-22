@@ -258,6 +258,7 @@ export const streams = pgTable(
       foreignColumns: [pipelines.id],
       name: "streams_pipeline_id_fkey",
     }).onDelete("cascade"),
+    index("streams_stream_key_idx").using("hash", table.streamKey),
   ],
 );
 
