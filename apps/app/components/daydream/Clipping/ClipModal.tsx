@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Dialog } from "@repo/design-system/components/ui/dialog";
 import { usePhoneRotation } from "@/hooks/usePhoneRotation";
 import { ClipSummaryContent } from "./ClipSummaryContent";
@@ -27,6 +27,17 @@ export function ClipModal({
     clipFilename: clipFilename || null,
     serverClipUrl: null,
   });
+
+  // Reset the clip data when it changes.
+  useEffect(() => {
+    if (clipUrl && clipFilename) {
+      setClipData(state => ({
+        ...state,
+        clipUrl,
+        clipFilename,
+      }));
+    }
+  }, [clipUrl, clipFilename]);
 
   const handleOpenChange = (open: boolean) => {
     if (!open && !isRotating) {

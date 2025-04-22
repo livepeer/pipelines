@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import {
-  Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
@@ -19,7 +18,6 @@ interface ClipSummaryContentProps {
 
 /**
  * TODOS:
- * 1. Rename button from Download to Continue once the APIs are ready for clip sharing
  * 2. Enable Switch toggle and upload logic to post to leaderboard
  * 3. Add a button to share the clip to the leaderboard
  */
