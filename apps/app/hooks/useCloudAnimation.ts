@@ -15,8 +15,8 @@ export default function useCloudAnimation(
     const handleMouseMove = (e: MouseEvent) => {
       if (containerRef.current) {
         const rect = containerRef.current.getBoundingClientRect();
-        const x = ((e.clientX - rect.left) / rect.width - 0.5) * 4;
-        const y = ((e.clientY - rect.top) / rect.height - 0.5) * 4;
+        const x = ((e.clientX - rect.left) / rect.width - 0.5) * 8;
+        const y = ((e.clientY - rect.top) / rect.height - 0.5) * 8;
         setMousePosition({ x, y });
       }
     };

@@ -26,8 +26,9 @@ import { usePrivy } from "@/hooks/usePrivy";
 import useMount from "@/hooks/useMount";
 import { sendBeaconEvent } from "@/lib/analytics/event-middleware";
 import { useGuestUserStore } from "@/hooks/useGuestUser";
-import { GuestSignupModal } from "@/components/guest/GuestSignupModal";
 import { BentoGridOverlay } from "./BentoGridOverlay";
+import { useTrialTimer } from "@/hooks/useTrialTimer";
+import { UnifiedSignupModal } from "@/components/modals/unified-signup-modal";
 
 interface DreamshaperProps {
   isGuestMode?: boolean;
@@ -53,13 +54,14 @@ export default function Dreamshaper({ isGuestMode = false }: DreamshaperProps) {
     setHasShared,
     lastPrompt,
   } = useGuestUserStore();
+  const { timeRemaining } = useTrialTimer();
 
   usePlayerPositionUpdater(playerRef);
 
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [showGuestModal, setShowGuestModal] = useState(false);
-  const [guestModalReason, setGuestModalReason] = useState<
-    "prompt_limit" | "record_clip" | "share" | null
+  const [showSignupModal, setShowSignupModal] = useState(false);
+  const [signupModalReason, setSignupModalReason] = useState<
+    "trial_expired" | "prompt_limit" | "share" | null
   >(null);
 
   useMount(() => {
@@ -182,11 +184,60 @@ export default function Dreamshaper({ isGuestMode = false }: DreamshaperProps) {
     }
   }, [pipeline]);
 
+  useEffect(() => {
+    const handleTrialExpired = () => {
+      console.log("Trial expired - showing signup modal");
+      setSignupModalReason("trial_expired");
+      setShowSignupModal(true);
+
+      track("trial_expired_event", {
+        is_guest_mode: isGuestMode,
+        prompt_count: promptCount,
+        last_prompt: lastPrompt,
+      });
+    };
+
+    window.addEventListener("trialExpired", handleTrialExpired);
+
+    const timeRemainingValue = localStorage.getItem(
+      "unregistered_time_remaining",
+    );
+    if (timeRemainingValue === "0" && !authenticated) {
+      setSignupModalReason("trial_expired");
+      setShowSignupModal(true);
+
+      track("trial_expired_check", {
+        is_guest_mode: isGuestMode,
+        prompt_count: promptCount,
+        last_prompt: lastPrompt,
+        source: "initial_load",
+      });
+    }
+
+    return () => {
+      window.removeEventListener("trialExpired", handleTrialExpired);
+    };
+  }, [authenticated, isGuestMode, promptCount, lastPrompt]);
+
+  useEffect(() => {
+    if (timeRemaining === 0 && !authenticated) {
+      setSignupModalReason("trial_expired");
+      setShowSignupModal(true);
+
+      track("trial_expired_timer", {
+        is_guest_mode: isGuestMode,
+        prompt_count: promptCount,
+        last_prompt: lastPrompt,
+        source: "timer",
+      });
+    }
+  }, [timeRemaining, authenticated, isGuestMode, promptCount, lastPrompt]);
+
   const handleGuestPromptSubmit = () => {
     if (isGuestMode) {
       if (promptCount >= 5) {
-        setGuestModalReason("prompt_limit");
-        setShowGuestModal(true);
+        setSignupModalReason("prompt_limit");
+        setShowSignupModal(true);
         track("guest_prompt_limit_reached", {
           prompt_count: promptCount,
           last_prompt: lastPrompt,
@@ -196,10 +247,9 @@ export default function Dreamshaper({ isGuestMode = false }: DreamshaperProps) {
 
       incrementPromptCount();
 
-      // Show signup modal after 5 prompts
       if (promptCount >= 4) {
-        setGuestModalReason("prompt_limit");
-        setShowGuestModal(true);
+        setSignupModalReason("prompt_limit");
+        setShowSignupModal(true);
         track("guest_prompt_limit_reached", {
           prompt_count: promptCount + 1,
           last_prompt: lastPrompt,
@@ -212,8 +262,8 @@ export default function Dreamshaper({ isGuestMode = false }: DreamshaperProps) {
   const handleGuestShare = () => {
     if (isGuestMode) {
       setHasShared(true);
-      setGuestModalReason("share");
-      setShowGuestModal(true);
+      setSignupModalReason("share");
+      setShowSignupModal(true);
       track("guest_share_attempt", {
         prompt_count: promptCount,
         last_prompt: lastPrompt,
@@ -255,11 +305,10 @@ export default function Dreamshaper({ isGuestMode = false }: DreamshaperProps) {
         </div>
       </div>
 
-      {/* Guest user signup modal */}
-      <GuestSignupModal
-        isOpen={showGuestModal}
-        onClose={() => setShowGuestModal(false)}
-        reason={guestModalReason}
+      <UnifiedSignupModal
+        open={showSignupModal}
+        onOpenChange={setShowSignupModal}
+        reason={signupModalReason}
       />
 
       {/* BentoGrid overlay for never-ending prompt cloning */}

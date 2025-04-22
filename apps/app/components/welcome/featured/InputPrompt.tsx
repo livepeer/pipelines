@@ -466,6 +466,8 @@ export const InputPrompt = ({ onPromptSubmit }: InputPromptProps) => {
               inputValue={inputValue}
               setInputValue={setInputValue}
               onClose={() => setSettingsOpened(false)}
+              onSubmit={submitPrompt}
+              originalPrompt={lastSubmittedPrompt || undefined}
             />
           )}
         </div>

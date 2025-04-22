@@ -66,7 +66,7 @@ export const BentoGridOverlay = () => {
         scrollRestoredRef.current = false;
         restoreScrollPosition();
       } else {
-        fetch("/api/clips")
+        fetch("/api/clips?page=0&limit=30")
           .then(res => res.json())
           .then(data => {
             const clips = data.clips || [];
@@ -126,6 +126,23 @@ export const BentoGridOverlay = () => {
       setSelectedClip(null);
     }
   }, [isOverlayOpen, overlayType, selectedClipId]);
+
+  useEffect(() => {
+    if (isOverlayOpen && overlayType === "bento" && overlayRef.current) {
+      const handleWheel = (e: WheelEvent) => {
+        if (overlayRef.current) {
+          overlayRef.current.scrollTop += e.deltaY;
+          e.preventDefault();
+        }
+      };
+
+      document.addEventListener("wheel", handleWheel, { passive: false });
+
+      return () => {
+        document.removeEventListener("wheel", handleWheel);
+      };
+    }
+  }, [isOverlayOpen, overlayType]);
 
   const handleTryPrompt = (prompt: string) => {
     if (prompt && handleStreamUpdate) {
@@ -187,12 +204,11 @@ export const BentoGridOverlay = () => {
         scrollRestoredRef.current = true;
       }}
     >
-      <div className="absolute inset-0 bg-background"></div>
+      <div className="absolute inset-0 bg-transparent pointer-events-none"></div>
 
       <div
         aria-hidden="true"
-        className="absolute inset-x-0 -top-40 transform-gpu overflow-hidden sm:-top-60 z-0"
-        onClick={e => e.stopPropagation()}
+        className="absolute inset-x-0 -top-40 transform-gpu overflow-hidden sm:-top-60 z-0 pointer-events-none"
       >
         <div
           style={{
@@ -207,13 +223,19 @@ export const BentoGridOverlay = () => {
       </div>
 
       <div
-        className="absolute inset-0 backdrop-blur z-0"
-        onClick={e => e.stopPropagation()}
+        className="absolute inset-0 backdrop-blur z-0 pointer-events-none"
+        style={{ background: "transparent!important" }}
       ></div>
 
       <header
-        className="bg-transparent sticky top-0 z-[51] transition-colors duration-300 ease-in-out w-full backdrop-filter backdrop-blur-xl"
+        className={cn(
+          "sticky top-0 z-[51] transition-colors duration-300 ease-in-out w-full",
+          overlayType === "clip"
+            ? "bg-transparent"
+            : "bg-transparent backdrop-filter backdrop-blur-xl",
+        )}
         onClick={e => e.stopPropagation()}
+        style={{ background: "transparent!important" }}
       >
         <div className="w-full flex items-center justify-start py-4 px-6 lg:px-8">
           <Button
@@ -221,17 +243,17 @@ export const BentoGridOverlay = () => {
             size="sm"
             onClick={handleBackButton}
             className="h-8 gap-2 rounded-md"
-            aria-label={overlayType === "clip" ? "Back" : "Back to creating"}
+            aria-label={overlayType === "clip" ? "Back" : "Continue creating"}
           >
             <ChevronLeft className="h-4 w-4" />
-            <span>{overlayType === "clip" ? "Back" : "Back to creating"}</span>
+            <span>{overlayType === "clip" ? "Back" : "Continue creating"}</span>
           </Button>
         </div>
       </header>
 
-      <div className="relative z-10 h-full" onClick={e => e.stopPropagation()}>
+      <div className="relative z-10 h-full">
         {overlayType === "bento" && (
-          <div className="p-4 overflow-y-auto">
+          <div className="p-4">
             {initialClips.length > 0 ? (
               <BentoGrids
                 initialClips={initialClips}
@@ -246,7 +268,15 @@ export const BentoGridOverlay = () => {
         )}
 
         {overlayType === "clip" && selectedClipId && (
-          <div className="h-screen flex justify-center items-center p-4">
+          <div
+            className="h-screen flex justify-center items-center p-4"
+            onClick={e => {
+              if (e.target === e.currentTarget) {
+                setOverlayType("bento");
+                setSelectedClipId(null);
+              }
+            }}
+          >
             {selectedClip ? (
               <OverlayClipViewer
                 clip={{

@@ -140,7 +140,7 @@ export const Header = ({
                 onClick={handleExploreClick}
               >
                 <ChevronLeft className="h-4 w-4" />
-                <span>Back to explore</span>
+                <span>Explore more prompts</span>
               </TrackedButton>
             </div>
 
