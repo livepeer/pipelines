@@ -176,7 +176,10 @@ export function BroadcastWithControls({ className }: { className?: string }) {
           title="Live stream"
           data-testid="broadcast-video"
           aria-label="broadcast"
-          className={cn("w-full h-full object-cover", collapsed && "opacity-0")}
+          className={cn(
+            "w-full h-full object-cover -scale-x-100",
+            collapsed && "opacity-0",
+          )}
         />
 
         {collapsed ? (
