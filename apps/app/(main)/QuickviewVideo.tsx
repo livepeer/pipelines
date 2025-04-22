@@ -1,5 +1,9 @@
 import React, { useState } from "react";
-import { Dialog, DialogTrigger, DialogContent } from "@repo/design-system/components/ui/dialog";
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+} from "@repo/design-system/components/ui/dialog";
 import { X } from "lucide-react";
 import { cn } from "@repo/design-system/lib/utils";
 
