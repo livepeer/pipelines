@@ -49,6 +49,7 @@ async function getInitialClips() {
         isNull(clipsTable.deleted_at),
         isNotNull(clipsTable.priority),
         eq(clipsTable.status, "completed"),
+        eq(clipsTable.approval_status, "approved"),
       ),
     )
     .orderBy(asc(clipsTable.priority))) as InitialFetchedClip[];
@@ -63,6 +64,7 @@ async function getInitialClips() {
         isNull(clipsTable.deleted_at),
         isNull(clipsTable.priority),
         eq(clipsTable.status, "completed"),
+        eq(clipsTable.approval_status, "approved"),
       ),
     )
     .orderBy(asc(clipsTable.created_at))) as InitialFetchedClip[]; // Older first

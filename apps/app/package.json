@@ -4,7 +4,6 @@
   "scripts": {
     "dev": "next dev -p 3000",
     "dev:mock": "NEXT_PUBLIC_USE_PRIVY_MOCK=true pnpm dev",
-    "dev:mobile": "NEXT_PUBLIC_USE_PRIVY_MOCK=true pnpm dev --experimental-https",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -16,7 +15,7 @@
     "@google-cloud/storage": "^7.16.0",
     "@headlessui/react": "^2.2.0",
     "@intercom/messenger-js-sdk": "^0.0.14",
-    "@livepeer/react": "^4.3.2",
+    "@livepeer/react": "^4.3.1",
     "@livepeer/webrtmp-sdk": "^0.2.5",
     "@millicast/videojs-whep-plugin": "0.0.1-beta.1",
     "@privy-io/react-auth": "^1.93.0",

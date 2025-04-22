@@ -5,6 +5,7 @@ import {
   check,
   doublePrecision,
   foreignKey,
+  index,
   inet,
   integer,
   json,
@@ -257,6 +258,7 @@ export const streams = pgTable(
       foreignColumns: [pipelines.id],
       name: "streams_pipeline_id_fkey",
     }).onDelete("cascade"),
+    index("streams_stream_key_idx").using("hash", table.streamKey),
   ],
 );
 
@@ -264,6 +266,13 @@ export const clipStatusEnum = pgEnum("clip_status", [
   "uploading",
   "completed",
   "failed",
+]);
+
+export const clipApprovalEnum = pgEnum("clip_approval_status", [
+  "none",
+  "pending",
+  "approved",
+  "rejected",
 ]);
 
 export const clips = pgTable(
@@ -278,6 +287,13 @@ export const clips = pgTable(
     prompt: text("prompt").notNull(),
     priority: integer("priority"),
     status: clipStatusEnum("status").default("uploading").notNull(),
+
+    approval_status: clipApprovalEnum("approval_status")
+      .default("none")
+      .notNull(),
+    approved_by: text("approved_by"),
+    approved_at: timestamp("approved_at", { withTimezone: true }),
+
     created_at: timestamp("created_at", { withTimezone: true })
       .defaultNow()
       .notNull(),
@@ -296,6 +312,14 @@ export const clips = pgTable(
       columns: [table.source_clip_id],
       foreignColumns: [table.id],
       name: "clips_source_clip_id_fkey",
+    })
+      .onUpdate("cascade")
+      .onDelete("set null"),
+
+    foreignKey({
+      columns: [table.approved_by],
+      foreignColumns: [users.id],
+      name: "clips_approved_by_fkey",
     })
       .onUpdate("cascade")
       .onDelete("set null"),
