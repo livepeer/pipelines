@@ -77,7 +77,7 @@ export function UnifiedSignupModal({
             id="cloud1"
             style={{
               transform: getCloudTransform(0),
-              opacity: 0.2,
+              opacity: 0.5,
             }}
           ></div>
           <div
@@ -85,7 +85,7 @@ export function UnifiedSignupModal({
             id="cloud2"
             style={{
               transform: getCloudTransform(1),
-              opacity: 0.2,
+              opacity: 0.5,
             }}
           ></div>
           <div
@@ -93,7 +93,7 @@ export function UnifiedSignupModal({
             id="cloud3"
             style={{
               transform: getCloudTransform(2),
-              opacity: 0.2,
+              opacity: 0.5,
             }}
           ></div>
           <div
@@ -101,7 +101,7 @@ export function UnifiedSignupModal({
             id="cloud4"
             style={{
               transform: getCloudTransform(3),
-              opacity: 0.2,
+              opacity: 0.5,
             }}
           ></div>
           <div
@@ -109,7 +109,7 @@ export function UnifiedSignupModal({
             id="cloud5"
             style={{
               transform: getCloudTransform(4),
-              opacity: 0.2,
+              opacity: 0.5,
             }}
           ></div>
           <div
@@ -179,7 +179,7 @@ export function UnifiedSignupModal({
             <div className="mt-6 flex flex-row gap-4 w-full items-center justify-center">
               <Button className="w-48 px-12 h-12 rounded-md bg-black text-white hover:bg-gray-800">
                 <a
-                  href="#"
+                  href="https://discord.com/invite/hxyNHeSzCK"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-white"
@@ -189,7 +189,7 @@ export function UnifiedSignupModal({
               </Button>
               <Button
                 onClick={e => {
-                  location.href = "https://discord.com/invite/hxyNHeSzCK";
+                  location.href = "/create";
                 }}
                 className="w-48 px-12 h-12 rounded-md alwaysAnimatedButton text-black"
               >
