@@ -54,7 +54,7 @@ const StatusMonitor = () => {
           },
           "daydream",
           "server",
-          user || undefined
+          user || undefined,
         );
       };
 
@@ -133,13 +133,15 @@ export function BroadcastWithControls({ className }: { className?: string }) {
       video={true}
       aspectRatio={16 / 9}
       ingestUrl={ingestUrl}
-      {...{iceServers: {
-        urls: [
-          "stun:stun.l.google.com:19302",
-          "stun:stun1.l.google.com:19302",
-          "stun:stun.cloudflare.com:3478",
-        ],
-      }} as any}
+      {...({
+        iceServers: {
+          urls: [
+            "stun:stun.l.google.com:19302",
+            "stun:stun1.l.google.com:19302",
+            "stun:stun.cloudflare.com:3478",
+          ],
+        },
+      } as any)}
       storage={null}
     >
       <StatusMonitor />
