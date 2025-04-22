@@ -182,9 +182,9 @@ const generateSlug = customAlphabet(
 );
 
 const ClipUploadSchema = z.object({
-  title: z.string().optional(),
-  prompt: z.string().default(""),
-  sourceClipId: z.number().nullable(),
+  title: z.string().nullable().optional(),
+  prompt: z.string().nullable().optional(),
+  sourceClipId: z.number().nullable().optional(),
 });
 
 export async function POST(request: NextRequest) {
