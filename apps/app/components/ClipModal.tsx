@@ -8,14 +8,6 @@ import {
 } from "@repo/design-system/components/ui/dialog";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Separator } from "@repo/design-system/components/ui/separator";
-import { Switch } from "@repo/design-system/components/ui/switch";
-import { TooltipProvider } from "@repo/design-system/components/ui/tooltip";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@repo/design-system/components/ui/tooltip";
-import { InfoIcon } from "lucide-react";
 import { usePhoneRotation } from "@/hooks/usePhoneRotation";
 
 interface ClipModalProps {
@@ -29,6 +21,7 @@ interface ClipModalProps {
  * TODOS:
  * 1. Rename button from Download to Continue once the APIs are ready for clip sharing
  * 2. Enable Switch toggle and upload logic to post to leaderboard
+ * 3. Add a button to share the clip to the leaderboard
  */
 export function ClipModal({
   isOpen,
@@ -60,7 +53,7 @@ export function ClipModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      <DialogContent className="h-fit max-h-[90vh] max-w-[55vh] mx-auto overflow-y-auto rounded-xl">
+      <DialogContent className="h-fit max-h-[90dvh] max-w-[55dvh] mx-auto overflow-y-auto rounded-xl">
         <DialogHeader className="flex items-center">
           <DialogTitle className="text-2xl">Clip Summary</DialogTitle>
           <DialogDescription className="font-light text-center">
@@ -85,7 +78,7 @@ export function ClipModal({
           )}
         </div>
 
-        <div className="flex items-center justify-between mt-2">
+        {/* <div className="flex items-center justify-between mt-2">
           <div className="flex flex-col items-start">
             <div className="text-sm font-medium">Post to Leaderboard</div>
             <div className="text-sm text-muted-foreground font-light">
@@ -106,7 +99,7 @@ export function ClipModal({
             </TooltipProvider>
             <Switch disabled defaultChecked={false} />
           </div>
-        </div>
+        </div> */}
 
         <Separator className="my-2" />
 
