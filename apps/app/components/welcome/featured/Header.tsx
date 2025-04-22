@@ -242,15 +242,16 @@ export const Header = ({
               </Button>
             </Link>
 
-            <Link href="/">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="p-0 m-0 bg-transparent border-none hover:bg-transparent focus:outline-none rounded-md"
-              >
-                <Search className="h-4 w-4" />
-              </Button>
-            </Link>
+            {/* <Link href="/"> */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="p-0 m-0 bg-transparent border-none hover:bg-transparent focus:outline-none rounded-md"
+              onClick={handleExploreClick}
+            >
+              <Search className="h-4 w-4" />
+            </Button>
+            {/* </Link> */}
           </div>
         </div>
       )}
