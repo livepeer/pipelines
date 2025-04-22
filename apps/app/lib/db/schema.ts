@@ -5,6 +5,7 @@ import {
   check,
   doublePrecision,
   foreignKey,
+  index,
   inet,
   integer,
   json,
@@ -266,6 +267,13 @@ export const clipStatusEnum = pgEnum("clip_status", [
   "failed",
 ]);
 
+export const clipApprovalEnum = pgEnum("clip_approval_status", [
+  "none",
+  "pending",
+  "approved",
+  "rejected",
+]);
+
 export const clips = pgTable(
   "clips",
   {
@@ -278,6 +286,13 @@ export const clips = pgTable(
     prompt: text("prompt").notNull(),
     priority: integer("priority"),
     status: clipStatusEnum("status").default("uploading").notNull(),
+
+    approval_status: clipApprovalEnum("approval_status")
+      .default("none")
+      .notNull(),
+    approved_by: text("approved_by"),
+    approved_at: timestamp("approved_at", { withTimezone: true }),
+
     created_at: timestamp("created_at", { withTimezone: true })
       .defaultNow()
       .notNull(),
@@ -296,6 +311,14 @@ export const clips = pgTable(
       columns: [table.source_clip_id],
       foreignColumns: [table.id],
       name: "clips_source_clip_id_fkey",
+    })
+      .onUpdate("cascade")
+      .onDelete("set null"),
+
+    foreignKey({
+      columns: [table.approved_by],
+      foreignColumns: [users.id],
+      name: "clips_approved_by_fkey",
     })
       .onUpdate("cascade")
       .onDelete("set null"),
