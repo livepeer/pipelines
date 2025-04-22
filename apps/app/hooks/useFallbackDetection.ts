@@ -12,24 +12,21 @@ export const useFallbackDetection = (playbackId: string) => {
   const lastErrorTimeRef = useRef<number | null>(null);
   const errorIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const { user } = usePrivy();
-
-  const trackFallbackEvent = useCallback(
-    (reason: string, errorDetails?: string) => {
-      sendKafkaEvent(
-        "stream_trace",
-        {
-          type: "app_player_fallback_to_videojs",
-          playback_id: playbackId,
-          reason: reason,
-          error_details: errorDetails || "",
-        },
-        "daydream",
-        "server",
-        user || undefined,
-      );
-    },
-    [playbackId, user],
-  );
+  
+  const trackFallbackEvent = useCallback((reason: string, errorDetails?: string) => {
+    sendKafkaEvent(
+      "stream_trace",
+      {
+        type: "app_player_fallback_to_videojs",
+        playback_id: playbackId,
+        reason: reason,
+        error_details: errorDetails || "",
+      },
+      "daydream",
+      "server",
+      user || undefined
+    );
+  }, [playbackId, user]);
 
   const handleError = useCallback(
     (error: any) => {
@@ -77,10 +74,7 @@ export const useFallbackDetection = (playbackId: string) => {
           if (timeSinceLastError > TIME_TO_FALLBACK_VIDEOJS_MS && !isPlaying) {
             console.warn("Switching to VideoJS fallback player.");
             setUseFallbackPlayer(true);
-            trackFallbackEvent(
-              "timeout_error_reached",
-              `Last error time: ${lastErrorTime}`,
-            );
+            trackFallbackEvent("timeout_error_reached", `Last error time: ${lastErrorTime}`);
 
             if (errorIntervalRef.current) {
               clearInterval(errorIntervalRef.current);
@@ -109,3 +103,5 @@ export const useFallbackDetection = (playbackId: string) => {
 
   return { useFallbackPlayer, handleError, trackFallbackEvent };
 };
+
+

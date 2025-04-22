@@ -11,8 +11,6 @@ interface SettingsMenuProps {
   setInputValue: (value: string) => void;
   onClose: () => void;
   className?: string;
-  onSubmit?: () => void;
-  originalPrompt?: string;
 }
 
 function SettingsMenu({
@@ -21,8 +19,6 @@ function SettingsMenu({
   setInputValue,
   onClose,
   className,
-  onSubmit,
-  originalPrompt,
 }: SettingsMenuProps) {
   const sliderParams =
     pipeline?.prioritized_params?.filter(
@@ -69,153 +65,87 @@ function SettingsMenu({
               const min = param.widgetConfig?.min || 0;
               const max = param.widgetConfig?.max || 100;
               const step = param.widgetConfig?.step || 1;
-              const defaultValue =
-                param.widgetConfig?.defaultValue !== undefined
-                  ? param.widgetConfig?.defaultValue
-                  : min;
 
               const currentValueMatch = inputValue.match(
                 new RegExp(`--${commandId}\\s+([\\d\\.]+)`),
               );
-
-              const originalPromptMatch =
-                !inputValue && originalPrompt
-                  ? originalPrompt.match(
-                      new RegExp(`--${commandId}\\s+([\\d\\.]+)`),
-                    )
-                  : null;
-
               const currentValue = currentValueMatch
                 ? parseFloat(currentValueMatch[1])
-                : originalPromptMatch
-                  ? parseFloat(originalPromptMatch[1])
-                  : defaultValue;
+                : min;
 
               return (
                 <div key={param.name} className="space-y-1.5">
                   <div className="flex justify-between items-center">
                     <Label className="text-xs font-medium">{param.name}</Label>
-                    <span className="text-[10px] text-muted-foreground truncate ml-2 max-w-[60%]">
+                    <span className="text-xs text-muted-foreground">
                       {param.description}
                     </span>
                   </div>
-                  <div className="flex items-center py-2">
-                    <div className="relative w-full h-4">
-                      {/* Progress fill - very subtle blue */}
-                      <div
-                        className="absolute top-0 left-0 h-4 bg-primary/10 rounded-l-full z-30 mt-[2px] pointer-events-none"
-                        style={{
-                          width: `${((currentValue - min) / (max - min)) * 100}%`,
-                        }}
-                      />
+                  <div className="flex items-center gap-2">
+                    <Input
+                      type="number"
+                      className="w-16 h-7 text-xs"
+                      min={min}
+                      max={max}
+                      step={step}
+                      value={currentValue}
+                      onChange={e => {
+                        const value = parseFloat(e.target.value);
+                        if (isNaN(value)) return;
 
-                      {/* Tick marks for steps */}
-                      <div className="absolute top-0 left-0 right-0 bottom-0 pointer-events-none z-20 overflow-hidden rounded-full mt-[4px]">
-                        {Array.from({
-                          length: Math.min(
-                            Math.ceil((max - min) / step) + 1,
-                            20,
-                          ),
-                        }).map((_, index) => {
-                          // Get actual number of intervals to display
-                          const totalIntervals = Math.min(
-                            Math.ceil((max - min) / step),
-                            19,
+                        if (currentValueMatch) {
+                          setInputValue(
+                            inputValue.replace(
+                              new RegExp(`--${commandId}\\s+([\\d\\.]+)`),
+                              `--${commandId} ${value}`,
+                            ),
                           );
-                          // Calculate position as percentage where 0% is far left and 100% is far right
-                          let positionPercentage;
-                          if (totalIntervals === 0) {
-                            positionPercentage = 0;
-                          } else {
-                            // Ensure we go exactly from 0% to 100%
-                            positionPercentage = index * (100 / totalIntervals);
-                          }
-
-                          return (
-                            <div
-                              key={index}
-                              className="absolute w-[1px] bg-primary/40 z-20"
-                              style={{
-                                left: `calc(${positionPercentage}% - 0.5px)`,
-                                opacity:
-                                  index === 0 || index === totalIntervals
-                                    ? 0
-                                    : index % 5 === 0
-                                      ? 0.6
-                                      : 0.35,
-                                height: index % 5 === 0 ? "100%" : "50%",
-                                top: "50%",
-                                transform: "translateY(-50%)",
-                              }}
-                            />
-                          );
-                        })}
-                      </div>
+                        } else {
+                          const newInput =
+                            inputValue.trim() +
+                            (inputValue.trim() ? " " : "") +
+                            `--${commandId} ${value}`;
+                          setInputValue(newInput);
+                        }
+                      }}
+                    />
+                    <div className="flex-1">
                       <input
                         type="range"
                         min={min}
                         max={max}
                         step={step}
                         className={cn(
-                          "w-full appearance-none h-4 rounded-full bg-muted relative z-10",
+                          "w-full appearance-none h-2 rounded-full bg-muted",
                           "focus:outline-none",
-                          "[&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4",
+                          "[&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:w-3",
                           "[&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary",
-                          "[&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:border-0 [&::-webkit-slider-thumb]:relative [&::-webkit-slider-thumb]:z-50",
-                          "[&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:w-4",
+                          "[&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:border-0",
+                          "[&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:h-3 [&::-moz-range-thumb]:w-3",
                           "[&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-primary",
-                          "[&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:relative [&::-moz-range-thumb]:z-50",
-                          "[&::-ms-thumb]:appearance-none [&::-ms-thumb]:h-4 [&::-ms-thumb]:w-4",
+                          "[&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:border-0",
+                          "[&::-ms-thumb]:appearance-none [&::-ms-thumb]:h-3 [&::-ms-thumb]:w-3",
                           "[&::-ms-thumb]:rounded-full [&::-ms-thumb]:bg-primary",
-                          "[&::-ms-thumb]:cursor-pointer [&::-ms-thumb]:border-0 [&::-ms-thumb]:relative [&::-ms-thumb]:z-50",
+                          "[&::-ms-thumb]:cursor-pointer [&::-ms-thumb]:border-0",
                         )}
                         value={currentValue}
                         onChange={e => {
                           const value = parseFloat(e.target.value);
 
-                          if (!inputValue && originalPrompt) {
-                            const restoredPrompt = originalPrompt;
-                            const paramRegex = new RegExp(
-                              `--${commandId}\\s+([\\d\\.]+)`,
+                          if (currentValueMatch) {
+                            setInputValue(
+                              inputValue.replace(
+                                new RegExp(`--${commandId}\\s+([\\d\\.]+)`),
+                                `--${commandId} ${value}`,
+                              ),
                             );
-                            const paramExists = paramRegex.test(restoredPrompt);
-
-                            if (paramExists) {
-                              setInputValue(
-                                restoredPrompt.replace(
-                                  paramRegex,
-                                  `--${commandId} ${value}`,
-                                ),
-                              );
-                            } else {
-                              const newInput =
-                                restoredPrompt.trim() +
-                                (restoredPrompt.trim() ? " " : "") +
-                                `--${commandId} ${value}`;
-                              setInputValue(newInput);
-                            }
                           } else {
-                            if (currentValueMatch) {
-                              setInputValue(
-                                inputValue.replace(
-                                  new RegExp(`--${commandId}\\s+([\\d\\.]+)`),
-                                  `--${commandId} ${value}`,
-                                ),
-                              );
-                            } else {
-                              const newInput =
-                                inputValue.trim() +
-                                (inputValue.trim() ? " " : "") +
-                                `--${commandId} ${value}`;
-                              setInputValue(newInput);
-                            }
+                            const newInput =
+                              inputValue.trim() +
+                              (inputValue.trim() ? " " : "") +
+                              `--${commandId} ${value}`;
+                            setInputValue(newInput);
                           }
-                        }}
-                        onMouseUp={() => {
-                          if (onSubmit) onSubmit();
-                        }}
-                        onTouchEnd={() => {
-                          if (onSubmit) onSubmit();
                         }}
                       />
                     </div>

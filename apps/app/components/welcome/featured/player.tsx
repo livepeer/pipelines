@@ -102,7 +102,7 @@ export const LivepeerPlayer = () => {
 
   if (!src) {
     return (
-      <div className="w-full relative h-full bg-transparent backdrop-blur-0 data-[visible=true]:animate-in data-[visible=false]:animate-out data-[visible=false]:fade-out-0 data-[visible=true]:fade-in-0">
+      <div className="w-full relative h-full bg-black/50 backdrop-blur data-[visible=true]:animate-in data-[visible=false]:animate-out data-[visible=false]:fade-out-0 data-[visible=true]:fade-in-0">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
           <LoadingIcon className="w-8 h-8 animate-spin" />
         </div>
@@ -122,18 +122,15 @@ export const LivepeerPlayer = () => {
         backoffMax={1000}
         timeout={300000}
         lowLatency="force"
-        {...({
-          iceServers: {
-            urls: [
-              "stun:stun.l.google.com:19302",
-              "stun:stun1.l.google.com:19302",
-              "stun:stun.cloudflare.com:3478",
-            ],
-          },
-        } as any)}
+        {...{iceServers: {
+          urls: [
+            "stun:stun.l.google.com:19302",
+            "stun:stun1.l.google.com:19302",
+            "stun:stun.cloudflare.com:3478",
+          ],
+        }} as any}
         onError={handleError}
       >
-        {/* TODO: What is this */}
         <div
           className="absolute inset-0 z-[5]"
           onClick={e => e.stopPropagation()}
@@ -142,10 +139,10 @@ export const LivepeerPlayer = () => {
         <Player.Video
           title="Live stream"
           data-testid="playback-video"
-          className="h-full w-full transition-all object-contain relative z-0"
+          className="h-full w-full transition-all object-contain relative z-0 -scale-x-100"
         />
 
-        <Player.LoadingIndicator className="w-full relative h-full bg-transparent backdrop-blur-0 data-[visible=true]:animate-in data-[visible=false]:animate-out data-[visible=false]:fade-out-0 data-[visible=true]:fade-in-0 z-[6]">
+        <Player.LoadingIndicator className="w-full relative h-full bg-black/50 backdrop-blur data-[visible=true]:animate-in data-[visible=false]:animate-out data-[visible=false]:fade-out-0 data-[visible=true]:fade-in-0 z-[6]">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
             <LoadingIcon className="w-8 h-8 animate-spin" />
           </div>
@@ -154,7 +151,7 @@ export const LivepeerPlayer = () => {
 
         <Player.ErrorIndicator
           matcher="all"
-          className="absolute select-none inset-0 text-center bg-transparent backdrop-blur-0 flex flex-col items-center justify-center gap-4 duration-1000 data-[visible=true]:animate-in data-[visible=false]:animate-out data-[visible=false]:fade-out-0 data-[visible=true]:fade-in-0 z-[6]"
+          className="absolute select-none inset-0 text-center bg-black/80 backdrop-blur-lg flex flex-col items-center justify-center gap-4 duration-1000 data-[visible=true]:animate-in data-[visible=false]:animate-out data-[visible=false]:fade-out-0 data-[visible=true]:fade-in-0 z-[6]"
         >
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
             <LoadingIcon className="w-8 h-8 animate-spin" />
@@ -164,7 +161,7 @@ export const LivepeerPlayer = () => {
 
         <Player.ErrorIndicator
           matcher="offline"
-          className="absolute select-none animate-in fade-in-0 inset-0 text-center bg-transparent backdrop-blur-0 flex flex-col items-center justify-center gap-4 duration-1000 data-[visible=true]:animate-in data-[visible=false]:animate-out data-[visible=false]:fade-out-0 data-[visible=true]:fade-in-0 z-[6]"
+          className="absolute select-none animate-in fade-in-0 inset-0 text-center bg-black/80 backdrop-blur-lg flex flex-col items-center justify-center gap-4 duration-1000 data-[visible=true]:animate-in data-[visible=false]:animate-out data-[visible=false]:fade-out-0 data-[visible=true]:fade-in-0 z-[6]"
         >
           <PlayerLoading
             title="ALMOST THERE"
@@ -263,7 +260,9 @@ export const PlayerLoading = ({
   </div>
 );
 
-const useFirstFrameLoaded = ({ __scopeMedia }: Player.MediaScopedProps) => {
+const useFirstFrameLoaded = ({
+  __scopeMedia,
+}: Player.MediaScopedProps) => {
   const { user } = usePrivy();
   const { stream, pipeline } = useDreamshaperStore();
   const startTime = useRef(Date.now());
@@ -286,7 +285,7 @@ const useFirstFrameLoaded = ({ __scopeMedia }: Player.MediaScopedProps) => {
         },
         "daydream",
         "server",
-        user || undefined,
+        user || undefined
       );
     };
     sendEvent();
@@ -311,7 +310,7 @@ const useFirstFrameLoaded = ({ __scopeMedia }: Player.MediaScopedProps) => {
           },
           "daydream",
           "server",
-          user || undefined,
+          user || undefined
         );
       sendEvent();
     }
