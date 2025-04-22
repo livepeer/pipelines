@@ -231,8 +231,8 @@ export const BentoGridOverlay = () => {
         className={cn(
           "sticky top-0 z-[51] transition-colors duration-300 ease-in-out w-full",
           overlayType === "clip"
-            ? "bg-transparent backdrop-filter backdrop-blur-xl"
-            : "bg-transparent",
+            ? "bg-transparent"
+            : "bg-transparent backdrop-filter backdrop-blur-xl",
         )}
         onClick={e => e.stopPropagation()}
         style={{ background: "transparent!important" }}
