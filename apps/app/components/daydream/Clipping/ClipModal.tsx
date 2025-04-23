@@ -45,6 +45,7 @@ export function ClipModal({
   const handleOpenChange = (open: boolean) => {
     if (!open && !isRotating) {
       onClose();
+      setClipStep("summary"); // Reset the clip step to summary when the modal is closed
     }
   };
 
