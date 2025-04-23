@@ -25,8 +25,16 @@ import { usePlayerPositionUpdater } from "./usePlayerPosition";
 import { usePrivy } from "@/hooks/usePrivy";
 import useMount from "@/hooks/useMount";
 import { sendBeaconEvent } from "@/lib/analytics/event-middleware";
+import { useGuestUserStore } from "@/hooks/useGuestUser";
+import { BentoGridOverlay } from "./BentoGridOverlay";
+import { useTrialTimer } from "@/hooks/useTrialTimer";
+import { UnifiedSignupModal } from "@/components/modals/unified-signup-modal";
 
-export default function Dreamshaper() {
+interface DreamshaperProps {
+  isGuestMode?: boolean;
+}
+
+export default function Dreamshaper({ isGuestMode = false }: DreamshaperProps) {
   useInitialization();
   useParamsHandling();
   useCapacityMonitor();
@@ -36,17 +44,30 @@ export default function Dreamshaper() {
   const { status, live } = useStreamStatus(stream?.id, false);
   const { currentStep, selectedPrompt, setSelectedPrompt } = useOnboard();
   const { setLastSubmittedPrompt, setHasSubmittedPrompt } = usePromptStore();
-  const { user, authenticated } = usePrivy();
+  const { user, authenticated, login } = usePrivy();
   const { isFullscreen } = useFullscreenStore();
   const playerRef = useRef<HTMLDivElement>(null);
+  const {
+    promptCount,
+    incrementPromptCount,
+    setHasRecordedClip,
+    setHasShared,
+    lastPrompt,
+  } = useGuestUserStore();
+  const { timeRemaining } = useTrialTimer();
 
   usePlayerPositionUpdater(playerRef);
 
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [showSignupModal, setShowSignupModal] = useState(false);
+  const [signupModalReason, setSignupModalReason] = useState<
+    "trial_expired" | "prompt_limit" | "share" | null
+  >(null);
 
   useMount(() => {
     track("daydream_page_view", {
       is_authenticated: authenticated,
+      is_guest_mode: isGuestMode,
     });
   });
 
@@ -56,9 +77,10 @@ export default function Dreamshaper() {
         is_authenticated: authenticated,
         playback_id: stream?.output_playback_id,
         stream_id: stream?.id,
+        is_guest_mode: isGuestMode,
       });
     }
-  }, [stream, live]);
+  }, [stream, live, isGuestMode]);
 
   useEffect(() => {
     // Track page unload events
@@ -72,6 +94,7 @@ export default function Dreamshaper() {
         playback_id: stream?.output_playback_id,
         pipeline_id: pipeline?.id,
         event_type: "unload",
+        is_guest_mode: isGuestMode,
       };
 
       sendBeaconEvent(
@@ -92,6 +115,7 @@ export default function Dreamshaper() {
           playback_id: stream?.output_playback_id,
           pipeline_id: pipeline?.id,
           event_type: "visibility_change",
+          is_guest_mode: isGuestMode,
         };
 
         sendBeaconEvent(
@@ -122,6 +146,7 @@ export default function Dreamshaper() {
     stream?.output_playback_id,
     pipeline?.id,
     isRefreshing,
+    isGuestMode,
   ]);
 
   useEffect(() => {
@@ -159,11 +184,100 @@ export default function Dreamshaper() {
     }
   }, [pipeline]);
 
+  useEffect(() => {
+    const handleTrialExpired = () => {
+      console.log("Trial expired - showing signup modal");
+      setSignupModalReason("trial_expired");
+      setShowSignupModal(true);
+
+      track("trial_expired_event", {
+        is_guest_mode: isGuestMode,
+        prompt_count: promptCount,
+        last_prompt: lastPrompt,
+      });
+    };
+
+    window.addEventListener("trialExpired", handleTrialExpired);
+
+    const timeRemainingValue = localStorage.getItem(
+      "unregistered_time_remaining",
+    );
+    if (timeRemainingValue === "0" && !authenticated) {
+      setSignupModalReason("trial_expired");
+      setShowSignupModal(true);
+
+      track("trial_expired_check", {
+        is_guest_mode: isGuestMode,
+        prompt_count: promptCount,
+        last_prompt: lastPrompt,
+        source: "initial_load",
+      });
+    }
+
+    return () => {
+      window.removeEventListener("trialExpired", handleTrialExpired);
+    };
+  }, [authenticated, isGuestMode, promptCount, lastPrompt]);
+
+  useEffect(() => {
+    if (timeRemaining === 0 && !authenticated) {
+      setSignupModalReason("trial_expired");
+      setShowSignupModal(true);
+
+      track("trial_expired_timer", {
+        is_guest_mode: isGuestMode,
+        prompt_count: promptCount,
+        last_prompt: lastPrompt,
+        source: "timer",
+      });
+    }
+  }, [timeRemaining, authenticated, isGuestMode, promptCount, lastPrompt]);
+
+  const handleGuestPromptSubmit = () => {
+    if (isGuestMode) {
+      if (promptCount >= 5) {
+        setSignupModalReason("prompt_limit");
+        setShowSignupModal(true);
+        track("guest_prompt_limit_reached", {
+          prompt_count: promptCount,
+          last_prompt: lastPrompt,
+        });
+        return true;
+      }
+
+      incrementPromptCount();
+
+      if (promptCount >= 4) {
+        setSignupModalReason("prompt_limit");
+        setShowSignupModal(true);
+        track("guest_prompt_limit_reached", {
+          prompt_count: promptCount + 1,
+          last_prompt: lastPrompt,
+        });
+      }
+    }
+    return false;
+  };
+
+  const handleGuestShare = () => {
+    if (isGuestMode) {
+      setHasShared(true);
+      setSignupModalReason("share");
+      setShowSignupModal(true);
+      track("guest_share_attempt", {
+        prompt_count: promptCount,
+        last_prompt: lastPrompt,
+      });
+      return true;
+    }
+    return false;
+  };
+
   return (
     <div className="relative">
       <div className={currentStep !== "main" ? "hidden" : "block"}>
         <div className="relative flex flex-col min-h-screen overflow-y-auto">
-          <Header />
+          <Header isGuestMode={isGuestMode} onShareAttempt={handleGuestShare} />
 
           <div
             className={cn(
@@ -185,11 +299,20 @@ export default function Dreamshaper() {
 
           {/* Input and Broadcast Section */}
           <ManagedBroadcast />
-          <InputPrompt />
+          <InputPrompt onPromptSubmit={handleGuestPromptSubmit} />
           <StreamDebugPanel />
           <StreamInfo />
         </div>
       </div>
+
+      <UnifiedSignupModal
+        open={showSignupModal}
+        onOpenChange={setShowSignupModal}
+        reason={signupModalReason}
+      />
+
+      {/* BentoGrid overlay for never-ending prompt cloning */}
+      <BentoGridOverlay />
     </div>
   );
 }

@@ -10,10 +10,22 @@ import CameraAccess from "./CameraAccess";
 import Footer from "./Footer";
 import Personas from "./Personas";
 import SelectPrompt from "./SelectPrompt";
+import { usePrivy } from "@/hooks/usePrivy";
+import { updateUserAdditionalDetails } from "@/app/actions/user";
+import { Separator } from "@repo/design-system/components/ui/separator";
+import track from "@/lib/track";
 
-export default function WelcomeScreen() {
-  const { currentStep, isFadingOut } = useOnboard();
+interface WelcomeScreenProps {
+  simplified?: boolean;
+}
+
+export default function WelcomeScreen({
+  simplified = false,
+}: WelcomeScreenProps) {
+  const { currentStep, isFadingOut, setCurrentStep, setFadingOut } =
+    useOnboard();
   const { setTheme } = useTheme();
+  const { user } = usePrivy();
 
   useMount(() => {
     setTheme("light");
@@ -45,6 +57,25 @@ export default function WelcomeScreen() {
   const getCloudTransition = (cloudIndex: number): string => {
     if (!isFadingOut) return "transform 2s ease-out";
     return "transform 0.8s ease-out, opacity 0.7s ease-out";
+  };
+
+  const handleContinueFromSimplifiedFlow = async () => {
+    track("daydream_simplified_continue_clicked", {
+      user_id: user?.id,
+    });
+
+    setFadingOut(true);
+
+    setTimeout(() => {
+      setCurrentStep("main");
+      window && window.scrollTo({ top: 0, behavior: "instant" });
+    }, 1000);
+
+    if (user) {
+      await updateUserAdditionalDetails(user, {
+        next_onboarding_step: "main",
+      });
+    }
   };
 
   if (currentStep === "main") {
@@ -137,26 +168,44 @@ export default function WelcomeScreen() {
 
             <div className="w-full h-px bg-[#D2D2D2]"></div>
 
-            <div className="flex flex-col gap-[16px]">
-              <p className="font-open-sans text-base sm:text-lg leading-[1.35em] text-[#232323]">
-                Come experience the magic of Daydream 🎭
-              </p>
-              <p className="font-open-sans text-base sm:text-lg leading-[1.35em] text-[#232323]">
-                Create without limits. Whether you&apos;re crafting stories,
-                building experiences, or experimenting with something entirely
-                new, this is your playground!
-              </p>
-            </div>
+            {!simplified ? (
+              <div className="flex flex-col gap-[16px]">
+                <p className="font-open-sans text-base sm:text-lg leading-[1.35em] text-[#232323]">
+                  Come experience the magic of Daydream 🎭
+                </p>
+                <p className="font-open-sans text-base sm:text-lg leading-[1.35em] text-[#232323]">
+                  Create without limits. Whether you&apos;re crafting stories,
+                  building experiences, or experimenting with something entirely
+                  new, this is your playground!
+                </p>
+              </div>
+            ) : null}
 
             <p className="font-playfair font-semibold text-[18px] sm:text-xl md:text-2xl text-[#1C1C1C]">
-              But first, let&apos;s get to know you!
+              {!simplified
+                ? "But first, let's get to know you!"
+                : "Let's get to know you!"}
             </p>
 
-            <Personas />
+            <Personas simplified={simplified} />
 
-            <CameraAccess />
+            {!simplified && <CameraAccess />}
 
-            <SelectPrompt />
+            {!simplified && <SelectPrompt />}
+
+            {simplified && currentStep === "persona" && (
+              <>
+                <Separator className="bg-[#D2D2D2]" />
+                <div className="flex justify-end w-full">
+                  <button
+                    onClick={handleContinueFromSimplifiedFlow}
+                    className="bg-[#161616] w-full sm:max-w-[187px] text-[#EDEDED] px-6 py-3 rounded-md font-inter font-semibold text-[15px] hover:bg-[#2D2D2D] transition-colors"
+                  >
+                    Continue
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
         <Footer isFadingOut={isFadingOut} />

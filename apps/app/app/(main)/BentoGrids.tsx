@@ -10,6 +10,7 @@ import useClipsFetcher from "./hooks/useClipsFetcher";
 import LoadingSpinner from "./LoadingSpinner";
 import NoMoreClipsFooter from "./NoMoreClipsFooter";
 import OptimizedVideo from "./OptimizedVideo";
+import { useOverlayStore } from "@/hooks/useOverlayStore";
 
 function chunkArray<T>(array: T[], size: number): T[][] {
   const result: T[][] = [];
@@ -31,9 +32,17 @@ export interface BentoGridsProps {
     slug: string | null;
     priority: number | null;
   }>;
+  isOverlayMode?: boolean;
+  onTryPrompt?: (prompt: string) => void;
+  onClipsLoaded?: (clips: any[]) => void;
 }
 
-export function BentoGrids({ initialClips }: BentoGridsProps) {
+export function BentoGrids({
+  initialClips,
+  isOverlayMode = false,
+  onTryPrompt,
+  onClipsLoaded,
+}: BentoGridsProps) {
   const { clips, loading, hasMore, fetchClips, page } =
     useClipsFetcher(initialClips);
   const loadingRef = useRef<HTMLDivElement>(null);
@@ -47,13 +56,31 @@ export function BentoGrids({ initialClips }: BentoGridsProps) {
   const isDebug = searchParams.has("debug");
 
   useEffect(() => {
-    if (!initialFetchDone.current) {
-      fetchClips();
-      initialFetchDone.current = true;
+    if (onClipsLoaded && clips.length > 0) {
+      onClipsLoaded(clips);
     }
-  }, [fetchClips]);
+  }, [clips, onClipsLoaded]);
 
   useEffect(() => {
+    if (!initialFetchDone.current) {
+      if (
+        isOverlayMode &&
+        initialClips.length > 0 &&
+        initialClips.length < 16
+      ) {
+        fetchClips();
+      } else if (!isOverlayMode || initialClips.length === 0) {
+        fetchClips();
+      }
+      initialFetchDone.current = true;
+    }
+  }, [fetchClips, isOverlayMode, initialClips.length]);
+
+  useEffect(() => {
+    if (isOverlayMode && initialClips.length >= 16) {
+      return;
+    }
+
     const observer = new IntersectionObserver(
       entries => {
         if (entries[0].isIntersecting && !loading && hasMore) {
@@ -71,7 +98,15 @@ export function BentoGrids({ initialClips }: BentoGridsProps) {
     }
 
     return () => observer.disconnect();
-  }, [fetchClips, loading, hasMore, page, trackAction]);
+  }, [
+    fetchClips,
+    loading,
+    hasMore,
+    page,
+    trackAction,
+    isOverlayMode,
+    initialClips.length,
+  ]);
 
   const groupedClips = chunkArray(clips, 4);
 
@@ -94,26 +129,31 @@ export function BentoGrids({ initialClips }: BentoGridsProps) {
       </div>
 
       {/* Backdrop blur layer */}
-      <div className="fixed inset-0 backdrop-blur z-0"></div>
+      <div
+        className="fixed inset-0 backdrop-blur z-0"
+        style={{ background: "transparent!important" }}
+      ></div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-8 lg:px-12">
-        <p
-          className={cn(
-            "mx-auto mt-2 max-w-lg text-balance text-center text-4xl font-extralight tracking-tight text-gray-950 sm:text-6xl",
-            isPreviewOpen && "opacity-0",
-          )}
-        >
-          Discover how others{" "}
-          <span className="font-semibold text-4xl sm:text-6xl">Daydream</span>
-        </p>
-        <h2
-          className={cn(
-            "text-center text-base/7 font-light text-zinc-500 max-w-lg mx-auto mt-6 leading-[135%]",
-            isPreviewOpen && "opacity-0",
-          )}
-        >
-          From spark to story, your imagination starts here.
-        </h2>
+        <>
+          <p
+            className={cn(
+              "mx-auto mt-2 max-w-lg text-balance text-center text-4xl font-extralight tracking-tight text-gray-950 sm:text-6xl",
+              isPreviewOpen && "opacity-0",
+            )}
+          >
+            Discover how others{" "}
+            <span className="font-semibold text-4xl sm:text-6xl">Daydream</span>
+          </p>
+          <h2
+            className={cn(
+              "text-center text-base/7 font-light text-zinc-500 max-w-lg mx-auto mt-6 leading-[135%]",
+              isPreviewOpen && "opacity-0",
+            )}
+          >
+            From imagination to creation — all in real time.
+          </h2>
+        </>
 
         {groupedClips.map((group, groupIndex) => {
           const configuration =
@@ -127,7 +167,13 @@ export function BentoGrids({ initialClips }: BentoGridsProps) {
             <GridSet
               key={groupIndex}
               configuration={configuration}
-              className={groupIndex === 0 ? "mt-10 sm:mt-16" : "mt-4"}
+              className={
+                groupIndex === 0
+                  ? isOverlayMode
+                    ? "mt-10 sm:mt-16"
+                    : "mt-10 sm:mt-16"
+                  : "mt-4"
+              }
             >
               {group.map((clip, index) => {
                 const overallIndex = baseIndex + index;
@@ -145,6 +191,8 @@ export function BentoGrids({ initialClips }: BentoGridsProps) {
                     className={`${index % 2 === 0 ? "lg:row-span-2" : ""} cursor-pointer`}
                     isDebug={isDebug}
                     overallIndex={overallIndex}
+                    isOverlayMode={isOverlayMode}
+                    onTryPrompt={onTryPrompt}
                   />
                 );
               })}
@@ -155,7 +203,7 @@ export function BentoGrids({ initialClips }: BentoGridsProps) {
         <div ref={loadingRef} className="py-8 text-center relative z-50">
           {loading ? (
             <LoadingSpinner />
-          ) : hasMore ? (
+          ) : hasMore && (!isOverlayMode || initialClips.length === 0) ? (
             <p className="text-gray-500 font-light">Scroll for more</p>
           ) : (
             <NoMoreClipsFooter />
@@ -182,6 +230,8 @@ function GridItem({
   remixCount,
   isDebug,
   overallIndex,
+  isOverlayMode = false,
+  onTryPrompt,
 }: {
   clipId: string;
   src: string;
@@ -194,8 +244,23 @@ function GridItem({
   remixCount: number;
   isDebug: boolean;
   overallIndex: number;
+  isOverlayMode?: boolean;
+  onTryPrompt?: (prompt: string) => void;
 }) {
   const href = slug ? `/clip/${slug}` : `/clip/id/${clipId}`;
+  const { isPreviewOpen } = usePreviewStore();
+  const { setIsOverlayOpen, setOverlayType, setSelectedClipId } =
+    useOverlayStore();
+
+  const handleClick = (e: React.MouseEvent) => {
+    if (isOverlayMode) {
+      e.preventDefault();
+      // Handle clip preview within overlay
+      setSelectedClipId(clipId);
+      setOverlayType("clip");
+      setIsOverlayOpen(true);
+    }
+  };
 
   return (
     <TrackedLink
@@ -205,12 +270,13 @@ function GridItem({
         clip_id: clipId,
         clip_slug: slug,
         clip_author_name: authorName,
-        location: "explore_bento_grid",
+        location: isOverlayMode ? "overlay_bento_grid" : "explore_bento_grid",
       }}
       className={cn(
         "relative aspect-square lg:min-h-[300px] lg:aspect-auto block",
         className,
       )}
+      onClick={isOverlayMode ? handleClick : undefined}
     >
       {isDebug && (
         <div className="absolute top-1 left-1 z-40 bg-black/60 text-white text-xs font-mono px-1.5 py-0.5 rounded">
@@ -230,6 +296,8 @@ function GridItem({
           authorName={authorName}
           createdAt={createdAt}
           remixCount={remixCount}
+          isOverlayMode={isOverlayMode}
+          onTryPrompt={onTryPrompt}
         />
       </div>
 

@@ -86,9 +86,8 @@ export const MainContent = () => {
         </div>
       )}
 
-      {/* Timer overlay */}
       {!authenticated && timeRemaining !== null && (
-        <div className="absolute top-5 right-16 bg-neutral-800/30 text-gray-400 px-5 py-1 text-xs rounded-full border border-gray-500 z-50">
+        <div className="hidden absolute top-5 right-16 bg-neutral-800/30 text-gray-400 px-5 py-1 text-xs rounded-full border border-gray-500 z-50">
           <span className="text-[10px] mr-2">left</span> {formattedTime}
         </div>
       )}

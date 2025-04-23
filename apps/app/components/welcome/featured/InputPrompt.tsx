@@ -31,6 +31,7 @@ import SettingsMenu from "./prompt-settings";
 import { MAX_PROMPT_LENGTH, useValidateInput } from "./useValidateInput";
 import { Separator } from "@repo/design-system/components/ui/separator";
 import { usePrivy } from "@/hooks/usePrivy";
+import { useGuestUserStore } from "@/hooks/useGuestUser";
 
 const PROMPT_PLACEHOLDER = "Enter your prompt...";
 
@@ -50,7 +51,11 @@ type PipelineParam = {
   // Add other fields if needed
 };
 
-export const InputPrompt = () => {
+interface InputPromptProps {
+  onPromptSubmit?: () => void;
+}
+
+export const InputPrompt = ({ onPromptSubmit }: InputPromptProps) => {
   const { pipeline, stream, updating } = useDreamshaperStore();
   const { handleStreamUpdate } = useStreamUpdates();
   const { isFullscreen } = useFullscreenStore();
@@ -60,6 +65,7 @@ export const InputPrompt = () => {
   const { promptVersion, incrementPromptVersion } = usePromptVersionStore();
 
   const { authenticated } = usePrivy();
+  const { promptCount } = useGuestUserStore();
 
   const [inputValue, setInputValue] = useState("");
   const [isInputHovered, setInputHovered] = useState(false);
@@ -208,6 +214,10 @@ export const InputPrompt = () => {
     if (inputValue) {
       if (isMobile && document.activeElement instanceof HTMLElement) {
         document.activeElement.blur();
+      }
+
+      if (onPromptSubmit && onPromptSubmit()) {
+        return;
       }
 
       track("daydream_prompt_submitted", {
@@ -456,6 +466,8 @@ export const InputPrompt = () => {
               inputValue={inputValue}
               setInputValue={setInputValue}
               onClose={() => setSettingsOpened(false)}
+              onSubmit={submitPrompt}
+              originalPrompt={lastSubmittedPrompt || undefined}
             />
           )}
         </div>
