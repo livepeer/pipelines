@@ -2,10 +2,17 @@ import React, { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@repo/design-system/components/ui/dialog";
 import { toast } from "sonner";
+import { Separator } from "@repo/design-system/components/ui/separator";
+import {
+  RadioGroup,
+  RadioGroupItem,
+} from "@repo/design-system/components/ui/radio-group";
+import { Button } from "@repo/design-system/components/ui/button";
 
 export type ClipRecordingMode = "horizontal" | "vertical" | "output-only";
 
@@ -17,22 +24,67 @@ interface ClipOptionsModalProps {
 
 const LayoutOption = ({
   title,
+  description,
   mode,
+  value,
+  selectedValue,
+  previewImg,
   onSelect,
-  children,
 }: {
   title: string;
+  description: string;
   mode: ClipRecordingMode;
-  onSelect: (mode: ClipRecordingMode) => void;
-  children: React.ReactNode;
+  value: string;
+  selectedValue?: string;
+  previewImg: string | null;
+  onSelect: (value: string) => void;
 }) => (
   <div
-    className="flex flex-col gap-2 border rounded-md p-3 bg-black text-white hover:bg-black/80 cursor-pointer transition-colors"
-    onClick={() => onSelect(mode)}
+    className={`relative flex flex-col border rounded-xl p-4 gap-4 overflow-hidden cursor-pointer border-gray-300  ${
+      selectedValue === value
+        ? "outline outline-2 outline-[#282828] shadow-xl"
+        : "border-gray-300"
+    }`}
+    onClick={() => onSelect(value)}
   >
-    <div className="font-medium text-center">{title}</div>
-    <div className="bg-black rounded-md p-2 h-48 flex items-center justify-center">
-      {children}
+    <div className="sm:hidden flex flex-col gap-3">
+      <div className="flex items-center gap-2">
+        <RadioGroupItem value={value} id={value} />
+        <label
+          htmlFor={value}
+          className="font-medium text-[18px] text-[#161616]"
+        >
+          {title}
+        </label>
+      </div>
+    </div>
+    <div className="hidden sm:block">
+      <RadioGroupItem value={value} id={value} />
+    </div>
+    <div className="h-36 sm:h-48 bg-black rounded-xl overflow-hidden">
+      {previewImg ? (
+        <img
+          src={previewImg}
+          alt={`${title} preview`}
+          className="w-full h-full object-cover"
+        />
+      ) : (
+        <div className="w-full h-full flex items-center justify-center text-white">
+          Loading...
+        </div>
+      )}
+    </div>
+
+    <div className="hidden p-4 sm:flex flex-col gap-3">
+      <div className="flex items-center gap-2">
+        <label
+          htmlFor={value}
+          className="font-medium text-[18px] text-[#161616]"
+        >
+          {title}
+        </label>
+      </div>
+      <p className="text-[#707070] text-sm leading-[1.4]">{description}</p>
     </div>
   </div>
 );
@@ -48,6 +100,7 @@ export function ClipOptionsModal({
   }>({ horizontal: null, outputOnly: null });
   const [isReady, setIsReady] = useState(false);
   const [isCaptured, setIsCaptured] = useState(false);
+  const [selectedMode, setSelectedMode] = useState<string>("output-only");
 
   useEffect(() => {
     if (!isOpen || isCaptured) return;
@@ -186,61 +239,71 @@ export function ClipOptionsModal({
     }
   }, [isOpen]);
 
-  const handleSelectMode = (mode: ClipRecordingMode) => {
+  const handleValueChange = (value: string) => {
+    setSelectedMode(value);
+  };
+
+  const handleCreateClip = () => {
     if (!isReady) {
       toast("Video frames not ready yet", {
         description: "Please wait a moment and try again",
       });
       return;
     }
-    onCreateClip(mode);
+    onCreateClip(selectedMode as ClipRecordingMode);
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={open => !open && onClose()}>
-      <DialogContent className="max-w-[calc(100%-2rem)] mx-auto sm:max-w-[800px] max-h-[90vh] overflow-y-auto rounded-xl">
-        <DialogHeader className="flex flex-col items-center justify-center">
-          <DialogTitle className="text-center w-full">
-            Choose your clip layout
+      <DialogContent className="h-fit max-h-[90dvh] w-full sm:max-w-[650px] mx-auto overflow-y-auto rounded-xl">
+        <DialogHeader className="flex items-center">
+          <DialogTitle className="text-2xl">
+            How Would You Like to Share?
           </DialogTitle>
+          <DialogDescription className="font-light text-center">
+            Choose your preferred sharing option
+          </DialogDescription>
         </DialogHeader>
 
-        <div className="mt-4 mb-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <Separator className="my-2" />
+
+        <RadioGroup
+          value={selectedMode}
+          onValueChange={handleValueChange}
+          className="mt-4 mb-2 grid grid-cols-1 sm:grid-cols-2 gap-8"
+        >
           <LayoutOption
-            title="Combined"
+            title="Include input video"
+            description="Share both your original video and the final result — your input video will be visible in the clip."
             mode="horizontal"
-            onSelect={handleSelectMode}
-          >
-            {isReady && previewBlobs.horizontal ? (
-              <div className="w-full h-full flex items-center justify-center">
-                <img
-                  src={previewBlobs.horizontal}
-                  alt="Combined preview"
-                  className="max-w-full max-h-full rounded-md"
-                />
-              </div>
-            ) : (
-              <div className="text-white">Loading...</div>
-            )}
-          </LayoutOption>
+            value="horizontal"
+            selectedValue={selectedMode}
+            previewImg={previewBlobs.horizontal}
+            onSelect={handleValueChange}
+          />
 
           <LayoutOption
-            title="Output Only"
+            title="Just the Output"
+            description="Share only the final result — your input video (face) won't be included."
             mode="output-only"
-            onSelect={handleSelectMode}
-          >
-            {isReady && previewBlobs.outputOnly ? (
-              <div className="w-full h-full flex items-center justify-center">
-                <img
-                  src={previewBlobs.outputOnly}
-                  alt="Output only preview"
-                  className="max-w-full max-h-full rounded-md"
-                />
-              </div>
-            ) : (
-              <div className="text-white">Loading...</div>
-            )}
-          </LayoutOption>
+            value="output-only"
+            selectedValue={selectedMode}
+            previewImg={previewBlobs.outputOnly}
+            onSelect={handleValueChange}
+          />
+        </RadioGroup>
+
+        <Separator className="my-2" />
+
+        <div className="w-full">
+          <div className="flex gap-2">
+            <Button
+              onClick={handleCreateClip}
+              className="flex-1 items-center justify-center gap-2 rounded-md h-[46px]"
+            >
+              Continue
+            </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
