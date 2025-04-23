@@ -122,7 +122,7 @@ export default function OptimizedVideo({
           videoElement.pause();
         }
       },
-      { threshold: 0.9 },
+      { threshold: 0.5 },
     );
 
     playbackObserver.observe(containerRef.current);
