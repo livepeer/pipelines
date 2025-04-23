@@ -15,7 +15,7 @@ import track from "@/lib/track";
 import { usePrivy } from "@/hooks/usePrivy";
 import { useGuestUserStore } from "@/hooks/useGuestUser";
 import { useSearchParams } from "next/navigation";
-import { ClipModal } from "../ClipModal";
+import { ClipModal } from "./Clipping/ClipModal";
 import { retrieveClip, deleteClip } from "@/lib/clipStorage";
 
 interface DaydreamProps {

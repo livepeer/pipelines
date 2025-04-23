@@ -1,7 +1,7 @@
 "use client";
 
 import { TrackedButton } from "@/components/analytics/TrackedButton";
-import { ClipButton } from "@/components/ClipButton";
+import { ClipButton } from "@/components/daydream/Clipping/ClipButton";
 import useFullscreenStore from "@/hooks/useFullscreenStore";
 import useMobileStore from "@/hooks/useMobileStore";
 import { usePromptStore } from "@/hooks/usePromptStore";

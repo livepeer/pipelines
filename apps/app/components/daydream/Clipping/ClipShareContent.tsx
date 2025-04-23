@@ -8,23 +8,23 @@ import {
 import { Button } from "@repo/design-system/components/ui/button";
 import { Input } from "@repo/design-system/components/ui/input";
 import { CheckIcon, CopyIcon, DownloadIcon } from "lucide-react";
+import { ClipData } from "./types";
 
-interface ShareClipContentProps {
+interface ClipShareContentProps {
   promptCode?: string;
-  clipUrl?: string;
+  clipData: ClipData;
 }
 
-// TODO: Remove the default values and plug with API based values.
-export default function ShareClipContent({
+export default function ClipShareContent({
   promptCode = "152313Aezcz12Qczff9eaeawdz",
-  clipUrl = "https://daydream.live/clips/my-clip",
-}: ShareClipContentProps) {
+  clipData,
+}: ClipShareContentProps) {
   const [copied, setCopied] = React.useState(false);
 
   const handleCopy = async () => {
     try {
       await navigator.clipboard.write([
-        new ClipboardItem({ "text/plain": promptCode }),
+        new ClipboardItem({ "text/plain": clipData.serverClipUrl }),
       ]);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
@@ -39,31 +39,42 @@ export default function ShareClipContent({
   };
 
   const handleDownload = () => {
-    // In a real implementation, this would download the clip
-    console.log("Downloading clip");
+    if (clipData.clipUrl && clipData.clipFilename) {
+      const downloadLink = document.createElement("a");
+      downloadLink.href = clipData.clipUrl;
+      downloadLink.download = clipData.clipFilename;
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+
+      setTimeout(() => {
+        document.body.removeChild(downloadLink);
+      }, 100);
+    }
   };
 
   return (
     <DialogContent className="max-w-lg mx-auto rounded-xl overflow-hidden flex flex-col gap-6 items-center py-12 px-6">
       <DialogHeader className="flex items-center">
-        <DialogTitle className="text-2xl">Share your clip</DialogTitle>
+        <DialogTitle className="text-2xl">Share Your Creation</DialogTitle>
         <DialogDescription className="font-light text-center">
-          Send it to social media, copy a link or send your friends the prompt
-          code for everyone else to see it!
+          Download for your content workflow or share to social media for the
+          world to see
         </DialogDescription>
       </DialogHeader>
 
-      <div className="flex items-center font-light w-fit gap-1">
+      {/* <div className="flex items-center font-light w-fit gap-1">
         <p className="w-fit text-sm sm:text-base">Prompt Code:</p>
         <div className="overflow-ellipsis w-fit">
           <p className="text-blue-500 font-bold">{promptCode}</p>
         </div>
-      </div>
+      </div> */}
+
+      <p className="text-sm font-light">Your Unique Sharing Link:</p>
 
       <div className="flex relative gap-2 items-center w-full">
         <Input
           readOnly
-          value={clipUrl}
+          value={clipData.serverClipUrl || ""}
           className="flex-1 rounded-full py-6 px-8 pr-12 overflow-ellipsis"
         />
         <Button
@@ -74,6 +85,8 @@ export default function ShareClipContent({
           {copied ? <CheckIcon /> : <CopyIcon />}
         </Button>
       </div>
+
+      <p className="text-sm font-light">Share Directly to:</p>
 
       <div className="flex flex-row flex-wrap justify-center items-center gap-5">
         <button
