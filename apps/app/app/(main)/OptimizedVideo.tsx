@@ -53,33 +53,12 @@ export default function OptimizedVideo({
     return () => nearObserver.disconnect();
   }, []);
 
-  useEffect(() => {
-    if (!isNearViewport || !shortSrc || !src) return;
-
-    let isCancelled = false;
-
-    if (effectiveSrc === shortSrc) {
-      fetch(shortSrc, { method: "HEAD" })
-        .then(response => {
-          if (!isCancelled && !response.ok) {
-            console.log(
-              `Short video not found for ${shortSrc}, falling back to ${src}`,
-            );
-            setEffectiveSrc(src);
-          }
-        })
-        .catch(error => {
-          if (!isCancelled) {
-            console.error(`Error checking short video ${shortSrc}:`, error);
-            setEffectiveSrc(src);
-          }
-        });
-    }
-
-    return () => {
-      isCancelled = true;
-    };
-  }, [isNearViewport, shortSrc, src, effectiveSrc]);
+  const handleVideoError = () => {
+    console.log(
+      `Short video not found for ${shortSrc}, falling back to ${src}`,
+    );
+    setEffectiveSrc(src);
+  };
 
   useEffect(() => {
     const videoElement = videoRef.current;
@@ -130,6 +109,7 @@ export default function OptimizedVideo({
               loop
               playsInline
               onLoadedData={() => setIsLoaded(true)}
+              onError={handleVideoError}
               className={cn(
                 "absolute inset-0 size-full object-cover object-top bg-transparent",
                 !isLoaded && "opacity-0",
