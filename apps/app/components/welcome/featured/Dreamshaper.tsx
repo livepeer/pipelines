@@ -258,6 +258,20 @@ export default function Dreamshaper({ isGuestMode = false }: DreamshaperProps) {
     }
   }, [live, showTutorial, setLastSubmittedPrompt, setHasSubmittedPrompt]);
 
+  useEffect(() => {
+    const searchParams = new URL(window.location.href).searchParams;
+    const inputPromptB64 = searchParams.get("inputPrompt");
+    if (inputPromptB64 && live) {
+      try {
+        const decodedPrompt = atob(inputPromptB64);
+        setLastSubmittedPrompt(decodedPrompt);
+        setHasSubmittedPrompt(true);
+      } catch (error) {
+        console.error("Error decoding input prompt:", error);
+      }
+    }
+  }, [live]);
+
   const handleTutorialComplete = () => {
     setShowTutorial(false);
     localStorage.setItem("has_seen_tutorial", "true");
