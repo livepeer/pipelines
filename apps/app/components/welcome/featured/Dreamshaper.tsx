@@ -44,7 +44,8 @@ export default function Dreamshaper({ isGuestMode = false }: DreamshaperProps) {
   const { stream, pipeline, sharedPrompt } = useDreamshaperStore();
   const { status, live } = useStreamStatus(stream?.id, false);
   const { currentStep, selectedPrompt, setSelectedPrompt } = useOnboard();
-  const { setLastSubmittedPrompt, setHasSubmittedPrompt } = usePromptStore();
+  const { lastSubmittedPrompt, setLastSubmittedPrompt, setHasSubmittedPrompt } =
+    usePromptStore();
   const { user, authenticated, login } = usePrivy();
   const { isFullscreen } = useFullscreenStore();
   const playerRef = useRef<HTMLDivElement>(null);
@@ -242,9 +243,28 @@ export default function Dreamshaper({ isGuestMode = false }: DreamshaperProps) {
     }
   }, [isGuestMode]);
 
+  useEffect(() => {
+    const searchParams = new URL(window.location.href).searchParams;
+    const inputPromptB64 = searchParams.get("inputPrompt");
+
+    if (inputPromptB64 && showTutorial) {
+      try {
+        const decodedPrompt = atob(inputPromptB64);
+        setLastSubmittedPrompt(decodedPrompt);
+        setHasSubmittedPrompt(true);
+      } catch (error) {
+        console.error("Error decoding input prompt:", error);
+      }
+    }
+  }, [live, showTutorial, setLastSubmittedPrompt, setHasSubmittedPrompt]);
+
   const handleTutorialComplete = () => {
     setShowTutorial(false);
     localStorage.setItem("has_seen_tutorial", "true");
+
+    if (lastSubmittedPrompt && handleStreamUpdate) {
+      handleStreamUpdate(lastSubmittedPrompt, { silent: true });
+    }
   };
 
   const handleGuestPromptSubmit = () => {
@@ -315,8 +335,10 @@ export default function Dreamshaper({ isGuestMode = false }: DreamshaperProps) {
           </div>
 
           {/* Input and Broadcast Section */}
-          <ManagedBroadcast />
-          <InputPrompt onPromptSubmit={handleGuestPromptSubmit} />
+          {!showTutorial && <ManagedBroadcast />}
+          {!showTutorial && (
+            <InputPrompt onPromptSubmit={handleGuestPromptSubmit} />
+          )}
           <StreamDebugPanel />
           <StreamInfo />
         </div>

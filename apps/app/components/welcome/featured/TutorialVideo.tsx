@@ -125,7 +125,7 @@ export const TutorialVideo = ({ onComplete }: TutorialVideoProps) => {
   const [isFadingOut, setIsFadingOut] = useState(false);
   const [showIntro, setShowIntro] = useState(true);
   const [introOpacity, setIntroOpacity] = useState(0);
-  const [isMuted, setIsMuted] = useState(true);
+  const [isMuted, setIsMuted] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
@@ -285,12 +285,10 @@ export const TutorialVideo = ({ onComplete }: TutorialVideoProps) => {
             <div className="p-2 rounded-full flex items-center justify-center mb-4">
               <LivepeerLogo />
             </div>
-            <h1 className="text-3xl md:text-4xl font-bold mb-3">
-              See daydream in action
+            <h1 className="text-3xl md:text-4xl font-bold mb-3 max-w-2xl mx-auto leading-tight">
+              Before we start, a quick preview of your creative journey ahead!
             </h1>
-            <p className="text-lg md:text-xl text-white/80">
-              Before we start, a quick product tour!
-            </p>
+            <p className="text-lg md:text-xl text-white/80"></p>
           </div>
         </div>
       ) : (
