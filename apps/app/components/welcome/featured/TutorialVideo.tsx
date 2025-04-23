@@ -290,7 +290,7 @@ export const TutorialVideo = ({ onComplete }: TutorialVideoProps) => {
             <div className="p-2 rounded-full flex items-center justify-center mb-4">
               <LivepeerLogo />
             </div>
-            <h1 className="text-2xl md:text-3xl font-bold mb-3 max-w-2xl mx-auto leading-tight">
+            <h1 className="text-2xl md:text-3xl font-medium mb-3 max-w-2xl mx-auto leading-tight">
               Before we start, a quick preview of your creative journey ahead!
             </h1>
             <div
