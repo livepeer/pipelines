@@ -25,7 +25,6 @@ interface ClipOptionsModalProps {
 const LayoutOption = ({
   title,
   description,
-  mode,
   value,
   selectedValue,
   previewImg,
@@ -33,7 +32,6 @@ const LayoutOption = ({
 }: {
   title: string;
   description: string;
-  mode: ClipRecordingMode;
   value: string;
   selectedValue?: string;
   previewImg: string | null;
@@ -61,7 +59,7 @@ const LayoutOption = ({
     <div className="hidden sm:block">
       <RadioGroupItem value={value} id={value} />
     </div>
-    <div className="h-36 sm:h-48 bg-black rounded-xl overflow-hidden">
+    <div className="hidden sm:block h-36 sm:h-64 bg-black rounded-xl overflow-hidden">
       {previewImg ? (
         <img
           src={previewImg}
@@ -75,7 +73,7 @@ const LayoutOption = ({
       )}
     </div>
 
-    <div className="hidden p-4 sm:flex flex-col gap-3">
+    <div className="hidden px-4 sm:flex flex-col gap-3">
       <div className="flex items-center gap-2">
         <label
           htmlFor={value}
@@ -267,15 +265,33 @@ export function ClipOptionsModal({
 
         <Separator className="my-2" />
 
+        <div className="flex sm:hidden h-64 bg-black rounded-xl overflow-hidden">
+          {(selectedMode === "horizontal" && previewBlobs.horizontal) ||
+          (selectedMode === "output-only" && previewBlobs.outputOnly) ? (
+            <img
+              src={
+                (selectedMode === "horizontal"
+                  ? previewBlobs.horizontal
+                  : previewBlobs.outputOnly) ?? ""
+              }
+              alt={`${selectedMode} preview`}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-white">
+              Loading...
+            </div>
+          )}
+        </div>
+
         <RadioGroup
           value={selectedMode}
           onValueChange={handleValueChange}
-          className="mt-4 mb-2 grid grid-cols-1 sm:grid-cols-2 gap-8"
+          className="mt-4 mb-2 grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-8"
         >
           <LayoutOption
             title="Include input video"
             description="Share both your original video and the final result — your input video will be visible in the clip."
-            mode="horizontal"
             value="horizontal"
             selectedValue={selectedMode}
             previewImg={previewBlobs.horizontal}
@@ -285,7 +301,6 @@ export function ClipOptionsModal({
           <LayoutOption
             title="Just the Output"
             description="Share only the final result — your input video (face) won't be included."
-            mode="output-only"
             value="output-only"
             selectedValue={selectedMode}
             previewImg={previewBlobs.outputOnly}
