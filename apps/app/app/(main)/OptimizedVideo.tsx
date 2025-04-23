@@ -66,7 +66,9 @@ export default function OptimizedVideo({
   }, []);
 
   const handleVideoError = () => {
-    console.log(`Short video not found for ${shortSrc}, falling back to ${src}`);
+    console.log(
+      `Short video not found for ${shortSrc}, falling back to ${src}`,
+    );
     setEffectiveSrc(src);
   };
 
