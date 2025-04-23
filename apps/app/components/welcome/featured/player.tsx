@@ -141,7 +141,7 @@ export const LivepeerPlayer = () => {
         <Player.Video
           title="Live stream"
           data-testid="playback-video"
-          className="h-full w-full transition-all object-contain relative z-0 -scale-x-100 bg-[#fefefe]"
+          className={`h-full w-full transition-all object-contain relative z-0 ${!isMobile ? "-scale-x-100" : ""} bg-[#fefefe]`}
         />
 
         <Player.LoadingIndicator className="w-full relative h-full bg-black/50 backdrop-blur data-[visible=true]:animate-in data-[visible=false]:animate-out data-[visible=false]:fade-out-0 data-[visible=true]:fade-in-0 z-[6]">

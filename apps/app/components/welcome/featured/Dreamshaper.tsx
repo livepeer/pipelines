@@ -29,6 +29,7 @@ import { useGuestUserStore } from "@/hooks/useGuestUser";
 import { BentoGridOverlay } from "./BentoGridOverlay";
 import { useTrialTimer } from "@/hooks/useTrialTimer";
 import { UnifiedSignupModal } from "@/components/modals/unified-signup-modal";
+import { TutorialVideo } from "./TutorialVideo";
 
 interface DreamshaperProps {
   isGuestMode?: boolean;
@@ -43,7 +44,8 @@ export default function Dreamshaper({ isGuestMode = false }: DreamshaperProps) {
   const { stream, pipeline, sharedPrompt } = useDreamshaperStore();
   const { status, live } = useStreamStatus(stream?.id, false);
   const { currentStep, selectedPrompt, setSelectedPrompt } = useOnboard();
-  const { setLastSubmittedPrompt, setHasSubmittedPrompt } = usePromptStore();
+  const { lastSubmittedPrompt, setLastSubmittedPrompt, setHasSubmittedPrompt } =
+    usePromptStore();
   const { user, authenticated, login } = usePrivy();
   const { isFullscreen } = useFullscreenStore();
   const playerRef = useRef<HTMLDivElement>(null);
@@ -63,6 +65,7 @@ export default function Dreamshaper({ isGuestMode = false }: DreamshaperProps) {
   const [signupModalReason, setSignupModalReason] = useState<
     "trial_expired" | "prompt_limit" | "share" | null
   >(null);
+  const [showTutorial, setShowTutorial] = useState(false);
 
   useMount(() => {
     track("daydream_page_view", {
@@ -233,6 +236,51 @@ export default function Dreamshaper({ isGuestMode = false }: DreamshaperProps) {
     }
   }, [timeRemaining, authenticated, isGuestMode, promptCount, lastPrompt]);
 
+  useEffect(() => {
+    const hasSeen = localStorage.getItem("has_seen_tutorial");
+    if (isGuestMode && !hasSeen) {
+      setShowTutorial(true);
+    }
+  }, [isGuestMode]);
+
+  useEffect(() => {
+    const searchParams = new URL(window.location.href).searchParams;
+    const inputPromptB64 = searchParams.get("inputPrompt");
+
+    if (inputPromptB64 && showTutorial) {
+      try {
+        const decodedPrompt = atob(inputPromptB64);
+        setLastSubmittedPrompt(decodedPrompt);
+        setHasSubmittedPrompt(true);
+      } catch (error) {
+        console.error("Error decoding input prompt:", error);
+      }
+    }
+  }, [live, showTutorial, setLastSubmittedPrompt, setHasSubmittedPrompt]);
+
+  useEffect(() => {
+    const searchParams = new URL(window.location.href).searchParams;
+    const inputPromptB64 = searchParams.get("inputPrompt");
+    if (inputPromptB64 && live) {
+      try {
+        const decodedPrompt = atob(inputPromptB64);
+        setLastSubmittedPrompt(decodedPrompt);
+        setHasSubmittedPrompt(true);
+      } catch (error) {
+        console.error("Error decoding input prompt:", error);
+      }
+    }
+  }, [live]);
+
+  const handleTutorialComplete = () => {
+    setShowTutorial(false);
+    localStorage.setItem("has_seen_tutorial", "true");
+
+    if (lastSubmittedPrompt && handleStreamUpdate) {
+      handleStreamUpdate(lastSubmittedPrompt, { silent: true });
+    }
+  };
+
   const handleGuestPromptSubmit = () => {
     if (isGuestMode) {
       if (promptCount >= 5) {
@@ -294,12 +342,17 @@ export default function Dreamshaper({ isGuestMode = false }: DreamshaperProps) {
               )}
             >
               <MainContent />
+              {showTutorial && (
+                <TutorialVideo onComplete={handleTutorialComplete} />
+              )}
             </div>
           </div>
 
           {/* Input and Broadcast Section */}
-          <ManagedBroadcast />
-          <InputPrompt onPromptSubmit={handleGuestPromptSubmit} />
+          {!showTutorial && <ManagedBroadcast />}
+          {!showTutorial && (
+            <InputPrompt onPromptSubmit={handleGuestPromptSubmit} />
+          )}
           <StreamDebugPanel />
           <StreamInfo />
         </div>

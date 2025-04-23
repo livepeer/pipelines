@@ -239,7 +239,7 @@
   position: relative;
   overflow: visible;
   border: 1.5px solid transparent;
-  background-color: #FEFEFE !important;
+  background: linear-gradient(90deg, #FFFFFF 0%, #EFF1F3 49%, #FDFDFD 100%) !important;
   border-radius: 8px;
 }
 

@@ -73,7 +73,7 @@ export default function Personas({ simplified = false }: PersonasProps) {
   return (
     <>
       {currentStep === "persona" && (
-        <div className="mt-6 md:mt-10 flex flex-col gap-6 md:gap-10 w-full max-w-xl mx-auto">
+        <div className="flex flex-col gap-6 md:gap-10 w-full max-w-xl mx-auto">
           <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-[12px] w-full">
             {personas.map(persona => (
               <div key={persona} className="persona-button-wrapper">
