@@ -265,7 +265,7 @@ export function ClipOptionsModal({
 
         <Separator className="my-2" />
 
-        <div className="flex sm:hidden h-64 bg-black rounded-xl overflow-hidden">
+        <div className="flex sm:hidden min-h-64 bg-black rounded-xl overflow-hidden">
           {(selectedMode === "horizontal" && previewBlobs.horizontal) ||
           (selectedMode === "output-only" && previewBlobs.outputOnly) ? (
             <img
