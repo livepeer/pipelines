@@ -189,6 +189,10 @@ export function UnifiedSignupModal({
               </Button>
               <Button
                 onClick={e => {
+                  localStorage.setItem(
+                    "daydream_from_guest_experience",
+                    "true",
+                  );
                   location.href = "/create";
                 }}
                 className="w-48 px-12 h-12 rounded-md alwaysAnimatedButton text-black"

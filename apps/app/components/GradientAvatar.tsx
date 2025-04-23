@@ -46,7 +46,7 @@ export function GradientAvatar({
       style={{ width: size, height: size, ...style }}
     >
       <AvatarImage src={avatarSrc} alt={alt} />
-      <AvatarFallback>{fallback}</AvatarFallback>
+      <AvatarFallback></AvatarFallback>
     </BaseAvatar>
   );
 }

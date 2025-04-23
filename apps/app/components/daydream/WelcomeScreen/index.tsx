@@ -14,6 +14,10 @@ import { usePrivy } from "@/hooks/usePrivy";
 import { updateUserAdditionalDetails } from "@/app/actions/user";
 import { Separator } from "@repo/design-system/components/ui/separator";
 import track from "@/lib/track";
+import { useState, useEffect } from "react";
+import { Input } from "@repo/design-system/components/ui/input";
+import { GradientAvatar } from "@/components/GradientAvatar";
+import { RefreshCw } from "lucide-react";
 
 interface WelcomeScreenProps {
   simplified?: boolean;
@@ -26,6 +30,29 @@ export default function WelcomeScreen({
     useOnboard();
   const { setTheme } = useTheme();
   const { user } = usePrivy();
+  const [displayName, setDisplayName] = useState("");
+  const [avatarSeed, setAvatarSeed] = useState("");
+
+  const generateRandomSeed = () => {
+    const characters =
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    let result = "";
+    for (let i = 0; i < 8; i++) {
+      result += characters.charAt(
+        Math.floor(Math.random() * characters.length),
+      );
+    }
+    return result;
+  };
+
+  const handleDisplayNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const sanitizedValue = e.target.value.replace(/[^a-zA-Z0-9_.]/g, "");
+    setDisplayName(sanitizedValue);
+  };
+
+  useEffect(() => {
+    setAvatarSeed(generateRandomSeed());
+  }, []);
 
   useMount(() => {
     setTheme("light");
@@ -150,41 +177,77 @@ export default function WelcomeScreen({
       <div className="min-h-screen flex flex-col items-center justify-center relative overflow-y-auto">
         <div
           className={cn(
-            "h-[fit-content] z-10 relative bg-[#EDEDED] p-[16px] sm:p-[24px] sm:pb-4 md:p-[56px] md:pb-6 rounded-[23px] w-[90%] sm:w-[80%] md:max-w-[812px]",
+            "h-[fit-content] z-10 relative bg-[#EDEDED] p-[12px] sm:p-[20px] md:p-[48px] md:pb-6 rounded-[23px] w-[90%] sm:w-[80%] md:max-w-[812px]",
             currentStep === "prompt" && "mb-[100px] mt-[100px]",
             isFadingOut && "hidden",
           )}
         >
-          <div className="flex flex-col gap-[24px] py-[12px]">
+          <div className="flex flex-col gap-[16px] sm:gap-[20px] py-[12px]">
             <div className="flex flex-col w-full gap-[8px]">
-              <h1 className="font-playfair font-bold text-[30px] sm:text-[45px] lg:text-[64px] leading-[1.2em] text-[#1C1C1C]">
+              <h1 className="font-playfair font-bold text-[28px] sm:text-[40px] lg:text-[60px] leading-[1.2em] text-[#1C1C1C]">
                 Welcome to Daydream
               </h1>
 
-              <p className="font-playfair font-semibold text-[18px] sm:text-xl md:text-2xl text-[#1C1C1C]">
-                ✨ From spark to story, your imagination starts here.
+              <p className="font-playfair font-semibold text-base sm:text-lg md:text-xl text-[#1C1C1C]">
+                ✨ From imagination to creation — all in real time.
               </p>
             </div>
 
             <div className="w-full h-px bg-[#D2D2D2]"></div>
 
             {!simplified ? (
-              <div className="flex flex-col gap-[16px]">
-                <p className="font-open-sans text-base sm:text-lg leading-[1.35em] text-[#232323]">
+              <div className="flex flex-col gap-[12px] sm:gap-[14px]">
+                <p className="font-open-sans text-sm sm:text-base leading-[1.35em] text-[#232323]">
                   Come experience the magic of Daydream 🎭
                 </p>
-                <p className="font-open-sans text-base sm:text-lg leading-[1.35em] text-[#232323]">
+                <p className="font-open-sans text-sm sm:text-base leading-[1.35em] text-[#232323]">
                   Create without limits. Whether you&apos;re crafting stories,
                   building experiences, or experimenting with something entirely
                   new, this is your playground!
                 </p>
               </div>
-            ) : null}
+            ) : (
+              <div className="flex flex-col gap-[12px] sm:gap-[14px]">
+                <p className="font-playfair font-semibold text-base sm:text-lg md:text-xl text-[#1C1C1C]">
+                  Let&apos;s create your daydream profile
+                </p>
+                <p className="font-open-sans text-sm sm:text-base leading-[1.35em] text-[#232323]">
+                  Your creative journey starts with who you are. Tell us a bit
+                  about yourself so we can customize your experience
+                </p>
+              </div>
+            )}
 
-            <p className="font-playfair font-semibold text-[18px] sm:text-xl md:text-2xl text-[#1C1C1C]">
+            <div className="flex flex-col gap-1 sm:gap-2">
+              <p className="font-playfair font-semibold text-base sm:text-lg md:text-xl text-[#1C1C1C]">
+                Choose a display name and avatar
+              </p>
+              <div className="flex items-center gap-2">
+                <Input
+                  type="text"
+                  placeholder="Enter your display name..."
+                  value={displayName}
+                  onChange={handleDisplayNameChange}
+                  className="flex-grow bg-white border border-[#D2D2D2] rounded-md h-10 px-3 py-2"
+                />
+                <div className="flex items-center justify-between w-20 h-10 bg-white border border-[#D2D2D2] rounded-md pl-2 pr-1">
+                  <GradientAvatar seed={avatarSeed} size={28} />
+                  <button
+                    type="button"
+                    onClick={() => setAvatarSeed(generateRandomSeed())}
+                    className="p-1 text-gray-400 hover:text-gray-600 rounded-full focus:outline-none"
+                    aria-label="Generate random avatar"
+                  >
+                    <RefreshCw size={16} />
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <p className="font-playfair font-semibold text-base sm:text-lg md:text-xl text-[#1C1C1C]">
               {!simplified
                 ? "But first, let's get to know you!"
-                : "Let's get to know you!"}
+                : "What describes you best?"}
             </p>
 
             <Personas simplified={simplified} />
