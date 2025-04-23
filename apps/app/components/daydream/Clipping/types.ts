@@ -1,7 +1,7 @@
 type ClipData = {
-  clipUrl: string | null;
-  clipFilename: string | null;
-  serverClipUrl: string | null;
+  clipUrl: string;
+  clipFilename: string;
+  serverClipUrl: string;
 };
 
 export type { ClipData };

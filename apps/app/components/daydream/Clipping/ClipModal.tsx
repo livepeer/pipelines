@@ -4,12 +4,14 @@ import { usePhoneRotation } from "@/hooks/usePhoneRotation";
 import { ClipSummaryContent } from "./ClipSummaryContent";
 import ClipShareContent from "./ClipShareContent";
 import { ClipData } from "./types";
+import { GuestModeContent } from "./GuestModeContent";
 
 interface ClipModalProps {
   isOpen: boolean;
   onClose: () => void;
   clipUrl: string | null;
   clipFilename: string | null;
+  isGuestMode?: boolean;
 }
 
 type ClipStep = "summary" | "share";
@@ -19,13 +21,14 @@ export function ClipModal({
   onClose,
   clipUrl,
   clipFilename,
+  isGuestMode = false,
 }: ClipModalProps) {
   const isRotating = usePhoneRotation();
   const [clipStep, setClipStep] = useState<ClipStep>("summary");
   const [clipData, setClipData] = useState<ClipData>({
-    clipUrl: clipUrl || null,
-    clipFilename: clipFilename || null,
-    serverClipUrl: null,
+    clipUrl: clipUrl || "",
+    clipFilename: clipFilename || "",
+    serverClipUrl: "",
   });
 
   // Reset the clip data when it changes.
@@ -44,6 +47,14 @@ export function ClipModal({
       onClose();
     }
   };
+
+  if (isGuestMode) {
+    return (
+      <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+        <GuestModeContent clipData={clipData} onClose={onClose} />
+      </Dialog>
+    );
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>

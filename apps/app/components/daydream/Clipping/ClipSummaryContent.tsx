@@ -28,7 +28,7 @@ export function ClipSummaryContent({
 }: ClipSummaryContentProps) {
   const [isUploading, setIsUploading] = useState(false);
 
-  const handleContinue = async () => {
+  const handleNext = async () => {
     // NOTE: This function assumes that the POST handler for /api/clips is implemented
     // to receive a FormData with a 'sourceClip' file field. If the API endpoint
     // is not yet implemented, you'll need to create it to handle this FormData.
@@ -78,10 +78,9 @@ export function ClipSummaryContent({
   return (
     <DialogContent className="h-fit max-h-[90dvh] max-w-[55dvh] mx-auto overflow-y-auto rounded-xl">
       <DialogHeader className="flex items-center">
-        <DialogTitle className="text-2xl">Clip Summary</DialogTitle>
+        <DialogTitle className="text-2xl">Almost Ready to Share!</DialogTitle>
         <DialogDescription className="font-light text-center">
-          Post the clip to Daydream leaderboard, download or share with your
-          friends
+          Choose how widely you want to showcase your creation
         </DialogDescription>
       </DialogHeader>
 
@@ -103,9 +102,9 @@ export function ClipSummaryContent({
 
       {/* <div className="flex items-center justify-between mt-2">
           <div className="flex flex-col items-start">
-            <div className="text-sm font-medium">Post to Leaderboard</div>
+            <div className="text-sm font-medium">Submit to be featured</div>
             <div className="text-sm text-muted-foreground font-light">
-              This clip will be displayed in Daydream Leaderboard
+              Let your clip shine on the Daydream community page
             </div>
           </div>
 
@@ -129,11 +128,11 @@ export function ClipSummaryContent({
       <div className="w-full">
         <div className="flex gap-2">
           <Button
-            onClick={handleContinue}
+            onClick={handleNext}
             className="flex-1 items-center justify-center gap-2 rounded-md h-[46px]"
             disabled={isUploading}
           >
-            {isUploading ? "Processing..." : "Continue"}
+            {isUploading ? "Processing..." : "Next"}
           </Button>
         </div>
       </div>
