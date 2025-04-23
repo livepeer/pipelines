@@ -24,7 +24,7 @@ export default function ClipShareContent({
   const handleCopy = async () => {
     try {
       await navigator.clipboard.write([
-        new ClipboardItem({ "text/plain": promptCode }),
+        new ClipboardItem({ "text/plain": clipData.serverClipUrl }),
       ]);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
