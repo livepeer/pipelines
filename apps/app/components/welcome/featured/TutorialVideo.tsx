@@ -126,6 +126,7 @@ export const TutorialVideo = ({ onComplete }: TutorialVideoProps) => {
   const [showIntro, setShowIntro] = useState(true);
   const [introOpacity, setIntroOpacity] = useState(0);
   const [isMuted, setIsMuted] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
@@ -136,8 +137,12 @@ export const TutorialVideo = ({ onComplete }: TutorialVideoProps) => {
     });
 
     const timer = setTimeout(() => {
-      setShowIntro(false);
-      setIsPlaying(true);
+      setIntroOpacity(0);
+
+      setTimeout(() => {
+        setShowIntro(false);
+        setIsPlaying(true);
+      }, 600);
     }, 3000);
 
     return () => clearTimeout(timer);
@@ -285,9 +290,33 @@ export const TutorialVideo = ({ onComplete }: TutorialVideoProps) => {
             <div className="p-2 rounded-full flex items-center justify-center mb-4">
               <LivepeerLogo />
             </div>
-            <h1 className="text-3xl md:text-4xl font-bold mb-3 max-w-2xl mx-auto leading-tight">
+            <h1 className="text-2xl md:text-3xl font-bold mb-3 max-w-2xl mx-auto leading-tight">
               Before we start, a quick preview of your creative journey ahead!
             </h1>
+            <div
+              className="w-full max-w-xs mt-8 mb-2"
+              style={{ width: "85%", maxWidth: "17rem" }}
+            >
+              <div className="w-full h-1.5 bg-white/20 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-white rounded-full"
+                  style={{
+                    animation: "loadingProgress 3s linear forwards",
+                    width: "0%",
+                  }}
+                />
+              </div>
+            </div>
+            <style jsx>{`
+              @keyframes loadingProgress {
+                0% {
+                  width: 0%;
+                }
+                100% {
+                  width: 100%;
+                }
+              }
+            `}</style>
             <p className="text-lg md:text-xl text-white/80"></p>
           </div>
         </div>
