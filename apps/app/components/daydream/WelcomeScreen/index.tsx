@@ -18,6 +18,13 @@ import { useState, useEffect } from "react";
 import { Input } from "@repo/design-system/components/ui/input";
 import { GradientAvatar } from "@/components/GradientAvatar";
 import { RefreshCw } from "lucide-react";
+import {
+  uniqueNamesGenerator,
+  Config,
+  colors,
+  animals,
+  NumberDictionary,
+} from "unique-names-generator";
 
 interface WelcomeScreenProps {
   simplified?: boolean;
@@ -45,6 +52,19 @@ export default function WelcomeScreen({
     return result;
   };
 
+  const generateUsernameFromId = (id: string) => {
+    const numberDictionary = NumberDictionary.generate({ min: 10, max: 68 });
+    const customConfig: Config = {
+      dictionaries: [colors, animals, numberDictionary],
+      separator: "",
+      length: 3,
+      style: "capital",
+      seed: id || Date.now().toString(),
+    };
+
+    return uniqueNamesGenerator(customConfig);
+  };
+
   const handleDisplayNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const sanitizedValue = e.target.value.replace(/[^a-zA-Z0-9_.]/g, "");
     setDisplayName(sanitizedValue);
@@ -52,7 +72,11 @@ export default function WelcomeScreen({
 
   useEffect(() => {
     setAvatarSeed(generateRandomSeed());
-  }, []);
+    if (user?.id) {
+      const generatedName = generateUsernameFromId(String(user.id));
+      setDisplayName(generatedName);
+    }
+  }, [user?.email]);
 
   useMount(() => {
     setTheme("light");
