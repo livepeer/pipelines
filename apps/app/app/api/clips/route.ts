@@ -189,6 +189,7 @@ const ClipUploadSchema = z.object({
   title: z.string().nullable().optional(),
   prompt: z.string().nullable().optional(),
   sourceClipId: z.number().nullable().optional(),
+  isFeatured: z.boolean().optional(),
 });
 
 export async function POST(request: NextRequest) {
@@ -215,6 +216,8 @@ export async function POST(request: NextRequest) {
       ? Number(formData.get("sourceClipId"))
       : null;
 
+    const isFeatured = formData.get("isFeatured") === "true";
+
     if (!sourceClip) {
       return NextResponse.json(
         { error: "Invalid request", details: "No clip file provided" },
@@ -226,6 +229,7 @@ export async function POST(request: NextRequest) {
       title,
       prompt,
       sourceClipId,
+      isFeatured,
     });
 
     if (!result.success) {
@@ -246,6 +250,7 @@ export async function POST(request: NextRequest) {
           source_clip_id: sourceClipId || null,
           prompt: prompt,
           status: "uploading",
+          approval_status: isFeatured ? "pending" : "none",
         })
         .returning({ id: clipsTable.id });
 
