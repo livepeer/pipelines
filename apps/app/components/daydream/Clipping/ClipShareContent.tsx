@@ -9,16 +9,15 @@ import { Button } from "@repo/design-system/components/ui/button";
 import { Input } from "@repo/design-system/components/ui/input";
 import { CheckIcon, CopyIcon, DownloadIcon } from "lucide-react";
 import { ClipData } from "./types";
+import { toast } from "sonner";
+import useMobileStore from "@/hooks/useMobileStore";
 
 interface ClipShareContentProps {
-  promptCode?: string;
   clipData: ClipData;
 }
 
-export default function ClipShareContent({
-  promptCode = "152313Aezcz12Qczff9eaeawdz",
-  clipData,
-}: ClipShareContentProps) {
+export default function ClipShareContent({ clipData }: ClipShareContentProps) {
+  const { isMobile } = useMobileStore();
   const [copied, setCopied] = React.useState(false);
 
   const handleCopy = async () => {
@@ -33,9 +32,64 @@ export default function ClipShareContent({
     }
   };
 
+  const handleAppBasedShare = async (platform: string) => {
+    const appData =
+      platform === "tiktok"
+        ? {
+            appUrl: "https://www.tiktok.com",
+            appName: "TikTok",
+          }
+        : {
+            appUrl: "https://www.instagram.com",
+            appName: "Instagram",
+          };
+    try {
+      await navigator.clipboard.write([
+        new ClipboardItem({ "text/plain": clipData.serverClipUrl }),
+      ]);
+
+      // Try to use the Web Share API if available on mobile
+      if (navigator.share && isMobile) {
+        try {
+          await navigator.share({
+            title: "Check out my Daydream creation!",
+            text: "Created this on daydream.live and had to share!",
+            url: clipData.serverClipUrl,
+          });
+          return;
+        } catch (error) {
+          console.error("Error sharing:", error);
+          return;
+        }
+      }
+
+      // Fallback: Open TikTok in browser and open it after 1.5 seconds to let user view toast.
+      openUrlInNewTab(appData.appUrl, 1500);
+
+      // Show toast with instructions
+      toast("Link copied!", {
+        description: `Paste the link to create your ${appData.appName} post.`,
+        duration: 5000,
+      });
+    } catch (error) {
+      console.error(`Failed to copy for ${appData.appName} sharing:`, error);
+    }
+  };
+
   const handleSocialShare = (platform: string) => {
-    // In a real implementation, this would integrate with the respective platform's sharing API
-    console.log(`Sharing to ${platform}`);
+    switch (platform) {
+      case "instagram":
+      case "tiktok":
+        handleAppBasedShare(platform);
+        break;
+      case "x":
+        const shareText = "This Daydream creation blew my mind!";
+        const shareUrl = `https://x.com/intent/post?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(clipData.serverClipUrl || "")}`;
+        openUrlInNewTab(shareUrl);
+        break;
+      default:
+        console.error(`Unsupported platform: ${platform}`);
+    }
   };
 
   const handleDownload = () => {
@@ -61,13 +115,6 @@ export default function ClipShareContent({
           world to see
         </DialogDescription>
       </DialogHeader>
-
-      {/* <div className="flex items-center font-light w-fit gap-1">
-        <p className="w-fit text-sm sm:text-base">Prompt Code:</p>
-        <div className="overflow-ellipsis w-fit">
-          <p className="text-blue-500 font-bold">{promptCode}</p>
-        </div>
-      </div> */}
 
       <p className="text-sm font-light">Your Unique Sharing Link:</p>
 
@@ -98,6 +145,13 @@ export default function ClipShareContent({
         </button>
 
         <button
+          onClick={() => handleSocialShare("tiktok")}
+          className="w-12 h-12 rounded-full flex items-center justify-center bg-black"
+        >
+          <TikTokIcon />
+        </button>
+
+        <button
           onClick={() => handleSocialShare("instagram")}
           className="w-12 h-12 rounded-full flex items-center justify-center overflow-hidden"
           style={{
@@ -109,29 +163,10 @@ export default function ClipShareContent({
         </button>
 
         <button
-          onClick={() => handleSocialShare("twitter")}
-          className="w-12 h-12 rounded-full flex items-center justify-center"
-          style={{ backgroundColor: "#33CCFF" }}
-        >
-          <TwitterIcon />
-        </button>
-
-        <button
-          onClick={() => handleSocialShare("tiktok")}
+          onClick={() => handleSocialShare("x")}
           className="w-12 h-12 rounded-full flex items-center justify-center bg-black"
         >
-          <TikTokIcon />
-        </button>
-
-        <button
-          onClick={() => handleSocialShare("messenger")}
-          className="w-12 h-12 rounded-full flex items-center justify-center"
-          style={{
-            background:
-              "radial-gradient(circle at top left, #0099FF, #A033FF, #FF5280, #FF7061)",
-          }}
-        >
-          <MessengerIcon />
+          <XIcon />
         </button>
       </div>
     </DialogContent>
@@ -153,19 +188,22 @@ const InstagramIcon = () => (
   </svg>
 );
 
-const TwitterIcon = () => (
-  <svg
-    width="24"
-    height="24"
-    viewBox="0 0 45 38"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path
-      d="M44.8006 4.46014C43.3449 5.08716 41.8146 5.52378 40.2474 5.75922C40.9801 5.6335 42.0582 4.31347 42.4874 3.77917C43.1393 2.97323 43.6362 2.05319 43.9528 1.06577C43.9528 0.992436 44.026 0.887671 43.9528 0.835289C43.9158 0.815116 43.8744 0.804545 43.8324 0.804545C43.7903 0.804545 43.7489 0.815116 43.712 0.835289C42.0103 1.75766 40.1991 2.46164 38.3214 2.93058C38.256 2.95059 38.1863 2.95238 38.1199 2.93577C38.0536 2.91916 37.9929 2.88477 37.9446 2.83629C37.7985 2.6621 37.6411 2.49762 37.4736 2.3439C36.7077 1.65711 35.8388 1.09501 34.8987 0.678142C33.6296 0.15702 32.2588 -0.0686666 30.8898 0.0181263C29.5614 0.102093 28.2645 0.4587 27.0797 1.06577C25.913 1.7058 24.8876 2.5753 24.0652 3.62202C23.2001 4.69937 22.5755 5.94966 22.2334 7.28878C21.9514 8.56256 21.9194 9.87907 22.1392 11.1651C22.1392 11.3851 22.1392 11.4165 21.9508 11.3851C14.4878 10.285 8.36447 7.6345 3.36118 1.94579C3.14137 1.69436 3.02623 1.69436 2.84829 1.94579C0.671126 5.25635 1.72831 10.4946 4.44976 13.0823C4.81611 13.428 5.19293 13.7632 5.59068 14.0775C4.34291 13.9889 3.12561 13.6504 2.01092 13.0823C1.80158 12.9461 1.68644 13.0194 1.67597 13.2708C1.6463 13.6194 1.6463 13.9699 1.67597 14.3185C1.89437 15.989 2.55215 17.5716 3.58204 18.9043C4.61192 20.2369 5.97697 21.2719 7.53757 21.9034C7.91801 22.0665 8.31442 22.1894 8.72036 22.2701C7.56523 22.4977 6.3805 22.5331 5.21386 22.3749C4.96265 22.3225 4.86845 22.4587 4.96265 22.6996C6.50132 26.8902 9.84034 28.1683 12.2897 28.8807C12.6246 28.9331 12.9595 28.9331 13.3364 29.0169C13.3364 29.0169 13.3364 29.0169 13.2736 29.0798C12.5513 30.3998 9.631 31.2903 8.2912 31.7513C5.84574 32.6305 3.23841 32.9665 0.650191 32.7361C0.241973 32.6732 0.147769 32.6837 0.0430973 32.7361C-0.0615741 32.7884 0.0430973 32.9037 0.158236 33.0085C0.681593 33.3542 1.20495 33.658 1.74924 33.9513C3.3696 34.8359 5.08265 35.5386 6.85721 36.0466C16.0474 38.5819 26.3889 36.7171 33.2867 29.855C38.7087 24.4701 40.6137 17.0423 40.6137 9.60407C40.6137 9.32121 40.9592 9.15359 41.158 9.00692C42.5298 7.93716 43.7391 6.6738 44.7483 5.25635C44.923 5.04506 45.0126 4.77603 44.9995 4.50205C44.9995 4.3449 44.9995 4.37633 44.8006 4.46014Z"
-      fill="white"
-    />
-  </svg>
+const XIcon = () => (
+  <div className="relative w-6 h-6">
+    <svg
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      xmlns="http://www.w3.org/2000/svg"
+      className="x-icon"
+    >
+      <g>
+        <path
+          d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"
+          fill="white"
+        />
+      </g>
+    </svg>
+  </div>
 );
 
 const TikTokIcon = () => (
@@ -218,36 +256,15 @@ const TikTokIcon = () => (
   </div>
 );
 
-const MessengerIcon = () => (
-  <svg
-    width="24"
-    height="24"
-    viewBox="0 0 45 45"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path
-      d="M22.4994 0C9.82661 0 0 9.28662 0 21.8244C0 28.383 2.68868 34.0528 7.06481 37.9677C7.43042 38.294 7.65542 38.7552 7.66667 39.2502L7.79041 43.2551C7.79943 43.5498 7.88068 43.8377 8.02703 44.0936C8.17339 44.3495 8.38036 44.5656 8.62977 44.7228C8.87917 44.88 9.16337 44.9735 9.45739 44.9952C9.75141 45.0168 10.0462 44.9659 10.316 44.8469L14.7821 42.8782C15.159 42.7095 15.5865 42.6813 15.9858 42.7882C18.0389 43.3507 20.2213 43.6544 22.4994 43.6544C35.1722 43.6544 44.9988 34.3678 44.9988 21.83C44.9988 9.29225 35.1722 0 22.4994 0Z"
-      fill="white"
-    />
-    <path
-      d="M8.98851 28.2086L15.5977 17.7239C15.8463 17.3292 16.1741 16.9902 16.5603 16.7286C16.9465 16.4669 17.3828 16.2881 17.8416 16.2035C18.3004 16.119 18.7717 16.1304 19.2258 16.2372C19.68 16.344 20.107 16.5438 20.4801 16.8239L25.7393 20.7669C25.9741 20.9427 26.2597 21.0372 26.553 21.0362C26.8463 21.0352 27.1313 20.9387 27.3649 20.7613L34.4634 15.3727C35.4084 14.6527 36.6459 15.7889 36.0159 16.7958L29.4011 27.2749C29.1524 27.6696 28.8247 28.0085 28.4385 28.2702C28.0523 28.5319 27.616 28.7107 27.1572 28.7952C26.6984 28.8798 26.2271 28.8683 25.7729 28.7616C25.3188 28.6548 24.8917 28.455 24.5187 28.1749L19.2595 24.2318C19.0247 24.0561 18.739 23.9615 18.4457 23.9625C18.1525 23.9636 17.8675 24.0601 17.6339 24.2375L10.5353 29.6261C9.59037 30.3461 8.3529 29.2155 8.98851 28.2086Z"
-      fill="url(#paint0_radial_0_13)"
-    />
-    <defs>
-      <radialGradient
-        id="paint0_radial_0_13"
-        cx="0"
-        cy="0"
-        r="1"
-        gradientUnits="userSpaceOnUse"
-        gradientTransform="translate(7.53729 44.9988) scale(49.4987 49.4987)"
-      >
-        <stop stopColor="#0099FF" />
-        <stop offset="0.6" stopColor="#A033FF" />
-        <stop offset="0.9" stopColor="#FF5280" />
-        <stop offset="1" stopColor="#FF7061" />
-      </radialGradient>
-    </defs>
-  </svg>
-);
+const openUrlInNewTab = (url: string, delay?: number) => {
+  // Create a new anchor element and clicks it
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.target = "_blank";
+
+  // Add a delay between when the anchor element is created and when it is clicked
+  setTimeout(async () => {
+    anchor.click();
+    anchor.remove();
+  }, delay ?? 0);
+};
