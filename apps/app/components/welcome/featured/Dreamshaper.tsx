@@ -26,6 +26,11 @@ import { usePrivy } from "@/hooks/usePrivy";
 import useMount from "@/hooks/useMount";
 import { sendBeaconEvent } from "@/lib/analytics/event-middleware";
 
+import {
+  DREAMSHAPER_PARAMS_STORAGE_KEY,
+  DREAMSHAPER_PARAMS_VERSION_KEY,
+} from "@/hooks/useDreamshaper";
+
 export default function Dreamshaper() {
   useInitialization();
   useParamsHandling();
@@ -48,6 +53,15 @@ export default function Dreamshaper() {
     track("daydream_page_view", {
       is_authenticated: authenticated,
     });
+
+    const searchParams = new URL(window.location.href).searchParams;
+    const hasInputPrompt = searchParams.has("inputPrompt");
+    const hasSharedParam = searchParams.has("shared");
+
+    if (hasInputPrompt || hasSharedParam) {
+      localStorage.removeItem(DREAMSHAPER_PARAMS_STORAGE_KEY);
+      localStorage.removeItem(DREAMSHAPER_PARAMS_VERSION_KEY);
+    }
   });
 
   useEffect(() => {
