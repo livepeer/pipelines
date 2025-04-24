@@ -21,8 +21,8 @@ export const DEFAULT_PIPELINE_ID = "pip_DRQREDnSei4HQyC8"; // Staging Dreamshape
 export const DUMMY_USER_ID_FOR_NON_AUTHENTICATED_USERS =
   "did:privy:cm4x2cuiw007lh8fcj34919fu"; // Infra Email User ID
 
-const DREAMSHAPER_PARAMS_STORAGE_KEY = "dreamshaper_latest_params";
-const DREAMSHAPER_PARAMS_VERSION_KEY = "dreamshaper_params_version";
+export const DREAMSHAPER_PARAMS_STORAGE_KEY = "dreamshaper_latest_params";
+export const DREAMSHAPER_PARAMS_VERSION_KEY = "dreamshaper_params_version";
 
 const createDefaultValues = (pipeline: any) => {
   const inputs = pipeline.config.inputs;
