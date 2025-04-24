@@ -74,7 +74,7 @@ export function ClipSummaryContent({
   };
 
   return (
-    <DialogContent className="h-fit max-h-[90dvh] max-w-[55dvh] mx-auto overflow-y-auto rounded-xl">
+    <DialogContent className="h-fit max-h-[90dvh] w-[calc(100%-32px)] sm:w-full sm:max-w-[55dvh] mx-auto rounded-xl p-6 pt-8 sm:p-8">
       <DialogHeader className="flex items-center">
         <DialogTitle className="text-2xl">Almost Ready to Share!</DialogTitle>
         <DialogDescription className="font-light text-center">
@@ -82,7 +82,7 @@ export function ClipSummaryContent({
         </DialogDescription>
       </DialogHeader>
 
-      <Separator className="my-2" />
+      <Separator className="my-1" />
 
       <div className="flex justify-center">
         {clipData.clipUrl && (
@@ -97,6 +97,8 @@ export function ClipSummaryContent({
           />
         )}
       </div>
+
+      <Separator className="hidden sm:block my-1 sm:my-2 h-[1px] bg-gray-200 w-[90%] mx-auto" />
 
       <div className="flex items-center justify-between mt-2">
         <div className="flex flex-col items-start">
@@ -115,7 +117,7 @@ export function ClipSummaryContent({
         </div>
       </div>
 
-      <Separator className="my-2" />
+      <Separator className="my-1" />
 
       <div className="w-full">
         <div className="flex gap-2">
