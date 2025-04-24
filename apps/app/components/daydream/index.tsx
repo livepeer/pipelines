@@ -29,10 +29,17 @@ export default function Daydream({
   isOAuthSuccessRedirect,
   allowGuestAccess = false,
 }: DaydreamProps) {
-  const { user, ready } = usePrivy();
+  const { user, ready, authenticated } = usePrivy();
   const { isGuestUser, setIsGuestUser } = useGuestUserStore();
   const searchParams = useSearchParams();
   const inputPrompt = searchParams.get("inputPrompt");
+
+  // Always reset guest mode if user is authenticated
+  useEffect(() => {
+    if (authenticated && user && isGuestUser) {
+      setIsGuestUser(false);
+    }
+  }, [authenticated, user, isGuestUser, setIsGuestUser]);
 
   // If guest access is allowed and input prompt exists, enable guest mode
   useEffect(() => {
