@@ -82,9 +82,9 @@ export default function ClipShareContent({ clipData }: ClipShareContentProps) {
       case "tiktok":
         handleAppBasedShare(platform);
         break;
-      case "twitter":
+      case "x":
         const shareText = "This Daydream creation blew my mind!";
-        const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(clipData.serverClipUrl || "")}`;
+        const shareUrl = `https://x.com/intent/post?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(clipData.serverClipUrl || "")}`;
         openUrlInNewTab(shareUrl);
         break;
       default:
@@ -145,6 +145,13 @@ export default function ClipShareContent({ clipData }: ClipShareContentProps) {
         </button>
 
         <button
+          onClick={() => handleSocialShare("tiktok")}
+          className="w-12 h-12 rounded-full flex items-center justify-center bg-black"
+        >
+          <TikTokIcon />
+        </button>
+
+        <button
           onClick={() => handleSocialShare("instagram")}
           className="w-12 h-12 rounded-full flex items-center justify-center overflow-hidden"
           style={{
@@ -156,18 +163,10 @@ export default function ClipShareContent({ clipData }: ClipShareContentProps) {
         </button>
 
         <button
-          onClick={() => handleSocialShare("twitter")}
-          className="w-12 h-12 rounded-full flex items-center justify-center"
-          style={{ backgroundColor: "#33CCFF" }}
-        >
-          <TwitterIcon />
-        </button>
-
-        <button
-          onClick={() => handleSocialShare("tiktok")}
+          onClick={() => handleSocialShare("x")}
           className="w-12 h-12 rounded-full flex items-center justify-center bg-black"
         >
-          <TikTokIcon />
+          <XIcon />
         </button>
       </div>
     </DialogContent>
@@ -189,19 +188,22 @@ const InstagramIcon = () => (
   </svg>
 );
 
-const TwitterIcon = () => (
-  <svg
-    width="24"
-    height="24"
-    viewBox="0 0 45 38"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path
-      d="M44.8006 4.46014C43.3449 5.08716 41.8146 5.52378 40.2474 5.75922C40.9801 5.6335 42.0582 4.31347 42.4874 3.77917C43.1393 2.97323 43.6362 2.05319 43.9528 1.06577C43.9528 0.992436 44.026 0.887671 43.9528 0.835289C43.9158 0.815116 43.8744 0.804545 43.8324 0.804545C43.7903 0.804545 43.7489 0.815116 43.712 0.835289C42.0103 1.75766 40.1991 2.46164 38.3214 2.93058C38.256 2.95059 38.1863 2.95238 38.1199 2.93577C38.0536 2.91916 37.9929 2.88477 37.9446 2.83629C37.7985 2.6621 37.6411 2.49762 37.4736 2.3439C36.7077 1.65711 35.8388 1.09501 34.8987 0.678142C33.6296 0.15702 32.2588 -0.0686666 30.8898 0.0181263C29.5614 0.102093 28.2645 0.4587 27.0797 1.06577C25.913 1.7058 24.8876 2.5753 24.0652 3.62202C23.2001 4.69937 22.5755 5.94966 22.2334 7.28878C21.9514 8.56256 21.9194 9.87907 22.1392 11.1651C22.1392 11.3851 22.1392 11.4165 21.9508 11.3851C14.4878 10.285 8.36447 7.6345 3.36118 1.94579C3.14137 1.69436 3.02623 1.69436 2.84829 1.94579C0.671126 5.25635 1.72831 10.4946 4.44976 13.0823C4.81611 13.428 5.19293 13.7632 5.59068 14.0775C4.34291 13.9889 3.12561 13.6504 2.01092 13.0823C1.80158 12.9461 1.68644 13.0194 1.67597 13.2708C1.6463 13.6194 1.6463 13.9699 1.67597 14.3185C1.89437 15.989 2.55215 17.5716 3.58204 18.9043C4.61192 20.2369 5.97697 21.2719 7.53757 21.9034C7.91801 22.0665 8.31442 22.1894 8.72036 22.2701C7.56523 22.4977 6.3805 22.5331 5.21386 22.3749C4.96265 22.3225 4.86845 22.4587 4.96265 22.6996C6.50132 26.8902 9.84034 28.1683 12.2897 28.8807C12.6246 28.9331 12.9595 28.9331 13.3364 29.0169C13.3364 29.0169 13.3364 29.0169 13.2736 29.0798C12.5513 30.3998 9.631 31.2903 8.2912 31.7513C5.84574 32.6305 3.23841 32.9665 0.650191 32.7361C0.241973 32.6732 0.147769 32.6837 0.0430973 32.7361C-0.0615741 32.7884 0.0430973 32.9037 0.158236 33.0085C0.681593 33.3542 1.20495 33.658 1.74924 33.9513C3.3696 34.8359 5.08265 35.5386 6.85721 36.0466C16.0474 38.5819 26.3889 36.7171 33.2867 29.855C38.7087 24.4701 40.6137 17.0423 40.6137 9.60407C40.6137 9.32121 40.9592 9.15359 41.158 9.00692C42.5298 7.93716 43.7391 6.6738 44.7483 5.25635C44.923 5.04506 45.0126 4.77603 44.9995 4.50205C44.9995 4.3449 44.9995 4.37633 44.8006 4.46014Z"
-      fill="white"
-    />
-  </svg>
+const XIcon = () => (
+  <div className="relative w-6 h-6">
+    <svg
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      xmlns="http://www.w3.org/2000/svg"
+      className="x-icon"
+    >
+      <g>
+        <path
+          d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"
+          fill="white"
+        />
+      </g>
+    </svg>
+  </div>
 );
 
 const TikTokIcon = () => (
