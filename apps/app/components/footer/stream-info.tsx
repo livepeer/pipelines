@@ -16,7 +16,7 @@ export function StreamInfo({ className }: { className?: string }) {
 
   const handleCopy = async () => {
     const fullInfo = {
-      version: appVersion,
+      version: appVersion.toLowerCase(),
       browser: navigator.userAgent,
       path: window.location.pathname,
       streamId: stream?.id || "not-available",
@@ -35,7 +35,7 @@ export function StreamInfo({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        "flex items-center gap-2 text-xs text-gray-500 z-10",
+        "fixed bottom-4 flex items-center gap-2 text-xs text-gray-500 z-10",
         isFullscreen && "hidden",
         className,
       )}
