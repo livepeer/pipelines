@@ -30,6 +30,10 @@ import { BentoGridOverlay } from "./BentoGridOverlay";
 import { useTrialTimer } from "@/hooks/useTrialTimer";
 import { UnifiedSignupModal } from "@/components/modals/unified-signup-modal";
 import { TutorialVideo } from "./TutorialVideo";
+import {
+  DREAMSHAPER_PARAMS_STORAGE_KEY,
+  DREAMSHAPER_PARAMS_VERSION_KEY,
+} from "@/hooks/useDreamshaper";
 
 interface DreamshaperProps {
   isGuestMode?: boolean;
@@ -46,7 +50,7 @@ export default function Dreamshaper({ isGuestMode = false }: DreamshaperProps) {
   const { currentStep, selectedPrompt, setSelectedPrompt } = useOnboard();
   const { lastSubmittedPrompt, setLastSubmittedPrompt, setHasSubmittedPrompt } =
     usePromptStore();
-  const { user, authenticated, login } = usePrivy();
+  const { user, authenticated, login, ready } = usePrivy();
   const { isFullscreen } = useFullscreenStore();
   const playerRef = useRef<HTMLDivElement>(null);
   const {
@@ -72,6 +76,15 @@ export default function Dreamshaper({ isGuestMode = false }: DreamshaperProps) {
       is_authenticated: authenticated,
       is_guest_mode: isGuestMode,
     });
+
+    const searchParams = new URL(window.location.href).searchParams;
+    const hasInputPrompt = searchParams.has("inputPrompt");
+    const hasSharedParam = searchParams.has("shared");
+
+    if (hasInputPrompt || hasSharedParam) {
+      localStorage.removeItem(DREAMSHAPER_PARAMS_STORAGE_KEY);
+      localStorage.removeItem(DREAMSHAPER_PARAMS_VERSION_KEY);
+    }
   });
 
   useEffect(() => {
@@ -180,16 +193,7 @@ export default function Dreamshaper({ isGuestMode = false }: DreamshaperProps) {
   }, [sharedPrompt, setLastSubmittedPrompt]);
 
   useEffect(() => {
-    if (pipeline?.prioritized_params) {
-      console.log("Pipeline prioritized params:", pipeline.prioritized_params);
-    } else {
-      console.log("No pipeline prioritized params");
-    }
-  }, [pipeline]);
-
-  useEffect(() => {
     const handleTrialExpired = () => {
-      console.log("Trial expired - showing signup modal");
       setSignupModalReason("trial_expired");
       setShowSignupModal(true);
 
@@ -205,7 +209,7 @@ export default function Dreamshaper({ isGuestMode = false }: DreamshaperProps) {
     const timeRemainingValue = localStorage.getItem(
       "unregistered_time_remaining",
     );
-    if (timeRemainingValue === "0" && !authenticated) {
+    if (timeRemainingValue === "0" && !authenticated && ready) {
       setSignupModalReason("trial_expired");
       setShowSignupModal(true);
 
