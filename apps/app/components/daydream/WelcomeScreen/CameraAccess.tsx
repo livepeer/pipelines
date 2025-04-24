@@ -1,4 +1,4 @@
-import { updateUserAdditionalDetails } from "@/app/actions/user";
+import { updateUserNameAndDetails } from "@/app/actions/user";
 import useMobileStore from "@/hooks/useMobileStore";
 import track from "@/lib/track";
 import { cn } from "@repo/design-system/lib/utils";
@@ -85,8 +85,14 @@ export const useMediaPermissions = () => {
 export default function CameraAccess() {
   const { isMobile } = useMobileStore();
   const { user } = usePrivy();
-  const { currentStep, cameraPermission, setCurrentStep, hasSharedPrompt } =
-    useOnboard();
+  const {
+    currentStep,
+    cameraPermission,
+    setCurrentStep,
+    hasSharedPrompt,
+    displayName,
+    avatarSeed,
+  } = useOnboard();
   const { requestMediaPermissions } = useMediaPermissions();
 
   if (currentStep === "persona") {
@@ -97,8 +103,9 @@ export default function CameraAccess() {
     const hasPermissions = await requestMediaPermissions();
     if (hasPermissions) {
       setCurrentStep(hasSharedPrompt ? "main" : "prompt");
-      await updateUserAdditionalDetails(user!, {
+      await updateUserNameAndDetails(user!, displayName, {
         next_onboarding_step: hasSharedPrompt ? "main" : "prompt",
+        avatar: avatarSeed,
       });
     }
   };

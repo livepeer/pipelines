@@ -1,6 +1,9 @@
 "use client";
 
-import { updateUserAdditionalDetails } from "@/app/actions/user";
+import {
+  updateUserAdditionalDetails,
+  updateUserNameAndDetails,
+} from "@/app/actions/user";
 import { usePrivy } from "@/hooks/usePrivy";
 import track from "@/lib/track";
 import { Separator } from "@repo/design-system/components/ui/separator";
@@ -8,16 +11,7 @@ import { CheckIcon, PlusIcon } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useOnboard } from "../OnboardContext";
 
-const personas = [
-  "Personal Use",
-  "Content Creator",
-  "Streamer",
-  "AI Film Maker",
-  "Performer",
-  "Musician",
-  "Engineer",
-  "Other",
-];
+const personas = ["Streamer", "Content Creator", "Live Performer", "Other"];
 
 interface PersonasProps {
   simplified?: boolean;
@@ -33,6 +27,8 @@ export default function Personas({ simplified = false }: PersonasProps) {
     setSelectedPersonas,
     customPersona,
     setCustomPersona,
+    displayName,
+    avatarSeed,
   } = useOnboard();
 
   useEffect(() => {
@@ -59,10 +55,11 @@ export default function Personas({ simplified = false }: PersonasProps) {
       user_id: user?.id,
     });
     setCurrentStep(cameraPermission === "granted" ? "prompt" : "camera");
-    await updateUserAdditionalDetails(user!, {
+    await updateUserNameAndDetails(user!, displayName, {
       next_onboarding_step: "camera",
       personas: selectedPersonas,
       custom_persona: customPersona,
+      avatar: avatarSeed,
     });
   };
 
@@ -73,17 +70,17 @@ export default function Personas({ simplified = false }: PersonasProps) {
   return (
     <>
       {currentStep === "persona" && (
-        <div className="flex flex-col gap-6 md:gap-10 w-full max-w-xl mx-auto">
+        <div className="flex flex-col gap-6 md:gap-10 w-full">
           <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-[12px] w-full">
             {personas.map(persona => (
-              <div key={persona} className="persona-button-wrapper">
+              <div key={persona} className="persona-button-wrapper w-full">
                 <button
                   onClick={
                     currentStep === "persona"
                       ? () => togglePersona(persona)
                       : undefined
                   }
-                  className={`w-full sm:max-w-none h-[30px] px-[13px] flex justify-center items-center gap-1 text-[13px] font-normal font-inter rounded-full ${
+                  className={`w-full h-[30px] px-[13px] flex justify-center items-center gap-1 text-[13px] font-normal font-inter rounded-full ${
                     selectedPersonas.includes(persona)
                       ? "bg-[#95B4BE] text-[#010101] selected-persona"
                       : "bg-white text-[#232323] animatedGradientButton"

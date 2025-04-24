@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { updateUserAdditionalDetails } from "@/app/actions/user";
+import { updateUserNameAndDetails } from "@/app/actions/user";
 import { usePrivy } from "@/hooks/usePrivy";
 import useScrollView from "@/hooks/useScrollView";
 import track from "@/lib/track";
@@ -52,6 +52,8 @@ export default function SelectPrompt() {
     selectedPrompt,
     setSelectedPrompt,
     setFadingOut,
+    displayName,
+    avatarSeed,
   } = useOnboard();
   const componentRef = useScrollView(currentStep === "prompt");
   const { user } = usePrivy();
@@ -85,8 +87,9 @@ export default function SelectPrompt() {
       setCurrentStep("main");
       window && window.scrollTo({ top: 0, behavior: "instant" });
     }, 1000);
-    await updateUserAdditionalDetails(user!, {
+    await updateUserNameAndDetails(user!, displayName, {
       next_onboarding_step: "main",
+      avatar: avatarSeed,
     });
   };
 

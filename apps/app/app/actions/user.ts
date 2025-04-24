@@ -87,3 +87,36 @@ export async function createUser(user: User) {
 
   return { isNewUser, user: userData };
 }
+
+export async function updateUserNameAndDetails(
+  user: User,
+  name: string,
+  newDetails: Record<string, any>,
+) {
+  const supabase = await createServerClient();
+  const { data } = await supabase
+    .from("users")
+    .select("*")
+    .eq("id", user?.id)
+    .single();
+
+  if (!data) {
+    console.error("updateUserNameAndDetails: User not found");
+    return { success: false };
+  }
+
+  const { error } = await supabase
+    .from("users")
+    .update({
+      name: name,
+      additional_details: { ...data.additional_details, ...newDetails },
+    })
+    .eq("id", user?.id);
+
+  if (error) {
+    console.error(error);
+    return { success: false };
+  }
+
+  return { success: true };
+}
