@@ -157,8 +157,12 @@ export const GlobalSidebar = ({ children }: GlobalSidebarProperties) => {
     <>
       <Sidebar collapsible="icon">
         <SidebarHeader>
-          <Link
+          <a
             href="/"
+            onClick={e => {
+              e.preventDefault();
+              window.location.href = "/";
+            }}
             className={cn(
               "flex items-center justify-between ml-2",
               !_sidebar.openMobile && "-mt-8",
@@ -241,7 +245,7 @@ export const GlobalSidebar = ({ children }: GlobalSidebarProperties) => {
             ) : (
               <Logo className={cn(_sidebar.openMobile && "fill-foreground")} />
             )}
-          </Link>
+          </a>
         </SidebarHeader>
         <SidebarContent
           className={cn("text-white", _sidebar.openMobile && "text-foreground")}

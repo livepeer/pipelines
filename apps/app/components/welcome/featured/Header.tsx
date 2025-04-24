@@ -73,10 +73,16 @@ export const Header = () => {
                 className="h-8 gap-2 rounded-md"
                 asChild
               >
-                <Link href="/">
+                <a
+                  href="/"
+                  onClick={e => {
+                    e.preventDefault();
+                    window.location.href = "/";
+                  }}
+                >
                   <ChevronLeft className="h-4 w-4" />
                   <span>Back to explore</span>
-                </Link>
+                </a>
               </TrackedButton>
             </div>
 
