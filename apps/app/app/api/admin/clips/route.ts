@@ -40,6 +40,7 @@ export async function GET(request: Request) {
       priority: clipsTable.priority,
       created_at: clipsTable.created_at,
       deleted_at: clipsTable.deleted_at,
+      approval_status: clipsTable.approval_status,
       author: {
         id: users.id,
         name: users.name,

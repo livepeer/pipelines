@@ -1,3 +1,5 @@
+import { clipApprovalEnum } from "@/lib/db/schema";
+
 export interface Pipeline {
   id: string;
   name: string;
@@ -26,4 +28,5 @@ export interface Clip {
   created_at: string;
   deleted_at?: string | null;
   author?: string | { id: string; name: string };
+  approval_status: (typeof clipApprovalEnum.enumValues)[number];
 }

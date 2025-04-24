@@ -112,6 +112,7 @@ export default function ClipsAdminPage() {
         "source_clip_id",
         "prompt",
         "priority",
+        "approval_status",
       ];
 
       Object.keys(fieldsToUpdate).forEach(key => {
@@ -202,6 +203,7 @@ export default function ClipsAdminPage() {
       author_user_id: user?.id || "",
       prompt: "",
       created_at: new Date().toISOString(),
+      approval_status: "none",
     };
 
     setSelectedClip(newClip);
