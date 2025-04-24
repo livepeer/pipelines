@@ -9,16 +9,15 @@ import { Button } from "@repo/design-system/components/ui/button";
 import { Input } from "@repo/design-system/components/ui/input";
 import { CheckIcon, CopyIcon, DownloadIcon } from "lucide-react";
 import { ClipData } from "./types";
+import { toast } from "sonner";
+import useMobileStore from "@/hooks/useMobileStore";
 
 interface ClipShareContentProps {
-  promptCode?: string;
   clipData: ClipData;
 }
 
-export default function ClipShareContent({
-  promptCode = "152313Aezcz12Qczff9eaeawdz",
-  clipData,
-}: ClipShareContentProps) {
+export default function ClipShareContent({ clipData }: ClipShareContentProps) {
+  const { isMobile } = useMobileStore();
   const [copied, setCopied] = React.useState(false);
 
   const handleCopy = async () => {
@@ -33,9 +32,64 @@ export default function ClipShareContent({
     }
   };
 
+  const handleAppBasedShare = async (platform: string) => {
+    const appData =
+      platform === "tiktok"
+        ? {
+            appUrl: "https://www.tiktok.com",
+            appName: "TikTok",
+          }
+        : {
+            appUrl: "https://www.instagram.com",
+            appName: "Instagram",
+          };
+    try {
+      await navigator.clipboard.write([
+        new ClipboardItem({ "text/plain": clipData.serverClipUrl }),
+      ]);
+
+      // Try to use the Web Share API if available on mobile
+      if (navigator.share && isMobile) {
+        try {
+          await navigator.share({
+            title: "Check out my Daydream creation!",
+            text: "Created this on daydream.live and had to share!",
+            url: clipData.serverClipUrl,
+          });
+          return;
+        } catch (error) {
+          console.error("Error sharing:", error);
+          return;
+        }
+      }
+
+      // Fallback: Open TikTok in browser and open it after 1.5 seconds to let user view toast.
+      openUrlInNewTab(appData.appUrl, 1500);
+
+      // Show toast with instructions
+      toast("Link copied!", {
+        description: `Paste the link to create your ${appData.appName} post.`,
+        duration: 5000,
+      });
+    } catch (error) {
+      console.error(`Failed to copy for ${appData.appName} sharing:`, error);
+    }
+  };
+
   const handleSocialShare = (platform: string) => {
-    // In a real implementation, this would integrate with the respective platform's sharing API
-    console.log(`Sharing to ${platform}`);
+    switch (platform) {
+      case "instagram":
+      case "tiktok":
+        handleAppBasedShare(platform);
+        break;
+      case "twitter":
+        const shareText = "This Daydream creation blew my mind!";
+        const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(clipData.serverClipUrl || "")}`;
+        openUrlInNewTab(shareUrl);
+        break;
+      default:
+        console.error(`Unsupported platform: ${platform}`);
+    }
   };
 
   const handleDownload = () => {
@@ -61,13 +115,6 @@ export default function ClipShareContent({
           world to see
         </DialogDescription>
       </DialogHeader>
-
-      {/* <div className="flex items-center font-light w-fit gap-1">
-        <p className="w-fit text-sm sm:text-base">Prompt Code:</p>
-        <div className="overflow-ellipsis w-fit">
-          <p className="text-blue-500 font-bold">{promptCode}</p>
-        </div>
-      </div> */}
 
       <p className="text-sm font-light">Your Unique Sharing Link:</p>
 
@@ -121,17 +168,6 @@ export default function ClipShareContent({
           className="w-12 h-12 rounded-full flex items-center justify-center bg-black"
         >
           <TikTokIcon />
-        </button>
-
-        <button
-          onClick={() => handleSocialShare("messenger")}
-          className="w-12 h-12 rounded-full flex items-center justify-center"
-          style={{
-            background:
-              "radial-gradient(circle at top left, #0099FF, #A033FF, #FF5280, #FF7061)",
-          }}
-        >
-          <MessengerIcon />
         </button>
       </div>
     </DialogContent>
@@ -218,36 +254,15 @@ const TikTokIcon = () => (
   </div>
 );
 
-const MessengerIcon = () => (
-  <svg
-    width="24"
-    height="24"
-    viewBox="0 0 45 45"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path
-      d="M22.4994 0C9.82661 0 0 9.28662 0 21.8244C0 28.383 2.68868 34.0528 7.06481 37.9677C7.43042 38.294 7.65542 38.7552 7.66667 39.2502L7.79041 43.2551C7.79943 43.5498 7.88068 43.8377 8.02703 44.0936C8.17339 44.3495 8.38036 44.5656 8.62977 44.7228C8.87917 44.88 9.16337 44.9735 9.45739 44.9952C9.75141 45.0168 10.0462 44.9659 10.316 44.8469L14.7821 42.8782C15.159 42.7095 15.5865 42.6813 15.9858 42.7882C18.0389 43.3507 20.2213 43.6544 22.4994 43.6544C35.1722 43.6544 44.9988 34.3678 44.9988 21.83C44.9988 9.29225 35.1722 0 22.4994 0Z"
-      fill="white"
-    />
-    <path
-      d="M8.98851 28.2086L15.5977 17.7239C15.8463 17.3292 16.1741 16.9902 16.5603 16.7286C16.9465 16.4669 17.3828 16.2881 17.8416 16.2035C18.3004 16.119 18.7717 16.1304 19.2258 16.2372C19.68 16.344 20.107 16.5438 20.4801 16.8239L25.7393 20.7669C25.9741 20.9427 26.2597 21.0372 26.553 21.0362C26.8463 21.0352 27.1313 20.9387 27.3649 20.7613L34.4634 15.3727C35.4084 14.6527 36.6459 15.7889 36.0159 16.7958L29.4011 27.2749C29.1524 27.6696 28.8247 28.0085 28.4385 28.2702C28.0523 28.5319 27.616 28.7107 27.1572 28.7952C26.6984 28.8798 26.2271 28.8683 25.7729 28.7616C25.3188 28.6548 24.8917 28.455 24.5187 28.1749L19.2595 24.2318C19.0247 24.0561 18.739 23.9615 18.4457 23.9625C18.1525 23.9636 17.8675 24.0601 17.6339 24.2375L10.5353 29.6261C9.59037 30.3461 8.3529 29.2155 8.98851 28.2086Z"
-      fill="url(#paint0_radial_0_13)"
-    />
-    <defs>
-      <radialGradient
-        id="paint0_radial_0_13"
-        cx="0"
-        cy="0"
-        r="1"
-        gradientUnits="userSpaceOnUse"
-        gradientTransform="translate(7.53729 44.9988) scale(49.4987 49.4987)"
-      >
-        <stop stopColor="#0099FF" />
-        <stop offset="0.6" stopColor="#A033FF" />
-        <stop offset="0.9" stopColor="#FF5280" />
-        <stop offset="1" stopColor="#FF7061" />
-      </radialGradient>
-    </defs>
-  </svg>
-);
+const openUrlInNewTab = (url: string, delay?: number) => {
+  // Create a new anchor element and clicks it
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.target = "_blank";
+
+  // Add a delay between when the anchor element is created and when it is clicked
+  setTimeout(async () => {
+    anchor.click();
+    anchor.remove();
+  }, delay ?? 0);
+};
