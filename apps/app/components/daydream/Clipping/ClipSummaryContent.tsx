@@ -9,6 +9,7 @@ import { Button } from "@repo/design-system/components/ui/button";
 import { Separator } from "@repo/design-system/components/ui/separator";
 import { toast } from "sonner";
 import { ClipData } from "./types";
+import { Switch } from "@repo/design-system/components/ui/switch";
 
 interface ClipSummaryContentProps {
   clipData: ClipData;
@@ -16,17 +17,13 @@ interface ClipSummaryContentProps {
   setClipData: (clipData: ClipData) => void;
 }
 
-/**
- * TODOS:
- * 2. Enable Switch toggle and upload logic to post to leaderboard
- * 3. Add a button to share the clip to the leaderboard
- */
 export function ClipSummaryContent({
   clipData,
   setClipStep,
   setClipData,
 }: ClipSummaryContentProps) {
   const [isUploading, setIsUploading] = useState(false);
+  const [isFeatured, setIsFeatured] = useState(true);
 
   const handleNext = async () => {
     // NOTE: This function assumes that the POST handler for /api/clips is implemented
@@ -45,6 +42,7 @@ export function ClipSummaryContent({
           "sourceClip",
           new File([blob], clipData.clipFilename, { type: blob.type }),
         );
+        formData.append("isFeatured", isFeatured.toString());
 
         // Make the API request
         const apiResponse = await fetch("/api/clips", {
@@ -100,28 +98,22 @@ export function ClipSummaryContent({
         )}
       </div>
 
-      {/* <div className="flex items-center justify-between mt-2">
-          <div className="flex flex-col items-start">
-            <div className="text-sm font-medium">Submit to be featured</div>
-            <div className="text-sm text-muted-foreground font-light">
-              Let your clip shine on the Daydream community page
-            </div>
+      <div className="flex items-center justify-between mt-2">
+        <div className="flex flex-col items-start">
+          <div className="text-sm font-medium">Submit to be featured</div>
+          <div className="text-sm text-muted-foreground font-light">
+            Let your clip shine on the Daydream community page
           </div>
+        </div>
 
-          <div className="flex items-center gap-2">
-            <TooltipProvider delayDuration={0}>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <InfoIcon className="w-4 h-4 hover:cursor-pointer" />
-                </TooltipTrigger>
-                <TooltipContent>
-                  This feature is not available yet. We shall roll out soon!
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-            <Switch disabled defaultChecked={false} />
-          </div>
-        </div> */}
+        <div className="flex items-center gap-2">
+          <Switch
+            checked={isFeatured}
+            onCheckedChange={setIsFeatured}
+            disabled={isUploading}
+          />
+        </div>
+      </div>
 
       <Separator className="my-2" />
 

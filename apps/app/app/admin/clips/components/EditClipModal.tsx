@@ -3,6 +3,7 @@ import { Fragment, useState, useEffect } from "react";
 import { Clip } from "../../types";
 import { usePrivy } from "@/hooks/usePrivy";
 import { useAdmin } from "@/hooks/useAdmin";
+import { clipApprovalEnum } from "@/lib/db/schema";
 
 interface EditClipModalProps {
   clip: Clip | null;
@@ -36,6 +37,7 @@ export default function EditClipModal({
         source_clip_id: clip.source_clip_id,
         prompt: clip.prompt,
         priority: clip.priority,
+        approval_status: clip.approval_status,
       });
       setSelectedUserName(null);
     } else {
@@ -177,7 +179,26 @@ export default function EditClipModal({
 
                 <form onSubmit={handleSubmit} className="mt-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="col-span-1 md:col-span-2">
+                    <div className="col-span-1">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Approval Status
+                      </label>
+                      <select
+                        name="approval_status"
+                        value={formData.approval_status || "none"}
+                        onChange={handleChange}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        required
+                      >
+                        {clipApprovalEnum.enumValues.map(status => (
+                          <option key={status} value={status}>
+                            {status}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="col-span-1">
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Video URL *
                       </label>
