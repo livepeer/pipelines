@@ -7,6 +7,7 @@ import useFullscreenStore from "@/hooks/useFullscreenStore";
 import { cn } from "@repo/design-system/lib/utils";
 import { usePrivy } from "@/hooks/usePrivy";
 import { isLivepeerEmail } from "@/lib/utils";
+import { StreamInfo } from "../footer/stream-info";
 
 interface ErrorHistoryItem {
   source: string;
@@ -99,6 +100,7 @@ export const StreamDebugPanel = () => {
             </button>
           </>
         )}
+        <StreamInfo />
       </div>
       {isAdmin && debugOpen && (
         <div
