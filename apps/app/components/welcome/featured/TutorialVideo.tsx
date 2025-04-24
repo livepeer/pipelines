@@ -258,6 +258,10 @@ export const TutorialVideo = ({ onComplete }: TutorialVideoProps) => {
   };
 
   const handleSkip = () => {
+    if (videoRef.current) {
+      videoRef.current.pause();
+    }
+
     setIsFadingOut(true);
     track("tutorial_video_skipped", {
       currentTime: videoRef.current?.currentTime,

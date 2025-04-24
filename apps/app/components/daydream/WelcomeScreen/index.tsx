@@ -11,7 +11,7 @@ import Footer from "./Footer";
 import Personas from "./Personas";
 import SelectPrompt from "./SelectPrompt";
 import { usePrivy } from "@/hooks/usePrivy";
-import { updateUserAdditionalDetails } from "@/app/actions/user";
+import { updateUserNameAndDetails } from "@/app/actions/user";
 import { Separator } from "@repo/design-system/components/ui/separator";
 import track from "@/lib/track";
 import { useState, useEffect } from "react";
@@ -33,12 +33,20 @@ interface WelcomeScreenProps {
 export default function WelcomeScreen({
   simplified = false,
 }: WelcomeScreenProps) {
-  const { currentStep, isFadingOut, setCurrentStep, setFadingOut } =
-    useOnboard();
+  const {
+    currentStep,
+    isFadingOut,
+    setCurrentStep,
+    setFadingOut,
+    displayName,
+    setDisplayName,
+    avatarSeed,
+    setAvatarSeed,
+    selectedPersonas,
+    customPersona,
+  } = useOnboard();
   const { setTheme } = useTheme();
   const { user } = usePrivy();
-  const [displayName, setDisplayName] = useState("");
-  const [avatarSeed, setAvatarSeed] = useState("");
 
   const generateRandomSeed = () => {
     const characters =
@@ -76,7 +84,7 @@ export default function WelcomeScreen({
       const generatedName = generateUsernameFromId(String(user.id));
       setDisplayName(generatedName);
     }
-  }, [user?.email]);
+  }, [user?.email, setAvatarSeed, setDisplayName]);
 
   useMount(() => {
     setTheme("light");
@@ -123,8 +131,11 @@ export default function WelcomeScreen({
     }, 1000);
 
     if (user) {
-      await updateUserAdditionalDetails(user, {
+      await updateUserNameAndDetails(user, displayName, {
         next_onboarding_step: "main",
+        avatar: avatarSeed,
+        personas: selectedPersonas,
+        custom_persona: customPersona,
       });
     }
   };

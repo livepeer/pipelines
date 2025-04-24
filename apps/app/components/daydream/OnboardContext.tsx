@@ -16,6 +16,9 @@ interface OnboardContextType {
   selectedPersonas: string[];
   customPersona: string;
   selectedPrompt: string | null;
+  // User profile data
+  displayName: string;
+  avatarSeed: string;
   // When a prompt is selected, we fade out the welcome screen
   isFadingOut: boolean;
   // Methods to update state
@@ -28,6 +31,8 @@ interface OnboardContextType {
   setSelectedPrompt: (prompt: string | null) => void;
   setIsInitializing: (initializing: boolean) => void;
   setFadingOut: (fadingOut: boolean) => void;
+  setDisplayName: (name: string) => void;
+  setAvatarSeed: (seed: string) => void;
 }
 
 // Create the context with a default undefined value
@@ -49,6 +54,8 @@ export function OnboardProvider({
   const [selectedPrompt, setSelectedPrompt] = useState<string | null>(null);
   const [isInitializing, setIsInitializing] = useState(true);
   const [isFadingOut, setFadingOut] = useState(false);
+  const [displayName, setDisplayName] = useState("");
+  const [avatarSeed, setAvatarSeed] = useState("");
 
   const value = useMemo(
     () => ({
@@ -59,6 +66,8 @@ export function OnboardProvider({
       selectedPrompt,
       isInitializing,
       isFadingOut,
+      displayName,
+      avatarSeed,
       setCurrentStep,
       setCameraPermission,
       setSelectedPersonas,
@@ -66,6 +75,8 @@ export function OnboardProvider({
       setSelectedPrompt,
       setIsInitializing,
       setFadingOut,
+      setDisplayName,
+      setAvatarSeed,
       hasSharedPrompt,
     }),
     [
@@ -76,6 +87,8 @@ export function OnboardProvider({
       selectedPrompt,
       isInitializing,
       isFadingOut,
+      displayName,
+      avatarSeed,
       hasSharedPrompt,
     ],
   );
