@@ -38,28 +38,19 @@ const LayoutOption = ({
   onSelect: (value: string) => void;
 }) => (
   <div
-    className={`relative flex flex-col border rounded-xl p-4 gap-4 overflow-hidden cursor-pointer border-gray-300  ${
+    className={`relative flex flex-col border rounded-xl p-6 gap-4 overflow-hidden cursor-pointer border-gray-300  ${
       selectedValue === value
-        ? "outline outline-2 outline-[#282828] shadow-xl"
+        ? "outline outline-2 outline-[#282828]"
         : "border-gray-300"
     }`}
+    style={
+      selectedValue === value
+        ? { boxShadow: "12px 24px 33px 0px #14212D26" }
+        : undefined
+    }
     onClick={() => onSelect(value)}
   >
-    <div className="sm:hidden flex flex-col gap-3">
-      <div className="flex items-center gap-2">
-        <RadioGroupItem value={value} id={value} />
-        <label
-          htmlFor={value}
-          className="font-medium text-[18px] text-[#161616]"
-        >
-          {title}
-        </label>
-      </div>
-    </div>
-    <div className="hidden sm:block">
-      <RadioGroupItem value={value} id={value} />
-    </div>
-    <div className="hidden sm:block h-36 sm:h-64 bg-black rounded-xl overflow-hidden">
+    <div className="hidden sm:block sm:h-52 bg-black rounded-xl overflow-hidden mb-3">
       {previewImg ? (
         <img
           src={previewImg}
@@ -73,8 +64,9 @@ const LayoutOption = ({
       )}
     </div>
 
-    <div className="hidden px-4 sm:flex flex-col gap-3">
+    <div className="flex flex-col gap-3">
       <div className="flex items-center gap-2">
+        <RadioGroupItem value={value} id={value} className="sr-only" />
         <label
           htmlFor={value}
           className="font-medium text-[18px] text-[#161616]"
@@ -83,6 +75,10 @@ const LayoutOption = ({
         </label>
       </div>
       <p className="text-[#707070] text-sm leading-[1.4]">{description}</p>
+    </div>
+
+    <div className="absolute top-0 left-0">
+      <RadioGroupItem value={value} id={value} className="sr-only" />
     </div>
   </div>
 );
@@ -253,7 +249,7 @@ export function ClipOptionsModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={open => !open && onClose()}>
-      <DialogContent className="h-fit max-h-[90dvh] w-full sm:max-w-[650px] mx-auto overflow-y-auto rounded-xl">
+      <DialogContent className="h-fit max-h-[90dvh] w-[calc(100%-32px)] sm:w-full sm:max-w-[650px] mx-auto overflow-y-auto rounded-xl p-6 pt-8 sm:p-8">
         <DialogHeader className="flex items-center">
           <DialogTitle className="text-2xl">
             How Would You Like to Share?
@@ -263,41 +259,13 @@ export function ClipOptionsModal({
           </DialogDescription>
         </DialogHeader>
 
-        <Separator className="my-2" />
-
-        <div className="flex sm:hidden min-h-64 bg-black rounded-xl overflow-hidden">
-          {(selectedMode === "horizontal" && previewBlobs.horizontal) ||
-          (selectedMode === "output-only" && previewBlobs.outputOnly) ? (
-            <img
-              src={
-                (selectedMode === "horizontal"
-                  ? previewBlobs.horizontal
-                  : previewBlobs.outputOnly) ?? ""
-              }
-              alt={`${selectedMode} preview`}
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-white">
-              Loading...
-            </div>
-          )}
-        </div>
+        <Separator className="my-1" />
 
         <RadioGroup
           value={selectedMode}
           onValueChange={handleValueChange}
-          className="mt-4 mb-2 grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-8"
+          className="mt-2 sm:mt-4 mb-2 grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-8"
         >
-          <LayoutOption
-            title="Include input video"
-            description="Share both your original video and the final result — your input video will be visible in the clip."
-            value="horizontal"
-            selectedValue={selectedMode}
-            previewImg={previewBlobs.horizontal}
-            onSelect={handleValueChange}
-          />
-
           <LayoutOption
             title="Just the Output"
             description="Share only the final result — your input video (face) won't be included."
@@ -306,9 +274,18 @@ export function ClipOptionsModal({
             previewImg={previewBlobs.outputOnly}
             onSelect={handleValueChange}
           />
+
+          <LayoutOption
+            title="Include input video"
+            description="Share both your original video and the final result — your input video will be visible in the clip."
+            value="horizontal"
+            selectedValue={selectedMode}
+            previewImg={previewBlobs.horizontal}
+            onSelect={handleValueChange}
+          />
         </RadioGroup>
 
-        <Separator className="my-2" />
+        <Separator className="my-1" />
 
         <div className="w-full">
           <div className="flex gap-2">
@@ -316,7 +293,7 @@ export function ClipOptionsModal({
               onClick={handleCreateClip}
               className="flex-1 items-center justify-center gap-2 rounded-md h-[46px]"
             >
-              Continue
+              Start recording
             </Button>
           </div>
         </div>
