@@ -358,7 +358,6 @@ export default function Dreamshaper({ isGuestMode = false }: DreamshaperProps) {
             <InputPrompt onPromptSubmit={handleGuestPromptSubmit} />
           )}
           <StreamDebugPanel />
-          <StreamInfo />
         </div>
       </div>
 
