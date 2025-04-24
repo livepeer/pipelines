@@ -66,7 +66,7 @@ export const BentoGridOverlay = () => {
         scrollRestoredRef.current = false;
         restoreScrollPosition();
       } else {
-        fetch("/api/clips?page=0&limit=30")
+        fetch("/api/clips?page=0&limit=96")
           .then(res => res.json())
           .then(data => {
             const clips = data.clips || [];
