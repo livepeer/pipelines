@@ -38,16 +38,21 @@ const LayoutOption = ({
   onSelect: (value: string) => void;
 }) => (
   <div
-    className={`relative flex flex-col border rounded-xl p-4 gap-4 overflow-hidden cursor-pointer border-gray-300  ${
+    className={`relative flex flex-col border rounded-xl p-6 gap-4 overflow-hidden cursor-pointer border-gray-300  ${
       selectedValue === value
-        ? "outline outline-2 outline-[#282828] shadow-xl"
+        ? "outline outline-2 outline-[#282828]"
         : "border-gray-300"
     }`}
+    style={
+      selectedValue === value
+        ? { boxShadow: "12px 24px 33px 0px #14212D26" }
+        : undefined
+    }
     onClick={() => onSelect(value)}
   >
     <div className="sm:hidden flex flex-col gap-3">
       <div className="flex items-center gap-2">
-        <RadioGroupItem value={value} id={value} />
+        <RadioGroupItem value={value} id={value} className="sr-only" />
         <label
           htmlFor={value}
           className="font-medium text-[18px] text-[#161616]"
@@ -56,10 +61,10 @@ const LayoutOption = ({
         </label>
       </div>
     </div>
-    <div className="hidden sm:block">
-      <RadioGroupItem value={value} id={value} />
+    <div className="absolute top-0 left-0">
+      <RadioGroupItem value={value} id={value} className="sr-only" />
     </div>
-    <div className="hidden sm:block h-36 sm:h-64 bg-black rounded-xl overflow-hidden">
+    <div className="hidden sm:block sm:h-52 bg-black rounded-xl overflow-hidden">
       {previewImg ? (
         <img
           src={previewImg}
@@ -73,7 +78,7 @@ const LayoutOption = ({
       )}
     </div>
 
-    <div className="hidden px-4 sm:flex flex-col gap-3">
+    <div className="hidden sm:flex flex-col gap-3">
       <div className="flex items-center gap-2">
         <label
           htmlFor={value}
@@ -253,7 +258,7 @@ export function ClipOptionsModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={open => !open && onClose()}>
-      <DialogContent className="h-fit max-h-[90dvh] w-full sm:max-w-[650px] mx-auto overflow-y-auto rounded-xl">
+      <DialogContent className="h-fit max-h-[90dvh] w-full sm:max-w-[650px] mx-auto overflow-y-auto rounded-xl p-6 sm:p-8">
         <DialogHeader className="flex items-center">
           <DialogTitle className="text-2xl">
             How Would You Like to Share?
@@ -316,7 +321,7 @@ export function ClipOptionsModal({
               onClick={handleCreateClip}
               className="flex-1 items-center justify-center gap-2 rounded-md h-[46px]"
             >
-              Continue
+              Start recording
             </Button>
           </div>
         </div>
