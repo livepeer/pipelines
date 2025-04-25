@@ -10,6 +10,7 @@ import { Separator } from "@repo/design-system/components/ui/separator";
 import { toast } from "sonner";
 import { ClipData } from "./types";
 import { Switch } from "@repo/design-system/components/ui/switch";
+import { usePromptStore } from "@/hooks/usePromptStore";
 
 interface ClipSummaryContentProps {
   clipData: ClipData;
@@ -24,6 +25,7 @@ export function ClipSummaryContent({
 }: ClipSummaryContentProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [isFeatured, setIsFeatured] = useState(true);
+  const { lastSubmittedPrompt } = usePromptStore();
 
   const handleNext = async () => {
     // NOTE: This function assumes that the POST handler for /api/clips is implemented
@@ -44,6 +46,25 @@ export function ClipSummaryContent({
         );
         formData.append("isFeatured", isFeatured.toString());
 
+        if (lastSubmittedPrompt) {
+          formData.append("prompt", lastSubmittedPrompt);
+        }
+
+        if (clipData.thumbnailUrl) {
+          try {
+            const thumbnailResponse = await fetch(clipData.thumbnailUrl);
+            const thumbnailBlob = await thumbnailResponse.blob();
+            formData.append(
+              "thumbnail",
+              new File([thumbnailBlob], "thumbnail.jpg", {
+                type: "image/jpeg",
+              }),
+            );
+          } catch (thumbnailError) {
+            console.error("Error fetching thumbnail:", thumbnailError);
+          }
+        }
+
         // Make the API request
         const apiResponse = await fetch("/api/clips", {
           method: "POST",
@@ -58,6 +79,7 @@ export function ClipSummaryContent({
           setClipData({
             ...clipData,
             serverClipUrl: data.clip?.videoUrl,
+            slug: data.clip?.slug,
           });
           setClipStep("share");
         } else {
@@ -74,36 +96,38 @@ export function ClipSummaryContent({
   };
 
   return (
-    <DialogContent className="h-fit max-h-[90dvh] w-[calc(100%-32px)] sm:w-full sm:max-w-[55dvh] mx-auto rounded-xl p-6 pt-8 sm:p-8">
-      <DialogHeader className="flex items-center">
-        <DialogTitle className="text-2xl">Almost Ready to Share!</DialogTitle>
-        <DialogDescription className="font-light text-center">
+    <DialogContent className="h-fit max-h-[90dvh] w-[calc(100%-32px)] sm:w-full sm:max-w-[55dvh] mx-auto rounded-xl p-4 pt-5 sm:p-5">
+      <DialogHeader className="flex items-center mb-1">
+        <DialogTitle className="text-xl sm:text-2xl">
+          Almost Ready to Share!
+        </DialogTitle>
+        <DialogDescription className="font-light text-center text-sm">
           Choose how widely you want to showcase your creation
         </DialogDescription>
       </DialogHeader>
 
-      <Separator className="my-1" />
-
-      <div className="flex justify-center">
+      <div className="flex justify-center w-full">
         {clipData.clipUrl && (
-          <video
-            src={clipData.clipUrl}
-            autoPlay
-            loop
-            muted={false}
-            playsInline
-            controls
-            className="w-full sm:h-[50dvh] aspect-square rounded-md"
-          />
+          <div className="w-full aspect-square relative">
+            <video
+              src={clipData.clipUrl}
+              autoPlay
+              loop
+              muted={false}
+              playsInline
+              controls
+              className="absolute inset-0 w-full h-full object-cover rounded-md"
+            />
+          </div>
         )}
       </div>
 
-      <Separator className="hidden sm:block my-1 sm:my-2 h-[1px] bg-gray-200 w-[90%] mx-auto" />
+      <Separator className="mt-2 mb-2 h-[1px] bg-gray-200 w-full" />
 
-      <div className="flex items-center justify-between mt-2">
+      <div className="flex items-center justify-between">
         <div className="flex flex-col items-start">
           <div className="text-sm font-medium">Submit to be featured</div>
-          <div className="text-sm text-muted-foreground font-light">
+          <div className="text-xs sm:text-sm text-muted-foreground font-light">
             Let your clip shine on the Daydream community page
           </div>
         </div>
@@ -117,18 +141,14 @@ export function ClipSummaryContent({
         </div>
       </div>
 
-      <Separator className="my-1" />
-
-      <div className="w-full">
-        <div className="flex gap-2">
-          <Button
-            onClick={handleNext}
-            className="flex-1 items-center justify-center gap-2 rounded-md h-[46px]"
-            disabled={isUploading}
-          >
-            {isUploading ? "Processing..." : "Next"}
-          </Button>
-        </div>
+      <div className="w-full mt-3">
+        <Button
+          onClick={handleNext}
+          className="w-full items-center justify-center gap-2 rounded-md h-[40px] sm:h-[44px]"
+          disabled={isUploading}
+        >
+          {isUploading ? "Processing..." : "Next"}
+        </Button>
       </div>
     </DialogContent>
   );

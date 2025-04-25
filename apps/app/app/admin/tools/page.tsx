@@ -19,6 +19,17 @@ export default function AdminToolsPage() {
             </p>
           </div>
         </Link>
+
+        <Link href="/admin/tools/clip-approval-queue">
+          <div className="bg-white p-4 rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer">
+            <h2 className="text-lg font-semibold mb-2 text-indigo-600">
+              Clip Approval Queue
+            </h2>
+            <p className="text-sm text-gray-500">
+              Review and approve clips to be featured on the explore page.
+            </p>
+          </div>
+        </Link>
       </div>
     </div>
   );

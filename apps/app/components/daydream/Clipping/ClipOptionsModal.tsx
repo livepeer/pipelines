@@ -19,7 +19,7 @@ export type ClipRecordingMode = "horizontal" | "vertical" | "output-only";
 interface ClipOptionsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onCreateClip: (mode: ClipRecordingMode) => void;
+  onCreateClip: (mode: ClipRecordingMode, thumbnailUrl: string | null) => void;
 }
 
 const LayoutOption = ({
@@ -244,7 +244,11 @@ export function ClipOptionsModal({
       });
       return;
     }
-    onCreateClip(selectedMode as ClipRecordingMode);
+    const thumbnailUrl =
+      selectedMode === "horizontal"
+        ? previewBlobs.horizontal
+        : previewBlobs.outputOnly;
+    onCreateClip(selectedMode as ClipRecordingMode, thumbnailUrl);
   };
 
   return (

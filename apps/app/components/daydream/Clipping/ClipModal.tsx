@@ -11,6 +11,7 @@ interface ClipModalProps {
   onClose: () => void;
   clipUrl: string | null;
   clipFilename: string | null;
+  thumbnailUrl?: string | null;
   isGuestMode?: boolean;
 }
 
@@ -21,6 +22,7 @@ export function ClipModal({
   onClose,
   clipUrl,
   clipFilename,
+  thumbnailUrl = null,
   isGuestMode = false,
 }: ClipModalProps) {
   const isRotating = usePhoneRotation();
@@ -29,6 +31,7 @@ export function ClipModal({
     clipUrl: clipUrl || "",
     clipFilename: clipFilename || "",
     serverClipUrl: "",
+    thumbnailUrl: thumbnailUrl || null,
   });
 
   // Reset the clip data when it changes.
@@ -38,9 +41,10 @@ export function ClipModal({
         ...state,
         clipUrl,
         clipFilename,
+        thumbnailUrl,
       }));
     }
-  }, [clipUrl, clipFilename]);
+  }, [clipUrl, clipFilename, thumbnailUrl]);
 
   const handleOpenChange = (open: boolean) => {
     if (!open && !isRotating) {
