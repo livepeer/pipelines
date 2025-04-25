@@ -25,6 +25,7 @@ export default function Personas({ simplified = false }: PersonasProps) {
     cameraPermission,
     selectedPersonas,
     setSelectedPersonas,
+    setDisplayNameError,
     customPersona,
     setCustomPersona,
     displayName,
@@ -54,13 +55,17 @@ export default function Personas({ simplified = false }: PersonasProps) {
       custom_persona: customPersona,
       user_id: user?.id,
     });
-    setCurrentStep(cameraPermission === "granted" ? "prompt" : "camera");
-    await updateUserNameAndDetails(user!, displayName, {
+    const { error } = await updateUserNameAndDetails(user!, displayName, {
       next_onboarding_step: "camera",
       personas: selectedPersonas,
       custom_persona: customPersona,
       avatar: avatarSeed,
     });
+    if (error) {
+      setDisplayNameError(error);
+      return;
+    }
+    setCurrentStep(cameraPermission === "granted" ? "prompt" : "camera");
   };
 
   const isButtonDisabled =

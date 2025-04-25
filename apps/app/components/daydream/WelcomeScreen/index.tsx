@@ -39,7 +39,9 @@ export default function WelcomeScreen({
     setCurrentStep,
     setFadingOut,
     displayName,
+    displayNameError,
     setDisplayName,
+    setDisplayNameError,
     avatarSeed,
     setAvatarSeed,
     selectedPersonas,
@@ -74,6 +76,7 @@ export default function WelcomeScreen({
   };
 
   const handleDisplayNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setDisplayNameError(null);
     const sanitizedValue = e.target.value.replace(/[^a-zA-Z0-9_.]/g, "");
     setDisplayName(sanitizedValue);
   };
@@ -123,21 +126,22 @@ export default function WelcomeScreen({
       user_id: user?.id,
     });
 
-    setFadingOut(true);
-
-    setTimeout(() => {
-      setCurrentStep("main");
-      window && window.scrollTo({ top: 0, behavior: "instant" });
-    }, 1000);
-
     if (user) {
-      await updateUserNameAndDetails(user, displayName, {
+      const { error } = await updateUserNameAndDetails(user, displayName, {
         next_onboarding_step: "main",
         avatar: avatarSeed,
         personas: selectedPersonas,
         custom_persona: customPersona,
       });
+      if (error) {
+        setDisplayNameError(error);
+        return;
+      }
     }
+
+    setFadingOut(true);
+    setCurrentStep("main");
+    window && window.scrollTo({ top: 0, behavior: "instant" });
   };
 
   if (currentStep === "main") {
@@ -264,19 +268,24 @@ export default function WelcomeScreen({
                   value={displayName}
                   onChange={handleDisplayNameChange}
                   className="flex-grow bg-white border border-[#D2D2D2] rounded-md h-10 px-3 py-2"
+                  disabled={currentStep !== "persona"}
                 />
                 <div className="flex items-center justify-between w-20 h-10 bg-white border border-[#D2D2D2] rounded-md pl-2 pr-1">
                   <GradientAvatar seed={avatarSeed} size={28} />
                   <button
                     type="button"
                     onClick={() => setAvatarSeed(generateRandomSeed())}
-                    className="p-1 text-gray-400 hover:text-gray-600 rounded-full focus:outline-none"
+                    className="p-1 text-gray-400 hover:text-gray-600 hover:disabled:text-gray-400 rounded-full focus:outline-none"
                     aria-label="Generate random avatar"
+                    disabled={currentStep !== "persona"}
                   >
                     <RefreshCw size={16} />
                   </button>
                 </div>
               </div>
+              {displayNameError && (
+                <p className="text-red-500 text-sm">{displayNameError}</p>
+              )}
             </div>
 
             <p className="font-playfair font-semibold text-base sm:text-lg md:text-xl text-[#1C1C1C]">
@@ -296,8 +305,15 @@ export default function WelcomeScreen({
                 <Separator className="bg-[#D2D2D2]" />
                 <div className="flex justify-end w-full">
                   <button
+                    disabled={
+                      !displayName ||
+                      !!displayNameError ||
+                      selectedPersonas.length === 0 ||
+                      (selectedPersonas.includes("Other") &&
+                        !customPersona.trim())
+                    }
                     onClick={handleContinueFromSimplifiedFlow}
-                    className="bg-[#161616] w-full sm:max-w-[187px] text-[#EDEDED] px-6 py-3 rounded-md font-inter font-semibold text-[15px] hover:bg-[#2D2D2D] transition-colors"
+                    className="bg-[#161616] disabled:bg-opacity-50 w-full sm:max-w-[187px] text-[#EDEDED] px-6 py-3 rounded-md font-inter font-semibold text-[15px] hover:bg-[#2D2D2D] disabled:hover:bg-[#161616] disabled:hover:bg-opacity-50 transition-colors"
                   >
                     Continue
                   </button>
