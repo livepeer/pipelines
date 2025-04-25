@@ -20,10 +20,20 @@ export default function ClipShareContent({ clipData }: ClipShareContentProps) {
   const { isMobile } = useMobileStore();
   const [copied, setCopied] = React.useState(false);
 
+  // Create shareable URL with slug if available - if not fallback to storage url // TODO: remove storage url
+  const shareableUrl = React.useMemo(() => {
+    if (clipData.slug) {
+      return `${window.location.origin}/clips/${clipData.slug}`;
+    }
+    return clipData.serverClipUrl || "";
+  }, [clipData.slug, clipData.serverClipUrl]);
+
   const handleCopy = async () => {
     try {
       await navigator.clipboard.write([
-        new ClipboardItem({ "text/plain": clipData.serverClipUrl }),
+        new ClipboardItem({
+          "text/plain": new Blob([shareableUrl], { type: "text/plain" }),
+        }),
       ]);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
@@ -45,7 +55,9 @@ export default function ClipShareContent({ clipData }: ClipShareContentProps) {
           };
     try {
       await navigator.clipboard.write([
-        new ClipboardItem({ "text/plain": clipData.serverClipUrl }),
+        new ClipboardItem({
+          "text/plain": new Blob([shareableUrl], { type: "text/plain" }),
+        }),
       ]);
 
       // Try to use the Web Share API if available on mobile
@@ -54,7 +66,7 @@ export default function ClipShareContent({ clipData }: ClipShareContentProps) {
           await navigator.share({
             title: "Check out my Daydream creation!",
             text: "Created this on daydream.live and had to share!",
-            url: clipData.serverClipUrl,
+            url: shareableUrl,
           });
           return;
         } catch (error) {
@@ -84,7 +96,7 @@ export default function ClipShareContent({ clipData }: ClipShareContentProps) {
         break;
       case "x":
         const shareText = "This Daydream creation blew my mind!";
-        const shareUrl = `https://x.com/intent/post?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(clipData.serverClipUrl || "")}`;
+        const shareUrl = `https://x.com/intent/post?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareableUrl)}`;
         openUrlInNewTab(shareUrl);
         break;
       default:
@@ -121,7 +133,7 @@ export default function ClipShareContent({ clipData }: ClipShareContentProps) {
       <div className="flex relative gap-2 items-center w-full">
         <Input
           readOnly
-          value={clipData.serverClipUrl || ""}
+          value={shareableUrl}
           className="flex-1 rounded-full py-6 px-8 pr-12 overflow-ellipsis"
         />
         <Button
