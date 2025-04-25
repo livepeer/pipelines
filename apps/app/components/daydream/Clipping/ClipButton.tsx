@@ -51,6 +51,7 @@ export const ClipButton = ({
     progress,
     clipUrl,
     clipFilename,
+    thumbnailUrl,
     showClipModal,
     closeClipModal,
     showOptionsModal,
@@ -84,8 +85,11 @@ export const ClipButton = ({
     showRecordingOptions();
   };
 
-  const handleCreateClip = (mode: ClipRecordingMode) => {
-    recordClip(mode);
+  const handleCreateClip = (
+    mode: ClipRecordingMode,
+    thumbnailUrl: string | null,
+  ) => {
+    recordClip(mode, thumbnailUrl);
   };
 
   return (
@@ -138,6 +142,7 @@ export const ClipButton = ({
         onClose={closeClipModal}
         clipUrl={clipUrl}
         clipFilename={clipFilename}
+        thumbnailUrl={thumbnailUrl}
         isGuestMode={isGuestMode}
       />
 

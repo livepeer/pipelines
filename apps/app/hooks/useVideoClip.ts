@@ -23,6 +23,7 @@ export const useVideoClip = () => {
   const [progress, setProgress] = useState(0);
   const [clipUrl, setClipUrl] = useState<string | null>(null);
   const [clipFilename, setClipFilename] = useState<string | null>(null);
+  const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
   const [showClipModal, setShowClipModal] = useState(false);
 
   const [showOptionsModal, setShowOptionsModal] = useState(false);
@@ -155,7 +156,10 @@ export const useVideoClip = () => {
     setRecordingResources({});
   }, [isRecording, recordingResources]);
 
-  const recordClip = async (mode: ClipRecordingMode = "horizontal") => {
+  const recordClip = async (
+    mode: ClipRecordingMode = "horizontal",
+    thumbnailUrl: string | null = null,
+  ) => {
     if (isRecording) {
       stopRecording();
       return;
@@ -400,6 +404,11 @@ export const useVideoClip = () => {
       isDrawing: true,
       animationFrameId,
     });
+
+    // Save the thumbnail URL if provided
+    if (thumbnailUrl) {
+      setThumbnailUrl(thumbnailUrl);
+    }
   };
 
   return {
@@ -410,6 +419,7 @@ export const useVideoClip = () => {
     progress,
     clipUrl,
     clipFilename,
+    thumbnailUrl,
     showClipModal,
     closeClipModal,
     cleanupClipUrl,

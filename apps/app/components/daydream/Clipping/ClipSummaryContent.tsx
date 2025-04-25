@@ -50,6 +50,21 @@ export function ClipSummaryContent({
           formData.append("prompt", lastSubmittedPrompt);
         }
 
+        if (clipData.thumbnailUrl) {
+          try {
+            const thumbnailResponse = await fetch(clipData.thumbnailUrl);
+            const thumbnailBlob = await thumbnailResponse.blob();
+            formData.append(
+              "thumbnail",
+              new File([thumbnailBlob], "thumbnail.jpg", {
+                type: "image/jpeg",
+              }),
+            );
+          } catch (thumbnailError) {
+            console.error("Error fetching thumbnail:", thumbnailError);
+          }
+        }
+
         // Make the API request
         const apiResponse = await fetch("/api/clips", {
           method: "POST",
