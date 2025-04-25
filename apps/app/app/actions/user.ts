@@ -94,6 +94,32 @@ export async function updateUserNameAndDetails(
   newDetails: Record<string, any>,
 ) {
   const supabase = await createServerClient();
+
+  // Check if another user with the same name exists
+  const { data: existingUser, error: existingUserError } = await supabase
+    .from("users")
+    .select("id")
+    .eq("name", name)
+    .neq("id", user?.id) // Exclude the current user
+    .maybeSingle();
+
+  if (existingUserError) {
+    console.error("Error checking for existing username:", existingUserError);
+    return {
+      success: false,
+      error: "Error checking username, please contact Daydream Support",
+    };
+  }
+
+  // If another user with that name exists, return failure
+  if (existingUser) {
+    console.log(
+      `User with name "${name}" already exists (ID: ${existingUser.id}). Cannot update user ${user?.id}.`,
+    );
+    return { success: false, error: "Username already taken" };
+  }
+
+  // Fetch current user's data
   const { data } = await supabase
     .from("users")
     .select("*")
@@ -105,7 +131,8 @@ export async function updateUserNameAndDetails(
     return { success: false };
   }
 
-  const { error } = await supabase
+  // Proceed with the update if no existing user found with the same name
+  const { error: updateError } = await supabase
     .from("users")
     .update({
       name: name,
@@ -113,8 +140,8 @@ export async function updateUserNameAndDetails(
     })
     .eq("id", user?.id);
 
-  if (error) {
-    console.error(error);
+  if (updateError) {
+    console.error(updateError);
     return { success: false };
   }
 

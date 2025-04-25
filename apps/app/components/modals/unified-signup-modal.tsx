@@ -177,15 +177,17 @@ export function UnifiedSignupModal({
             </p>
 
             <div className="mt-6 flex flex-row gap-4 w-full items-center justify-center">
-              <Button className="w-48 px-12 h-12 rounded-md bg-black text-white hover:bg-gray-800">
-                <a
-                  href="https://discord.com/invite/hxyNHeSzCK"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-white"
-                >
-                  Join community
-                </a>
+              <Button
+                className="w-48 px-12 h-12 rounded-md bg-black text-white hover:bg-gray-800"
+                onClick={() => {
+                  window.open(
+                    "https://discord.com/invite/hxyNHeSzCK",
+                    "_blank",
+                    "noopener noreferrer",
+                  );
+                }}
+              >
+                Join community
               </Button>
               <Button
                 onClick={e => {
