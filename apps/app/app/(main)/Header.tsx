@@ -89,12 +89,12 @@ export default function Header() {
           trackingProperties={{ location: "explore_header_mobile_fab" }}
           size="lg"
           className={cn(
-            "rounded-md shadow-lg text-black",
+            "h-14 w-14 rounded-md shadow-lg text-black",
             "alwaysAnimatedButton",
             isPreviewOpen && "opacity-0 pointer-events-none",
           )}
         >
-          Create
+          <Plus className="h-6 w-6" />
         </TrackedButton>
       </Link>
     </>
