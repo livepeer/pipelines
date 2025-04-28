@@ -4,6 +4,8 @@ import { users } from "@/lib/db/schema";
 import { like, and, not } from "drizzle-orm";
 import { requireAdminAuth } from "@/app/api/admin/auth";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(request: Request) {
   try {
     const authResponse = await requireAdminAuth(request);
