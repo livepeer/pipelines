@@ -87,7 +87,7 @@ export default function Header() {
         <TrackedButton
           trackingEvent="explore_header_start_creating_clicked"
           trackingProperties={{ location: "explore_header_mobile_fab" }}
-          size="default"
+          size="lg"
           className={cn(
             "rounded-md shadow-lg text-black",
             "alwaysAnimatedButton",
