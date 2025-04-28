@@ -6,7 +6,7 @@ import { usePreviewStore } from "@/hooks/usePreviewStore";
 import { cn } from "@repo/design-system/lib/utils";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Plus } from "lucide-react";
+import { Plus, ExternalLink } from "lucide-react";
 
 export default function Header() {
   const { isPreviewOpen } = usePreviewStore();
@@ -56,6 +56,7 @@ export default function Header() {
               }}
             >
               Join Discord
+              <ExternalLink className="h-4 w-4"/>
             </TrackedButton>
             {/* Desktop-only Create button */}
             <Link href="/create" className="hidden sm:block ml-4">
