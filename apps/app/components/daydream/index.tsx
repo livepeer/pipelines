@@ -36,14 +36,14 @@ export default function Daydream({
 
   // Always reset guest mode if user is authenticated
   useEffect(() => {
-    if (authenticated && user && isGuestUser) {
+    if (authenticated && user && isGuestUser && ready) {
       setIsGuestUser(false);
     }
   }, [authenticated, user, isGuestUser, setIsGuestUser]);
 
   // If guest access is allowed and input prompt exists, enable guest mode
   useEffect(() => {
-    if (allowGuestAccess && inputPrompt && !user) {
+    if (allowGuestAccess && inputPrompt && !user && ready) {
       setIsGuestUser(true);
     }
   }, [allowGuestAccess, inputPrompt, user, setIsGuestUser]);
@@ -60,7 +60,7 @@ export default function Daydream({
   }
 
   // If in guest mode and coming from "Try this prompt", allow access to create page
-  if (isGuestUser && inputPrompt) {
+  if (isGuestUser && inputPrompt && ready) {
     return (
       <OnboardProvider hasSharedPrompt={hasSharedPrompt || !!inputPrompt}>
         <DaydreamRenderer isGuestMode={true} />
