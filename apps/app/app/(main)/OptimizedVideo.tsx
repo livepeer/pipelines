@@ -43,7 +43,7 @@ export default function OptimizedVideo({
   const containerRef = useRef<HTMLDivElement>(null);
   const { isPreviewOpen } = usePreviewStore();
   const { setIsGuestUser, setLastPrompt } = useGuestUserStore();
-  const { authenticated } = usePrivy();
+  const { authenticated, ready } = usePrivy();
   const router = useRouter();
   const { isOverlayOpen } = useOverlayStore();
 
@@ -115,7 +115,7 @@ export default function OptimizedVideo({
     if (prompt) {
       setLastPrompt(prompt);
 
-      if (!authenticated) {
+      if (!authenticated && ready) {
         setIsGuestUser(true);
       }
 
