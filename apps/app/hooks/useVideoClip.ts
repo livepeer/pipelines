@@ -13,7 +13,7 @@ declare global {
 export type ClipRecordingMode = "horizontal" | "vertical" | "output-only";
 
 export const CLIP_DURATION = 30000;
-const MAX_CLIP_SIZE = 3 * 1024 * 1024; // 3MB in bytes
+const MAX_CLIP_SIZE = 4 * 1024 * 1024; // 4MB in bytes
 
 const FRAME_RATE = 30;
 const INPUT_DELAY = 1000; // 1 second delay for input video - increase or decreas to sync
@@ -228,9 +228,9 @@ export const useVideoClip = () => {
       setIsRecording(false);
       setProgress(0);
 
-      toast("Clip created successfully", {
+      /*toast("Clip created successfully", {
         description: "Your clip is ready to preview",
-      });
+      });*/
     };
 
     let isDrawing = true;
