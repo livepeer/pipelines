@@ -6,6 +6,7 @@ import { usePreviewStore } from "@/hooks/usePreviewStore";
 import { cn } from "@repo/design-system/lib/utils";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { Plus } from "lucide-react";
 
 export default function Header() {
   const { isPreviewOpen } = usePreviewStore();
@@ -23,54 +24,79 @@ export default function Header() {
   }, []);
 
   return (
-    <header
-      className={cn(
-        "bg-transparent sticky top-0 z-50 transition-colors duration-300 ease-in-out",
-        scrolled && "backdrop-filter backdrop-blur-xl bg-opacity-50",
-      )}
-    >
-      <nav
-        aria-label="Global"
-        className="mx-auto flex items-center justify-between py-4 px-4 sm:px-6 lg:px-8"
+    <>
+      <header
+        className={cn(
+          "bg-transparent sticky top-0 z-40 transition-colors duration-300 ease-in-out",
+          scrolled && "backdrop-filter backdrop-blur-xl bg-opacity-50",
+        )}
       >
-        <div className="flex flex-1">
-          <a href="#" className="-m-1.5 p-1.5">
-            <span className="sr-only">Daydream by Livepeer</span>
-            <Logo />
-          </a>
-        </div>
-        <div className="flex flex-1 justify-end gap-2 sm:gap-4">
-          <TrackedButton
-            trackingEvent="explore_header_community_clicked"
-            trackingProperties={{ location: "explore_header" }}
-            variant="ghost"
-            className="text-sm rounded-md px-2 sm:px-4"
-            onClick={() => {
-              window.open(
-                "https://discord.com/invite/hxyNHeSzCK",
-                "_blank",
-                "noopener noreferrer",
-              );
-            }}
-          >
-            Join Discord
-          </TrackedButton>
-          <Link href="/create">
+        <nav
+          aria-label="Global"
+          className="mx-auto flex items-center justify-between py-4 px-4 sm:px-6 lg:px-8"
+        >
+          <div className="flex flex-1">
+            <a href="#" className="-m-1.5 p-1.5">
+              <span className="sr-only">Daydream by Livepeer</span>
+              <Logo />
+            </a>
+          </div>
+          <div className="flex flex-1 justify-end">
             <TrackedButton
-              trackingEvent="explore_header_start_creating_clicked"
+              trackingEvent="explore_header_community_clicked"
               trackingProperties={{ location: "explore_header" }}
-              variant="outline"
-              className={cn(
-                "alwaysAnimatedButton",
-                isPreviewOpen && "opacity-0 pointer-events-none",
-                "px-4 sm:px-8",
-              )}
+              variant="ghost"
+              className="text-sm rounded-md px-2 sm:px-4"
+              onClick={() => {
+                window.open(
+                  "https://discord.com/invite/hxyNHeSzCK",
+                  "_blank",
+                  "noopener noreferrer",
+                );
+              }}
             >
-              Create
+              Join Discord
             </TrackedButton>
-          </Link>
-        </div>
-      </nav>
-    </header>
+            {/* Desktop-only Create button */}
+            <Link href="/create" className="hidden sm:block ml-4">
+              <TrackedButton
+                trackingEvent="explore_header_start_creating_clicked"
+                trackingProperties={{ location: "explore_header" }}
+                variant="outline"
+                className={cn(
+                  "alwaysAnimatedButton",
+                  isPreviewOpen && "opacity-0 pointer-events-none",
+                  "px-8",
+                )}
+              >
+                Create
+              </TrackedButton>
+            </Link>
+          </div>
+        </nav>
+      </header>
+
+      {/* Mobile-only floating Create button */}
+      <Link
+        href="/create"
+        className={cn(
+          "fixed bottom-6 right-6 sm:hidden z-50",
+          isPreviewOpen && "opacity-0 pointer-events-none",
+        )}
+      >
+        <TrackedButton
+          trackingEvent="explore_header_start_creating_clicked"
+          trackingProperties={{ location: "explore_header_mobile_fab" }}
+          size="lg"
+          className={cn(
+            "rounded-full w-14 h-14 shadow-lg bg-primary hover:bg-primary/90",
+            "flex items-center justify-center",
+          )}
+        >
+          <Plus className="h-6 w-6" />
+          <span className="sr-only">Create</span>
+        </TrackedButton>
+      </Link>
+    </>
   );
 }
