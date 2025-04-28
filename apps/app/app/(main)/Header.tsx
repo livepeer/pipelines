@@ -80,7 +80,7 @@ export default function Header() {
       <Link
         href="/create"
         className={cn(
-          "fixed bottom-6 right-6 sm:hidden z-50",
+          "fixed bottom-4 right-4 sm:hidden z-50",
           isPreviewOpen && "opacity-0 pointer-events-none",
         )}
       >
