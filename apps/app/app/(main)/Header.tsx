@@ -55,7 +55,7 @@ export default function Header() {
                 );
               }}
             >
-              Join Discord
+              Join Community
             </TrackedButton>
             {/* Desktop-only Create button */}
             <Link href="/create" className="hidden sm:block ml-4">
@@ -89,7 +89,9 @@ export default function Header() {
           trackingProperties={{ location: "explore_header_mobile_fab" }}
           size="lg"
           className={cn(
-            "rounded-full w-14 h-14 shadow-lg bg-primary hover:bg-primary/90",
+            "rounded-full w-14 h-14 shadow-lg",
+            "alwaysAnimatedButton",
+            isPreviewOpen && "opacity-0 pointer-events-none",
             "flex items-center justify-center",
           )}
         >
