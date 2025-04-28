@@ -40,7 +40,7 @@ export default function Header() {
           </a>
         </div>
         <div className="flex flex-1 justify-end">
-        <Link href="https://discord.com/invite/hxyNHeSzCK">
+          <Link href="https://discord.com/invite/hxyNHeSzCK">
             <TrackedButton
               trackingEvent="explore_header_community_clicked"
               trackingProperties={{ location: "explore_header" }}
