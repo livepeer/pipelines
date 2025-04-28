@@ -4,6 +4,8 @@ import { clips as clipsTable, users } from "@/lib/db/schema";
 import { requireAdminAuth } from "@/app/api/admin/auth";
 import { eq, isNull, isNotNull, asc, and } from "drizzle-orm";
 
+export const dynamic = "force-dynamic";
+
 type AdminFetchedClip = {
   id: number;
   video_url: string;
