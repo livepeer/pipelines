@@ -31,7 +31,7 @@ export default function Header() {
     >
       <nav
         aria-label="Global"
-        className="mx-auto flex items-center justify-between py-4 px-6 lg:px-8"
+        className="mx-auto flex items-center justify-between py-4 px-4 sm:px-6 lg:px-8"
       >
         <div className="flex flex-1">
           <a href="#" className="-m-1.5 p-1.5">
@@ -39,12 +39,12 @@ export default function Header() {
             <Logo />
           </a>
         </div>
-        <div className="flex flex-1 justify-end gap-4">
+        <div className="flex flex-1 justify-end gap-2 sm:gap-4">
           <TrackedButton
             trackingEvent="explore_header_community_clicked"
             trackingProperties={{ location: "explore_header" }}
             variant="ghost"
-            className="text-sm"
+            className="text-sm rounded-md px-2 sm:px-4"
             onClick={() => {
               window.open(
                 "https://discord.com/invite/hxyNHeSzCK",
@@ -63,7 +63,7 @@ export default function Header() {
               className={cn(
                 "alwaysAnimatedButton",
                 isPreviewOpen && "opacity-0 pointer-events-none",
-                "px-8",
+                "px-4 sm:px-8",
               )}
             >
               Create
