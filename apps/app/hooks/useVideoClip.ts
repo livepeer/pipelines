@@ -13,6 +13,7 @@ declare global {
 export type ClipRecordingMode = "horizontal" | "vertical" | "output-only";
 
 export const CLIP_DURATION = 30000;
+const MAX_CLIP_SIZE = 3 * 1024 * 1024; // 3MB in bytes
 
 const FRAME_RATE = 30;
 const INPUT_DELAY = 1000; // 1 second delay for input video - increase or decreas to sync
@@ -199,8 +200,21 @@ export const useVideoClip = () => {
     const mediaRecorder = new MediaRecorder(canvasStream, { mimeType });
 
     const chunks: Blob[] = [];
+    let totalSize = 0;
     mediaRecorder.ondataavailable = e => {
-      if (e.data.size > 0) chunks.push(e.data);
+      if (e.data.size > 0) {
+        chunks.push(e.data);
+        totalSize += e.data.size;
+
+        // Stop recording if we've reached the size limit
+        if (totalSize >= MAX_CLIP_SIZE) {
+          mediaRecorder.stop();
+          clearInterval(progressInterval);
+          if (timeoutId) clearTimeout(timeoutId);
+          isDrawing = false;
+          if (animationFrameId) cancelAnimationFrame(animationFrameId);
+        }
+      }
     };
 
     mediaRecorder.onstop = () => {
