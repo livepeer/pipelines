@@ -40,21 +40,21 @@ export default function Header() {
           </a>
         </div>
         <div className="flex flex-1 justify-end gap-4">
-            <TrackedButton
-              trackingEvent="explore_header_community_clicked"
-              trackingProperties={{ location: "explore_header" }}
-              variant="ghost"
-              className="text-sm"
-              onClick={() => {
-                window.open(
-                  "https://discord.com/invite/hxyNHeSzCK",
-                  "_blank",
-                  "noopener noreferrer"
-                );
-              }}
-            >
-              Join Discord
-            </TrackedButton>
+          <TrackedButton
+            trackingEvent="explore_header_community_clicked"
+            trackingProperties={{ location: "explore_header" }}
+            variant="ghost"
+            className="text-sm"
+            onClick={() => {
+              window.open(
+                "https://discord.com/invite/hxyNHeSzCK",
+                "_blank",
+                "noopener noreferrer",
+              );
+            }}
+          >
+            Join Discord
+          </TrackedButton>
           <Link href="/create">
             <TrackedButton
               trackingEvent="explore_header_start_creating_clicked"
