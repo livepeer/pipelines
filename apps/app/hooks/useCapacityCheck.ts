@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 
 interface CapacityData {
   totalContainers: number;
@@ -11,6 +12,7 @@ export function useCapacityCheck() {
   const [hasCapacity, setHasCapacity] = useState(true);
   const [capacityData, setCapacityData] = useState<CapacityData | null>(null);
   const [error, setError] = useState<Error | null>(null);
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     const checkCapacity = async () => {
@@ -25,7 +27,13 @@ export function useCapacityCheck() {
 
         const data: CapacityData = await response.json();
         setCapacityData(data);
-        setHasCapacity(data.idleContainers > 0);
+
+        const minCapacityParam = searchParams.get("minCapacity");
+        const minCapacity = minCapacityParam
+          ? parseInt(minCapacityParam, 10)
+          : 0;
+
+        setHasCapacity(data.idleContainers > minCapacity);
       } catch (err) {
         console.error("Failed to check capacity:", err);
         setError(err instanceof Error ? err : new Error(String(err)));
@@ -40,7 +48,7 @@ export function useCapacityCheck() {
     };
 
     checkCapacity();
-  }, []);
+  }, [searchParams]);
 
   return { loading, hasCapacity, capacityData, error };
 }
