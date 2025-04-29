@@ -67,10 +67,10 @@ export default function Header() {
                 className={cn(
                   "alwaysAnimatedButton",
                   isPreviewOpen && "opacity-0 pointer-events-none",
-                  "px-8",
+                  "px-4",
                 )}
               >
-                Create <VideoAISparkles className={cn("text-black")} />
+                Create <VideoAISparkles className={cn("text-black w-10 h-10")} />
               </TrackedButton>
             </Link>
           </div>
