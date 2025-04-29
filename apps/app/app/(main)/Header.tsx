@@ -95,7 +95,7 @@ export default function Header() {
             isPreviewOpen && "opacity-0 pointer-events-none",
           )}
         >
-          <VideoAISparkles className={cn("text-black w-full h-full")} />
+          <VideoAISparkles className={cn("text-black w-8 h-8")} />
         </TrackedButton>
       </Link>
     </>
