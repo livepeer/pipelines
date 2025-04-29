@@ -95,7 +95,8 @@ export default function Header() {
             isPreviewOpen && "opacity-0 pointer-events-none",
           )}
         >
-          <VideoAISparkles className={cn("text-black w-8 h-8")} />
+          {/* Our default button overrides the size of child SVGs. Rather than change the button, I've overridden the CSS here. */}
+          <VideoAISparkles className={cn("text-black !w-11 !h-11")} />
         </TrackedButton>
       </Link>
     </>
