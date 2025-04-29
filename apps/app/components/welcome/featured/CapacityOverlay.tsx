@@ -6,6 +6,32 @@ import { useState } from "react";
 import track from "@/lib/track";
 import { Loader2 } from "lucide-react";
 
+const BackToExploreLink = ({ className = "" }: { className?: string }) => (
+  <a
+    href="/"
+    className={`text-gray-500 font-light text-sm tracking-wide flex items-center ${className}`}
+    onClick={() => track("capacity_back_to_explore_clicked")}
+  >
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className="mr-1"
+    >
+      <path
+        d="M15 18L9 12L15 6"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+    Back to explore
+  </a>
+);
+
 interface CapacityOverlayProps {
   onSubmit?: (email: string) => Promise<void>;
   isLoading?: boolean;
@@ -69,8 +95,8 @@ export function CapacityOverlay({
 
   if (isLoading) {
     return (
-      <div className="absolute inset-0 z-10 flex items-center justify-center">
-        <div className="cloud-container absolute inset-0 z-0">
+      <div className="md:absolute fixed inset-0 z-[9999] flex items-center justify-center md:bg-transparent bg-white">
+        <div className="cloud-container absolute inset-0 z-0 hidden md:block">
           <div
             className="cloud-layer"
             id="cloud1"
@@ -95,7 +121,7 @@ export function CapacityOverlay({
           ></div>
         </div>
 
-        <div className="text-center z-10 relative">
+        <div className="text-center z-10 relative max-w-xs md:max-w-sm w-full px-4 md:px-8">
           <Loader2 className="w-10 h-10 animate-spin mx-auto mb-4 text-primary" />
           <h3 className="text-lg font-medium">Checking capacity...</h3>
         </div>
@@ -104,8 +130,8 @@ export function CapacityOverlay({
   }
 
   return (
-    <div className="absolute inset-0 z-10 flex items-center justify-center">
-      <div className="cloud-container absolute inset-0 z-0">
+    <div className="md:absolute fixed inset-0 z-[9999] flex items-center justify-center md:bg-transparent bg-white">
+      <div className="cloud-container absolute inset-0 z-0 hidden md:block">
         <div className="cloud-layer" id="cloud1" style={{ opacity: 0.1 }}></div>
         <div className="cloud-layer" id="cloud3" style={{ opacity: 0.2 }}></div>
         <div className="cloud-layer" id="cloud5" style={{ opacity: 0.1 }}></div>
@@ -124,9 +150,9 @@ export function CapacityOverlay({
         <div className="bg-gradient-to-b from-transparent to-[rgba(0,0,0,0.1)] absolute inset-0 z-[7] opacity-[30%]"></div>
       </div>
 
-      <div className="max-w-md w-full px-8 py-10 z-10 relative">
+      <div className="max-w-xs md:max-w-sm w-full px-4 md:px-8 py-8 md:py-10 z-10 relative md:bg-transparent">
         <div
-          className="absolute -inset-8 blur-lg z-0 rounded-full"
+          className="absolute -inset-8 blur-lg z-0 rounded-full hidden md:block"
           style={{
             background:
               "radial-gradient(circle, rgba(254,254,254,0.6) 30%, rgba(254,254,254,0.8) 60%, rgba(254,254,254,0.2) 80%, rgba(254,254,254,0) 100%)",
@@ -165,10 +191,13 @@ export function CapacityOverlay({
 
         {isSubmitted ? (
           <div className="py-6 text-center relative z-10">
-            <h3 className="text-xl font-medium mb-2">Thank you!</h3>
-            <p className="text-muted-foreground">
+            <h3 className="text-3xl font-medium mb-3">Thank you!</h3>
+            <p className="text-muted-foreground mb-8">
               We&apos;ll notify you once Daydream has available capacity.
             </p>
+            <div className="hidden md:flex justify-center">
+              <BackToExploreLink />
+            </div>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
@@ -191,7 +220,8 @@ export function CapacityOverlay({
             <div className="flex flex-col gap-3">
               <Button
                 type="submit"
-                className="w-full rounded-md"
+                variant="outline"
+                className="w-full rounded-md alwaysAnimatedButton"
                 disabled={isSubmitting}
               >
                 {isSubmitting ? "Submitting..." : "Notify me"}
@@ -208,6 +238,10 @@ export function CapacityOverlay({
             </div>
           </form>
         )}
+      </div>
+
+      <div className="md:hidden absolute bottom-8 text-center z-10">
+        <BackToExploreLink />
       </div>
     </div>
   );
