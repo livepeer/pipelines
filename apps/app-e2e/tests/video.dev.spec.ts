@@ -2,6 +2,7 @@ import { test } from "@playwright/test";
 import {
   assertVideoContentChanging,
   assertVideoPlaying,
+  selectWhipServer,
   BROADCAST_VIDEO_TEST_ID,
   NUM_SCREENSHOTS,
   OVERALL_TEST_TIMEOUT_MS,
@@ -12,7 +13,7 @@ import {
 test.describe("Daydream Page Tests", () => {
   test.beforeEach(async ({ page, context }) => {
     await context.grantPermissions(["camera", "microphone"]);
-    await page.goto("/create");
+    await page.goto(selectWhipServer("/create"));
   });
 
   test("video elements load and play correctly", async ({ page }) => {

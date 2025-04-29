@@ -33,6 +33,15 @@ export const EXTENSION = "png";
 
 export const SEND_METRICS = process.env.SEND_METRICS === "true";
 
+export function selectWhipServer(path: string): string {
+  const REGIONS = (process.env.WHIP_REGIONS || "").split(",");
+  if (REGIONS.length > 0 && Math.random() > 0.49) {
+    const region = REGIONS[Math.floor(Math.random() * REGIONS.length)];
+    return `${path}?whipServer=https://${region}/live/video-to-video/`;
+  }
+  return path;
+}
+
 /**
  * Asserts that a video element is visible, loaded, playing, and progressing.
  * @param video - The Playwright Locator for the video element.

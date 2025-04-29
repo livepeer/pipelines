@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test";
 import {
   assertVideoContentChanging,
   assertVideoPlaying,
+  selectWhipServer,
   BROADCAST_VIDEO_TEST_ID,
   MIN,
   NUM_SCREENSHOTS,
@@ -43,7 +44,7 @@ if (!APP_URL) {
 test.describe("Daydream Page Tests", () => {
   test.beforeEach(async ({ page, context }) => {
     await context.grantPermissions(["camera", "microphone"]);
-    await page.goto("/create");
+    await page.goto(selectWhipServer("/create"));
   });
 
   test.afterEach(async ({}, testInfo) => {
