@@ -70,7 +70,7 @@ export default function Header() {
                   "px-4",
                 )}
               >
-                Create <VideoAISparkles className={cn("text-black w-10 h-10")} />
+                <VideoAISparkles className={cn("text-black w-10 h-10")} /> Create
               </TrackedButton>
             </Link>
           </div>

@@ -9,6 +9,7 @@ import { TrackedButton } from "@/components/analytics/TrackedButton";
 import { useGuestUserStore } from "@/hooks/useGuestUser";
 import { usePrivy } from "@/hooks/usePrivy";
 import { useRouter } from "next/navigation";
+import VideoAISparkles from "components/daydream/CustomIcons/VideoAISparkles";
 
 interface OptimizedVideoProps {
   src: string;
@@ -178,7 +179,7 @@ export default function OptimizedVideo({
                   className="inline-flex items-center space-x-0.5 px-3 py-2 h-8 bg-black/20 backdrop-blur-md text-white rounded-full border-white border shadow-sm scale-90"
                   onClick={handleTryPrompt}
                 >
-                  <WandSparkles className="w-1.5 h-1.5" />
+                  <VideoAISparkles className={cn("text-black w-1.5 h-1.5")} />
                   <span className="text-[0.7rem] tracking-wide">
                     Try this prompt
                   </span>
@@ -202,7 +203,7 @@ export default function OptimizedVideo({
                     variant="outline"
                     className="inline-flex items-center space-x-0.5 px-3 py-2 h-8 bg-black/20 backdrop-blur-md text-white rounded-full border-white border shadow-sm scale-90"
                   >
-                    <WandSparkles className="w-1.5 h-1.5" />
+                    <VideoAISparkles className={cn("text-black w-1.5 h-1.5")} />
                     <span className="text-[0.7rem] tracking-wide">
                       Try this prompt
                     </span>
