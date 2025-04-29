@@ -1,7 +1,10 @@
 import Script from "next/script";
+import { getAppConfig } from "../lib/env";
 
 export const ThirdPartyAnalytics = () => {
-  if (process.env.NODE_ENV !== "production") {
+  const appConfig = getAppConfig();
+
+  if (appConfig.environment !== "production") {
     return null;
   }
 
