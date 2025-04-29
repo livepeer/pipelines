@@ -56,7 +56,7 @@ export default function Header() {
                 );
               }}
             >
-              Join Discord <DiscordLogoIcon className="h-4 w-4" />
+              <DiscordLogoIcon className="h-4 w-4" /> Join Discord
             </TrackedButton>
             {/* Desktop-only Create button */}
             <Link href="/create" className="hidden sm:block ml-4">

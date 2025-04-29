@@ -188,7 +188,7 @@ export function UnifiedSignupModal({
                   );
                 }}
               >
-                Join Discord <DiscordLogoIcon className="h-4 w-4" />
+                <DiscordLogoIcon className="h-4 w-4" /> Join Discord
               </Button>
               <Button
                 onClick={e => {

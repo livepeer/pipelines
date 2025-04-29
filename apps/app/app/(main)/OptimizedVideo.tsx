@@ -181,7 +181,7 @@ export default function OptimizedVideo({
                 >
                             {/* Our default button overrides the size of child SVGs. Rather than change the button, I've overridden the CSS here. */}
 
-                  <VideoAISparkles className={cn("!w-1.5 !h-1.5")} />
+                  <VideoAISparkles className={cn("!w-4 !h-4")} />
                   <span className="text-[0.7rem] tracking-wide">
                     Try this prompt
                   </span>
@@ -205,9 +205,9 @@ export default function OptimizedVideo({
                     variant="outline"
                     className="inline-flex items-center space-x-0.5 px-3 py-2 h-8 bg-black/20 backdrop-blur-md text-white rounded-full border-white border shadow-sm scale-90"
                   >
-                              {/* Our default button overrides the size of child SVGs. Rather than change the button, I've overridden the CSS here. */}
+                   {/* Our default button overrides the size of child SVGs. Rather than change the button, I've overridden the CSS here. */}
 
-                    <VideoAISparkles className={cn("!w-1.5 !h-1.5")} />
+                    <VideoAISparkles className={cn("!w-4 !h-4")} />
                     <span className="text-[0.7rem] tracking-wide">
                       Try this prompt
                     </span>

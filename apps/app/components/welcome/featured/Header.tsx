@@ -110,7 +110,7 @@ export const Header = ({
               className="alwaysAnimatedButton rounded-md"
               size="sm"
             >
-              Join Discord <DiscordLogoIcon className="h-4 w-4" />
+              <DiscordLogoIcon className="h-4 w-4" /> Join Discord
             </TrackedButton>
           </Link>
         </div>
