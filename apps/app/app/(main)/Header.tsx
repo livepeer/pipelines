@@ -6,8 +6,8 @@ import { usePreviewStore } from "@/hooks/usePreviewStore";
 import { cn } from "@repo/design-system/lib/utils";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Plus } from "lucide-react";
 import { DiscordLogoIcon } from "@radix-ui/react-icons";
+import VideoAISparkles from "components/daydream/CustomIcons/VideoAISparkles";
 
 export default function Header() {
   const { isPreviewOpen } = usePreviewStore();
@@ -90,12 +90,12 @@ export default function Header() {
           trackingProperties={{ location: "explore_header_mobile_fab" }}
           size="lg"
           className={cn(
-            "h-14 w-14 rounded-md shadow-lg text-black",
+            "h-14 w-14 rounded-md shadow-2xl text-black",
             "alwaysAnimatedButton",
             isPreviewOpen && "opacity-0 pointer-events-none",
           )}
         >
-          <Plus className="h-6 w-6" />
+          <VideoAISparkles className={cn("text-black w-full h-full")} />
         </TrackedButton>
       </Link>
     </>
