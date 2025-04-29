@@ -34,15 +34,16 @@ import {
   DREAMSHAPER_PARAMS_STORAGE_KEY,
   DREAMSHAPER_PARAMS_VERSION_KEY,
 } from "@/hooks/useDreamshaper";
+import { CapacityOverlay } from "./CapacityOverlay";
 
 interface DreamshaperProps {
   isGuestMode?: boolean;
 }
 
 export default function Dreamshaper({ isGuestMode = false }: DreamshaperProps) {
-  useInitialization();
+  const { capacityLoading, hasCapacity } = useInitialization();
   useParamsHandling();
-  useCapacityMonitor();
+  //useCapacityMonitor(); // TODO we can remove this hook since we're using the actual api now
 
   const { handleStreamUpdate } = useStreamUpdates();
   const { stream, pipeline, sharedPrompt } = useDreamshaperStore();
@@ -276,6 +277,15 @@ export default function Dreamshaper({ isGuestMode = false }: DreamshaperProps) {
     }
   }, [live]);
 
+  useEffect(() => {
+    if (!capacityLoading && !hasCapacity) {
+      track("capacity_check_failed", {
+        is_authenticated: authenticated,
+        is_guest_mode: isGuestMode,
+      });
+    }
+  }, [capacityLoading, hasCapacity, authenticated, isGuestMode]);
+
   const handleTutorialComplete = () => {
     setShowTutorial(false);
     localStorage.setItem("has_seen_tutorial", "true");
@@ -326,10 +336,19 @@ export default function Dreamshaper({ isGuestMode = false }: DreamshaperProps) {
   };
 
   return (
-    <div className="relative">
+    <div className="flex-1 flex flex-col pb-6 md:pb-0 h-screen overflow-y-auto">
       <div className={currentStep !== "main" ? "hidden" : "block"}>
         <div className="relative flex flex-col min-h-screen overflow-y-auto">
-          <Header isGuestMode={isGuestMode} onShareAttempt={handleGuestShare} />
+          <div
+            className={
+              !hasCapacity ? "opacity-0 pointer-events-none" : "opacity-100"
+            }
+          >
+            <Header
+              isGuestMode={isGuestMode}
+              onShareAttempt={handleGuestShare}
+            />
+          </div>
 
           <div
             className={cn(
@@ -345,18 +364,30 @@ export default function Dreamshaper({ isGuestMode = false }: DreamshaperProps) {
                 "md:min-w-[596px]",
               )}
             >
-              <MainContent />
-              {showTutorial && (
-                <TutorialVideo onComplete={handleTutorialComplete} />
+              {hasCapacity ? (
+                <>
+                  <MainContent />
+                  {showTutorial && (
+                    <TutorialVideo onComplete={handleTutorialComplete} />
+                  )}
+                </>
+              ) : (
+                <CapacityOverlay isLoading={capacityLoading} />
               )}
             </div>
           </div>
 
           {/* Input and Broadcast Section */}
-          {!showTutorial && <ManagedBroadcast />}
-          {!showTutorial && (
-            <InputPrompt onPromptSubmit={handleGuestPromptSubmit} />
-          )}
+          <div
+            className={
+              !hasCapacity ? "opacity-0 pointer-events-none" : "opacity-100"
+            }
+          >
+            {!showTutorial && <ManagedBroadcast />}
+            {!showTutorial && (
+              <InputPrompt onPromptSubmit={handleGuestPromptSubmit} />
+            )}
+          </div>
           <StreamDebugPanel />
         </div>
       </div>
@@ -368,7 +399,13 @@ export default function Dreamshaper({ isGuestMode = false }: DreamshaperProps) {
       />
 
       {/* BentoGrid overlay for never-ending prompt cloning */}
-      <BentoGridOverlay />
+      <div
+        className={
+          !hasCapacity ? "opacity-0 pointer-events-none" : "opacity-100"
+        }
+      >
+        <BentoGridOverlay />
+      </div>
     </div>
   );
 }

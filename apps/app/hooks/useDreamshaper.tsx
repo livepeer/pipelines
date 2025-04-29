@@ -16,6 +16,7 @@ import { useStreamStatus } from "./useStreamStatus";
 import track from "@/lib/track";
 import { usePrivy } from "@/hooks/usePrivy";
 import { usePromptStore } from "@/hooks/usePromptStore";
+import { useCapacityCheck } from "@/hooks/useCapacityCheck";
 
 export const DEFAULT_PIPELINE_ID = "pip_DRQREDnSei4HQyC8"; // Staging Dreamshaper ID
 export const DUMMY_USER_ID_FOR_NON_AUTHENTICATED_USERS =
@@ -550,6 +551,7 @@ export function useStreamUpdates() {
 }
 
 export function useInitialization() {
+  const { loading: capacityLoading, hasCapacity } = useCapacityCheck();
   const { user, ready } = usePrivy();
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -563,6 +565,16 @@ export function useInitialization() {
     DEFAULT_PIPELINE_ID;
 
   useEffect(() => {
+    // Skip initialization entirely if we don't have capacity
+    if (capacityLoading) {
+      return; // Wait until capacity check is complete
+    }
+
+    if (!hasCapacity) {
+      setLoading(false); // Make sure to set loading to false when at capacity
+      return;
+    }
+
     if (!ready) return;
 
     let isMounted = true;
@@ -638,7 +650,7 @@ export function useInitialization() {
     return () => {
       isMounted = false;
     };
-  }, [pathname, ready, user, searchParams]);
+  }, [pathname, ready, user, searchParams, capacityLoading, hasCapacity]);
 
   useEffect(() => {
     if (!stream || !stream.stream_key) {
@@ -648,6 +660,8 @@ export function useInitialization() {
       getStreamUrl(stream?.stream_key, searchParams, stream.whip_url),
     );
   }, [stream]);
+
+  return { capacityLoading, hasCapacity };
 }
 
 export const useShareLink = () => {
