@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { PROFANITY_WORD_LIST } from "./utils";
 
-export const MAX_PROMPT_LENGTH = 490;
+export const MAX_PROMPT_LENGTH = 300;
 
 export const useValidateInput = (prompt: string) => {
   const [profanity, setProfanity] = useState(false);
