@@ -25,7 +25,7 @@ export function useCapacityCheck() {
 
         const data: CapacityData = await response.json();
         setCapacityData(data);
-        setHasCapacity(data.idleContainers > 18);
+        setHasCapacity(data.idleContainers > 0);
       } catch (err) {
         console.error("Failed to check capacity:", err);
         setError(err instanceof Error ? err : new Error(String(err)));
