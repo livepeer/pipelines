@@ -311,7 +311,7 @@ export function BroadcastWithControls({ className }: { className?: string }) {
                   className="flex gap-2 items-center"
                 >
                   <div className="bg-red-500 animate-pulse h-1.5 w-1.5 rounded-full" />
-                  <span className="text-xs select-none">LIVE</span>
+                  <span className="text-xs select-none">ACTIVE</span>
                 </Broadcast.StatusIndicator>
 
                 <Broadcast.StatusIndicator
