@@ -15,7 +15,7 @@ import { customAlphabet } from "nanoid";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import mime from "mime-types";
-import Busboy from "busboy";
+import { Readable } from "stream";
 
 type FetchedClip = {
   id: number;
@@ -209,16 +209,100 @@ export async function POST(request: NextRequest) {
     }
     userId = privyUser.userId;
 
-    // Get the form data as a stream
-    const formData = await request.formData();
-    const sourceClip = formData.get("sourceClip") as File | null;
-    const watermarkedClip = formData.get("watermarkedClip") as File | null;
-    const thumbnail = formData.get("thumbnail") as File | null;
+    // Get the raw request body as a stream
+    const contentType = request.headers.get("content-type") || "";
+    const boundary = contentType.split("boundary=")[1];
+
+    if (!boundary) {
+      return NextResponse.json(
+        { error: "Invalid request", details: "No boundary found in content-type" },
+        { status: 400 },
+      );
+    }
+
+    // Create a readable stream from the request body
+    const reader = request.body?.getReader();
+    if (!reader) {
+      return NextResponse.json(
+        { error: "Invalid request", details: "No request body" },
+        { status: 400 },
+      );
+    }
+
+    // Convert the ReadableStream to a Node.js Readable stream
+    const nodeStream = new Readable({
+      async read() {
+        const { done, value } = await reader.read();
+        if (done) {
+          this.push(null);
+        } else {
+          this.push(value);
+        }
+      },
+    });
+
+    // Parse the multipart form data
+    const formData = new Map();
+    let currentField: string | null = null;
+    let currentFile: { type: string; stream: ReadableStream<Uint8Array> } | null = null;
+    let buffer = Buffer.alloc(0);
+
+    nodeStream.on("data", (chunk: Buffer) => {
+      buffer = Buffer.concat([buffer, chunk]);
+      
+      // Look for boundary
+      const boundaryIndex = buffer.indexOf(`--${boundary}`);
+      if (boundaryIndex === -1) return;
+
+      // Process the part before the boundary
+      const part = buffer.slice(0, boundaryIndex);
+      buffer = buffer.slice(boundaryIndex + boundary.length + 2);
+
+      if (part.length === 0) return;
+
+      // Parse headers
+      const headerEnd = part.indexOf("\r\n\r\n");
+      if (headerEnd === -1) return;
+
+      const headers = part.slice(0, headerEnd).toString();
+      const content = part.slice(headerEnd + 4);
+
+      const nameMatch = headers.match(/name="([^"]+)"/);
+      const filenameMatch = headers.match(/filename="([^"]+)"/);
+      const contentTypeMatch = headers.match(/Content-Type: ([^\r\n]+)/);
+
+      if (nameMatch) {
+        const name = nameMatch[1];
+        if (filenameMatch) {
+          // This is a file
+          const contentType = contentTypeMatch ? contentTypeMatch[1] : "application/octet-stream";
+          currentFile = {
+            type: contentType,
+            stream: new ReadableStream({
+              start(controller) {
+                controller.enqueue(content);
+                controller.close();
+              },
+            }),
+          };
+          formData.set(name, currentFile);
+        } else {
+          // This is a field
+          formData.set(name, content.toString());
+        }
+      }
+    });
+
+    // Wait for the stream to end
+    await new Promise((resolve) => nodeStream.on("end", resolve));
+
+    // Extract form data
+    const sourceClip = formData.get("sourceClip") as { type: string; stream: ReadableStream<Uint8Array> } | null;
+    const watermarkedClip = formData.get("watermarkedClip") as { type: string; stream: ReadableStream<Uint8Array> } | null;
+    const thumbnail = formData.get("thumbnail") as { type: string; stream: ReadableStream<Uint8Array> } | null;
     const title = formData.get("title") as string | null;
     const prompt = (formData.get("prompt") as string) || "";
-    const sourceClipId = formData.get("sourceClipId")
-      ? Number(formData.get("sourceClipId"))
-      : null;
+    const sourceClipId = formData.get("sourceClipId") ? Number(formData.get("sourceClipId")) : null;
     const isFeatured = formData.get("isFeatured") === "true";
 
     if (!sourceClip) {
@@ -279,9 +363,7 @@ export async function POST(request: NextRequest) {
     let clipUrl: string;
 
     try {
-      // Use the file's stream directly
-      const fileStream = sourceClip.stream();
-      clipUrl = await uploadToGCS(fileStream, clipPath, fileType);
+      clipUrl = await uploadToGCS(sourceClip.stream, clipPath, fileType);
     } catch (uploadError) {
       console.error(`GCS Upload failed for clipId ${clipId}:`, uploadError);
       try {
@@ -311,9 +393,8 @@ export async function POST(request: NextRequest) {
           clipId,
           `clip.${watermarkedExtension}`,
         );
-        const watermarkedStream = watermarkedClip.stream();
         watermarkedClipUrl = await uploadToGCS(
-          watermarkedStream,
+          watermarkedClip.stream,
           watermarkedPath,
           watermarkedFileType,
         );
@@ -335,9 +416,8 @@ export async function POST(request: NextRequest) {
           clipId,
           `thumbnail.${thumbnailExtension}`,
         );
-        const thumbnailStream = thumbnail.stream();
         thumbnailUrl = await uploadToGCS(
-          thumbnailStream,
+          thumbnail.stream,
           thumbnailPath,
           thumbnailFileType,
         );
