@@ -122,7 +122,9 @@ export default function OptimizedVideo({
       if (isOverlayMode && onTryPrompt) {
         onTryPrompt(prompt);
       } else {
-        router.push(`/create?inputPrompt=${btoa(prompt)}`);
+        router.push(
+          `/create?inputPrompt=${btoa(prompt)}&sourceClipId=${clipId}`,
+        );
       }
     } else {
       if (!isOverlayMode) {

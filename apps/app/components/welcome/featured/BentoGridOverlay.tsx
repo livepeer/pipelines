@@ -12,6 +12,7 @@ import { usePrivy } from "@/hooks/usePrivy";
 import track from "@/lib/track";
 import { cn } from "@repo/design-system/lib/utils";
 import { OverlayClipViewer } from "./OverlayClipViewer";
+import { setSourceClipIdToCookies } from "@/components/daydream/Clipping/actions";
 
 export const BentoGridOverlay = () => {
   const {
@@ -144,12 +145,17 @@ export const BentoGridOverlay = () => {
     }
   }, [isOverlayOpen, overlayType]);
 
-  const handleTryPrompt = (prompt: string) => {
+  const handleTryPrompt = async (prompt: string) => {
     if (prompt && handleStreamUpdate) {
       handleStreamUpdate(prompt, { silent: true });
       setLastSubmittedPrompt(prompt);
       setHasSubmittedPrompt(true);
       setLastPrompt(prompt);
+
+      // Set the source clip ID to cookies
+      if (selectedClipId) {
+        await setSourceClipIdToCookies(selectedClipId);
+      }
 
       if (!authenticated) {
         incrementPromptCount();
