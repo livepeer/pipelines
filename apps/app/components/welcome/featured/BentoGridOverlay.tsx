@@ -145,17 +145,12 @@ export const BentoGridOverlay = () => {
     }
   }, [isOverlayOpen, overlayType]);
 
-  const handleTryPrompt = async (prompt: string) => {
+  const handleTryPrompt = (prompt: string) => {
     if (prompt && handleStreamUpdate) {
       handleStreamUpdate(prompt, { silent: true });
       setLastSubmittedPrompt(prompt);
       setHasSubmittedPrompt(true);
       setLastPrompt(prompt);
-
-      // Set the source clip ID to cookies
-      if (selectedClipId) {
-        await setSourceClipIdToCookies(selectedClipId);
-      }
 
       if (!authenticated) {
         incrementPromptCount();

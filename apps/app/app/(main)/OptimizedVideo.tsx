@@ -9,6 +9,7 @@ import { TrackedButton } from "@/components/analytics/TrackedButton";
 import { useGuestUserStore } from "@/hooks/useGuestUser";
 import { usePrivy } from "@/hooks/usePrivy";
 import { useRouter } from "next/navigation";
+import { setSourceClipIdToCookies } from "@/components/daydream/Clipping/actions";
 
 interface OptimizedVideoProps {
   src: string;
@@ -21,7 +22,7 @@ interface OptimizedVideoProps {
   remixCount: number;
   className?: string;
   isOverlayMode?: boolean;
-  onTryPrompt?: (prompt: string) => Promise<void>;
+  onTryPrompt?: (prompt: string) => void;
 }
 
 export default function OptimizedVideo({
@@ -120,7 +121,8 @@ export default function OptimizedVideo({
       }
 
       if (isOverlayMode && onTryPrompt) {
-        await onTryPrompt(prompt);
+        onTryPrompt(prompt);
+        await setSourceClipIdToCookies(clipId);
       } else {
         router.push(
           `/create?inputPrompt=${btoa(prompt)}&sourceClipId=${clipId}`,
