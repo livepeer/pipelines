@@ -15,12 +15,10 @@ import { customAlphabet } from "nanoid";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import mime from "mime-types";
-import { cookies } from "next/headers";
 import {
   deleteSourceClipIdFromCookies,
   getSourceClipIdFromCookies,
-  SOURCE_CLIP_ID_COOKIE_NAME,
-} from "@/components/daydream/Clipping/utils";
+} from "@/components/daydream/Clipping/actions";
 
 type FetchedClip = {
   id: number;
@@ -228,7 +226,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if the source clip is a remix from cookies
-    const remixedClipId = getSourceClipIdFromCookies();
+    const remixedClipId = await getSourceClipIdFromCookies();
 
     const result = ClipUploadSchema.safeParse({
       title,
@@ -377,7 +375,7 @@ export async function POST(request: NextRequest) {
       .where(eq(clipsTable.id, clipId));
 
     // Delete the source clip id from cookies to avoid huge remix counts per clip
-    deleteSourceClipIdFromCookies();
+    await deleteSourceClipIdFromCookies();
 
     return NextResponse.json({
       success: true,
