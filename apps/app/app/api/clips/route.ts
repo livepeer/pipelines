@@ -278,7 +278,10 @@ export async function POST(request: NextRequest) {
     try {
       uploadUrl = await getSignedUploadUrl(clipPath, fileType);
     } catch (error) {
-      console.error(`Failed to generate signed URL for clipId ${clipId}:`, error);
+      console.error(
+        `Failed to generate signed URL for clipId ${clipId}:`,
+        error,
+      );
       try {
         await db
           .update(clipsTable)

@@ -100,8 +100,8 @@ export async function getSignedUploadUrl(
   const file = bucket.file(path);
 
   const [url] = await file.getSignedUrl({
-    version: 'v4',
-    action: 'write',
+    version: "v4",
+    action: "write",
     expires: Date.now() + expiresIn * 1000,
     contentType,
   });
