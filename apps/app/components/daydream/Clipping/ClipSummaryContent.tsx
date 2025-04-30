@@ -35,11 +35,13 @@ export function ClipSummaryContent({
         "Content-Type": blob.type,
       },
     });
-    
+
     if (!response.ok) {
-      throw new Error(`Failed to upload to presigned URL: ${response.status} ${response.statusText}`);
+      throw new Error(
+        `Failed to upload to presigned URL: ${response.status} ${response.statusText}`,
+      );
     }
-    
+
     return response;
   };
 
@@ -47,11 +49,11 @@ export function ClipSummaryContent({
     if (clipData.clipUrl && clipData.clipFilename) {
       try {
         setIsUploading(true);
-        
+
         // Fetch the blob from the URL
         const response = await fetch(clipData.clipUrl);
         const blob = await response.blob();
-        
+
         // Get a presigned URL for uploading the clip
         const presignedResponse = await fetch("/api/clips/presigned-upload", {
           method: "POST",
@@ -63,44 +65,51 @@ export function ClipSummaryContent({
             filename: clipData.clipFilename,
           }),
         });
-        
+
         if (!presignedResponse.ok) {
           throw new Error("Failed to get presigned URL");
         }
-        
+
         const presignedData = await presignedResponse.json();
-        
+
         // Upload the clip directly to Google Cloud Storage
         await uploadWithPresignedUrl(presignedData.uploadUrl, blob);
-        
+
         // Get the public URL of the uploaded clip
         const gcsPublicUrl = `https://storage.googleapis.com/${presignedData.filePath}`;
-        
+
         // Upload thumbnail if available
         let thumbnailUrl = null;
         if (clipData.thumbnailUrl) {
           try {
             const thumbnailResponse = await fetch(clipData.thumbnailUrl);
             const thumbnailBlob = await thumbnailResponse.blob();
-            
+
             // Get a presigned URL for uploading the thumbnail
-            const thumbnailPresignedResponse = await fetch("/api/clips/presigned-thumbnail", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
+            const thumbnailPresignedResponse = await fetch(
+              "/api/clips/presigned-thumbnail",
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  clipId: presignedData.clipId,
+                  contentType: "image/jpeg",
+                }),
               },
-              body: JSON.stringify({
-                clipId: presignedData.clipId,
-                contentType: "image/jpeg",
-              }),
-            });
-            
+            );
+
             if (thumbnailPresignedResponse.ok) {
-              const thumbnailPresignedData = await thumbnailPresignedResponse.json();
-              
+              const thumbnailPresignedData =
+                await thumbnailPresignedResponse.json();
+
               // Upload the thumbnail directly to Google Cloud Storage
-              await uploadWithPresignedUrl(thumbnailPresignedData.uploadUrl, thumbnailBlob);
-              
+              await uploadWithPresignedUrl(
+                thumbnailPresignedData.uploadUrl,
+                thumbnailBlob,
+              );
+
               // Get the public URL of the uploaded thumbnail
               thumbnailUrl = `https://storage.googleapis.com/${thumbnailPresignedData.thumbnailPath}`;
             }
@@ -108,7 +117,7 @@ export function ClipSummaryContent({
             console.error("Error uploading thumbnail:", thumbnailError);
           }
         }
-        
+
         // Notify the server that uploads are complete and create database entries
         const finalizationData = {
           clipId: presignedData.clipId,
@@ -117,7 +126,7 @@ export function ClipSummaryContent({
           isFeatured,
           prompt: lastSubmittedPrompt || "",
         };
-        
+
         const apiResponse = await fetch("/api/clips", {
           method: "POST",
           headers: {
@@ -125,19 +134,19 @@ export function ClipSummaryContent({
           },
           body: JSON.stringify(finalizationData),
         });
-        
+
         if (apiResponse.ok) {
           const data = await apiResponse.json();
           if (!data.success) {
             throw new Error("Failed to finalize clip");
           }
-          
+
           setClipData({
             ...clipData,
             serverClipUrl: data.clip?.videoUrl,
             slug: data.clip?.slug,
           });
-          
+
           setClipStep("share");
         } else {
           console.error("Failed to finalize clip");

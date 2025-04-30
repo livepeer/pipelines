@@ -8,33 +8,36 @@ export async function POST(request: Request) {
     if (!privyUser) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-    
+
     const userId = privyUser.userId;
     const { clipId, contentType = "image/jpeg" } = await request.json();
-    
+
     if (!clipId) {
       return NextResponse.json(
         { error: "Clip ID is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
-    
+
     // Generate thumbnail path
     const thumbnailPath = `clips/${userId}/${clipId}/thumbnail.jpg`;
-    
+
     // Generate presigned URL for thumbnail
-    const uploadUrl = await generatePresignedUploadUrl(thumbnailPath, contentType);
-    
+    const uploadUrl = await generatePresignedUploadUrl(
+      thumbnailPath,
+      contentType,
+    );
+
     return NextResponse.json({
       success: true,
       uploadUrl,
-      thumbnailPath
+      thumbnailPath,
     });
   } catch (error) {
     console.error("Error generating thumbnail presigned URL:", error);
     return NextResponse.json(
       { error: "Failed to generate thumbnail upload URL" },
-      { status: 500 }
+      { status: 500 },
     );
   }
-} 
+}

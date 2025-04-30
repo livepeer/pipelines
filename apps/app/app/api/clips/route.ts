@@ -207,28 +207,34 @@ export async function POST(request: NextRequest) {
     userId = privyUser.userId;
 
     const contentType = request.headers.get("content-type") || "";
-    
+
     if (contentType.includes("application/json")) {
       const jsonData = await request.json();
-      
+
       const result = ClipUploadSchema.safeParse(jsonData);
-      
+
       if (!result.success) {
         return NextResponse.json(
           { error: "Invalid request", details: result.error.format() },
-          { status: 400 }
+          { status: 400 },
         );
       }
-      
-      const { clipId: externalClipId, videoUrl, thumbnailUrl, prompt, isFeatured } = jsonData;
-      
+
+      const {
+        clipId: externalClipId,
+        videoUrl,
+        thumbnailUrl,
+        prompt,
+        isFeatured,
+      } = jsonData;
+
       if (!externalClipId || !videoUrl) {
         return NextResponse.json(
           { error: "Missing required fields: clipId and videoUrl" },
-          { status: 400 }
+          { status: 400 },
         );
       }
-      
+
       const { initialClipId, slug } = await db.transaction(async tx => {
         const [newClip] = await tx
           .insert(clipsTable)

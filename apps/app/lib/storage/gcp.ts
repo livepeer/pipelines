@@ -58,16 +58,16 @@ export async function uploadToGCS(
 export async function generatePresignedUploadUrl(
   path: string,
   contentType: string,
-  expiresInMinutes: number = 15
+  expiresInMinutes: number = 15,
 ): Promise<string> {
   const bucket = storage.bucket(bucketName);
   const file = bucket.file(path);
-  
+
   const options: GetSignedUrlConfig = {
-    version: 'v4' as 'v4',
-    action: 'write' as 'write',
+    version: "v4" as "v4",
+    action: "write" as "write",
     expires: Date.now() + expiresInMinutes * 60 * 1000,
-    contentType
+    contentType,
   };
 
   try {
