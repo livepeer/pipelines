@@ -70,8 +70,8 @@ export default function Header() {
                   "px-4",
                 )}
               >
-              {/* Our default button overrides the size of child SVGs. Rather than change the button, I've overridden the CSS here. */}
-                <VideoAISparkles className={cn("text-black !w-10 !h-10")} /> Create
+                <VideoAISparkles className={cn("text-black !w-10 !h-10")} />{" "}
+                Create
               </TrackedButton>
             </Link>
           </div>
