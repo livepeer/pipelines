@@ -15,6 +15,7 @@ import { customAlphabet } from "nanoid";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import mime from "mime-types";
+import Busboy from "busboy";
 
 type FetchedClip = {
   id: number;
@@ -26,6 +27,11 @@ type FetchedClip = {
   slug: string | null;
   priority: number | null;
 };
+
+interface FileInfo {
+  stream: () => ReadableStream<Uint8Array>;
+  type: string;
+}
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -203,19 +209,16 @@ export async function POST(request: NextRequest) {
     }
     userId = privyUser.userId;
 
+    // Get the form data as a stream
     const formData = await request.formData();
-
     const sourceClip = formData.get("sourceClip") as File | null;
     const watermarkedClip = formData.get("watermarkedClip") as File | null;
     const thumbnail = formData.get("thumbnail") as File | null;
-
     const title = formData.get("title") as string | null;
     const prompt = (formData.get("prompt") as string) || "";
-
     const sourceClipId = formData.get("sourceClipId")
       ? Number(formData.get("sourceClipId"))
       : null;
-
     const isFeatured = formData.get("isFeatured") === "true";
 
     if (!sourceClip) {
@@ -276,7 +279,9 @@ export async function POST(request: NextRequest) {
     let clipUrl: string;
 
     try {
-      clipUrl = await uploadToGCS(sourceClip.stream(), clipPath, fileType);
+      // Use the file's stream directly
+      const fileStream = sourceClip.stream();
+      clipUrl = await uploadToGCS(fileStream, clipPath, fileType);
     } catch (uploadError) {
       console.error(`GCS Upload failed for clipId ${clipId}:`, uploadError);
       try {
@@ -299,19 +304,16 @@ export async function POST(request: NextRequest) {
     let watermarkedClipUrl = "";
     if (watermarkedClip) {
       try {
-        const watermarkedBuffer = Buffer.from(
-          await watermarkedClip.arrayBuffer(),
-        );
         const watermarkedFileType = watermarkedClip.type || "video/mp4";
-        const watermarkedExtension =
-          mime.extension(watermarkedFileType) || "mp4";
+        const watermarkedExtension = mime.extension(watermarkedFileType) || "mp4";
         const watermarkedPath = buildClipPath(
           userId,
           clipId,
           `clip.${watermarkedExtension}`,
         );
+        const watermarkedStream = watermarkedClip.stream();
         watermarkedClipUrl = await uploadToGCS(
-          watermarkedBuffer,
+          watermarkedStream,
           watermarkedPath,
           watermarkedFileType,
         );
@@ -326,7 +328,6 @@ export async function POST(request: NextRequest) {
     let thumbnailUrl;
     if (thumbnail) {
       try {
-        const thumbnailBuffer = Buffer.from(await thumbnail.arrayBuffer());
         const thumbnailFileType = thumbnail.type || "image/jpeg";
         const thumbnailExtension = mime.extension(thumbnailFileType) || "jpg";
         const thumbnailPath = buildClipPath(
@@ -334,8 +335,9 @@ export async function POST(request: NextRequest) {
           clipId,
           `thumbnail.${thumbnailExtension}`,
         );
+        const thumbnailStream = thumbnail.stream();
         thumbnailUrl = await uploadToGCS(
-          thumbnailBuffer,
+          thumbnailStream,
           thumbnailPath,
           thumbnailFileType,
         );

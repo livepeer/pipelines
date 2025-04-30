@@ -46,7 +46,7 @@ export async function uploadToGCS(
 
       if (Buffer.isBuffer(file)) {
         blobStream.end(file);
-      } else if ('getReader' in file) {
+      } else if ("getReader" in file) {
         // Handle Web ReadableStream
         const reader = file.getReader();
         const pump = async () => {
