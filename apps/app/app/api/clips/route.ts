@@ -16,6 +16,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import mime from "mime-types";
 import { Readable } from "stream";
+import { ReadableStream as WebReadableStream, TransformStream } from "stream/web";
+import { S3Client } from "@aws-sdk/client-s3";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { Clip } from "@prisma/client";
 
 type FetchedClip = {
   id: number;
@@ -29,8 +34,8 @@ type FetchedClip = {
 };
 
 interface FileInfo {
-  stream: () => ReadableStream<Uint8Array>;
   type: string;
+  stream: WebReadableStream<Uint8Array>;
 }
 
 export async function GET(request: Request) {
@@ -196,6 +201,9 @@ const ClipUploadSchema = z.object({
   prompt: z.string().nullable().optional(),
   sourceClipId: z.number().nullable().optional(),
   isFeatured: z.boolean().optional(),
+  sourceClipUrl: z.string(),
+  watermarkedClipUrl: z.string(),
+  thumbnailUrl: z.string(),
 });
 
 export async function POST(request: NextRequest) {
@@ -209,106 +217,21 @@ export async function POST(request: NextRequest) {
     }
     userId = privyUser.userId;
 
-    // Get the raw request body as a stream
-    const contentType = request.headers.get("content-type") || "";
-    const boundary = contentType.split("boundary=")[1];
-
-    if (!boundary) {
-      return NextResponse.json(
-        { error: "Invalid request", details: "No boundary found in content-type" },
-        { status: 400 },
-      );
-    }
-
-    // Create a readable stream from the request body
-    const reader = request.body?.getReader();
-    if (!reader) {
-      return NextResponse.json(
-        { error: "Invalid request", details: "No request body" },
-        { status: 400 },
-      );
-    }
-
-    // Convert the ReadableStream to a Node.js Readable stream
-    const nodeStream = new Readable({
-      async read() {
-        const { done, value } = await reader.read();
-        if (done) {
-          this.push(null);
-        } else {
-          this.push(value);
-        }
-      },
-    });
-
-    // Parse the multipart form data
-    const formData = new Map();
-    let currentField: string | null = null;
-    let currentFile: { type: string; stream: ReadableStream<Uint8Array> } | null = null;
-    let buffer = Buffer.alloc(0);
-
-    nodeStream.on("data", (chunk: Buffer) => {
-      buffer = Buffer.concat([buffer, chunk]);
-      
-      // Look for boundary
-      const boundaryIndex = buffer.indexOf(`--${boundary}`);
-      if (boundaryIndex === -1) return;
-
-      // Process the part before the boundary
-      const part = buffer.slice(0, boundaryIndex);
-      buffer = buffer.slice(boundaryIndex + boundary.length + 2);
-
-      if (part.length === 0) return;
-
-      // Parse headers
-      const headerEnd = part.indexOf("\r\n\r\n");
-      if (headerEnd === -1) return;
-
-      const headers = part.slice(0, headerEnd).toString();
-      const content = part.slice(headerEnd + 4);
-
-      const nameMatch = headers.match(/name="([^"]+)"/);
-      const filenameMatch = headers.match(/filename="([^"]+)"/);
-      const contentTypeMatch = headers.match(/Content-Type: ([^\r\n]+)/);
-
-      if (nameMatch) {
-        const name = nameMatch[1];
-        if (filenameMatch) {
-          // This is a file
-          const contentType = contentTypeMatch ? contentTypeMatch[1] : "application/octet-stream";
-          currentFile = {
-            type: contentType,
-            stream: new ReadableStream({
-              start(controller) {
-                controller.enqueue(content);
-                controller.close();
-              },
-            }),
-          };
-          formData.set(name, currentFile);
-        } else {
-          // This is a field
-          formData.set(name, content.toString());
-        }
-      }
-    });
-
-    // Wait for the stream to end
-    await new Promise((resolve) => nodeStream.on("end", resolve));
-
-    // Extract form data
-    const sourceClip = formData.get("sourceClip") as { type: string; stream: ReadableStream<Uint8Array> } | null;
-    const watermarkedClip = formData.get("watermarkedClip") as { type: string; stream: ReadableStream<Uint8Array> } | null;
-    const thumbnail = formData.get("thumbnail") as { type: string; stream: ReadableStream<Uint8Array> } | null;
+    const formData = await request.formData();
     const title = formData.get("title") as string | null;
     const prompt = (formData.get("prompt") as string) || "";
-    const sourceClipId = formData.get("sourceClipId") ? Number(formData.get("sourceClipId")) : null;
+    const sourceClipId = formData.get("sourceClipId")
+      ? Number(formData.get("sourceClipId"))
+      : null;
     const isFeatured = formData.get("isFeatured") === "true";
+    const sourceClipUrl = formData.get("sourceClipUrl") as string;
+    const watermarkedClipUrl = formData.get("watermarkedClipUrl") as string;
+    const thumbnailUrl = formData.get("thumbnailUrl") as string;
 
-    if (!sourceClip) {
+    if (!sourceClipUrl || !watermarkedClipUrl || !thumbnailUrl) {
       return NextResponse.json(
-        { error: "Invalid request", details: "No clip file provided" },
-        { status: 400 },
+        { error: "Missing required fields" },
+        { status: 400 }
       );
     }
 
@@ -317,12 +240,15 @@ export async function POST(request: NextRequest) {
       prompt,
       sourceClipId,
       isFeatured,
+      sourceClipUrl,
+      watermarkedClipUrl,
+      thumbnailUrl,
     });
 
     if (!result.success) {
       return NextResponse.json(
         { error: "Invalid request", details: result.error.format() },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -330,13 +256,13 @@ export async function POST(request: NextRequest) {
       const [newClip] = await tx
         .insert(clipsTable)
         .values({
-          video_url: "",
+          video_url: watermarkedClipUrl,
           video_title: title || null,
-          thumbnail_url: null,
+          thumbnail_url: thumbnailUrl,
           author_user_id: userId,
           source_clip_id: sourceClipId || null,
           prompt: prompt,
-          status: "uploading",
+          status: "completed",
           approval_status: isFeatured ? "pending" : "none",
         })
         .returning({ id: clipsTable.id });
@@ -350,102 +276,11 @@ export async function POST(request: NextRequest) {
       return { initialClipId: newClip.id, slug: generatedSlug };
     });
 
-    clipId = initialClipId;
-
-    const fileType = sourceClip.type || "video/mp4";
-    const sourceExtension = mime.extension(fileType) || "mp4";
-    const clipPath = buildClipPath(
-      userId,
-      clipId,
-      `source-clip.${sourceExtension}`,
-    );
-
-    let clipUrl: string;
-
-    try {
-      clipUrl = await uploadToGCS(sourceClip.stream, clipPath, fileType);
-    } catch (uploadError) {
-      console.error(`GCS Upload failed for clipId ${clipId}:`, uploadError);
-      try {
-        await db
-          .update(clipsTable)
-          .set({ status: "failed" })
-          .where(eq(clipsTable.id, clipId));
-      } catch (dbError) {
-        console.error(
-          `Failed to update status to 'failed' for clipId ${clipId}:`,
-          dbError,
-        );
-      }
-      return NextResponse.json(
-        { error: "Failed to upload clip to storage" },
-        { status: 500 },
-      );
-    }
-
-    let watermarkedClipUrl = "";
-    if (watermarkedClip) {
-      try {
-        const watermarkedFileType = watermarkedClip.type || "video/mp4";
-        const watermarkedExtension = mime.extension(watermarkedFileType) || "mp4";
-        const watermarkedPath = buildClipPath(
-          userId,
-          clipId,
-          `clip.${watermarkedExtension}`,
-        );
-        watermarkedClipUrl = await uploadToGCS(
-          watermarkedClip.stream,
-          watermarkedPath,
-          watermarkedFileType,
-        );
-      } catch (uploadError) {
-        console.error(
-          `Watermarked clip upload failed for clipId ${clipId}:`,
-          uploadError,
-        );
-      }
-    }
-
-    let thumbnailUrl;
-    if (thumbnail) {
-      try {
-        const thumbnailFileType = thumbnail.type || "image/jpeg";
-        const thumbnailExtension = mime.extension(thumbnailFileType) || "jpg";
-        const thumbnailPath = buildClipPath(
-          userId,
-          clipId,
-          `thumbnail.${thumbnailExtension}`,
-        );
-        thumbnailUrl = await uploadToGCS(
-          thumbnail.stream,
-          thumbnailPath,
-          thumbnailFileType,
-        );
-      } catch (uploadError) {
-        console.error(
-          `Thumbnail upload failed for clipId ${clipId}:`,
-          uploadError,
-        );
-        thumbnailUrl = buildThumbnailUrl(userId, clipId);
-      }
-    } else {
-      thumbnailUrl = buildThumbnailUrl(userId, clipId);
-    }
-
-    await db
-      .update(clipsTable)
-      .set({
-        video_url: watermarkedClipUrl || clipUrl,
-        thumbnail_url: thumbnailUrl,
-        status: "completed",
-      })
-      .where(eq(clipsTable.id, clipId));
-
     return NextResponse.json({
       success: true,
       clip: {
-        id: clipId,
-        videoUrl: watermarkedClipUrl || clipUrl,
+        id: initialClipId,
+        videoUrl: watermarkedClipUrl,
         thumbnailUrl: thumbnailUrl,
         title: title,
         slug: slug,
@@ -455,30 +290,20 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("Error processing clip upload:", error);
 
-    if (
-      clipId &&
-      error instanceof Error &&
-      !error.message.includes("Upload failed")
-    ) {
+    if (clipId) {
       try {
         await db
           .update(clipsTable)
           .set({ status: "failed" })
           .where(eq(clipsTable.id, clipId));
-        console.error(
-          `Set status to 'failed' for clipId ${clipId} due to general error.`,
-        );
-      } catch (dbUpdateError) {
-        console.error(
-          `Failed to update status to 'failed' for clipId ${clipId} during general error handling:`,
-          dbUpdateError,
-        );
+      } catch (dbError) {
+        console.error("Failed to update clip status:", dbError);
       }
     }
 
     return NextResponse.json(
       { error: "Failed to process clip upload" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
