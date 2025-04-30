@@ -1,0 +1,1 @@
+ALTER TABLE "clips" ADD COLUMN "remix_count" integer DEFAULT 0;

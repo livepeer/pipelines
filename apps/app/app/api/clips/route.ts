@@ -15,6 +15,8 @@ import { customAlphabet } from "nanoid";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import mime from "mime-types";
+import { cookies } from "next/headers";
+import { SOURCE_CLIP_ID_COOKIE_NAME } from "@/components/daydream/Clipping/utils";
 
 type FetchedClip = {
   id: number;
@@ -58,11 +60,7 @@ export async function GET(request: Request) {
       created_at: clipsTable.created_at,
       author_name: usersTable.name,
       prompt: clipsTable.prompt,
-      remix_count: sql<number>`(
-            SELECT count(*)
-            FROM ${clipsTable} AS derived_clips
-            WHERE derived_clips.source_clip_id = ${clipsTable.id}
-          )`.mapWith(Number),
+      remix_count: clipsTable.remix_count,
       slug: clipSlugsTable.slug,
       priority: clipsTable.priority,
     };
@@ -225,6 +223,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Check if the source clip is a remix from cookies
+    const remixedClipId = cookies().get(SOURCE_CLIP_ID_COOKIE_NAME)?.value;
+
     const result = ClipUploadSchema.safeParse({
       title,
       prompt,
@@ -259,6 +260,15 @@ export async function POST(request: NextRequest) {
         slug: generatedSlug,
         clip_id: newClip.id,
       });
+
+      if (remixedClipId) {
+        await tx
+          .update(clipsTable)
+          .set({
+            remix_count: sql`remix_count + 1`,
+          })
+          .where(eq(clipsTable.id, Number(remixedClipId)));
+      }
 
       return { initialClipId: newClip.id, slug: generatedSlug };
     });
@@ -359,6 +369,9 @@ export async function POST(request: NextRequest) {
         status: "completed",
       })
       .where(eq(clipsTable.id, clipId));
+
+    // Delete the source clip id from cookies to avoid huge remix counts per clip
+    cookies().delete(SOURCE_CLIP_ID_COOKIE_NAME);
 
     return NextResponse.json({
       success: true,
