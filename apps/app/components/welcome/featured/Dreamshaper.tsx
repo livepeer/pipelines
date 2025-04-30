@@ -4,7 +4,7 @@ import { useOnboard } from "@/components/daydream/OnboardContext";
 import { StreamInfo } from "@/components/footer/stream-info";
 import { StreamDebugPanel } from "@/components/stream/stream-debug-panel";
 import {
-  useCapacityMonitor,
+  useErrorMonitor,
   useDreamshaperStore,
   useInitialization,
   useParamsHandling,
@@ -34,7 +34,7 @@ import {
   DREAMSHAPER_PARAMS_STORAGE_KEY,
   DREAMSHAPER_PARAMS_VERSION_KEY,
 } from "@/hooks/useDreamshaper";
-import { CapacityOverlay } from "./CapacityOverlay";
+import { PlayerOverlay } from "./PlayerOverlay";
 
 interface DreamshaperProps {
   isGuestMode?: boolean;
@@ -43,10 +43,10 @@ interface DreamshaperProps {
 export default function Dreamshaper({ isGuestMode = false }: DreamshaperProps) {
   const { capacityLoading, hasCapacity } = useInitialization();
   useParamsHandling();
-  //useCapacityMonitor(); // TODO we can remove this hook since we're using the actual api now
+  useErrorMonitor();
 
   const { handleStreamUpdate } = useStreamUpdates();
-  const { stream, pipeline, sharedPrompt } = useDreamshaperStore();
+  const { stream, pipeline, sharedPrompt, errorState } = useDreamshaperStore();
   const { status, live } = useStreamStatus(stream?.id, false);
   const { currentStep, selectedPrompt, setSelectedPrompt } = useOnboard();
   const { lastSubmittedPrompt, setLastSubmittedPrompt, setHasSubmittedPrompt } =
@@ -71,6 +71,7 @@ export default function Dreamshaper({ isGuestMode = false }: DreamshaperProps) {
     "trial_expired" | "prompt_limit" | "share" | null
   >(null);
   const [showTutorial, setShowTutorial] = useState(false);
+  const [forceError, setForceError] = useState(false);
 
   useMount(() => {
     track("daydream_page_view", {
@@ -81,6 +82,9 @@ export default function Dreamshaper({ isGuestMode = false }: DreamshaperProps) {
     const searchParams = new URL(window.location.href).searchParams;
     const hasInputPrompt = searchParams.has("inputPrompt");
     const hasSharedParam = searchParams.has("shared");
+    const hasForceError = searchParams.get("forceError") === "true";
+
+    setForceError(hasForceError);
 
     if (hasInputPrompt || hasSharedParam) {
       localStorage.removeItem(DREAMSHAPER_PARAMS_STORAGE_KEY);
@@ -372,7 +376,11 @@ export default function Dreamshaper({ isGuestMode = false }: DreamshaperProps) {
                   )}
                 </>
               ) : (
-                <CapacityOverlay isLoading={capacityLoading} />
+                <PlayerOverlay isLoading={capacityLoading} />
+              )}
+
+              {(forceError || errorState) && (
+                <PlayerOverlay isLoading={capacityLoading} error={true} />
               )}
             </div>
           </div>

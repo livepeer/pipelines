@@ -32,19 +32,21 @@ const BackToExploreLink = ({ className = "" }: { className?: string }) => (
   </a>
 );
 
-interface CapacityOverlayProps {
+interface PlayerOverlayProps {
   onSubmit?: (email: string) => Promise<void>;
   isLoading?: boolean;
+  error?: boolean;
 }
 
-export function CapacityOverlay({
+export function PlayerOverlay({
   onSubmit,
   isLoading = false,
-}: CapacityOverlayProps) {
+  error = false,
+}: PlayerOverlayProps) {
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,7 +54,7 @@ export function CapacityOverlay({
     if (!email || isSubmitting) return;
 
     setIsSubmitting(true);
-    setError(null);
+    setFormError(null);
 
     try {
       track("capacity_notification_requested", { email });
@@ -78,7 +80,7 @@ export function CapacityOverlay({
       }
     } catch (error) {
       console.error("Failed to submit capacity notification request:", error);
-      setError(
+      setFormError(
         typeof error === "object" && error !== null && "message" in error
           ? (error as Error).message
           : "Failed to submit your email. Please try again.",
@@ -181,22 +183,47 @@ export function CapacityOverlay({
                 </svg>
               </div>
             </div>
-            <h2 className="text-2xl font-bold mb-3">Daydream is busy!</h2>
-            <p className="text-muted-foreground">
-              We&apos;re experiencing high demand. Join our waitlist to be
-              notified when capacity is available.
-            </p>
+            {error ? (
+              <>
+                <h2 className="text-2xl font-bold mb-3">Daydream is in beta</h2>
+                <p className="text-muted-foreground">
+                  We&apos;re still chasing down some bugs, and it looks like you
+                  found one! Try refreshing or drop your email for updates on
+                  our progress.
+                </p>
+              </>
+            ) : (
+              <>
+                <h2 className="text-2xl font-bold mb-3">
+                  Daydream is in High Demand
+                </h2>
+                <p className="text-muted-foreground">
+                  Our community is growing fast, and we are currently at full
+                  capacity. Drop your email below to stay in touch.
+                </p>
+              </>
+            )}
           </div>
         )}
 
         {isSubmitted ? (
           <div className="py-6 text-center relative z-10">
-            <h3 className="text-3xl font-medium mb-3">Thank you!</h3>
+            <h3 className="text-3xl font-medium mb-3">You&apos;re all set!</h3>
             <p className="text-muted-foreground mb-8">
-              We&apos;ll notify you once Daydream has available capacity.
+              {error
+                ? "We'll keep you updated on our progress as we continue to improve Daydream."
+                : "We're hard at work adding more capacity, and we'll notify you when space opens up."}
             </p>
-            <div className="hidden md:flex justify-center">
-              <BackToExploreLink />
+            <div className="hidden md:flex justify-center w-full">
+              <Button
+                type="button"
+                variant="default"
+                className="rounded-md bg-black text-white hover:bg-gray-800 w-full max-w-xs"
+                onClick={() => track("capacity_got_it_clicked")}
+                asChild
+              >
+                <a href="/">Got it</a>
+              </Button>
             </div>
           </div>
         ) : (
@@ -214,7 +241,9 @@ export function CapacityOverlay({
                 required
                 className="rounded-md bg-white"
               />
-              {error && <p className="text-sm text-destructive">{error}</p>}
+              {formError && (
+                <p className="text-sm text-destructive">{formError}</p>
+              )}
             </div>
 
             <div className="flex flex-col gap-3">
@@ -224,7 +253,11 @@ export function CapacityOverlay({
                 className="w-full rounded-md alwaysAnimatedButton"
                 disabled={isSubmitting}
               >
-                {isSubmitting ? "Submitting..." : "Notify me"}
+                {isSubmitting
+                  ? "Submitting..."
+                  : error
+                    ? "Stay updated"
+                    : "Notify me"}
               </Button>
 
               <Button
@@ -233,15 +266,23 @@ export function CapacityOverlay({
                 className="w-full rounded-md border-none shadow-none"
                 onClick={handleCommunityClick}
               >
-                Join Community
+                Join Discord
               </Button>
             </div>
           </form>
         )}
       </div>
 
-      <div className="md:hidden absolute bottom-8 text-center z-10">
-        <BackToExploreLink />
+      <div className="md:hidden absolute bottom-8 text-center z-10 w-full px-4">
+        <Button
+          type="button"
+          variant="default"
+          className="rounded-md bg-black text-white hover:bg-gray-800 w-full"
+          onClick={() => track("capacity_got_it_clicked")}
+          asChild
+        >
+          <a href="/">Got it</a>
+        </Button>
       </div>
     </div>
   );
