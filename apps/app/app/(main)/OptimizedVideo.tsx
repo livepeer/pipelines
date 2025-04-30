@@ -21,7 +21,7 @@ interface OptimizedVideoProps {
   remixCount: number;
   className?: string;
   isOverlayMode?: boolean;
-  onTryPrompt?: (prompt: string) => void;
+  onTryPrompt?: (prompt: string) => Promise<void>;
 }
 
 export default function OptimizedVideo({
@@ -109,7 +109,7 @@ export default function OptimizedVideo({
     return () => playbackObserver.disconnect();
   }, [isNearViewport, isPreviewOpen]);
 
-  const handleTryPrompt = (e: React.MouseEvent) => {
+  const handleTryPrompt = async (e: React.MouseEvent) => {
     e.stopPropagation();
 
     if (prompt) {
@@ -120,7 +120,7 @@ export default function OptimizedVideo({
       }
 
       if (isOverlayMode && onTryPrompt) {
-        onTryPrompt(prompt);
+        await onTryPrompt(prompt);
       } else {
         router.push(
           `/create?inputPrompt=${btoa(prompt)}&sourceClipId=${clipId}`,

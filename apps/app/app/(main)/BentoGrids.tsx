@@ -33,7 +33,7 @@ export interface BentoGridsProps {
     priority: number | null;
   }>;
   isOverlayMode?: boolean;
-  onTryPrompt?: (prompt: string) => void;
+  onTryPrompt?: (prompt: string) => Promise<void>;
   onClipsLoaded?: (clips: any[]) => void;
 }
 
@@ -245,7 +245,7 @@ function GridItem({
   isDebug: boolean;
   overallIndex: number;
   isOverlayMode?: boolean;
-  onTryPrompt?: (prompt: string) => void;
+  onTryPrompt?: (prompt: string) => Promise<void>;
 }) {
   const href = slug ? `/clip/${slug}` : `/clip/id/${clipId}`;
   const { isPreviewOpen } = usePreviewStore();
