@@ -1,5 +1,6 @@
 import { Storage } from "@google-cloud/storage";
 import { gcpConfig } from "../serverEnv";
+import { Readable } from "stream";
 
 let storage: Storage;
 
@@ -18,7 +19,7 @@ try {
 const bucketName = gcpConfig.bucketName || "daydream-clips";
 
 export async function uploadToGCS(
-  file: Buffer | NodeJS.ReadableStream,
+  file: Buffer | NodeJS.ReadableStream | ReadableStream<Uint8Array>,
   path: string,
   contentType: string,
 ): Promise<string> {
@@ -32,7 +33,7 @@ export async function uploadToGCS(
     });
 
     return new Promise((resolve, reject) => {
-      blobStream.on("error", error => {
+      blobStream.on("error", (error: Error) => {
         reject(error);
       });
 
@@ -45,6 +46,24 @@ export async function uploadToGCS(
 
       if (Buffer.isBuffer(file)) {
         blobStream.end(file);
+      } else if ('getReader' in file) {
+        // Handle Web ReadableStream
+        const reader = file.getReader();
+        const pump = async () => {
+          try {
+            while (true) {
+              const { done, value } = await reader.read();
+              if (done) {
+                blobStream.end();
+                break;
+              }
+              blobStream.write(value);
+            }
+          } catch (error) {
+            reject(error);
+          }
+        };
+        pump();
       } else {
         file.pipe(blobStream);
       }

@@ -265,7 +265,6 @@ export async function POST(request: NextRequest) {
 
     clipId = initialClipId;
 
-    const clipBuffer = Buffer.from(await sourceClip.arrayBuffer());
     const fileType = sourceClip.type || "video/mp4";
     const sourceExtension = mime.extension(fileType) || "mp4";
     const clipPath = buildClipPath(
@@ -277,7 +276,7 @@ export async function POST(request: NextRequest) {
     let clipUrl: string;
 
     try {
-      clipUrl = await uploadToGCS(clipBuffer, clipPath, fileType);
+      clipUrl = await uploadToGCS(sourceClip.stream(), clipPath, fileType);
     } catch (uploadError) {
       console.error(`GCS Upload failed for clipId ${clipId}:`, uploadError);
       try {
