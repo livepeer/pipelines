@@ -110,12 +110,12 @@ export default function Header() {
             trackingProperties={{ location: "explore_header_mobile_fab" }}
             size="lg"
             className={cn(
-              "!rounded-full h-14 w-14 text-black flex items-center justify-center p-0",
+              "!rounded-full h-16 w-16 text-black flex items-center justify-center p-0",
               "alwaysAnimatedButton circular-animated-button forced-white-bg",
               isPreviewOpen && "opacity-0 pointer-events-none",
             )}
           >
-            <VideoAISparkles className={cn("text-black !w-10 !h-10")} />
+            <VideoAISparkles className={cn("text-black !w-12 !h-12")} />
           </TrackedButton>
         </div>
       </Link>
