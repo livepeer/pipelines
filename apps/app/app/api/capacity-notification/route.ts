@@ -1,17 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-
-async function saveEmailForNotification(email: string): Promise<boolean> {
-  try {
-    // TODO: Implement actual storage logic
-    // DB? hubspot?
-    console.log(`Saving email for capacity notification: ${email}`);
-
-    return true;
-  } catch (error) {
-    console.error("Failed to save email for notification:", error);
-    return false;
-  }
-}
+import { submitCapacityNotification } from "@/lib/analytics/hubspot";
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
   try {
@@ -29,7 +17,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       );
     }
 
-    const success = await saveEmailForNotification(email);
+    const success = await submitCapacityNotification(email);
 
     if (success) {
       return NextResponse.json({ success: true }, { status: 200 });

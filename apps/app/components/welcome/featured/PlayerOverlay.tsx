@@ -92,7 +92,7 @@ export function PlayerOverlay({
 
   const handleCommunityClick = () => {
     track("capacity_community_clicked");
-    window.open("ttps://discord.com/invite/hxyNHeSzCK", "_blank");
+    window.open("https://discord.com/invite/hxyNHeSzCK", "_blank");
   };
 
   if (isLoading) {
