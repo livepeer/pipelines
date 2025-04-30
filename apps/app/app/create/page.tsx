@@ -1,6 +1,12 @@
 import Daydream from "@/components/daydream";
 import { getSharedParams } from "../api/streams/share-params";
 import { cache } from "react";
+import {
+  setSourceClipIdToCookies,
+  SOURCE_CLIP_ID_COOKIE_NAME,
+} from "@/components/daydream/Clipping/utils";
+import { cookies } from "next/headers";
+import { SOURCE_CLIP_ID_COOKIE_EXPIRATION_IN_MS } from "@/components/daydream/Clipping/utils";
 
 const getCachedSharedParams = cache(async (shareParamsId: string) => {
   const { data: sharedParams } = await getSharedParams(shareParamsId);
@@ -37,10 +43,16 @@ export default function HomePage({
     shared: string;
     privy_oauth_code: string;
     inputPrompt: string;
+    sourceClipId: string;
   };
 }) {
-  const { shared, privy_oauth_code, inputPrompt } = searchParams;
+  const { shared, privy_oauth_code, inputPrompt, sourceClipId } = searchParams;
   const isGuestAccess = !!inputPrompt; // If there's an inputPrompt, the user is coming from "Try this prompt"
+
+  // Used to track the source clip id for remix count
+  if (sourceClipId) {
+    setSourceClipIdToCookies(sourceClipId);
+  }
 
   return (
     <Daydream

@@ -16,7 +16,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import mime from "mime-types";
 import { cookies } from "next/headers";
-import { SOURCE_CLIP_ID_COOKIE_NAME } from "@/components/daydream/Clipping/utils";
+import {
+  deleteSourceClipIdFromCookies,
+  getSourceClipIdFromCookies,
+  SOURCE_CLIP_ID_COOKIE_NAME,
+} from "@/components/daydream/Clipping/utils";
 
 type FetchedClip = {
   id: number;
@@ -224,7 +228,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if the source clip is a remix from cookies
-    const remixedClipId = cookies().get(SOURCE_CLIP_ID_COOKIE_NAME)?.value;
+    const remixedClipId = getSourceClipIdFromCookies();
 
     const result = ClipUploadSchema.safeParse({
       title,
@@ -268,6 +272,8 @@ export async function POST(request: NextRequest) {
             remix_count: sql`remix_count + 1`,
           })
           .where(eq(clipsTable.id, Number(remixedClipId)));
+      } else {
+        console.warn(`No source clip id found for clipId ${newClip.id}`);
       }
 
       return { initialClipId: newClip.id, slug: generatedSlug };
@@ -371,7 +377,7 @@ export async function POST(request: NextRequest) {
       .where(eq(clipsTable.id, clipId));
 
     // Delete the source clip id from cookies to avoid huge remix counts per clip
-    cookies().delete(SOURCE_CLIP_ID_COOKIE_NAME);
+    deleteSourceClipIdFromCookies();
 
     return NextResponse.json({
       success: true,

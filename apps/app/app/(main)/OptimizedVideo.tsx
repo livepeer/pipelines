@@ -9,10 +9,6 @@ import { TrackedButton } from "@/components/analytics/TrackedButton";
 import { useGuestUserStore } from "@/hooks/useGuestUser";
 import { usePrivy } from "@/hooks/usePrivy";
 import { useRouter } from "next/navigation";
-import {
-  SOURCE_CLIP_ID_COOKIE_EXPIRATION_IN_MS,
-  SOURCE_CLIP_ID_COOKIE_NAME,
-} from "@/components/daydream/Clipping/utils";
 
 interface OptimizedVideoProps {
   src: string;
@@ -123,11 +119,6 @@ export default function OptimizedVideo({
         setIsGuestUser(true);
       }
 
-      // Set a cookie to be sent to the server to track the source clip id
-      document.cookie = `${SOURCE_CLIP_ID_COOKIE_NAME}=${clipId}; path=/; expires=${new Date(
-        Date.now() + SOURCE_CLIP_ID_COOKIE_EXPIRATION_IN_MS,
-      ).toUTCString()}`;
-
       if (isOverlayMode && onTryPrompt) {
         onTryPrompt(prompt);
       } else {
@@ -195,7 +186,9 @@ export default function OptimizedVideo({
               ) : (
                 <Link
                   href={
-                    prompt ? `/create?inputPrompt=${btoa(prompt)}` : "/create"
+                    prompt
+                      ? `/create?inputPrompt=${btoa(prompt)}&sourceClipId=${clipId}`
+                      : "/create"
                   }
                   onClick={e => {
                     e.stopPropagation();
