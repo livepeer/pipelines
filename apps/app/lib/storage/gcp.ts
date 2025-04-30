@@ -1,4 +1,4 @@
-import { Storage } from "@google-cloud/storage";
+import { Storage, GetSignedUrlConfig } from "@google-cloud/storage";
 import { gcpConfig } from "../serverEnv";
 
 let storage: Storage;
@@ -52,6 +52,30 @@ export async function uploadToGCS(
   } catch (error) {
     console.error("Error uploading to GCS:", error);
     throw new Error("Failed to upload file to Google Cloud Storage");
+  }
+}
+
+export async function generatePresignedUploadUrl(
+  path: string,
+  contentType: string,
+  expiresInMinutes: number = 15
+): Promise<string> {
+  const bucket = storage.bucket(bucketName);
+  const file = bucket.file(path);
+  
+  const options: GetSignedUrlConfig = {
+    version: 'v4' as 'v4',
+    action: 'write' as 'write',
+    expires: Date.now() + expiresInMinutes * 60 * 1000,
+    contentType
+  };
+
+  try {
+    const [signedUrl] = await file.getSignedUrl(options);
+    return signedUrl;
+  } catch (error) {
+    console.error("Error generating presigned URL:", error);
+    throw new Error("Failed to generate presigned upload URL");
   }
 }
 

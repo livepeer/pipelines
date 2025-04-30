@@ -190,6 +190,9 @@ const ClipUploadSchema = z.object({
   prompt: z.string().nullable().optional(),
   sourceClipId: z.number().nullable().optional(),
   isFeatured: z.boolean().optional(),
+  clipId: z.string().optional(),
+  videoUrl: z.string().optional(),
+  thumbnailUrl: z.string().nullable().optional(),
 });
 
 export async function POST(request: NextRequest) {
@@ -203,174 +206,233 @@ export async function POST(request: NextRequest) {
     }
     userId = privyUser.userId;
 
-    const formData = await request.formData();
+    const contentType = request.headers.get("content-type") || "";
+    
+    if (contentType.includes("application/json")) {
+      const jsonData = await request.json();
+      
+      const result = ClipUploadSchema.safeParse(jsonData);
+      
+      if (!result.success) {
+        return NextResponse.json(
+          { error: "Invalid request", details: result.error.format() },
+          { status: 400 }
+        );
+      }
+      
+      const { clipId: externalClipId, videoUrl, thumbnailUrl, prompt, isFeatured } = jsonData;
+      
+      if (!externalClipId || !videoUrl) {
+        return NextResponse.json(
+          { error: "Missing required fields: clipId and videoUrl" },
+          { status: 400 }
+        );
+      }
+      
+      const { initialClipId, slug } = await db.transaction(async tx => {
+        const [newClip] = await tx
+          .insert(clipsTable)
+          .values({
+            video_url: videoUrl,
+            video_title: null,
+            thumbnail_url: thumbnailUrl || null,
+            author_user_id: userId,
+            source_clip_id: null,
+            prompt: prompt || null,
+            status: "completed",
+            approval_status: isFeatured ? "pending" : "approved",
+          })
+          .returning({ initialClipId: clipsTable.id });
 
-    const sourceClip = formData.get("sourceClip") as File | null;
-    const watermarkedClip = formData.get("watermarkedClip") as File | null;
-    const thumbnail = formData.get("thumbnail") as File | null;
+        const slugValue = generateSlug();
+        await tx.insert(clipSlugsTable).values({
+          clip_id: newClip.initialClipId,
+          slug: slugValue,
+        });
 
-    const title = formData.get("title") as string | null;
-    const prompt = (formData.get("prompt") as string) || "";
-
-    const sourceClipId = formData.get("sourceClipId")
-      ? Number(formData.get("sourceClipId"))
-      : null;
-
-    const isFeatured = formData.get("isFeatured") === "true";
-
-    if (!sourceClip) {
-      return NextResponse.json(
-        { error: "Invalid request", details: "No clip file provided" },
-        { status: 400 },
-      );
-    }
-
-    const result = ClipUploadSchema.safeParse({
-      title,
-      prompt,
-      sourceClipId,
-      isFeatured,
-    });
-
-    if (!result.success) {
-      return NextResponse.json(
-        { error: "Invalid request", details: result.error.format() },
-        { status: 400 },
-      );
-    }
-
-    const { initialClipId, slug } = await db.transaction(async tx => {
-      const [newClip] = await tx
-        .insert(clipsTable)
-        .values({
-          video_url: "",
-          video_title: title || null,
-          thumbnail_url: null,
-          author_user_id: userId,
-          source_clip_id: sourceClipId || null,
-          prompt: prompt,
-          status: "uploading",
-          approval_status: isFeatured ? "pending" : "none",
-        })
-        .returning({ id: clipsTable.id });
-
-      const generatedSlug = generateSlug();
-      await tx.insert(clipSlugsTable).values({
-        slug: generatedSlug,
-        clip_id: newClip.id,
+        return { initialClipId: newClip.initialClipId, slug: slugValue };
       });
 
-      return { initialClipId: newClip.id, slug: generatedSlug };
-    });
+      clipId = initialClipId;
 
-    clipId = initialClipId;
+      return NextResponse.json({
+        success: true,
+        clip: {
+          id: clipId,
+          videoUrl,
+          slug,
+        },
+      });
+    } else {
+      const formData = await request.formData();
 
-    const clipBuffer = Buffer.from(await sourceClip.arrayBuffer());
-    const fileType = sourceClip.type || "video/mp4";
-    const sourceExtension = mime.extension(fileType) || "mp4";
-    const clipPath = buildClipPath(
-      userId,
-      clipId,
-      `source-clip.${sourceExtension}`,
-    );
+      const sourceClip = formData.get("sourceClip") as File | null;
+      const watermarkedClip = formData.get("watermarkedClip") as File | null;
+      const thumbnail = formData.get("thumbnail") as File | null;
 
-    let clipUrl: string;
+      const title = formData.get("title") as string | null;
+      const prompt = (formData.get("prompt") as string) || "";
 
-    try {
-      clipUrl = await uploadToGCS(clipBuffer, clipPath, fileType);
-    } catch (uploadError) {
-      console.error(`GCS Upload failed for clipId ${clipId}:`, uploadError);
-      try {
-        await db
-          .update(clipsTable)
-          .set({ status: "failed" })
-          .where(eq(clipsTable.id, clipId));
-      } catch (dbError) {
-        console.error(
-          `Failed to update status to 'failed' for clipId ${clipId}:`,
-          dbError,
+      const sourceClipId = formData.get("sourceClipId")
+        ? Number(formData.get("sourceClipId"))
+        : null;
+
+      const isFeatured = formData.get("isFeatured") === "true";
+
+      if (!sourceClip) {
+        return NextResponse.json(
+          { error: "Invalid request", details: "No clip file provided" },
+          { status: 400 },
         );
       }
-      return NextResponse.json(
-        { error: "Failed to upload clip to storage" },
-        { status: 500 },
+
+      const result = ClipUploadSchema.safeParse({
+        title,
+        prompt,
+        sourceClipId,
+        isFeatured,
+      });
+
+      if (!result.success) {
+        return NextResponse.json(
+          { error: "Invalid request", details: result.error.format() },
+          { status: 400 },
+        );
+      }
+
+      const { initialClipId, slug } = await db.transaction(async tx => {
+        const [newClip] = await tx
+          .insert(clipsTable)
+          .values({
+            video_url: "",
+            video_title: title || null,
+            thumbnail_url: null,
+            author_user_id: userId,
+            source_clip_id: sourceClipId || null,
+            prompt: prompt,
+            status: "uploading",
+            approval_status: isFeatured ? "pending" : "none",
+          })
+          .returning({ id: clipsTable.id });
+
+        const generatedSlug = generateSlug();
+        await tx.insert(clipSlugsTable).values({
+          slug: generatedSlug,
+          clip_id: newClip.id,
+        });
+
+        return { initialClipId: newClip.id, slug: generatedSlug };
+      });
+
+      clipId = initialClipId;
+
+      const clipBuffer = Buffer.from(await sourceClip.arrayBuffer());
+      const fileType = sourceClip.type || "video/mp4";
+      const sourceExtension = mime.extension(fileType) || "mp4";
+      const clipPath = buildClipPath(
+        userId,
+        clipId,
+        `source-clip.${sourceExtension}`,
       );
-    }
 
-    let watermarkedClipUrl = "";
-    if (watermarkedClip) {
+      let clipUrl: string;
+
       try {
-        const watermarkedBuffer = Buffer.from(
-          await watermarkedClip.arrayBuffer(),
-        );
-        const watermarkedFileType = watermarkedClip.type || "video/mp4";
-        const watermarkedExtension =
-          mime.extension(watermarkedFileType) || "mp4";
-        const watermarkedPath = buildClipPath(
-          userId,
-          clipId,
-          `clip.${watermarkedExtension}`,
-        );
-        watermarkedClipUrl = await uploadToGCS(
-          watermarkedBuffer,
-          watermarkedPath,
-          watermarkedFileType,
-        );
+        clipUrl = await uploadToGCS(clipBuffer, clipPath, fileType);
       } catch (uploadError) {
-        console.error(
-          `Watermarked clip upload failed for clipId ${clipId}:`,
-          uploadError,
+        console.error(`GCS Upload failed for clipId ${clipId}:`, uploadError);
+        try {
+          await db
+            .update(clipsTable)
+            .set({ status: "failed" })
+            .where(eq(clipsTable.id, clipId));
+        } catch (dbError) {
+          console.error(
+            `Failed to update status to 'failed' for clipId ${clipId}:`,
+            dbError,
+          );
+        }
+        return NextResponse.json(
+          { error: "Failed to upload clip to storage" },
+          { status: 500 },
         );
       }
-    }
 
-    let thumbnailUrl;
-    if (thumbnail) {
-      try {
-        const thumbnailBuffer = Buffer.from(await thumbnail.arrayBuffer());
-        const thumbnailFileType = thumbnail.type || "image/jpeg";
-        const thumbnailExtension = mime.extension(thumbnailFileType) || "jpg";
-        const thumbnailPath = buildClipPath(
-          userId,
-          clipId,
-          `thumbnail.${thumbnailExtension}`,
-        );
-        thumbnailUrl = await uploadToGCS(
-          thumbnailBuffer,
-          thumbnailPath,
-          thumbnailFileType,
-        );
-      } catch (uploadError) {
-        console.error(
-          `Thumbnail upload failed for clipId ${clipId}:`,
-          uploadError,
-        );
+      let watermarkedClipUrl = "";
+      if (watermarkedClip) {
+        try {
+          const watermarkedBuffer = Buffer.from(
+            await watermarkedClip.arrayBuffer(),
+          );
+          const watermarkedFileType = watermarkedClip.type || "video/mp4";
+          const watermarkedExtension =
+            mime.extension(watermarkedFileType) || "mp4";
+          const watermarkedPath = buildClipPath(
+            userId,
+            clipId,
+            `clip.${watermarkedExtension}`,
+          );
+          watermarkedClipUrl = await uploadToGCS(
+            watermarkedBuffer,
+            watermarkedPath,
+            watermarkedFileType,
+          );
+        } catch (uploadError) {
+          console.error(
+            `Watermarked clip upload failed for clipId ${clipId}:`,
+            uploadError,
+          );
+        }
+      }
+
+      let thumbnailUrl;
+      if (thumbnail) {
+        try {
+          const thumbnailBuffer = Buffer.from(await thumbnail.arrayBuffer());
+          const thumbnailFileType = thumbnail.type || "image/jpeg";
+          const thumbnailExtension = mime.extension(thumbnailFileType) || "jpg";
+          const thumbnailPath = buildClipPath(
+            userId,
+            clipId,
+            `thumbnail.${thumbnailExtension}`,
+          );
+          thumbnailUrl = await uploadToGCS(
+            thumbnailBuffer,
+            thumbnailPath,
+            thumbnailFileType,
+          );
+        } catch (uploadError) {
+          console.error(
+            `Thumbnail upload failed for clipId ${clipId}:`,
+            uploadError,
+          );
+          thumbnailUrl = buildThumbnailUrl(userId, clipId);
+        }
+      } else {
         thumbnailUrl = buildThumbnailUrl(userId, clipId);
       }
-    } else {
-      thumbnailUrl = buildThumbnailUrl(userId, clipId);
+
+      await db
+        .update(clipsTable)
+        .set({
+          video_url: watermarkedClipUrl || clipUrl,
+          thumbnail_url: thumbnailUrl,
+          status: "completed",
+        })
+        .where(eq(clipsTable.id, clipId));
+
+      return NextResponse.json({
+        success: true,
+        clip: {
+          id: clipId,
+          videoUrl: watermarkedClipUrl || clipUrl,
+          thumbnailUrl: thumbnailUrl,
+          title: title,
+          slug: slug,
+          status: "completed",
+        },
+      });
     }
-
-    await db
-      .update(clipsTable)
-      .set({
-        video_url: watermarkedClipUrl || clipUrl,
-        thumbnail_url: thumbnailUrl,
-        status: "completed",
-      })
-      .where(eq(clipsTable.id, clipId));
-
-    return NextResponse.json({
-      success: true,
-      clip: {
-        id: clipId,
-        videoUrl: watermarkedClipUrl || clipUrl,
-        thumbnailUrl: thumbnailUrl,
-        title: title,
-        slug: slug,
-        status: "completed",
-      },
-    });
   } catch (error) {
     console.error("Error processing clip upload:", error);
 
