@@ -80,7 +80,7 @@ export function CapacityNotificationModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleModalClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="w-[calc(100%-2rem)] max-w-md mx-auto rounded-lg">
         <DialogHeader>
           <DialogTitle className="text-center mb-2">
             <div className="mb-4 flex justify-center">
@@ -103,11 +103,15 @@ export function CapacityNotificationModal({
             </div>
             {!isSubmitted ? (
               <>
-                <span className="text-xl font-bold">Daydream is busy!</span>
+                <span className="text-xl font-bold">
+                  Daydream is in High Demand
+                </span>
               </>
             ) : (
               <>
-                <span className="text-2xl font-medium">Thank you!</span>
+                <span className="text-2xl font-medium">
+                  You&apos;re all set!
+                </span>
               </>
             )}
           </DialogTitle>
@@ -119,39 +123,30 @@ export function CapacityNotificationModal({
             <p className="text-center">Submitting your email...</p>
           </div>
         ) : isSubmitted ? (
-          <div className="py-6 text-center">
-            <p className="text-muted-foreground mb-6">
-              We&apos;ll notify you once Daydream has available capacity.
+          <div className="py-6 text-center flex flex-col h-full justify-between">
+            <p className="text-muted-foreground">
+              We&apos;re hard at work adding more capacity, and we&apos;ll
+              notify you when space opens up.
             </p>
-            <a
-              href="/"
-              className="text-gray-500 font-light text-sm tracking-wide flex items-center justify-center"
-              onClick={() => track("capacity_back_to_explore_clicked")}
-            >
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                className="mr-1"
+            <div className="mt-auto pt-8">
+              <Button
+                type="button"
+                variant="default"
+                className="w-full rounded-md bg-black text-white hover:bg-gray-800"
+                onClick={() => {
+                  track("capacity_notification_closed");
+                  onClose();
+                }}
               >
-                <path
-                  d="M15 18L9 12L15 6"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              Back to explore
-            </a>
+                Got it
+              </Button>
+            </div>
           </div>
         ) : (
           <>
-            <p className="text-muted-foreground text-center mb-6">
-              We&apos;re experiencing high demand. Join our waitlist to be
-              notified when capacity is available.
+            <p className="text-muted-foreground text-sm text-center mb-6">
+              Our community is growing fast, and we are currently at full
+              capacity. Drop your email below to stay in touch.
             </p>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
@@ -173,8 +168,8 @@ export function CapacityNotificationModal({
               <div className="flex flex-col gap-3">
                 <Button
                   type="submit"
-                  variant="outline"
-                  className="w-full rounded-md alwaysAnimatedButton"
+                  variant="default"
+                  className="w-full rounded-md bg-black text-white hover:bg-gray-800"
                   disabled={isSubmitting}
                 >
                   Notify me
@@ -186,7 +181,7 @@ export function CapacityNotificationModal({
                   className="w-full rounded-md border-none shadow-none"
                   onClick={handleCommunityClick}
                 >
-                  Join Community
+                  Join Discord
                 </Button>
               </div>
             </form>

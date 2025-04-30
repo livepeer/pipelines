@@ -40,7 +40,7 @@ export function CapacityToast({
       <div className="flex items-center justify-between w-full gap-3">
         <div className="flex-1 flex items-center gap-2">
           <div>
-            <p className="text-sm font-semibold flex items-center">
+            <p className="text-xs sm:text-sm font-semibold flex items-center">
               <svg
                 width="14"
                 height="14"
@@ -56,18 +56,17 @@ export function CapacityToast({
                   fill="#2E2E2E"
                 />
               </svg>
-              Daydream is busy!
+              Daydream is full
             </p>
-            <p className="text-xs text-gray-500">
-              The platform is currently at capacity, we can notify you once
-              it&apos;s available
+            <p className="text-[10px] sm:text-xs text-gray-500">
+              We can let you know when a spot is available
             </p>
           </div>
         </div>
         <Button
           variant="outline"
           className={cn(
-            "flex-shrink-0 whitespace-nowrap alwaysAnimatedButton px-4",
+            "flex-shrink-0 whitespace-nowrap alwaysAnimatedButton px-4 text-xs sm:text-sm",
           )}
           onClick={() => {
             track("capacity_get_notified_clicked", {
@@ -81,9 +80,11 @@ export function CapacityToast({
         </Button>
       </div>,
       {
-        duration: 10000,
+        dismissible: false,
+        duration: Infinity,
         position: "bottom-right",
-        className: "capacity-toast-custom",
+        className:
+          "capacity-toast-custom mx-auto px-3 sm:px-4 max-w-[calc(100vw-24px)] sm:max-w-md",
       },
     );
 
