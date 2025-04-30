@@ -26,6 +26,24 @@ export default function Header() {
 
   return (
     <>
+      {/* Custom style to override alwaysAnimatedButton for the circular floating button */}
+      <style jsx global>{`
+        .circular-animated-button::before {
+          border-radius: 9999px !important;
+        }
+
+        .floating-shadow {
+          box-shadow:
+            0 10px 25px -5px rgba(0, 0, 0, 0.3),
+            0 8px 10px -6px rgba(0, 0, 0, 0.2),
+            0 0 15px 2px rgba(0, 0, 0, 0.15);
+        }
+
+        .forced-white-bg {
+          background: #ffffff !important;
+        }
+      `}</style>
+
       <header
         className={cn(
           "bg-transparent sticky top-0 z-40 transition-colors duration-300 ease-in-out",
@@ -82,23 +100,24 @@ export default function Header() {
       <Link
         href="/create"
         className={cn(
-          "fixed bottom-4 right-4 sm:hidden z-50",
+          "fixed bottom-6 right-6 sm:hidden z-50",
           isPreviewOpen && "opacity-0 pointer-events-none",
         )}
       >
-        <TrackedButton
-          trackingEvent="explore_header_start_creating_clicked"
-          trackingProperties={{ location: "explore_header_mobile_fab" }}
-          size="lg"
-          className={cn(
-            "h-14 w-14 rounded-md shadow-2xl text-black",
-            "alwaysAnimatedButton",
-            isPreviewOpen && "opacity-0 pointer-events-none",
-          )}
-        >
-          {/* Our default button overrides the size of child SVGs. Rather than change the button, I've overridden the CSS here. */}
-          <VideoAISparkles className={cn("text-black !w-11 !h-11")} />
-        </TrackedButton>
+        <div className="rounded-full floating-shadow">
+          <TrackedButton
+            trackingEvent="explore_header_start_creating_clicked"
+            trackingProperties={{ location: "explore_header_mobile_fab" }}
+            size="lg"
+            className={cn(
+              "!rounded-full h-14 w-14 text-black flex items-center justify-center p-0",
+              "alwaysAnimatedButton circular-animated-button forced-white-bg",
+              isPreviewOpen && "opacity-0 pointer-events-none",
+            )}
+          >
+            <VideoAISparkles className={cn("text-black !w-10 !h-10")} />
+          </TrackedButton>
+        </div>
       </Link>
     </>
   );
