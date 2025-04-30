@@ -124,11 +124,9 @@ export default function OptimizedVideo({
         onTryPrompt(prompt);
         await setSourceClipIdToCookies(clipId);
       } else {
-        const clipDetails = JSON.stringify({
-          inputPrompt: prompt,
-          sourceClipId: clipId,
-        });
-        router.push(`/create?clipDetails=${btoa(clipDetails)}`);
+        router.push(
+          `/create?inputPrompt=${btoa(prompt)}&sourceClipId=${clipId}`,
+        );
       }
     } else {
       if (!isOverlayMode) {
@@ -193,12 +191,7 @@ export default function OptimizedVideo({
                 <Link
                   href={
                     prompt
-                      ? `/create?clipDetails=${btoa(
-                          JSON.stringify({
-                            inputPrompt: prompt,
-                            sourceClipId: clipId,
-                          }),
-                        )}}`
+                      ? `/create?inputPrompt=${btoa(prompt)}&sourceClipId=${clipId}`
                       : "/create"
                   }
                   onClick={e => {

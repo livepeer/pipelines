@@ -23,19 +23,18 @@ interface DaydreamProps {
   hasSharedPrompt: boolean;
   isOAuthSuccessRedirect: boolean;
   allowGuestAccess?: boolean;
-  sourceClipId?: string;
-  inputPrompt?: string;
 }
 
 export default function Daydream({
   hasSharedPrompt,
   isOAuthSuccessRedirect,
   allowGuestAccess = false,
-  sourceClipId,
-  inputPrompt,
 }: DaydreamProps) {
   const { user, ready, authenticated } = usePrivy();
   const { isGuestUser, setIsGuestUser } = useGuestUserStore();
+  const searchParams = useSearchParams();
+  const inputPrompt = searchParams.get("inputPrompt");
+  const sourceClipId = searchParams.get("sourceClipId");
 
   // Used to track the source clip id for remix count
   useEffect(() => {

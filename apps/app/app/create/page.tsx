@@ -36,14 +36,13 @@ export default function HomePage({
   searchParams: {
     shared: string;
     privy_oauth_code: string;
-    clipDetails: string;
+    inputPrompt: string;
+    sourceClipId: string;
   };
 }) {
-  const { shared, privy_oauth_code, clipDetails } = searchParams;
-  const isGuestAccess = !!clipDetails; // If there's an inputPrompt, the user is coming from "Try this prompt"
-  const { inputPrompt, sourceClipId } = JSON.parse(
-    clipDetails ? atob(clipDetails) : "{}",
-  );
+  const { shared, privy_oauth_code, inputPrompt, sourceClipId } = searchParams;
+  const isGuestAccess = !!inputPrompt; // If there's an inputPrompt, the user is coming from "Try this prompt"
+
   return (
     <Daydream
       hasSharedPrompt={!!shared || !!inputPrompt}
@@ -51,8 +50,6 @@ export default function HomePage({
         privy_oauth_code?.length > 0 && privy_oauth_code !== "error"
       }
       allowGuestAccess={isGuestAccess}
-      sourceClipId={sourceClipId}
-      inputPrompt={inputPrompt}
     />
   );
 }
