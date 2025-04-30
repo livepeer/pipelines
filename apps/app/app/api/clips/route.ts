@@ -16,7 +16,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import mime from "mime-types";
 import { Readable } from "stream";
-import { ReadableStream as WebReadableStream, TransformStream } from "stream/web";
+import {
+  ReadableStream as WebReadableStream,
+  TransformStream,
+} from "stream/web";
 import { S3Client } from "@aws-sdk/client-s3";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -231,7 +234,7 @@ export async function POST(request: NextRequest) {
     if (!sourceClipUrl || !watermarkedClipUrl || !thumbnailUrl) {
       return NextResponse.json(
         { error: "Missing required fields" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -248,7 +251,7 @@ export async function POST(request: NextRequest) {
     if (!result.success) {
       return NextResponse.json(
         { error: "Invalid request", details: result.error.format() },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -303,7 +306,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(
       { error: "Failed to process clip upload" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

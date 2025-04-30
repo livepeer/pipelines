@@ -4,7 +4,9 @@ import { Storage } from "@google-cloud/storage";
 import { gcpConfig } from "@/lib/serverEnv";
 
 const storage = new Storage({
-  credentials: gcpConfig.credentials ? JSON.parse(gcpConfig.credentials) : undefined,
+  credentials: gcpConfig.credentials
+    ? JSON.parse(gcpConfig.credentials)
+    : undefined,
 });
 
 const bucketName = gcpConfig.bucketName || "daydream-clips";
@@ -20,7 +22,7 @@ export async function POST(request: NextRequest) {
     if (!filename || !contentType) {
       return NextResponse.json(
         { error: "Filename and content type are required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -42,7 +44,7 @@ export async function POST(request: NextRequest) {
     console.error("Error generating upload URL:", error);
     return NextResponse.json(
       { error: "Failed to generate upload URL" },
-      { status: 500 }
+      { status: 500 },
     );
   }
-} 
+}
