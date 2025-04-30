@@ -40,7 +40,7 @@ export default function HomePage({
     sourceClipId: string;
   };
 }) {
-  const { shared, privy_oauth_code, inputPrompt, sourceClipId } = searchParams;
+  const { shared, privy_oauth_code, inputPrompt } = searchParams;
   const isGuestAccess = !!inputPrompt; // If there's an inputPrompt, the user is coming from "Try this prompt"
 
   return (

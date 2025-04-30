@@ -134,7 +134,7 @@ export default function QuickviewVideo({
                 <Link
                   href={
                     prompt
-                      ? `/create?inputPrompt=${btoa(prompt)}&sourceClipId=${clipId}`
+                      ? `/create?inputPrompt=${btoa(prompt)}&sourceClipId=${btoa(clipId)}`
                       : "/create"
                   }
                 >

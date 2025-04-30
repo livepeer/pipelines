@@ -39,7 +39,8 @@ export default function Daydream({
   // Used to track the source clip id for remix count
   useEffect(() => {
     if (sourceClipId) {
-      setSourceClipIdToCookies(sourceClipId);
+      const clipId = atob(sourceClipId);
+      setSourceClipIdToCookies(clipId);
     }
   }, []);
 

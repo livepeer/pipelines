@@ -125,7 +125,7 @@ export default function OptimizedVideo({
         await setSourceClipIdToCookies(clipId);
       } else {
         router.push(
-          `/create?inputPrompt=${btoa(prompt)}&sourceClipId=${clipId}`,
+          `/create?inputPrompt=${btoa(prompt)}&sourceClipId=${btoa(clipId)}`,
         );
       }
     } else {
@@ -191,7 +191,7 @@ export default function OptimizedVideo({
                 <Link
                   href={
                     prompt
-                      ? `/create?inputPrompt=${btoa(prompt)}&sourceClipId=${clipId}`
+                      ? `/create?inputPrompt=${btoa(prompt)}&sourceClipId=${btoa(clipId)}`
                       : "/create"
                   }
                   onClick={e => {
