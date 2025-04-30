@@ -8,7 +8,7 @@ import {
 import {
   buildClipPath,
   buildThumbnailUrl,
-  uploadToGCS,
+  getSignedUploadUrl,
 } from "@/lib/storage/gcp";
 import { and, asc, eq, isNotNull, isNull, sql } from "drizzle-orm";
 import { customAlphabet } from "nanoid";
@@ -265,7 +265,6 @@ export async function POST(request: NextRequest) {
 
     clipId = initialClipId;
 
-    const clipBuffer = Buffer.from(await sourceClip.arrayBuffer());
     const fileType = sourceClip.type || "video/mp4";
     const sourceExtension = mime.extension(fileType) || "mp4";
     const clipPath = buildClipPath(
@@ -274,12 +273,12 @@ export async function POST(request: NextRequest) {
       `source-clip.${sourceExtension}`,
     );
 
-    let clipUrl: string;
+    let uploadUrl: string;
 
     try {
-      clipUrl = await uploadToGCS(clipBuffer, clipPath, fileType);
-    } catch (uploadError) {
-      console.error(`GCS Upload failed for clipId ${clipId}:`, uploadError);
+      uploadUrl = await getSignedUploadUrl(clipPath, fileType);
+    } catch (error) {
+      console.error(`Failed to generate signed URL for clipId ${clipId}:`, error);
       try {
         await db
           .update(clipsTable)
@@ -292,111 +291,26 @@ export async function POST(request: NextRequest) {
         );
       }
       return NextResponse.json(
-        { error: "Failed to upload clip to storage" },
+        { error: "Failed to generate upload URL" },
         { status: 500 },
       );
     }
 
-    let watermarkedClipUrl = "";
-    if (watermarkedClip) {
-      try {
-        const watermarkedBuffer = Buffer.from(
-          await watermarkedClip.arrayBuffer(),
-        );
-        const watermarkedFileType = watermarkedClip.type || "video/mp4";
-        const watermarkedExtension =
-          mime.extension(watermarkedFileType) || "mp4";
-        const watermarkedPath = buildClipPath(
-          userId,
-          clipId,
-          `clip.${watermarkedExtension}`,
-        );
-        watermarkedClipUrl = await uploadToGCS(
-          watermarkedBuffer,
-          watermarkedPath,
-          watermarkedFileType,
-        );
-      } catch (uploadError) {
-        console.error(
-          `Watermarked clip upload failed for clipId ${clipId}:`,
-          uploadError,
-        );
-      }
-    }
-
-    let thumbnailUrl;
-    if (thumbnail) {
-      try {
-        const thumbnailBuffer = Buffer.from(await thumbnail.arrayBuffer());
-        const thumbnailFileType = thumbnail.type || "image/jpeg";
-        const thumbnailExtension = mime.extension(thumbnailFileType) || "jpg";
-        const thumbnailPath = buildClipPath(
-          userId,
-          clipId,
-          `thumbnail.${thumbnailExtension}`,
-        );
-        thumbnailUrl = await uploadToGCS(
-          thumbnailBuffer,
-          thumbnailPath,
-          thumbnailFileType,
-        );
-      } catch (uploadError) {
-        console.error(
-          `Thumbnail upload failed for clipId ${clipId}:`,
-          uploadError,
-        );
-        thumbnailUrl = buildThumbnailUrl(userId, clipId);
-      }
-    } else {
-      thumbnailUrl = buildThumbnailUrl(userId, clipId);
-    }
-
-    await db
-      .update(clipsTable)
-      .set({
-        video_url: watermarkedClipUrl || clipUrl,
-        thumbnail_url: thumbnailUrl,
-        status: "completed",
-      })
-      .where(eq(clipsTable.id, clipId));
-
+    // Return the presigned URL and clip info to the client
     return NextResponse.json({
       success: true,
       clip: {
         id: clipId,
-        videoUrl: watermarkedClipUrl || clipUrl,
-        thumbnailUrl: thumbnailUrl,
-        title: title,
-        slug: slug,
-        status: "completed",
+        uploadUrl,
+        path: clipPath,
+        slug,
+        status: "uploading",
       },
     });
   } catch (error) {
-    console.error("Error processing clip upload:", error);
-
-    if (
-      clipId &&
-      error instanceof Error &&
-      !error.message.includes("Upload failed")
-    ) {
-      try {
-        await db
-          .update(clipsTable)
-          .set({ status: "failed" })
-          .where(eq(clipsTable.id, clipId));
-        console.error(
-          `Set status to 'failed' for clipId ${clipId} due to general error.`,
-        );
-      } catch (dbUpdateError) {
-        console.error(
-          `Failed to update status to 'failed' for clipId ${clipId} during general error handling:`,
-          dbUpdateError,
-        );
-      }
-    }
-
+    console.error("Error in clip upload:", error);
     return NextResponse.json(
-      { error: "Failed to process clip upload" },
+      { error: "Internal server error" },
       { status: 500 },
     );
   }

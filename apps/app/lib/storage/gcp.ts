@@ -90,3 +90,21 @@ export async function deleteFromGCS(path: string): Promise<void> {
     throw new Error("Failed to delete file from Google Cloud Storage");
   }
 }
+
+export async function getSignedUploadUrl(
+  path: string,
+  contentType: string,
+  expiresIn: number = 15 * 60, // 15 minutes
+): Promise<string> {
+  const bucket = storage.bucket(bucketName);
+  const file = bucket.file(path);
+
+  const [url] = await file.getSignedUrl({
+    version: 'v4',
+    action: 'write',
+    expires: Date.now() + expiresIn * 1000,
+    contentType,
+  });
+
+  return url;
+}

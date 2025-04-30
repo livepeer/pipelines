@@ -28,9 +28,6 @@ export function ClipSummaryContent({
   const { lastSubmittedPrompt } = usePromptStore();
 
   const handleNext = async () => {
-    // NOTE: This function assumes that the POST handler for /api/clips is implemented
-    // to receive a FormData with a 'sourceClip' file field. If the API endpoint
-    // is not yet implemented, you'll need to create it to handle this FormData.
     if (clipData.clipUrl && clipData.clipFilename) {
       try {
         setIsUploading(true);
@@ -38,7 +35,7 @@ export function ClipSummaryContent({
         const response = await fetch(clipData.clipUrl);
         const blob = await response.blob();
 
-        // Create a FormData object to send the file
+        // Create a FormData object to send the file metadata
         const formData = new FormData();
         formData.append(
           "sourceClip",
@@ -50,42 +47,42 @@ export function ClipSummaryContent({
           formData.append("prompt", lastSubmittedPrompt);
         }
 
-        if (clipData.thumbnailUrl) {
-          try {
-            const thumbnailResponse = await fetch(clipData.thumbnailUrl);
-            const thumbnailBlob = await thumbnailResponse.blob();
-            formData.append(
-              "thumbnail",
-              new File([thumbnailBlob], "thumbnail.jpg", {
-                type: "image/jpeg",
-              }),
-            );
-          } catch (thumbnailError) {
-            console.error("Error fetching thumbnail:", thumbnailError);
-          }
-        }
-
-        // Make the API request
+        // Get the presigned URL from our API
         const apiResponse = await fetch("/api/clips", {
           method: "POST",
           body: formData,
         });
 
-        if (apiResponse.ok) {
-          const data = await apiResponse.json();
-          if (!data.success) {
-            throw new Error("Failed to upload clip");
-          }
-          setClipData({
-            ...clipData,
-            serverClipUrl: data.clip?.videoUrl,
-            slug: data.clip?.slug,
-          });
-          setClipStep("share");
-        } else {
-          console.error("Failed to upload clip:");
-          toast.error("Failed to upload clip");
+        if (!apiResponse.ok) {
+          throw new Error("Failed to get upload URL");
         }
+
+        const data = await apiResponse.json();
+        if (!data.success) {
+          throw new Error("Failed to get upload URL");
+        }
+
+        // Upload directly to GCS using the presigned URL
+        const uploadResponse = await fetch(data.clip.uploadUrl, {
+          method: "PUT",
+          body: blob,
+          headers: {
+            "Content-Type": blob.type,
+          },
+        });
+
+        if (!uploadResponse.ok) {
+          throw new Error("Failed to upload clip to storage");
+        }
+
+        // Update the clip data with the final URL
+        const finalUrl = `https://storage.googleapis.com/${data.clip.path}`;
+        setClipData({
+          ...clipData,
+          serverClipUrl: finalUrl,
+          slug: data.clip.slug,
+        });
+        setClipStep("share");
       } catch (error) {
         console.error("Error uploading clip:", error);
         toast.error("Failed to upload clip");
