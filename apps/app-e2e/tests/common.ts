@@ -35,11 +35,14 @@ export const SEND_METRICS = process.env.SEND_METRICS === "true";
 
 export function selectWhipServer(path: string): string {
   const REGIONS = (process.env.WHIP_REGIONS || "").split(",");
+  let retPath = path;
   if (REGIONS.length > 0 && Math.random() > 0.49) {
     const region = REGIONS[Math.floor(Math.random() * REGIONS.length)];
-    return `${path}?whipServer=https://${region}/live/video-to-video/`;
+    console.log("selected whip region", region);
+    retPath = `${path}?whipServer=https://${region}/live/video-to-video/`;
   }
-  return path;
+  console.log("generated path for request (with WHIP request)", retPath);
+  return retPath;
 }
 
 /**
