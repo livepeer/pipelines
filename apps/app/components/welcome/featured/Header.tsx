@@ -125,6 +125,36 @@ export const Header = ({
           "md:min-w-[596px]",
         )}
       >
+        {/* Desktop Beta Badge */}
+        {!isMobile && !isFullscreen && (
+          <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-full flex justify-center">
+            <a
+              href="https://livepeer.notion.site/15f0a348568781aab037c863d91b05e2"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center px-4 py-1 rounded-full border border-blue-200 bg-white/70 backdrop-blur-sm text-blue-600 text-sm font-medium gap-2 shadow-sm hover:bg-white/90 transition-colors"
+            >
+              <span className="inline-block w-2 h-2 rounded-full bg-blue-500"></span>
+              We're in beta. Send us your feedback and ideas →
+            </a>
+          </div>
+        )}
+
+        {/* Mobile Beta Badge */}
+        {isMobile && !isFullscreen && (
+          <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-full flex justify-center px-4">
+            <a
+              href="https://livepeer.notion.site/15f0a348568781aab037c863d91b05e2"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center px-3 py-1 rounded-full border border-blue-200 bg-white/70 backdrop-blur-sm text-blue-600 text-xs font-medium gap-1.5 shadow-sm hover:bg-white/90 transition-colors w-full justify-center"
+            >
+              <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+              We're in beta. Send us your feedback →
+            </a>
+          </div>
+        )}
+
         {!isMobile && !isFullscreen && (
           <>
             <div className="absolute bottom-3 left-0 flex items-center">

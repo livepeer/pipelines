@@ -54,17 +54,21 @@ export default function Header() {
           aria-label="Global"
           className="mx-auto flex items-center justify-between py-4 px-4 sm:px-6 lg:px-8"
         >
-          <div className="flex flex-1 items-center gap-3">
+          <div className="flex flex-1 items-center">
             <a href="#" className="-m-1.5 p-1.5 flex items-center">
               <span className="sr-only">Daydream by Livepeer</span>
               <Logo />
             </a>
-            {/* Beta badge */}
-            <div className="flex items-center px-3 py-0.5 rounded-full border border-blue-200 bg-white/70 backdrop-blur-sm text-blue-600 text-sm font-medium gap-1 shadow-sm">
-              <span className="inline-block w-2 h-2 rounded-full bg-blue-500 mr-1"></span>
-              Beta
-            </div>
           </div>
+          
+          {/* Centered Beta Badge */}
+          <div className="flex-1 flex justify-center items-center">
+            <a href="https://livepeer.notion.site/15f0a348568781aab037c863d91b05e2" target="_blank" rel="noopener noreferrer" className="flex items-center px-4 py-1 rounded-full border border-blue-200 bg-white/70 backdrop-blur-sm text-blue-600 text-sm font-medium gap-2 shadow-sm hover:bg-white/90 transition-colors">
+              <span className="inline-block w-2 h-2 rounded-full bg-blue-500"></span>
+              We're in beta. Send us your feedback and ideas →
+            </a>
+          </div>
+
           <div className="flex flex-1 justify-end">
             <TrackedButton
               trackingEvent="explore_header_community_clicked"
