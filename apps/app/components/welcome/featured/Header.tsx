@@ -142,7 +142,7 @@ export const Header = ({
 
         {/* Mobile Beta Badge */}
         {isMobile && !isFullscreen && (
-          <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-full flex justify-center px-4">
+          <div className="absolute top-2 left-1/2 -translate-x-1/2 w-full flex justify-center px-4">
             <a
               href="https://livepeer.notion.site/15f0a348568781aab037c863d91b05e2"
               target="_blank"
