@@ -59,9 +59,9 @@ export async function generateMetadata(
   // Craft a title that includes the creator's name
   const title = `${clip.author_name}'s AI Video on Daydream`;
 
-  // Get video dimensions (assume 16:9 ratio if unknown)
-  const videoWidth = 1280;
-  const videoHeight = 720;
+  // Assume square video
+  const videoWidth = 512;
+  const videoHeight = 512;
 
   return {
     title,
@@ -90,9 +90,9 @@ export async function generateMetadata(
       creator: "@daydreamlabs",
       players: [
         {
-          playerUrl: `https://daydream.live/clips/embed/${slug}`,
-          width: 1280,
-          height: 720,
+          playerUrl: `/clips/embed/${slug}`,
+          width: videoWidth,
+          height: videoHeight,
           streamUrl: clip.video_url,
         },
       ],
