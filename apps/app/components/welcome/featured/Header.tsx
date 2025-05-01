@@ -223,7 +223,7 @@ export const Header = ({
       </div>
 
       {isMobile && (
-        <div className="z-50 flex justify-between w-full px-4 mt-2">
+        <div className="z-50 flex justify-between w-full px-4 mt-6">
           <div className="flex items-center">
             <SidebarTrigger />
           </div>
