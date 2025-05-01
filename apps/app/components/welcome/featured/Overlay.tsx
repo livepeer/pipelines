@@ -21,16 +21,35 @@ const loadingMessages = [
 
 export default function Overlay({ statusMessage }: OverlayProps) {
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
+  const [usedIndices, setUsedIndices] = useState<number[]>([]);
+
+  const getNextRandomIndex = () => {
+    // If we've used all indices, reset the used indices array
+    if (usedIndices.length === loadingMessages.length - 1) {
+      setUsedIndices([currentMessageIndex]);
+      // Get a random index from remaining unused indices
+      const unusedIndices = Array.from(Array(loadingMessages.length).keys())
+        .filter(i => i !== currentMessageIndex);
+      return unusedIndices[Math.floor(Math.random() * unusedIndices.length)];
+    }
+
+    // Get all unused indices (except current)
+    const availableIndices = Array.from(Array(loadingMessages.length).keys())
+      .filter(i => !usedIndices.includes(i) && i !== currentMessageIndex);
+    
+    // Return a random index from available indices
+    return availableIndices[Math.floor(Math.random() * availableIndices.length)];
+  };
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentMessageIndex((prevIndex) => 
-        prevIndex === loadingMessages.length - 1 ? 0 : prevIndex + 1
-      );
+      const nextIndex = getNextRandomIndex();
+      setCurrentMessageIndex(nextIndex);
+      setUsedIndices(prev => [...prev, nextIndex]);
     }, 3000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [currentMessageIndex, usedIndices]);
 
   return (
     <>
