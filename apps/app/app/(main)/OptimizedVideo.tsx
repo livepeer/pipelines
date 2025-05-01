@@ -9,7 +9,14 @@ import { TrackedButton } from "@/components/analytics/TrackedButton";
 import { useGuestUserStore } from "@/hooks/useGuestUser";
 import { usePrivy } from "@/hooks/usePrivy";
 import { useRouter } from "next/navigation";
+import { setSourceClipIdToCookies } from "@/components/daydream/Clipping/actions";
 import VideoAISparkles from "components/daydream/CustomIcons/VideoAISparkles";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@repo/design-system/components/ui/tooltip";
 
 interface OptimizedVideoProps {
   src: string;
@@ -110,7 +117,7 @@ export default function OptimizedVideo({
     return () => playbackObserver.disconnect();
   }, [isNearViewport, isPreviewOpen]);
 
-  const handleTryPrompt = (e: React.MouseEvent) => {
+  const handleTryPrompt = async (e: React.MouseEvent) => {
     e.stopPropagation();
 
     if (prompt) {
@@ -122,8 +129,11 @@ export default function OptimizedVideo({
 
       if (isOverlayMode && onTryPrompt) {
         onTryPrompt(prompt);
+        await setSourceClipIdToCookies(clipId);
       } else {
-        router.push(`/create?inputPrompt=${btoa(prompt)}`);
+        router.push(
+          `/create?inputPrompt=${btoa(prompt)}&sourceClipId=${btoa(clipId)}`,
+        );
       }
     } else {
       if (!isOverlayMode) {
@@ -161,11 +171,22 @@ export default function OptimizedVideo({
                 {authorName}
               </span>
             </div>
-            {/* 
-            <div className="absolute bottom-3 right-4 p-0 z-10 flex gap-1 items-center  bg-black/20 backdrop-blur-sm px-2 py-1 rounded-lg">
-              <Repeat className="w-3 h-3 text-white" />
-              <span className="text-white text-[0.64rem]">{remixCount}</span>
-            </div> */}
+
+            <TooltipProvider delayDuration={0}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="absolute bottom-3 right-4 p-0 z-10 flex gap-1 items-center  bg-black/20 backdrop-blur-sm px-2 py-1 rounded-lg">
+                    <Repeat className="w-3 h-3 text-white" />
+                    <span className="text-white text-[0.64rem]">
+                      {remixCount}
+                    </span>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Remixes</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
 
             <div
               className="absolute top-3 right-2 p-0 z-10 flex gap-1 items-center opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-150"
@@ -189,7 +210,9 @@ export default function OptimizedVideo({
               ) : (
                 <Link
                   href={
-                    prompt ? `/create?inputPrompt=${btoa(prompt)}` : "/create"
+                    prompt
+                      ? `/create?inputPrompt=${btoa(prompt)}&sourceClipId=${btoa(clipId)}`
+                      : "/create"
                   }
                   onClick={e => {
                     e.stopPropagation();

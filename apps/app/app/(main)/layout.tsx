@@ -29,11 +29,7 @@ async function getInitialClips() {
     video_title: clipsTable.video_title,
     created_at: clipsTable.created_at,
     prompt: clipsTable.prompt,
-    remix_count: sql<number>`(
-          SELECT count(*) 
-          FROM ${clipsTable} AS remixed_clips
-          WHERE remixed_clips.source_clip_id = ${clipsTable.id}
-        )`.mapWith(Number),
+    remix_count: clipsTable.remix_count,
     author_name: usersTable.name,
     slug: clipSlugsTable.slug,
     priority: clipsTable.priority,

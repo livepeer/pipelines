@@ -28,9 +28,6 @@ export function ClipSummaryContent({
   const { lastSubmittedPrompt } = usePromptStore();
 
   const handleNext = async () => {
-    // NOTE: This function assumes that the POST handler for /api/clips is implemented
-    // to receive a FormData with a 'sourceClip' file field. If the API endpoint
-    // is not yet implemented, you'll need to create it to handle this FormData.
     if (clipData.clipUrl && clipData.clipFilename) {
       try {
         setIsUploading(true);

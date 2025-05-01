@@ -17,6 +17,7 @@ import { useGuestUserStore } from "@/hooks/useGuestUser";
 import { useSearchParams } from "next/navigation";
 import { ClipModal } from "./Clipping/ClipModal";
 import { retrieveClip, deleteClip } from "@/lib/clipStorage";
+import { setSourceClipIdToCookies } from "./Clipping/actions";
 
 interface DaydreamProps {
   hasSharedPrompt: boolean;
@@ -33,6 +34,15 @@ export default function Daydream({
   const { isGuestUser, setIsGuestUser } = useGuestUserStore();
   const searchParams = useSearchParams();
   const inputPrompt = searchParams.get("inputPrompt");
+  const sourceClipId = searchParams.get("sourceClipId");
+
+  // Used to track the source clip id for remix count
+  useEffect(() => {
+    if (sourceClipId) {
+      const clipId = atob(sourceClipId);
+      setSourceClipIdToCookies(clipId);
+    }
+  }, []);
 
   // Always reset guest mode if user is authenticated
   useEffect(() => {

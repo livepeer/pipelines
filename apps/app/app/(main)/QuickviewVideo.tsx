@@ -133,7 +133,9 @@ export default function QuickviewVideo({
 
                 <Link
                   href={
-                    prompt ? `/create?inputPrompt=${btoa(prompt)}` : "/create"
+                    prompt
+                      ? `/create?inputPrompt=${btoa(prompt)}&sourceClipId=${btoa(clipId)}`
+                      : "/create"
                   }
                 >
                   <TrackedButton

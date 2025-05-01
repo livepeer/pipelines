@@ -12,6 +12,7 @@ import { usePrivy } from "@/hooks/usePrivy";
 import track from "@/lib/track";
 import { cn } from "@repo/design-system/lib/utils";
 import { OverlayClipViewer } from "./OverlayClipViewer";
+import { setSourceClipIdToCookies } from "@/components/daydream/Clipping/actions";
 
 export const BentoGridOverlay = () => {
   const {
