@@ -135,7 +135,7 @@ export const Header = ({
               className="flex items-center px-4 py-1 rounded-full border border-blue-200 bg-white/70 backdrop-blur-sm text-blue-600 text-sm font-medium gap-2 shadow-sm hover:bg-white/90 transition-colors"
             >
               <span className="inline-block w-2 h-2 rounded-full bg-blue-500"></span>
-              We're in beta. Send us your feedback and ideas →
+              We&apos;re in beta. Send us your feedback and ideas →
             </a>
           </div>
         )}
@@ -150,7 +150,7 @@ export const Header = ({
               className="flex items-center px-3 py-1 rounded-full border border-blue-200 bg-white/70 backdrop-blur-sm text-blue-600 text-xs font-medium gap-1.5 shadow-sm hover:bg-white/90 transition-colors w-full justify-center"
             >
               <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-500"></span>
-              We're in beta. Send us your feedback →
+              We&apos;re in beta. Send us your feedback →
             </a>
           </div>
         )}
