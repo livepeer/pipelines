@@ -22,6 +22,7 @@ async function getClipBySlug(slug: string) {
           WHERE remixed_clips.source_clip_id = ${clipsTable.id}
         )`.mapWith(Number),
       author_name: usersTable.name,
+      author_details: usersTable.additionalDetails,
       slug: clipSlugsTable.slug,
     })
     .from(clipsTable)
@@ -50,6 +51,7 @@ export default async function Page({ params }: { params: { slug: string } }) {
         prompt={clip.prompt}
         title={clip.video_title || "Vincent Van Gogh"}
         authorName={clip.author_name || "Livepeer"}
+        authorDetails={clip.author_details as any}
         createdAt={clip.created_at.toISOString()}
         remixCount={clip.remix_count}
       >

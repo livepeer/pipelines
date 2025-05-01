@@ -7,6 +7,7 @@ export type Clip = {
   created_at: string;
   prompt?: string;
   author_name: string | null;
+  author_details?: Record<string, any>;
   remix_count: number;
   slug: string | null;
   priority: number | null;
@@ -38,6 +39,7 @@ export default function useClipsFetcher(initialClips: Clip[] = []) {
             created_at?: string | Date;
             prompt?: string;
             author_name?: string | null;
+            author_details?: Record<string, any>;
             remix_count: number;
             slug: string | null;
             [key: string]: any;
@@ -51,6 +53,7 @@ export default function useClipsFetcher(initialClips: Clip[] = []) {
             video_url: clip.video_url,
             prompt: clip.prompt || "",
             author_name: clip.author_name || null,
+            author_details: clip.author_details,
             remix_count: clip.remix_count,
             slug: clip.slug,
           }),

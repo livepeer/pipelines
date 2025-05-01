@@ -26,6 +26,7 @@ export async function GET(
         thumbnail_url: clipsTable.thumbnail_url,
         author_user_id: clipsTable.author_user_id,
         author_name: usersTable.name,
+        author_details: usersTable.additionalDetails,
         created_at: clipsTable.created_at,
         prompt: clipsTable.prompt,
       })
@@ -64,6 +65,7 @@ export async function GET(
       thumbnailUrl: clip.thumbnail_url,
       authorId: clip.author_user_id,
       authorName: clip.author_name,
+      authorDetails: clip.author_details,
       createdAt: clip.created_at,
       prompt: clip.prompt,
     });
