@@ -21,9 +21,7 @@ export const metadata: Metadata = {
 export default function EmbedLayout({ children }: EmbedLayoutProperties) {
   return (
     <html lang="en">
-      <body className={`${inter.variable} font-sans bg-black`}>
-        {children}
-      </body>
+      <body className={`${inter.variable} font-sans bg-black`}>{children}</body>
     </html>
   );
-} 
+}
