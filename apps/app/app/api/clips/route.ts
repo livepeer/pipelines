@@ -239,7 +239,7 @@ export async function POST(request: NextRequest) {
           { status: 400 },
         );
       }
-      
+
       // Make sure we use the full URL with correct bucket name
       let finalVideoUrl = videoUrl;
       if (filePath) {
@@ -249,12 +249,15 @@ export async function POST(request: NextRequest) {
         // If videoUrl doesn't contain the domain, treat it as a path
         finalVideoUrl = getPublicUrl(videoUrl);
       }
-      
+
       // Same for thumbnail
       let finalThumbnailUrl = thumbnailUrl;
       if (thumbnailPath) {
         finalThumbnailUrl = getPublicUrl(thumbnailPath);
-      } else if (thumbnailUrl && !thumbnailUrl.includes("storage.googleapis.com")) {
+      } else if (
+        thumbnailUrl &&
+        !thumbnailUrl.includes("storage.googleapis.com")
+      ) {
         finalThumbnailUrl = getPublicUrl(thumbnailUrl);
       }
 
