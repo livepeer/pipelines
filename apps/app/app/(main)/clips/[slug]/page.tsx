@@ -48,9 +48,16 @@ export async function generateMetadata(
 
   const previousImages = (await parent).openGraph?.images || [];
 
-  // Use the clip's thumbnail - if for some reason it's null, use a fallback
-  const thumbnailUrl =
-    clip.thumbnail_url || "https://daydream.live/default-thumbnail.jpg";
+  // Get base URL from metadata base or fallback to relative URL
+  // This makes it work in any environment without hardcoding
+  const baseUrl = (await parent).metadataBase?.toString() || "";
+  const absolutePlayerUrl = `${baseUrl}/clips/embed/${slug}`.replace(
+    /\/+$/,
+    "",
+  );
+
+  // Use the clip's thumbnail - if for some reason it's null, use environment-aware fallback
+  const thumbnailUrl = clip.thumbnail_url || `${baseUrl}/default-thumbnail.jpg`;
 
   // Format the prompt for display, or use a default
   const formattedPrompt =
@@ -90,7 +97,7 @@ export async function generateMetadata(
       creator: "@daydreamlabs",
       players: [
         {
-          playerUrl: `/clips/embed/${slug}`,
+          playerUrl: absolutePlayerUrl,
           width: videoWidth,
           height: videoHeight,
           streamUrl: clip.video_url,
