@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getPrivyUser } from "@/lib/auth";
-import { generatePresignedUploadUrl } from "@/lib/storage/gcp";
+import { generatePresignedUploadUrl, getPublicUrl } from "@/lib/storage/gcp";
 
 export async function POST(request: Request) {
   try {
@@ -32,6 +32,7 @@ export async function POST(request: Request) {
       success: true,
       uploadUrl,
       thumbnailPath,
+      publicUrl: getPublicUrl(thumbnailPath),
     });
   } catch (error) {
     console.error("Error generating thumbnail presigned URL:", error);

@@ -9,6 +9,7 @@ import {
   buildClipPath,
   buildThumbnailUrl,
   uploadToGCS,
+  getPublicUrl,
 } from "@/lib/storage/gcp";
 import { and, asc, eq, isNotNull, isNull, sql } from "drizzle-orm";
 import { customAlphabet } from "nanoid";
@@ -193,6 +194,8 @@ const ClipUploadSchema = z.object({
   clipId: z.string().optional(),
   videoUrl: z.string().optional(),
   thumbnailUrl: z.string().nullable().optional(),
+  filePath: z.string().optional(),
+  thumbnailPath: z.string().optional(),
 });
 
 export async function POST(request: NextRequest) {
@@ -226,22 +229,42 @@ export async function POST(request: NextRequest) {
         thumbnailUrl,
         prompt,
         isFeatured,
+        filePath,
+        thumbnailPath,
       } = jsonData;
 
-      if (!externalClipId || !videoUrl) {
+      if (!externalClipId) {
         return NextResponse.json(
-          { error: "Missing required fields: clipId and videoUrl" },
+          { error: "Missing required field: clipId" },
           { status: 400 },
         );
+      }
+      
+      // Make sure we use the full URL with correct bucket name
+      let finalVideoUrl = videoUrl;
+      if (filePath) {
+        // If filePath is provided, use it to generate the correct URL
+        finalVideoUrl = getPublicUrl(filePath);
+      } else if (videoUrl && !videoUrl.includes("storage.googleapis.com")) {
+        // If videoUrl doesn't contain the domain, treat it as a path
+        finalVideoUrl = getPublicUrl(videoUrl);
+      }
+      
+      // Same for thumbnail
+      let finalThumbnailUrl = thumbnailUrl;
+      if (thumbnailPath) {
+        finalThumbnailUrl = getPublicUrl(thumbnailPath);
+      } else if (thumbnailUrl && !thumbnailUrl.includes("storage.googleapis.com")) {
+        finalThumbnailUrl = getPublicUrl(thumbnailUrl);
       }
 
       const { initialClipId, slug } = await db.transaction(async tx => {
         const [newClip] = await tx
           .insert(clipsTable)
           .values({
-            video_url: videoUrl,
+            video_url: finalVideoUrl,
             video_title: null,
-            thumbnail_url: thumbnailUrl || null,
+            thumbnail_url: finalThumbnailUrl || null,
             author_user_id: userId,
             source_clip_id: null,
             prompt: prompt || null,
@@ -265,7 +288,8 @@ export async function POST(request: NextRequest) {
         success: true,
         clip: {
           id: clipId,
-          videoUrl,
+          videoUrl: finalVideoUrl,
+          thumbnailUrl: finalThumbnailUrl,
           slug,
         },
       });

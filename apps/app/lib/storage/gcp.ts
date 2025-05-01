@@ -17,6 +17,10 @@ try {
 
 const bucketName = gcpConfig.bucketName || "daydream-clips";
 
+export function getPublicUrl(path: string): string {
+  return `https://storage.googleapis.com/${bucketName}/${path}`;
+}
+
 export async function uploadToGCS(
   file: Buffer | NodeJS.ReadableStream,
   path: string,

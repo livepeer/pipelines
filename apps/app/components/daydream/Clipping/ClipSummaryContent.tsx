@@ -74,17 +74,18 @@ export function ClipSummaryContent({
 
         // Upload the clip directly to Google Cloud Storage
         await uploadWithPresignedUrl(presignedData.uploadUrl, blob);
-
-        // Get the public URL of the uploaded clip
-        const gcsPublicUrl = `https://storage.googleapis.com/${presignedData.filePath}`;
-
+        
+        // Get the public URL of the uploaded clip (use the one provided by the API)
+        const gcsPublicUrl = presignedData.publicUrl;
+        
         // Upload thumbnail if available
         let thumbnailUrl = null;
+        let thumbnailPath = null;
         if (clipData.thumbnailUrl) {
           try {
             const thumbnailResponse = await fetch(clipData.thumbnailUrl);
             const thumbnailBlob = await thumbnailResponse.blob();
-
+            
             // Get a presigned URL for uploading the thumbnail
             const thumbnailPresignedResponse = await fetch(
               "/api/clips/presigned-thumbnail",
@@ -99,19 +100,20 @@ export function ClipSummaryContent({
                 }),
               },
             );
-
+            
             if (thumbnailPresignedResponse.ok) {
               const thumbnailPresignedData =
                 await thumbnailPresignedResponse.json();
-
+              
               // Upload the thumbnail directly to Google Cloud Storage
               await uploadWithPresignedUrl(
                 thumbnailPresignedData.uploadUrl,
                 thumbnailBlob,
               );
-
-              // Get the public URL of the uploaded thumbnail
-              thumbnailUrl = `https://storage.googleapis.com/${thumbnailPresignedData.thumbnailPath}`;
+              
+              // Get the public URL of the uploaded thumbnail (use the one provided by the API)
+              thumbnailUrl = thumbnailPresignedData.publicUrl;
+              thumbnailPath = thumbnailPresignedData.thumbnailPath;
             }
           } catch (thumbnailError) {
             console.error("Error uploading thumbnail:", thumbnailError);
@@ -125,6 +127,8 @@ export function ClipSummaryContent({
           thumbnailUrl,
           isFeatured,
           prompt: lastSubmittedPrompt || "",
+          filePath: presignedData.filePath,
+          thumbnailPath,
         };
 
         const apiResponse = await fetch("/api/clips", {

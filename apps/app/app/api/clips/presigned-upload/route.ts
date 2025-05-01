@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getPrivyUser } from "@/lib/auth";
-import { buildClipPath } from "@/lib/storage/gcp";
+import { buildClipPath, getPublicUrl } from "@/lib/storage/gcp";
 import { generatePresignedUploadUrl } from "@/lib/storage/gcp";
 import { customAlphabet } from "nanoid";
 
@@ -42,6 +42,7 @@ export async function POST(request: Request) {
       clipId,
       filePath,
       thumbnailPath,
+      publicUrl: getPublicUrl(filePath),
     });
   } catch (error) {
     console.error("Error generating presigned URL:", error);
