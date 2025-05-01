@@ -269,7 +269,7 @@ export const Header = ({
                 size="icon"
                 className="p-0 m-0 bg-transparent border-none hover:bg-transparent focus:outline-none rounded-md"
               >
-                <Users2 className="h-4 w-4" />
+                <DiscordLogoIcon className="h-4 w-4" />
               </Button>
             </Link>
 
