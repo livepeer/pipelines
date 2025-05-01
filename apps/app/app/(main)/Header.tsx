@@ -129,32 +129,7 @@ export default function Header() {
             >
               <DiscordLogoIcon className="h-4 w-4" /> Join Discord
             </TrackedButton>
-            <div className="relative">
-              <TrackedButton
-                trackingEvent="explore_header_feedback_clicked"
-                trackingProperties={{ location: "explore_header" }}
-                variant="ghost"
-                className="text-sm text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-full p-2 transition-colors duration-200"
-                title="Share your feedback to help us improve"
-                onMouseEnter={() => setShowFeedbackTooltip(true)}
-                onMouseLeave={() => setShowFeedbackTooltip(false)}
-                onClick={() => {
-                  window.open(
-                    "https://livepeer.notion.site/15f0a348568781aab037c863d91b05e2",
-                    "_blank",
-                    "noopener noreferrer",
-                  );
-                }}
-              >
-                <ChatBubbleIcon className="h-5 w-5" />
-                <span className="sr-only">Share Feedback</span>
-              </TrackedButton>
-              {showFeedbackTooltip && (
-                <div className="feedback-tooltip">
-                  Share your feedback to help us improve
-                </div>
-              )}
-            </div>
+           
             {/* Desktop-only Create button */}
             <Link href="/create" className="hidden sm:block ml-4">
               <TrackedButton
