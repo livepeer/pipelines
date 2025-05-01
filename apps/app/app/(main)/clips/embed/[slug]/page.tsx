@@ -25,7 +25,11 @@ export const metadata: Metadata = {
   description: "Embedded video player",
 };
 
-export default async function EmbedPage({ params }: { params: { slug: string } }) {
+export default async function EmbedPage({
+  params,
+}: {
+  params: { slug: string };
+}) {
   const { slug } = params;
   const clip = await getClipBySlug(slug);
 
@@ -47,4 +51,4 @@ export default async function EmbedPage({ params }: { params: { slug: string } }
       </div>
     </div>
   );
-} 
+}

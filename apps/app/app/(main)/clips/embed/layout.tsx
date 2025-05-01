@@ -14,4 +14,4 @@ export default function EmbedLayout({ children }: { children: ReactNode }) {
       </body>
     </html>
   );
-} 
+}

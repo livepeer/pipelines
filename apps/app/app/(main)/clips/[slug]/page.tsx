@@ -37,30 +37,32 @@ async function getClipBySlug(slug: string) {
 // Generate metadata for the page
 export async function generateMetadata(
   { params }: { params: { slug: string } },
-  parent: ResolvingMetadata
+  parent: ResolvingMetadata,
 ): Promise<Metadata> {
   const { slug } = params;
   const clip = await getClipBySlug(slug);
-  
+
   if (!clip) {
     return {};
   }
-  
+
   const previousImages = (await parent).openGraph?.images || [];
-  
+
   // Use the clip's thumbnail - if for some reason it's null, use a fallback
-  const thumbnailUrl = clip.thumbnail_url || 'https://daydream.live/default-thumbnail.jpg';
-  
+  const thumbnailUrl =
+    clip.thumbnail_url || "https://daydream.live/default-thumbnail.jpg";
+
   // Format the prompt for display, or use a default
-  const formattedPrompt = clip.prompt || "Check out this AI-generated video on Daydream";
-  
+  const formattedPrompt =
+    clip.prompt || "Check out this AI-generated video on Daydream";
+
   // Craft a title that includes the creator's name
   const title = `${clip.author_name}'s AI Video on Daydream`;
 
   // Get video dimensions (assume 16:9 ratio if unknown)
-  const videoWidth = 1280; 
+  const videoWidth = 1280;
   const videoHeight = 720;
-  
+
   return {
     title,
     description: formattedPrompt,
@@ -73,36 +75,36 @@ export async function generateMetadata(
           url: clip.video_url,
           width: videoWidth,
           height: videoHeight,
-          type: 'video/mp4'
-        }
+          type: "video/mp4",
+        },
       ],
-      type: 'video.other',
-      siteName: 'Daydream',
-      locale: 'en_US',
+      type: "video.other",
+      siteName: "Daydream",
+      locale: "en_US",
     },
     twitter: {
-      card: 'player',
+      card: "player",
       title,
       description: formattedPrompt,
       images: [thumbnailUrl],
-      creator: '@daydreamlabs',
+      creator: "@daydreamlabs",
       players: [
         {
           playerUrl: `https://daydream.live/clips/embed/${slug}`,
           width: 1280,
           height: 720,
-          streamUrl: clip.video_url
-        }
-      ]
+          streamUrl: clip.video_url,
+        },
+      ],
     },
     other: {
-      'theme-color': '#ffffff',
+      "theme-color": "#ffffff",
       // Facebook-specific video tags
-      'og:video': clip.video_url,
-      'og:video:secure_url': clip.video_url,
-      'og:video:type': 'video/mp4',
-      'og:video:width': videoWidth.toString(),
-      'og:video:height': videoHeight.toString(),
+      "og:video": clip.video_url,
+      "og:video:secure_url": clip.video_url,
+      "og:video:type": "video/mp4",
+      "og:video:width": videoWidth.toString(),
+      "og:video:height": videoHeight.toString(),
     },
   };
 }
