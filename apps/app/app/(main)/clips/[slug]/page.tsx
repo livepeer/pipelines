@@ -51,7 +51,7 @@ export async function generateMetadata(
   // Get base URL from metadata base or fallback to relative URL
   // This makes it work in any environment without hardcoding
   const baseUrl = (await parent).metadataBase?.toString() || "";
-  const absolutePlayerUrl = `${baseUrl}/clips/embed/${slug}`.replace(
+  const absolutePlayerUrl = `${baseUrl}/embed/clips/${slug}`.replace(
     /\/+$/,
     "",
   );
