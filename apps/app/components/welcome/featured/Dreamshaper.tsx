@@ -70,6 +70,8 @@ export default function Dreamshaper({ isGuestMode = false }: DreamshaperProps) {
     "trial_expired" | "prompt_limit" | "share" | null
   >(null);
   const [showTutorial, setShowTutorial] = useState(false);
+  const [timeUntilRefresh, setTimeUntilRefresh] = useState(300);
+  const refreshTimerRef = useRef<NodeJS.Timeout>();
 
   useMount(() => {
     track("daydream_page_view", {
@@ -276,6 +278,26 @@ export default function Dreamshaper({ isGuestMode = false }: DreamshaperProps) {
     }
   }, [live]);
 
+  useEffect(() => {
+    setTimeUntilRefresh(300);
+
+    refreshTimerRef.current = setInterval(() => {
+      setTimeUntilRefresh(prev => {
+        if (prev <= 1) {
+          window.location.reload();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => {
+      if (refreshTimerRef.current) {
+        clearInterval(refreshTimerRef.current);
+      }
+    };
+  }, []);
+
   const handleTutorialComplete = () => {
     setShowTutorial(false);
     localStorage.setItem("has_seen_tutorial", "true");
@@ -330,6 +352,10 @@ export default function Dreamshaper({ isGuestMode = false }: DreamshaperProps) {
       <div className={currentStep !== "main" ? "hidden" : "block"}>
         <div className="relative flex flex-col min-h-screen overflow-y-auto">
           <Header isGuestMode={isGuestMode} onShareAttempt={handleGuestShare} />
+
+          <div className="fixed top-4 right-4 z-[100] bg-neutral-800/80 text-white px-3 py-1 rounded-full text-sm font-mono">
+            Refreshing in {timeUntilRefresh}s
+          </div>
 
           <div
             className={cn(
