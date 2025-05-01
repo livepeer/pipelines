@@ -9,9 +9,19 @@ import { useEffect, useState } from "react";
 import { DiscordLogoIcon, ChatBubbleIcon } from "@radix-ui/react-icons";
 import VideoAISparkles from "components/daydream/CustomIcons/VideoAISparkles";
 
+// Add keyframe animation for the Beta tag pulse
+const pulseKeyframes = `
+  @keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.8; }
+    100% { opacity: 1; }
+  }
+`;
+
 export default function Header() {
   const { isPreviewOpen } = usePreviewStore();
   const [scrolled, setScrolled] = useState(false);
+  const [showFeedbackTooltip, setShowFeedbackTooltip] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -26,8 +36,8 @@ export default function Header() {
 
   return (
     <>
-      {/* Custom style to override alwaysAnimatedButton for the circular floating button */}
       <style jsx global>{`
+        ${pulseKeyframes}
         .circular-animated-button::before {
           border-radius: 9999px !important;
         }
@@ -41,6 +51,45 @@ export default function Header() {
 
         .forced-white-bg {
           background: #ffffff !important;
+        }
+
+        .beta-pulse {
+          animation: pulse 2s infinite;
+        }
+
+        .beta-dot {
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+          background-color: #3B82F6;
+          display: inline-block;
+          margin-right: 4px;
+          vertical-align: middle;
+        }
+
+        .feedback-tooltip {
+          position: absolute;
+          top: 100%;
+          right: 0;
+          margin-top: 8px;
+          padding: 8px 12px;
+          background-color: #1F2937;
+          color: white;
+          border-radius: 6px;
+          font-size: 14px;
+          white-space: nowrap;
+          z-index: 50;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        .feedback-tooltip::before {
+          content: '';
+          position: absolute;
+          top: -6px;
+          right: 12px;
+          border-left: 6px solid transparent;
+          border-right: 6px solid transparent;
+          border-bottom: 6px solid #1F2937;
         }
       `}</style>
 
@@ -58,7 +107,8 @@ export default function Header() {
             <a href="#" className="-m-1.5 p-1.5 flex items-center gap-1.5">
               <span className="sr-only">Daydream by Livepeer</span>
               <Logo />
-              <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-white text-gray-500 border border-gray-200">
+              <span className="text-xs font-medium px-3 py-1 rounded-full bg-blue-50 text-blue-600 border border-blue-200 flex items-center beta-pulse">
+                <span className="beta-dot"></span>
                 Beta
               </span>
             </a>
@@ -79,23 +129,32 @@ export default function Header() {
             >
               <DiscordLogoIcon className="h-4 w-4" /> Join Discord
             </TrackedButton>
-            <TrackedButton
-              trackingEvent="explore_header_feedback_clicked"
-              trackingProperties={{ location: "explore_header" }}
-              variant="ghost"
-              className="text-sm text-gray-500 hover:text-gray-900"
-              title="Share your feedback to help us improve"
-              onClick={() => {
-                window.open(
-                  "https://livepeer.notion.site/15f0a348568781aab037c863d91b05e2",
-                  "_blank",
-                  "noopener noreferrer",
-                );
-              }}
-            >
-              <ChatBubbleIcon className="h-4 w-4" />
-              <span className="sr-only">Share Feedback</span>
-            </TrackedButton>
+            <div className="relative">
+              <TrackedButton
+                trackingEvent="explore_header_feedback_clicked"
+                trackingProperties={{ location: "explore_header" }}
+                variant="ghost"
+                className="text-sm text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-full p-2 transition-colors duration-200"
+                title="Share your feedback to help us improve"
+                onMouseEnter={() => setShowFeedbackTooltip(true)}
+                onMouseLeave={() => setShowFeedbackTooltip(false)}
+                onClick={() => {
+                  window.open(
+                    "https://livepeer.notion.site/15f0a348568781aab037c863d91b05e2",
+                    "_blank",
+                    "noopener noreferrer",
+                  );
+                }}
+              >
+                <ChatBubbleIcon className="h-5 w-5" />
+                <span className="sr-only">Share Feedback</span>
+              </TrackedButton>
+              {showFeedbackTooltip && (
+                <div className="feedback-tooltip">
+                  Share your feedback to help us improve
+                </div>
+              )}
+            </div>
             {/* Desktop-only Create button */}
             <Link href="/create" className="hidden sm:block ml-4">
               <TrackedButton
