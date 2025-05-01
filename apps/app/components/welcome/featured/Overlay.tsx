@@ -14,7 +14,9 @@ const loadingMessages = [
   "Shuffling reality puzzles...",
   "Calibrating your thought projector...",
   "Unwrapping visual possibilities...",
-  "Firing up the wonder factory..."
+  "Firing up the wonder factory...",
+  "Rendering realms of possibility...",
+  "Stirring the pixel potion..."
 ];
 
 export default function Overlay({ statusMessage }: OverlayProps) {
@@ -38,17 +40,19 @@ export default function Overlay({ statusMessage }: OverlayProps) {
         <Logo className="w-8 h-8 sm:w-10 sm:h-10 mb-6" />
         <div className="flex flex-col items-center gap-6 justify-center max-w-80 text-foreground sm:mb-6">
           <p className="shimmer-text shimmer-slow text-lg sm:text-xl font-semibold">
-            {statusMessage ? (
+          {loadingMessages[currentMessageIndex]}
+            
+            {/* 
+            Keeping statusMessage Logic if we want to return to contextual status messages. Right now, 
+            we think that non-contextual messages create a better user experience. 
+            statusMessage ? (
               statusMessage
             ) : (
               <span>
                 Welcome to <span className="font-medium"> Daydream</span>
               </span>
             )}
-          </p>
-          <p className="text-foreground text-xs sm:text-sm text-center">
-            {loadingMessages[currentMessageIndex]}
-          </p>
+          </p> */}
         </div>
       </div>
       <div className="pointer-events-none absolute inset-0 rounded-2xl shadow ring-1 ring-black/5 z-30"></div>
