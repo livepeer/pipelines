@@ -147,7 +147,7 @@ export const Header = ({
               href="https://livepeer.notion.site/15f0a348568781aab037c863d91b05e2"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center px-3 py-1 rounded-full border border-blue-200 bg-white/70 backdrop-blur-sm text-blue-600 text-xs font-medium gap-1.5 shadow-sm hover:bg-white/90 transition-colors w-full justify-center"
+              className="flex items-center px-3 py-2 rounded-full border border-blue-200 bg-white/70 backdrop-blur-sm text-blue-600 text-xs font-medium gap-1.5 shadow-sm hover:bg-white/90 transition-colors w-full justify-center"
             >
               <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-500"></span>
               We&apos;re in beta. Send us your feedback →
