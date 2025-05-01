@@ -11,6 +11,12 @@ import { usePrivy } from "@/hooks/usePrivy";
 import { useRouter } from "next/navigation";
 import { setSourceClipIdToCookies } from "@/components/daydream/Clipping/actions";
 import VideoAISparkles from "components/daydream/CustomIcons/VideoAISparkles";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@repo/design-system/components/ui/tooltip";
 
 interface OptimizedVideoProps {
   src: string;
@@ -166,10 +172,21 @@ export default function OptimizedVideo({
               </span>
             </div>
 
-            <div className="absolute bottom-3 right-4 p-0 z-10 flex gap-1 items-center  bg-black/20 backdrop-blur-sm px-2 py-1 rounded-lg">
-              <Repeat className="w-3 h-3 text-white" />
-              <span className="text-white text-[0.64rem]">{remixCount}</span>
-            </div>
+            <TooltipProvider delayDuration={0}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="absolute bottom-3 right-4 p-0 z-10 flex gap-1 items-center  bg-black/20 backdrop-blur-sm px-2 py-1 rounded-lg">
+                    <Repeat className="w-3 h-3 text-white" />
+                    <span className="text-white text-[0.64rem]">
+                      {remixCount}
+                    </span>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Remixes</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
 
             <div
               className="absolute top-3 right-2 p-0 z-10 flex gap-1 items-center opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-150"
