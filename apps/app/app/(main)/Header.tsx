@@ -75,7 +75,7 @@ export default function Header() {
               trackingEvent="explore_header_community_clicked"
               trackingProperties={{ location: "explore_header" }}
               variant="default"
-              className="text-sm rounded-md px-2 sm:px-4"
+              className="text-sm rounded-md sm:px-4 aspect-square sm:aspect-auto"
               onClick={() => {
                 window.open(
                   "https://discord.com/invite/hxyNHeSzCK",
@@ -84,7 +84,8 @@ export default function Header() {
                 );
               }}
             >
-              <DiscordLogoIcon className="h-4 w-4" /> Join Discord
+              <DiscordLogoIcon className="h-4 w-4" />
+              <span className="hidden sm:inline ml-2">Join Discord</span>
             </TrackedButton>
             {/* Desktop-only Create button */}
             <Link href="/create" className="hidden sm:block ml-4">
