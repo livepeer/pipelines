@@ -55,7 +55,9 @@ export const metadata: Metadata = {
     address: false,
     telephone: false,
   },
-  metadataBase: new URL("https://daydream.live"),
+  metadataBase: process.env.NEXT_PUBLIC_SITE_URL 
+  ? new URL(process.env.NEXT_PUBLIC_SITE_URL) 
+  : new URL(process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000'),
   openGraph: {
     title: "Daydream - Create AI Videos with Prompts",
     description:
