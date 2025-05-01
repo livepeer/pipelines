@@ -17,7 +17,7 @@ const loadingMessages = [
   "Firing up the wonder factory..."
 ];
 
-export const Overlay = ({ statusMessage }: OverlayProps) => {
+export default function Overlay ({ statusMessage }: OverlayProps) => {
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
 
   useEffect(() => {
