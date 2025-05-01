@@ -32,53 +32,62 @@ type RootLayoutProperties = {
 
 export const metadata: Metadata = {
   title: {
-    template: '%s | Daydream',
-    default: 'Daydream - Create AI Videos with Prompts',
+    template: "%s | Daydream",
+    default: "Daydream - Create AI Videos with Prompts",
   },
-  description: 'Create beautiful AI videos with prompts. Turn your ideas into stunning visual content in seconds.',
-  generator: 'Next.js',
-  applicationName: 'Daydream',
-  referrer: 'origin-when-cross-origin',
-  keywords: ['AI video', 'AI generation', 'prompt-to-video', 'content creation', 'Daydream'],
-  authors: [{ name: 'Daydream Labs' }],
-  creator: 'Daydream Labs',
-  publisher: 'Daydream Labs',
+  description:
+    "Create beautiful AI videos with prompts. Turn your ideas into stunning visual content in seconds.",
+  generator: "Next.js",
+  applicationName: "Daydream",
+  referrer: "origin-when-cross-origin",
+  keywords: [
+    "AI video",
+    "AI generation",
+    "prompt-to-video",
+    "content creation",
+    "Daydream",
+  ],
+  authors: [{ name: "Daydream Labs" }],
+  creator: "Daydream Labs",
+  publisher: "Daydream Labs",
   formatDetection: {
     email: false,
     address: false,
     telephone: false,
   },
-  metadataBase: new URL('https://daydream.live'),
+  metadataBase: new URL("https://daydream.live"),
   openGraph: {
-    title: 'Daydream - Create AI Videos with Prompts',
-    description: 'Create beautiful AI videos with prompts. Turn your ideas into stunning visual content in seconds.',
-    url: 'https://daydream.live',
-    siteName: 'Daydream',
+    title: "Daydream - Create AI Videos with Prompts",
+    description:
+      "Create beautiful AI videos with prompts. Turn your ideas into stunning visual content in seconds.",
+    url: "https://daydream.live",
+    siteName: "Daydream",
     images: [
       {
-        url: 'https://daydream.live/og-image.jpg',
+        url: "https://daydream.live/og-image.jpg",
         width: 1200,
         height: 630,
-        alt: 'Daydream - AI Video Generation',
+        alt: "Daydream - AI Video Generation",
       },
     ],
-    locale: 'en_US',
-    type: 'website',
+    locale: "en_US",
+    type: "website",
   },
   twitter: {
-    card: 'summary_large_image',
-    title: 'Daydream - Create AI Videos with Prompts',
-    description: 'Create beautiful AI videos with prompts. Turn your ideas into stunning visual content in seconds.',
-    creator: '@daydreamlabs',
-    images: ['https://daydream.live/og-image.jpg'],
+    card: "summary_large_image",
+    title: "Daydream - Create AI Videos with Prompts",
+    description:
+      "Create beautiful AI videos with prompts. Turn your ideas into stunning visual content in seconds.",
+    creator: "@daydreamlabs",
+    images: ["https://daydream.live/og-image.jpg"],
   },
   icons: {
-    icon: '/favicon.ico',
-    shortcut: '/favicon.ico',
-    apple: '/apple-icon.png',
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+    apple: "/apple-icon.png",
   },
   verification: {
-    google: 'google-site-verification-code', // Replace with real verification code if available
+    google: "google-site-verification-code", // Replace with real verification code if available
   },
   robots: {
     index: true,
@@ -86,9 +95,9 @@ export const metadata: Metadata = {
     googleBot: {
       index: true,
       follow: true,
-      'max-video-preview': -1,
-      'max-image-preview': 'large',
-      'max-snippet': -1,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
     },
   },
 };

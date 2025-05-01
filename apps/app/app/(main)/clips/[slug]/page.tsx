@@ -37,26 +37,28 @@ async function getClipBySlug(slug: string) {
 // Generate metadata for the page
 export async function generateMetadata(
   { params }: { params: { slug: string } },
-  parent: ResolvingMetadata
+  parent: ResolvingMetadata,
 ): Promise<Metadata> {
   const { slug } = params;
   const clip = await getClipBySlug(slug);
-  
+
   if (!clip) {
     return {};
   }
-  
+
   const previousImages = (await parent).openGraph?.images || [];
-  
+
   // Use the clip's thumbnail - if for some reason it's null, use a fallback
-  const thumbnailUrl = clip.thumbnail_url || 'https://daydream.live/default-thumbnail.jpg';
-  
+  const thumbnailUrl =
+    clip.thumbnail_url || "https://daydream.live/default-thumbnail.jpg";
+
   // Format the prompt for display, or use a default
-  const formattedPrompt = clip.prompt || "Check out this AI-generated video on Daydream";
-  
+  const formattedPrompt =
+    clip.prompt || "Check out this AI-generated video on Daydream";
+
   // Craft a title that includes the creator's name
   const title = `${clip.author_name}'s AI Video on Daydream`;
-  
+
   return {
     title,
     description: formattedPrompt,
@@ -64,19 +66,19 @@ export async function generateMetadata(
       title,
       description: formattedPrompt,
       images: [thumbnailUrl, ...previousImages],
-      type: 'video.other',
-      siteName: 'Daydream',
-      locale: 'en_US',
+      type: "video.other",
+      siteName: "Daydream",
+      locale: "en_US",
     },
     twitter: {
-      card: 'summary_large_image',
+      card: "summary_large_image",
       title,
       description: formattedPrompt,
       images: [thumbnailUrl],
-      creator: '@daydreamlabs',
+      creator: "@daydreamlabs",
     },
     other: {
-      'theme-color': '#ffffff',
+      "theme-color": "#ffffff",
     },
   };
 }
