@@ -6,7 +6,7 @@ import { usePreviewStore } from "@/hooks/usePreviewStore";
 import { cn } from "@repo/design-system/lib/utils";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { DiscordLogoIcon } from "@radix-ui/react-icons";
+import { DiscordLogoIcon, ChatBubbleIcon } from "@radix-ui/react-icons";
 import VideoAISparkles from "components/daydream/CustomIcons/VideoAISparkles";
 
 export default function Header() {
@@ -55,30 +55,15 @@ export default function Header() {
           className="mx-auto flex items-center justify-between py-4 px-4 sm:px-6 lg:px-8"
         >
           <div className="flex flex-1">
-            <a href="#" className="-m-1.5 p-1.5 flex items-center gap-2">
+            <a href="#" className="-m-1.5 p-1.5 flex items-center gap-1.5">
               <span className="sr-only">Daydream by Livepeer</span>
               <Logo />
-              <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 border border-gray-200">
+              <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-white text-gray-500 border border-gray-200">
                 Beta
               </span>
             </a>
           </div>
           <div className="flex flex-1 justify-end items-center gap-4">
-            <TrackedButton
-              trackingEvent="explore_header_feedback_clicked"
-              trackingProperties={{ location: "explore_header" }}
-              variant="ghost"
-              className="text-sm text-gray-600 hover:text-gray-900"
-              onClick={() => {
-                window.open(
-                  "https://livepeer.notion.site/15f0a348568781aab037c863d91b05e2",
-                  "_blank",
-                  "noopener noreferrer",
-                );
-              }}
-            >
-              Give Feedback
-            </TrackedButton>
             <TrackedButton
               trackingEvent="explore_header_community_clicked"
               trackingProperties={{ location: "explore_header" }}
@@ -93,6 +78,23 @@ export default function Header() {
               }}
             >
               <DiscordLogoIcon className="h-4 w-4" /> Join Discord
+            </TrackedButton>
+            <TrackedButton
+              trackingEvent="explore_header_feedback_clicked"
+              trackingProperties={{ location: "explore_header" }}
+              variant="ghost"
+              className="text-sm text-gray-500 hover:text-gray-900"
+              title="Share your feedback to help us improve"
+              onClick={() => {
+                window.open(
+                  "https://livepeer.notion.site/15f0a348568781aab037c863d91b05e2",
+                  "_blank",
+                  "noopener noreferrer",
+                );
+              }}
+            >
+              <ChatBubbleIcon className="h-4 w-4" />
+              <span className="sr-only">Share Feedback</span>
             </TrackedButton>
             {/* Desktop-only Create button */}
             <Link href="/create" className="hidden sm:block ml-4">
