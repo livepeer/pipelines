@@ -16,6 +16,36 @@ import { customAlphabet } from "nanoid";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import mime from "mime-types";
+import { Storage } from "@google-cloud/storage";
+import { gcpConfig } from "@/lib/serverEnv";
+
+// Initialize GCP Storage
+let storage: Storage;
+try {
+  if (gcpConfig.credentials) {
+    const credentials = JSON.parse(gcpConfig.credentials);
+    storage = new Storage({ credentials });
+  } else {
+    storage = new Storage();
+  }
+} catch (error) {
+  console.error("Failed to initialize GCP Storage in API route:", error);
+}
+
+const bucketName = gcpConfig.bucketName || "daydream-clips";
+
+// Function to make a file public
+async function makeFilePublic(filePath: string): Promise<boolean> {
+  try {
+    const bucket = storage.bucket(bucketName);
+    const file = bucket.file(filePath);
+    await file.makePublic();
+    return true;
+  } catch (error) {
+    console.error(`Failed to make file ${filePath} public:`, error);
+    return false;
+  }
+}
 
 type FetchedClip = {
   id: number;
@@ -238,6 +268,28 @@ export async function POST(request: NextRequest) {
           { error: "Missing required field: clipId" },
           { status: 400 },
         );
+      }
+
+      // Make the uploaded files public
+      let videoIsPublic = true;
+      let thumbnailIsPublic = true;
+
+      if (filePath) {
+        videoIsPublic = await makeFilePublic(filePath);
+        if (!videoIsPublic) {
+          console.warn(
+            `Video file ${filePath} could not be made public, but continuing with request`,
+          );
+        }
+      }
+
+      if (thumbnailPath) {
+        thumbnailIsPublic = await makeFilePublic(thumbnailPath);
+        if (!thumbnailIsPublic) {
+          console.warn(
+            `Thumbnail file ${thumbnailPath} could not be made public, but continuing with request`,
+          );
+        }
       }
 
       // Make sure we use the full URL with correct bucket name
