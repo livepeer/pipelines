@@ -1,10 +1,35 @@
 import { Logo } from "@/components/sidebar";
+import { useEffect, useState } from "react";
 
 interface OverlayProps {
   statusMessage: string;
 }
 
-export default function Overlay({ statusMessage }: OverlayProps) {
+const loadingMessages = [
+  "Spinning up dream machines...",
+  "Unlocking creative dimensions...",
+  "Manifesting digital visions...",
+  "Gathering inspiration particles...",
+  "Tuning the imagination engines...",
+  "Shuffling reality puzzles...",
+  "Calibrating your thought projector...",
+  "Unwrapping visual possibilities...",
+  "Firing up the wonder factory..."
+];
+
+export const Overlay = ({ statusMessage }: OverlayProps) => {
+  const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentMessageIndex((prevIndex) => 
+        prevIndex === loadingMessages.length - 1 ? 0 : prevIndex + 1
+      );
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <>
       <div className="absolute inset-0 rounded-2xl loading-gradient z-10"></div>
@@ -22,8 +47,7 @@ export default function Overlay({ statusMessage }: OverlayProps) {
             )}
           </p>
           <p className="text-foreground text-xs sm:text-sm text-center">
-            Thanks for dreaming with us — we&apos;re in beta, so <br /> you
-            might hit a few performance bumps
+            {loadingMessages[currentMessageIndex]}
           </p>
         </div>
       </div>
