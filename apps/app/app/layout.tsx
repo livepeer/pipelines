@@ -6,6 +6,7 @@ import Intercom from "@/components/intercom";
 import { Metadata } from "next";
 import { MixpanelProvider } from "@/components/analytics/MixpanelProvider";
 import { Inter, Playfair, Open_Sans } from "next/font/google";
+import { ThirdPartyAnalytics } from "@/scripts/analytics";
 
 const playfair = Playfair({
   variable: "--font-playfair",
@@ -52,6 +53,7 @@ const RootLayout = ({ children }: RootLayoutProperties) => (
           {/* TODO: REENABLE WHEN SHIH-YU IS READY FOR IT <Intercom /> */}
         </DesignSystemProvider>
       </MixpanelProvider>
+      <ThirdPartyAnalytics />
     </body>
   </html>
 );

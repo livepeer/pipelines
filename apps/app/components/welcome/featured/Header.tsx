@@ -29,6 +29,7 @@ import { useState } from "react";
 import { GuestSignupModal } from "@/components/guest/GuestSignupModal";
 import { useGuestUserStore } from "@/hooks/useGuestUser";
 import { useOverlayStore } from "@/hooks/useOverlayStore";
+import { DiscordLogoIcon } from "@radix-ui/react-icons";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -109,7 +110,7 @@ export const Header = ({
               className="alwaysAnimatedButton rounded-md"
               size="sm"
             >
-              Join Community
+              <DiscordLogoIcon className="h-4 w-4" /> Join Discord
             </TrackedButton>
           </Link>
         </div>

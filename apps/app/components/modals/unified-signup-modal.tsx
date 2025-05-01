@@ -8,6 +8,7 @@ import track from "@/lib/track";
 import { useEffect, useState } from "react";
 import useMobileStore from "@/hooks/useMobileStore";
 import { useRouter } from "next/navigation";
+import { DiscordLogoIcon } from "@radix-ui/react-icons";
 
 interface UnifiedSignupModalProps {
   open: boolean;
@@ -187,7 +188,7 @@ export function UnifiedSignupModal({
                   );
                 }}
               >
-                Join community
+                <DiscordLogoIcon className="h-4 w-4" /> Join Discord
               </Button>
               <Button
                 onClick={e => {

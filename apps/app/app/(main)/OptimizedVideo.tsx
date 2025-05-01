@@ -10,6 +10,7 @@ import { useGuestUserStore } from "@/hooks/useGuestUser";
 import { usePrivy } from "@/hooks/usePrivy";
 import { useRouter } from "next/navigation";
 import { setSourceClipIdToCookies } from "@/components/daydream/Clipping/actions";
+import VideoAISparkles from "components/daydream/CustomIcons/VideoAISparkles";
 
 interface OptimizedVideoProps {
   src: string;
@@ -182,7 +183,9 @@ export default function OptimizedVideo({
                   className="inline-flex items-center space-x-0.5 px-3 py-2 h-8 bg-black/20 backdrop-blur-md text-white rounded-full border-white border shadow-sm scale-90"
                   onClick={handleTryPrompt}
                 >
-                  <WandSparkles className="w-1.5 h-1.5" />
+                  {/* Our default button overrides the size of child SVGs. Rather than change the button, I've overridden the CSS here. */}
+
+                  <VideoAISparkles className={cn("!w-6 !h-6")} />
                   <span className="text-[0.7rem] tracking-wide">
                     Try this prompt
                   </span>
@@ -208,7 +211,9 @@ export default function OptimizedVideo({
                     variant="outline"
                     className="inline-flex items-center space-x-0.5 px-3 py-2 h-8 bg-black/20 backdrop-blur-md text-white rounded-full border-white border shadow-sm scale-90"
                   >
-                    <WandSparkles className="w-1.5 h-1.5" />
+                    {/* Our default button overrides the size of child SVGs. Rather than change the button, I've overridden the CSS here. */}
+
+                    <VideoAISparkles className={cn("!w-6 !h-6")} />
                     <span className="text-[0.7rem] tracking-wide">
                       Try this prompt
                     </span>

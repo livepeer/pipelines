@@ -26,6 +26,7 @@ export default function ClipApprovalQueue() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<number | null>(null);
+  const [loadedVideos, setLoadedVideos] = useState<string[]>([]);
 
   // Redirect non-admins away from this page
   useEffect(() => {
@@ -196,21 +197,40 @@ export default function ClipApprovalQueue() {
               <div
                 className="relative w-full aspect-square"
                 onMouseEnter={() => setHoveredClipId(clip.id.toString())}
-                onMouseLeave={() => setHoveredClipId(null)}
+                onMouseLeave={() => {
+                  setHoveredClipId(null);
+                  setLoadedVideos(prev =>
+                    prev.filter(id => id !== clip.id.toString()),
+                  );
+                }}
               >
-                {hoveredClipId === clip.id.toString() ? (
+                <img
+                  src={clip.thumbnail_url || "https://placehold.co/400x400"}
+                  alt={clip.video_title || "Clip thumbnail"}
+                  className="w-full h-full object-cover"
+                  style={{
+                    display:
+                      hoveredClipId === clip.id.toString() &&
+                      loadedVideos.includes(clip.id.toString())
+                        ? "none"
+                        : "block",
+                  }}
+                />
+                {hoveredClipId === clip.id.toString() && (
                   <video
                     src={clip.video_url}
                     className="w-full h-full object-cover"
+                    style={{
+                      display: loadedVideos.includes(clip.id.toString())
+                        ? "block"
+                        : "none",
+                    }}
                     autoPlay
                     muted
                     loop
-                  />
-                ) : (
-                  <img
-                    src={clip.thumbnail_url || "https://placehold.co/400x400"}
-                    alt={clip.video_title || "Clip thumbnail"}
-                    className="w-full h-full object-cover"
+                    onLoadedData={() => {
+                      setLoadedVideos(prev => [...prev, clip.id.toString()]);
+                    }}
                   />
                 )}
                 <div className="absolute top-2 right-2 bg-gray-700 text-white text-xs px-2 py-1 rounded">
@@ -223,8 +243,18 @@ export default function ClipApprovalQueue() {
                     clip.prompt?.substring(0, 30) + "..." ||
                     "Untitled clip"}
                 </h3>
-                <p className="text-sm text-gray-500 mb-4">
+                <p className="text-sm text-gray-500 mb-2">
                   Added: {new Date(clip.created_at).toLocaleDateString()}
+                </p>
+                <p className="text-sm text-gray-500 mb-4">
+                  Uploaded by:{" "}
+                  <span className="font-bold">
+                    {typeof clip.author === "object" && clip.author?.name
+                      ? clip.author.name
+                      : typeof clip.author === "string"
+                        ? clip.author
+                        : "Unknown user"}
+                  </span>
                 </p>
                 <div className="flex space-x-2">
                   <button
