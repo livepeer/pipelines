@@ -37,7 +37,6 @@ interface QuickviewVideoProps {
   createdAt: string;
   authorName: string;
   authorDetails?: Record<string, any>;
-  remixCount: number;
 }
 
 export default function QuickviewVideo({
@@ -49,7 +48,6 @@ export default function QuickviewVideo({
   authorName,
   authorDetails,
   createdAt,
-  remixCount,
 }: QuickviewVideoProps) {
   const { setIsPreviewOpen, isPreviewOpen } = usePreviewStore();
   const router = useRouter();

@@ -16,11 +16,7 @@ async function getClipBySlug(slug: string) {
       video_title: clipsTable.video_title,
       created_at: clipsTable.created_at,
       prompt: clipsTable.prompt,
-      remix_count: sql<number>`(
-          SELECT count(*)
-          FROM ${clipsTable} AS remixed_clips
-          WHERE remixed_clips.source_clip_id = ${clipsTable.id}
-        )`.mapWith(Number),
+      remix_count: clipsTable.remix_count,
       author_name: usersTable.name,
       author_details: usersTable.additionalDetails,
       slug: clipSlugsTable.slug,
@@ -53,7 +49,6 @@ export default async function Page({ params }: { params: { slug: string } }) {
         authorName={clip.author_name || "Livepeer"}
         authorDetails={clip.author_details as any}
         createdAt={clip.created_at.toISOString()}
-        remixCount={clip.remix_count}
       >
         <></>
       </QuickviewVideo>
