@@ -62,14 +62,7 @@ export const metadata: Metadata = {
       "Create beautiful AI videos with prompts. Turn your ideas into stunning visual content in seconds.",
     url: "https://daydream.live",
     siteName: "Daydream",
-    images: [
-      {
-        url: "https://daydream.live/og-image.jpg",
-        width: 1200,
-        height: 630,
-        alt: "Daydream - AI Video Generation",
-      },
-    ],
+    images: [],
     locale: "en_US",
     type: "website",
   },
@@ -79,7 +72,7 @@ export const metadata: Metadata = {
     description:
       "Create beautiful AI videos with prompts. Turn your ideas into stunning visual content in seconds.",
     creator: "@daydreamlabs",
-    images: ["https://daydream.live/og-image.jpg"],
+    images: [],
   },
   icons: {
     icon: "/favicon.ico",
