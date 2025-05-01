@@ -65,7 +65,7 @@ export default function Header() {
           <div className="flex-1 flex justify-center items-center">
             <a href="https://livepeer.notion.site/15f0a348568781aab037c863d91b05e2" target="_blank" rel="noopener noreferrer" className="flex items-center px-4 py-1 rounded-full border border-blue-200 bg-white/70 backdrop-blur-sm text-blue-600 text-sm font-medium gap-2 shadow-sm hover:bg-white/90 transition-colors">
               <span className="inline-block w-2 h-2 rounded-full bg-blue-500"></span>
-              We're in beta. Send us your feedback and ideas →
+              We&apos;re in beta. Send us your feedback and ideas →
             </a>
           </div>
 
