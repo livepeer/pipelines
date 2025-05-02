@@ -327,7 +327,7 @@ export async function POST(request: NextRequest) {
             source_clip_id: remixedClipId ? Number(remixedClipId) : null,
             prompt: prompt || null,
             status: "completed",
-            approval_status: isFeatured ? "pending" : "approved",
+            approval_status: isFeatured ? "pending" : "none",
           })
           .returning({ initialClipId: clipsTable.id });
 
