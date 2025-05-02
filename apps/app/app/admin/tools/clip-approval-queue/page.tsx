@@ -208,69 +208,11 @@ export default function ClipApprovalQueue() {
     }));
 
     try {
-      const videoElement = document.querySelector(
-        ".bg-white.rounded-lg.p-6 video",
-      ) as HTMLVideoElement;
-
-      if (!videoElement || !videoElement.src) {
-        throw new Error("Video element not found or not loaded");
-      }
-
-      console.log("Getting video data from the loaded video element...");
-
-      const canvas = document.createElement("canvas");
-      const ctx = canvas.getContext("2d");
-
-      if (!ctx) {
-        throw new Error("Could not create canvas context");
-      }
-
-      canvas.width = videoElement.videoWidth;
-      canvas.height = videoElement.videoHeight;
-
-      ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
-
-      const checkBlob = await new Promise<Blob | null>(resolve => {
-        canvas.toBlob(resolve, "image/jpeg");
-      });
-
-      if (!checkBlob) {
-        throw new Error("Video not fully loaded yet. Please try again.");
-      }
-
-      console.log("Video is loaded and ready for processing");
-
-      const originalBlob = await fetch(videoElement.src, {
-        mode: "no-cors",
-      })
-        .then(res => {
-          console.log("Using video element for preview generation");
-          return new Promise<Blob>(resolve => {
-            const mediaStream = (canvas as any).captureStream();
-            const mediaRecorder = new MediaRecorder(mediaStream);
-            const chunks: BlobPart[] = [];
-
-            mediaRecorder.ondataavailable = e => {
-              if (e.data.size > 0) {
-                chunks.push(e.data);
-              }
-            };
-
-            mediaRecorder.onstop = () => {
-              const videoBlob = new Blob(chunks, { type: "video/mp4" });
-              resolve(videoBlob);
-            };
-
-            mediaRecorder.start();
-            setTimeout(() => mediaRecorder.stop(), 100);
-          });
-        })
-        .catch(() => {
-          console.log(
-            "Falling back to direct FFmpeg processing from video element",
-          );
-          return new Blob([], { type: "video/mp4" });
-        });
+      console.log("Fetching original video for preview...");
+      const videoResponse = await fetch(confirmDialog.originalVideoUrl);
+      if (!videoResponse.ok) throw new Error("Failed to fetch original video");
+      const originalBlob = await videoResponse.blob();
+      console.log("Original video fetched.");
 
       const previewBlob = await generatePreview(originalBlob);
       if (!previewBlob) {
