@@ -480,7 +480,9 @@ export default function ClipApprovalQueue() {
 
             <p className="mb-6">
               {confirmDialog.action === "approve"
-                ? `Generate a 4s preview and approve "${confirmDialog.clipTitle}"? It will appear on the explore page.`
+                ? ffmpegLoaded && !ffmpegError
+                  ? `Generate a 4s preview and approve "${confirmDialog.clipTitle}"? It will appear on the explore page.`
+                  : `FFmpeg preload failed. If approved, "${confirmDialog.clipTitle}" will be published without a preview clip. Do you want to continue?`
                 : `Are you sure you want to reject "${confirmDialog.clipTitle}"?`}
             </p>
 
