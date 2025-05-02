@@ -286,6 +286,7 @@ export const BentoGridOverlay = () => {
                   prompt: selectedClip.prompt,
                   title: selectedClip.title || "",
                   authorName: selectedClip.authorName || "Livepeer",
+                  authorDetails: selectedClip.authorDetails,
                   createdAt: selectedClip.createdAt,
                 }}
                 onTryPrompt={handleTryPrompt}

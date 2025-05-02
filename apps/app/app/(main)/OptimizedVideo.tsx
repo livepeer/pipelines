@@ -25,6 +25,7 @@ interface OptimizedVideoProps {
   title: string;
   slug: string | null;
   authorName: string;
+  authorDetails?: Record<string, any>;
   createdAt: string;
   remixCount: number;
   className?: string;
@@ -39,6 +40,7 @@ export default function OptimizedVideo({
   title,
   slug,
   authorName,
+  authorDetails,
   createdAt,
   remixCount,
   className,
@@ -166,7 +168,11 @@ export default function OptimizedVideo({
               )}
             />
             <div className="absolute bottom-3 left-3 p-0 z-10 flex gap-2 items-center">
-              <GradientAvatar seed={authorName} size={24} className="h-6 w-6" />
+              <GradientAvatar
+                seed={authorDetails?.avatar ?? authorName}
+                size={24}
+                className="h-6 w-6"
+              />
               <span className="text-white text-[0.64rem] bg-black/20 backdrop-blur-sm px-2 py-1 rounded-lg">
                 {authorName}
               </span>

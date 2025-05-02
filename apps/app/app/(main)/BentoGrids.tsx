@@ -184,6 +184,7 @@ export function BentoGrids({
                     slug={clip.slug}
                     title={clip.video_title || "Vincent Van Gogh"}
                     authorName={clip.author_name || "Livepeer"}
+                    authorDetails={clip.author_details as Record<string, any>}
                     src={clip.video_url}
                     prompt={clip.prompt}
                     createdAt={clip.created_at}
@@ -226,6 +227,7 @@ function GridItem({
   slug,
   title,
   authorName,
+  authorDetails,
   createdAt,
   remixCount,
   isDebug,
@@ -245,6 +247,7 @@ function GridItem({
   isDebug: boolean;
   overallIndex: number;
   isOverlayMode?: boolean;
+  authorDetails?: Record<string, any>;
   onTryPrompt?: (prompt: string) => void;
 }) {
   const href = slug ? `/clip/${slug}` : `/clip/id/${clipId}`;
@@ -294,6 +297,7 @@ function GridItem({
           title={title}
           slug={slug}
           authorName={authorName}
+          authorDetails={authorDetails}
           createdAt={createdAt}
           remixCount={remixCount}
           isOverlayMode={isOverlayMode}

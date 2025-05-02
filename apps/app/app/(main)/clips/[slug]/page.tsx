@@ -5,7 +5,7 @@ import {
   clips as clipsTable,
   users as usersTable,
 } from "@/lib/db/schema";
-import { eq, sql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { Metadata, ResolvingMetadata } from "next";
 
@@ -18,12 +18,9 @@ async function getClipBySlug(slug: string) {
       created_at: clipsTable.created_at,
       prompt: clipsTable.prompt,
       thumbnail_url: clipsTable.thumbnail_url,
-      remix_count: sql<number>`(
-          SELECT count(*)
-          FROM ${clipsTable} AS remixed_clips
-          WHERE remixed_clips.source_clip_id = ${clipsTable.id}
-        )`.mapWith(Number),
+      remix_count: clipsTable.remix_count,
       author_name: usersTable.name,
+      author_details: usersTable.additionalDetails,
       slug: clipSlugsTable.slug,
     })
     .from(clipsTable)
@@ -139,8 +136,8 @@ export default async function Page({ params }: { params: { slug: string } }) {
         prompt={clip.prompt}
         title={clip.video_title || "Vincent Van Gogh"}
         authorName={clip.author_name || "Livepeer"}
+        authorDetails={clip.author_details as any}
         createdAt={clip.created_at.toISOString()}
-        remixCount={clip.remix_count}
       >
         <></>
       </QuickviewVideo>
