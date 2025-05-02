@@ -1,34 +1,68 @@
 "use client";
 
 import { useState, useRef, ChangeEvent, useEffect } from "react";
+import { createFFmpeg, fetchFile } from "@ffmpeg/ffmpeg";
 
 export default function ClipPreviewGeneratorPage() {
   const [videoSrc, setVideoSrc] = useState<string | null>(null);
+  const [originalFile, setOriginalFile] = useState<File | null>(null);
   const [originalFileName, setOriginalFileName] = useState<string | null>(null);
-  const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
+  const [ffmpegLoaded, setFfmpegLoaded] = useState(false);
+  const [ffmpegProgress, setFfmpegProgress] = useState(0);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const recordedChunksRef = useRef<Blob[]>([]);
+  const ffmpegRef = useRef<any>(null);
+
+  useEffect(() => {
+    const loadFFmpeg = async () => {
+      if (!ffmpegRef.current) {
+        console.log("Initializing FFmpeg (v0.10)... ");
+        ffmpegRef.current = createFFmpeg({
+          log: true,
+          corePath: "/ffmpeg/ffmpeg-core.js",
+        });
+      }
+
+      try {
+        const ffmpeg = ffmpegRef.current;
+        if (ffmpeg && !ffmpeg.isLoaded()) {
+          console.log("Loading FFmpeg core...");
+          await ffmpeg.load();
+          console.log("FFmpeg core loaded successfully.");
+        }
+        setFfmpegLoaded(true);
+      } catch (error) {
+        console.error("Error loading FFmpeg core:", error);
+        setFfmpegLoaded(false);
+        alert(
+          "Failed to load video processing library. Please refresh the page.",
+        );
+      }
+    };
+    loadFFmpeg();
+
+    return () => {};
+  }, []);
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file && file.type === "video/mp4") {
       setDownloadUrl(null);
+      setOriginalFile(file);
       setOriginalFileName(file.name);
       const url = URL.createObjectURL(file);
-      // Revoke previous URL if it exists
       if (videoSrc) {
         URL.revokeObjectURL(videoSrc);
       }
       setVideoSrc(url);
+      setFfmpegProgress(0);
     } else {
       alert("Please select an MP4 file.");
       setVideoSrc(null);
       setOriginalFileName(null);
-      event.target.value = ""; // Reset file input
-      // Revoke URL if a non-MP4 file was previously selected
+      setOriginalFile(null);
+      event.target.value = "";
       if (videoSrc) {
         URL.revokeObjectURL(videoSrc);
         setVideoSrc(null);
@@ -36,9 +70,7 @@ export default function ClipPreviewGeneratorPage() {
     }
   };
 
-  // Add useEffect for cleanup on unmount
   useEffect(() => {
-    // Store the current videoSrc in a variable
     const currentVideoSrc = videoSrc;
     return () => {
       if (currentVideoSrc) {
@@ -46,90 +78,74 @@ export default function ClipPreviewGeneratorPage() {
         console.log("Revoked object URL:", currentVideoSrc);
       }
     };
-  }, [videoSrc]); // Rerun cleanup logic if videoSrc changes
+  }, [videoSrc]);
 
   const handleGeneratePreview = async () => {
-    if (!videoRef.current || !videoSrc) return;
+    const ffmpeg = ffmpegRef.current;
+
+    if (!originalFile || !ffmpegLoaded || !ffmpeg) {
+      alert(
+        "Please select a video file and wait for the processing library to load.",
+      );
+      return;
+    }
 
     setIsProcessing(true);
-    setIsRecording(true);
     setDownloadUrl(null);
-    recordedChunksRef.current = [];
+    setFfmpegProgress(0);
+
+    const inputFilename = "input.mp4";
+    const outputFilename = "output.mp4";
 
     try {
-      const stream = (videoRef.current as any).captureStream();
+      console.log("Starting FFmpeg processing (v0.10)...");
 
-      const videoTrack = stream.getVideoTracks()[0];
-      if (videoTrack) {
-        const settings = videoTrack.getSettings();
-        const originalWidth = settings.width;
-        const originalHeight = settings.height;
+      console.log("Writing file to FFmpeg FS...");
+      ffmpeg.FS("writeFile", inputFilename, await fetchFile(originalFile));
+      console.log("File written.");
 
-        if (originalWidth && originalHeight) {
-          const targetWidth = Math.round(originalWidth * 0.33);
-          const targetHeight = Math.round(originalHeight * 0.33);
-          console.log(
-            `Attempting to constrain video track to ${targetWidth}x${targetHeight}`,
-          );
-          try {
-            await videoTrack.applyConstraints({
-              width: targetWidth,
-              height: targetHeight,
-            });
-            console.log("Successfully applied constraints.");
-          } catch (constraintError) {
-            console.warn(
-              "Could not apply resolution constraints:",
-              constraintError,
-            );
-          }
-        } else {
-          console.warn(
-            "Could not get original video dimensions to apply constraints.",
-          );
-        }
-      } else {
-        console.warn("Could not get video track from stream.");
-      }
+      console.log("Executing FFmpeg command...");
+      await ffmpeg.run(
+        "-i",
+        inputFilename,
+        "-t",
+        "4",
+        "-vf",
+        "scale=360:360:force_original_aspect_ratio=decrease,pad=360:360:(ow-iw)/2:(oh-ih)/2:color=black",
+        "-c:v",
+        "libx264",
+        "-preset",
+        "fast",
+        "-crf",
+        "23",
+        "-an",
+        outputFilename,
+      );
+      console.log("FFmpeg command executed.");
+      setFfmpegProgress(1);
 
-      mediaRecorderRef.current = new MediaRecorder(stream, {
-        mimeType: "video/mp4",
-      });
+      console.log("Reading processed file from FFmpeg FS...");
+      const data = ffmpeg.FS("readFile", outputFilename);
+      console.log("Processed file read.");
 
-      mediaRecorderRef.current.ondataavailable = event => {
-        if (event.data.size > 0) {
-          recordedChunksRef.current.push(event.data);
-        }
-      };
-
-      mediaRecorderRef.current.onstop = () => {
-        const blob = new Blob(recordedChunksRef.current, { type: "video/mp4" });
+      if (data instanceof Uint8Array) {
+        const blob = new Blob([data.buffer], { type: "video/mp4" });
         const url = URL.createObjectURL(blob);
         setDownloadUrl(url);
-        setIsRecording(false);
-        setIsProcessing(false);
-        videoRef.current?.pause();
-        videoRef.current?.load(); // Reset video to show poster or first frame
-      };
-
-      videoRef.current.currentTime = 0; // Ensure playback starts from the beginning
-      await videoRef.current.play();
-      mediaRecorderRef.current.start();
-
-      // Stop recording after 4 seconds
-      setTimeout(() => {
-        if (
-          mediaRecorderRef.current &&
-          mediaRecorderRef.current.state === "recording"
-        ) {
-          mediaRecorderRef.current.stop();
-        }
-      }, 4000);
+        console.log("Download URL created:", url);
+      } else {
+        throw new Error("FFmpeg output data is not a Uint8Array");
+      }
     } catch (error) {
-      console.error("Error generating preview:", error);
-      alert("Failed to generate preview. Check console for details.");
-      setIsRecording(false);
+      console.error("Error during FFmpeg processing:", error);
+      alert(
+        "Failed to generate preview. Check console for details. Error: " +
+          (error instanceof Error ? error.message : String(error)),
+      );
+      setFfmpegProgress(0);
+    } finally {
       setIsProcessing(false);
+      console.log("Processing finished.");
     }
   };
 
@@ -143,8 +159,19 @@ export default function ClipPreviewGeneratorPage() {
     <div>
       <h1 className="text-2xl font-bold mb-4">Clip Preview Generator</h1>
       <p className="mb-6 text-gray-600">
-        Upload an MP4 file, preview it, and generate a 5-second preview clip.
+        Upload an MP4 file, preview it, and generate a 4-second, 360x360 preview
+        clip using client-side processing.
       </p>
+
+      {!ffmpegLoaded && (
+        <div
+          className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-6"
+          role="alert"
+        >
+          <p className="font-bold">Loading Processor</p>
+          <p>The video processing library is loading. Please wait...</p>
+        </div>
+      )}
 
       <div className="bg-white p-6 rounded-lg shadow mb-6">
         <label
@@ -158,23 +185,36 @@ export default function ClipPreviewGeneratorPage() {
           id="video-upload"
           accept="video/mp4"
           onChange={handleFileChange}
-          disabled={isProcessing}
+          disabled={isProcessing || !ffmpegLoaded}
           className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 disabled:opacity-50 disabled:cursor-not-allowed"
         />
       </div>
 
       {videoSrc && (
         <div className="bg-white p-6 rounded-lg shadow mb-6">
-          <h2 className="text-lg font-semibold mb-4">Preview</h2>
+          <h2 className="text-lg font-semibold mb-4">Preview Original</h2>
           <video
             ref={videoRef}
             src={videoSrc}
             controls
-            className="w-full max-w-2xl rounded"
+            className="w-full max-w-2xl rounded mb-4"
           />
+          {isProcessing && (
+            <>
+              <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700 mb-4">
+                <div
+                  className="bg-indigo-600 h-2.5 rounded-full"
+                  style={{ width: `${ffmpegProgress * 100}%` }}
+                ></div>
+              </div>
+              <p className="text-sm text-indigo-700 mb-4">
+                Processing... This may take a moment.
+              </p>
+            </>
+          )}
           <button
             onClick={handleGeneratePreview}
-            disabled={isProcessing || isRecording}
+            disabled={isProcessing || !ffmpegLoaded || !originalFile}
             className="mt-4 px-4 py-2 bg-indigo-600 text-white font-medium rounded-md hover:bg-indigo-700 disabled:bg-indigo-300 disabled:cursor-not-allowed flex items-center justify-center"
           >
             {isProcessing ? (
@@ -199,10 +239,10 @@ export default function ClipPreviewGeneratorPage() {
                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                   ></path>
                 </svg>
-                {isRecording ? "Recording..." : "Processing..."}
+                Processing...
               </>
             ) : (
-              "Generate Preview (5 seconds)"
+              "Generate Preview (4s, 360x360)"
             )}
           </button>
         </div>
@@ -212,7 +252,7 @@ export default function ClipPreviewGeneratorPage() {
         <div className="bg-white p-6 rounded-lg shadow">
           <h2 className="text-lg font-semibold mb-4">Preview Ready</h2>
           <p className="text-sm text-gray-600 mb-4">
-            Your 5-second preview clip is ready for download.
+            Your 4-second, 360x360 preview clip is ready for download.
           </p>
           <a
             href={downloadUrl}
