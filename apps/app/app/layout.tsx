@@ -31,7 +31,74 @@ type RootLayoutProperties = {
 };
 
 export const metadata: Metadata = {
-  title: "Daydream", // This will be used for all pages
+  title: {
+    template: "%s | Daydream",
+    default: "Daydream - Create AI Videos with Prompts",
+  },
+  description:
+    "Create beautiful AI videos with prompts. Turn your ideas into stunning visual content in seconds.",
+  generator: "Next.js",
+  applicationName: "Daydream",
+  referrer: "origin-when-cross-origin",
+  keywords: [
+    "AI video",
+    "AI generation",
+    "prompt-to-video",
+    "content creation",
+    "Daydream",
+  ],
+  authors: [{ name: "Daydream Labs" }],
+  creator: "Daydream Labs",
+  publisher: "Daydream Labs",
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  metadataBase: process.env.NEXT_PUBLIC_SITE_URL
+    ? new URL(process.env.NEXT_PUBLIC_SITE_URL)
+    : new URL(
+        process.env.VERCEL_URL
+          ? `https://${process.env.VERCEL_URL}`
+          : "http://localhost:3000",
+      ),
+  openGraph: {
+    title: "Daydream - Create AI Videos with Prompts",
+    description:
+      "Create beautiful AI videos with prompts. Turn your ideas into stunning visual content in seconds.",
+    url: "https://daydream.live",
+    siteName: "Daydream",
+    images: [],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Daydream - Create AI Videos with Prompts",
+    description:
+      "Create beautiful AI videos with prompts. Turn your ideas into stunning visual content in seconds.",
+    creator: "@daydreamlabs",
+    images: [],
+  },
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+    apple: "/apple-icon.png",
+  },
+  verification: {
+    google: "google-site-verification-code", // Replace with real verification code if available
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
 };
 
 export const viewport: Viewport = {
