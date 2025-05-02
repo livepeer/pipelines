@@ -142,8 +142,7 @@ export function BentoGrids({
               isPreviewOpen && "opacity-0",
             )}
           >
-            Discover how others{" "}
-            <span className="font-semibold text-4xl sm:text-6xl">Daydream</span>
+            Live Video Transformed
           </p>
           <h2
             className={cn(
