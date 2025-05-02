@@ -54,18 +54,28 @@ export default function Header() {
           aria-label="Global"
           className="mx-auto flex items-center justify-between py-4 px-4 sm:px-6 lg:px-8"
         >
-          <div className="flex flex-1">
-            <a href="#" className="-m-1.5 p-1.5">
+          <div className="flex flex-1 items-center">
+            <a href="#" className="-m-1.5 p-1.5 flex items-center">
               <span className="sr-only">Daydream by Livepeer</span>
               <Logo />
             </a>
           </div>
+          
+          {/* Centered Beta Badge */}
+          <div className="flex-1 flex justify-center items-center">
+            <a href="https://livepeer.notion.site/15f0a348568781aab037c863d91b05e2" target="_blank" rel="noopener noreferrer" className="flex items-center px-4 py-1 rounded-full border border-blue-200 bg-white/70 backdrop-blur-sm text-blue-600 text-sm font-medium gap-2 shadow-sm hover:bg-white/90 transition-colors">
+              <span className="inline-block w-2 h-2 rounded-full bg-blue-500"></span>
+              <span className="sm:inline hidden">We&apos;re in beta. Send us your feedback and ideas →</span>
+              <span className="sm:hidden inline">Beta</span>
+            </a>
+          </div>
+
           <div className="flex flex-1 justify-end">
             <TrackedButton
               trackingEvent="explore_header_community_clicked"
               trackingProperties={{ location: "explore_header" }}
               variant="default"
-              className="text-sm rounded-md px-2 sm:px-4"
+              className="text-sm rounded-md sm:px-4 aspect-square sm:aspect-auto"
               onClick={() => {
                 window.open(
                   "https://discord.com/invite/hxyNHeSzCK",
@@ -74,7 +84,8 @@ export default function Header() {
                 );
               }}
             >
-              <DiscordLogoIcon className="h-4 w-4" /> Join Discord
+              <DiscordLogoIcon className="h-4 w-4" />
+              <span className="hidden sm:inline ml-2">Join Discord</span>
             </TrackedButton>
             {/* Desktop-only Create button */}
             <Link href="/create" className="hidden sm:block ml-4">
