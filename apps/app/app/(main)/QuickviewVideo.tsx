@@ -99,7 +99,7 @@ export default function QuickviewVideo({
 
     router.push(
       prompt
-        ? `/create?inputPrompt=${btoa(prompt)}&sourceClipId=${encodeURIComponent(clipId)}`
+        ? `/create?inputPrompt=${btoa(prompt)}&sourceClipId=${btoa(clipId)}`
         : "/create",
     );
   };

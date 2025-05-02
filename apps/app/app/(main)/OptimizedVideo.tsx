@@ -147,7 +147,7 @@ export default function OptimizedVideo({
         await setSourceClipIdToCookies(clipId);
       } else {
         router.push(
-          `/create?inputPrompt=${btoa(prompt)}&sourceClipId=${encodeURIComponent(clipId)}`,
+          `/create?inputPrompt=${btoa(prompt)}&sourceClipId=${btoa(clipId)}`,
         );
       }
     } else {

@@ -18,7 +18,7 @@ export function useCapacityCheck() {
     const checkCapacity = async () => {
       try {
         setLoading(true);
-        const apiUrl = `${process.env.NEXT_PUBLIC_LIVEPEER_STUDIO_API_URL}/data/ai/capacity`;
+        const apiUrl = `${process.env.NEXT_PUBLIC_LIVEPEER_STUDIO_API_URL}/data/ai/capacity?nocache=${Date.now()}`;
 
         const response = await fetch(apiUrl);
         if (!response.ok) {
