@@ -24,6 +24,13 @@ export function GuestModeContent({ clipData, onClose }: GuestModeContentProps) {
     track("guest_join_from_clip_modal", {});
     localStorage.setItem("daydream_from_guest_experience", "true");
 
+    if (clipData.lastSubmittedPrompt) {
+      localStorage.setItem(
+        "daydream_pending_clip_prompt",
+        clipData.lastSubmittedPrompt,
+      );
+    }
+
     if (clipData.clipUrl && clipData.thumbnailUrl && clipData.clipFilename) {
       try {
         const [clipResponse, thumbnailResponse] = await Promise.all([

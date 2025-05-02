@@ -120,6 +120,7 @@ export const deleteClip = async (): Promise<void> => {
 
       request.onsuccess = () => {
         localStorage.removeItem("daydream_has_pending_clip");
+        localStorage.removeItem("daydream_pending_clip_prompt");
         resolve();
       };
 

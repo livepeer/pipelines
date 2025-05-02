@@ -27,6 +27,11 @@ export function ClipSummaryContent({
   const [isFeatured, setIsFeatured] = useState(true);
   const { lastSubmittedPrompt } = usePromptStore();
 
+  const storedPrompt =
+    typeof window !== "undefined"
+      ? localStorage.getItem("daydream_pending_clip_prompt")
+      : null;
+
   const uploadWithPresignedUrl = async (url: string, blob: Blob) => {
     const response = await fetch(url, {
       method: "PUT",
@@ -126,7 +131,11 @@ export function ClipSummaryContent({
           videoUrl: gcsPublicUrl,
           thumbnailUrl,
           isFeatured,
-          prompt: clipData.lastSubmittedPrompt || lastSubmittedPrompt || "",
+          prompt:
+            clipData.lastSubmittedPrompt ||
+            lastSubmittedPrompt ||
+            storedPrompt ||
+            "",
           filePath: presignedData.filePath,
           thumbnailPath,
         };
@@ -140,6 +149,10 @@ export function ClipSummaryContent({
         });
 
         if (apiResponse.ok) {
+          if (storedPrompt) {
+            localStorage.removeItem("daydream_pending_clip_prompt");
+          }
+
           const data = await apiResponse.json();
           if (!data.success) {
             throw new Error("Failed to finalize clip");
