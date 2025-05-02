@@ -36,10 +36,24 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Extract the filename from the video URL to generate the preview path
+    // Extract the full path from the video URL to maintain directory structure
     const originalUrl = originalClip.video_url;
-    const urlParts = originalUrl.split("/");
-    const originalFilename = urlParts[urlParts.length - 1];
+
+    // Parse the full URL to get the path portion
+    const urlObj = new URL(originalUrl);
+    const pathParts = urlObj.pathname.split("/");
+
+    // Remove the first empty string and bucket name from path parts if present
+    const meaningfulPathParts = pathParts.filter(
+      part => part && !part.includes("livepeer-clips"),
+    );
+
+    // Get the last part which is the filename
+    const originalFilename =
+      meaningfulPathParts[meaningfulPathParts.length - 1];
+
+    // Keep the directory structure (all parts except the filename)
+    const directoryPath = meaningfulPathParts.slice(0, -1).join("/");
 
     const extensionIndex = originalFilename.lastIndexOf(".");
     if (extensionIndex === -1) {
@@ -51,9 +65,15 @@ export async function POST(req: NextRequest) {
 
     const baseName = originalFilename.substring(0, extensionIndex);
     const extension = originalFilename.substring(extensionIndex);
-    const previewFilePath = `${baseName}-short${extension}`;
+
+    // Build the preview file path preserving the original directory structure
+    const previewFilePath = directoryPath
+      ? `${directoryPath}/${baseName}-short${extension}`
+      : `${baseName}-short${extension}`;
+
     const contentType = "video/mp4";
 
+    // Use the centralized GCP storage functions
     const uploadUrl = await generatePresignedUploadUrl(
       previewFilePath,
       contentType,
