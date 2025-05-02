@@ -24,6 +24,14 @@ export const initDB = (): Promise<IDBDatabase> => {
   });
 };
 
+const ensureBlobType = (blob: Blob, defaultType: string): Blob => {
+  if (blob.type) {
+    return blob;
+  }
+
+  return new Blob([blob], { type: defaultType });
+};
+
 export const storeClip = async (
   clipBlob: Blob,
   filename: string,
@@ -36,10 +44,18 @@ export const storeClip = async (
       const transaction = db.transaction([STORE_NAME], "readwrite");
       const store = transaction.objectStore(STORE_NAME);
 
+      const videoType = clipBlob.type || "video/mp4";
+      const thumbType = thumbnailBlob.type || "image/jpeg";
+
+      const typedClipBlob = ensureBlobType(clipBlob, videoType);
+      const typedThumbnailBlob = ensureBlobType(thumbnailBlob, thumbType);
+
       const clipData = {
-        blob: clipBlob,
+        blob: typedClipBlob,
+        blobType: videoType,
         filename: filename,
-        thumbnail: thumbnailBlob,
+        thumbnail: typedThumbnailBlob,
+        thumbnailType: thumbType,
         prompt: prompt || "",
         timestamp: Date.now(),
       };
@@ -48,6 +64,7 @@ export const storeClip = async (
 
       request.onsuccess = () => {
         localStorage.setItem("daydream_has_pending_clip", "true");
+        localStorage.setItem("daydream_pending_clip_type", videoType);
 
         if (prompt) {
           localStorage.setItem("daydream_pending_clip_prompt", prompt);
@@ -93,10 +110,23 @@ export const retrieveClip = async (): Promise<{
           resolve(null);
           return;
         }
+
+        const videoType =
+          clipData.blobType ||
+          localStorage.getItem("daydream_pending_clip_type") ||
+          "video/mp4";
+        const thumbType = clipData.thumbnailType || "image/jpeg";
+
+        const typedClipBlob = ensureBlobType(clipData.blob, videoType);
+        const typedThumbnailBlob = ensureBlobType(
+          clipData.thumbnail,
+          thumbType,
+        );
+
         resolve({
-          blob: clipData.blob,
+          blob: typedClipBlob,
           filename: clipData.filename,
-          thumbnail: clipData.thumbnail,
+          thumbnail: typedThumbnailBlob,
           prompt: clipData.prompt || "",
         });
       };
@@ -126,6 +156,7 @@ export const deleteClip = async (): Promise<void> => {
       request.onsuccess = () => {
         localStorage.removeItem("daydream_has_pending_clip");
         localStorage.removeItem("daydream_pending_clip_prompt");
+        localStorage.removeItem("daydream_pending_clip_type");
         resolve();
       };
 
