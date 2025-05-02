@@ -324,7 +324,7 @@ export async function POST(request: NextRequest) {
             video_title: null,
             thumbnail_url: finalThumbnailUrl || null,
             author_user_id: userId,
-            source_clip_id: null,
+            source_clip_id: remixedClipId ? Number(remixedClipId) : null,
             prompt: prompt || null,
             status: "completed",
             approval_status: isFeatured ? "pending" : "approved",
@@ -413,7 +413,9 @@ export async function POST(request: NextRequest) {
             video_title: title || null,
             thumbnail_url: null,
             author_user_id: userId,
-            source_clip_id: sourceClipId || null,
+            source_clip_id: remixedClipId
+              ? Number(remixedClipId)
+              : sourceClipId || null,
             prompt: prompt,
             status: "uploading",
             approval_status: isFeatured ? "pending" : "none",
