@@ -7,7 +7,6 @@ import track from "@/lib/track";
 import { useEffect } from "react";
 import useMobileStore from "@/hooks/useMobileStore";
 import { DiscordLogoIcon } from "@radix-ui/react-icons";
-import Link from "next/link";
 
 interface UnifiedSignupModalProps {
   open: boolean;
@@ -206,12 +205,12 @@ export function UnifiedSignupModal({
         </div>
 
         <div className="absolute bottom-10 z-10 text-center">
-          <Link
+          <a
             href="/"
             className="text-gray-500 font-light text-sm tracking-wide"
           >
             Back to browsing
-          </Link>
+          </a>
         </div>
       </div>
     </div>
