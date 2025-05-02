@@ -175,13 +175,6 @@ export function ClipOptionsModal({
         verticalCtx.fillStyle = "black";
         verticalCtx.fillRect(0, 0, previewWidth, verticalCanvas.height);
 
-        const inputAspectRatio = inputVideo.videoWidth / inputVideo.videoHeight;
-        const inputHeight = previewHeight;
-        const inputWidth = inputHeight * inputAspectRatio;
-        const inputX = (previewWidth - inputWidth) / 2;
-
-        verticalCtx.drawImage(inputVideo, inputX, 0, inputWidth, inputHeight);
-
         const outputAspectRatio =
           outputVideo.videoWidth / outputVideo.videoHeight;
         const outputHeight = previewHeight;
@@ -191,9 +184,22 @@ export function ClipOptionsModal({
         verticalCtx.drawImage(
           outputVideo,
           outputX,
-          previewHeight,
+          0,
           outputWidth,
           outputHeight,
+        );
+
+        const inputAspectRatio = inputVideo.videoWidth / inputVideo.videoHeight;
+        const inputHeight = previewHeight;
+        const inputWidth = inputHeight * inputAspectRatio;
+        const inputX = (previewWidth - inputWidth) / 2;
+
+        verticalCtx.drawImage(
+          inputVideo,
+          inputX,
+          previewHeight,
+          inputWidth,
+          inputHeight,
         );
 
         const pipSize = 0.25;
