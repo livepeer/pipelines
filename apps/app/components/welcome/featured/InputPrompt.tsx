@@ -267,7 +267,7 @@ export const InputPrompt = ({ onPromptSubmit }: InputPromptProps) => {
     return 44;
   };
 
-  const currentHeight = !inputValue || isFocused ? getHeight() : 44;
+  const currentHeight = getHeight();
 
   return (
     <div
@@ -287,39 +287,23 @@ export const InputPrompt = ({ onPromptSubmit }: InputPromptProps) => {
         <div
           className="relative w-full flex items-start overflow-hidden"
           style={{
-            minHeight: `${currentHeight}px!important`,
+            minHeight: `${currentHeight}px`,
           }}
           onClick={() => ref.current?.focus()}
         >
           {inputValue && formatInputWithHighlights()}
 
-          {!inputValue && (
-            <div
-              className={cn(
-                "absolute inset-0 text-muted-foreground/50 text-sm font-sans py-3 pl-3 z-10",
-                lastSubmittedPrompt ? "w-[calc(100%-40px)]" : "w-full",
-              )}
-              style={{
-                whiteSpace: "pre-wrap",
-                wordBreak: "break-word",
-                lineHeight: "1.25rem",
-                pointerEvents: "none",
-              }}
-            >
-              <span className="break-all block">
-                {lastSubmittedPrompt || PROMPT_PLACEHOLDER}
-              </span>
-            </div>
-          )}
-
           <TextareaAutosize
             ref={ref}
             minRows={1}
             maxRows={5}
-            className="text-black w-full shadow-none border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-sm outline-none bg-transparent py-3 break-all font-sans pl-3"
+            className={cn(
+              "text-black w-full shadow-none border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-sm outline-none bg-transparent py-3 break-all font-sans pl-3",
+              !inputValue && "text-muted-foreground/50",
+            )}
             style={{
               resize: "none",
-              color: "transparent",
+              color: inputValue ? "black" : "transparent",
               caretColor: "black",
               whiteSpace: "pre-wrap",
               wordBreak: "break-word",
@@ -334,7 +318,7 @@ export const InputPrompt = ({ onPromptSubmit }: InputPromptProps) => {
             spellCheck="false"
             autoComplete="off"
             autoCorrect="off"
-            placeholder=""
+            placeholder={lastSubmittedPrompt || PROMPT_PLACEHOLDER}
           />
 
           {!inputValue && (
