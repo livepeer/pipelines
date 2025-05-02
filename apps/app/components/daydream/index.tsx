@@ -116,6 +116,9 @@ function DaydreamRenderer({ isGuestMode = false }: { isGuestMode?: boolean }) {
   const [pendingClipThumbnailUrl, setPendingClipThumbnailUrl] = useState<
     string | null
   >(null);
+  const [pendingClipPrompt, setPendingClipPrompt] = useState<string | null>(
+    null,
+  );
   const [showPendingClipModal, setShowPendingClipModal] = useState(false);
 
   useEffect(() => {
@@ -214,13 +217,14 @@ function DaydreamRenderer({ isGuestMode = false }: { isGuestMode?: boolean }) {
       retrieveClip()
         .then(clipData => {
           if (clipData) {
-            const { blob, filename, thumbnail } = clipData;
+            const { blob, filename, thumbnail, prompt } = clipData;
             const blobUrl = URL.createObjectURL(blob);
             const thumbnailUrl = URL.createObjectURL(thumbnail);
 
             setPendingClipUrl(blobUrl);
             setPendingClipFilename(filename);
             setPendingClipThumbnailUrl(thumbnailUrl);
+            setPendingClipPrompt(prompt);
             setShowPendingClipModal(true);
 
             deleteClip().catch(err => {
@@ -245,6 +249,7 @@ function DaydreamRenderer({ isGuestMode = false }: { isGuestMode?: boolean }) {
       URL.revokeObjectURL(pendingClipThumbnailUrl);
       setPendingClipThumbnailUrl(null);
     }
+    setPendingClipPrompt(null);
   };
 
   if (isInitializing) {
@@ -270,6 +275,7 @@ function DaydreamRenderer({ isGuestMode = false }: { isGuestMode?: boolean }) {
           clipUrl={pendingClipUrl}
           clipFilename={pendingClipFilename}
           thumbnailUrl={pendingClipThumbnailUrl}
+          lastSubmittedPrompt={pendingClipPrompt}
         />
       )}
     </>

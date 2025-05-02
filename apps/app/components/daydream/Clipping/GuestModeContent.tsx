@@ -40,10 +40,17 @@ export function GuestModeContent({ clipData, onClose }: GuestModeContentProps) {
           thumbnailResponse.blob(),
         ]);
 
-        await storeClip(clipBlob, clipData.clipFilename, thumbnailBlob);
-        console.log("Clip and thumbnail stored successfully in IndexedDB");
+        await storeClip(
+          clipBlob,
+          clipData.clipFilename,
+          thumbnailBlob,
+          clipData.lastSubmittedPrompt,
+        );
+        console.log(
+          "Clip, thumbnail, and prompt stored successfully in IndexedDB",
+        );
       } catch (error) {
-        console.error("Error processing or storing clip/thumbnail:", error);
+        console.error("Error processing or storing clip data:", error);
       }
     } else {
       console.warn(
@@ -79,6 +86,7 @@ export function GuestModeContent({ clipData, onClose }: GuestModeContentProps) {
             muted={false}
             playsInline
             controls
+            poster={clipData.thumbnailUrl || undefined}
             className="w-full max-h-[50vh] object-contain rounded-md"
           />
         )}

@@ -28,6 +28,7 @@ export const storeClip = async (
   clipBlob: Blob,
   filename: string,
   thumbnailBlob: Blob,
+  prompt?: string,
 ): Promise<void> => {
   try {
     const db = await initDB();
@@ -39,6 +40,7 @@ export const storeClip = async (
         blob: clipBlob,
         filename: filename,
         thumbnail: thumbnailBlob,
+        prompt: prompt || "",
         timestamp: Date.now(),
       };
 
@@ -67,6 +69,7 @@ export const retrieveClip = async (): Promise<{
   blob: Blob;
   filename: string;
   thumbnail: Blob;
+  prompt: string;
 } | null> => {
   try {
     if (localStorage.getItem("daydream_has_pending_clip") !== "true") {
@@ -89,6 +92,7 @@ export const retrieveClip = async (): Promise<{
           blob: clipData.blob,
           filename: clipData.filename,
           thumbnail: clipData.thumbnail,
+          prompt: clipData.prompt || "",
         });
       };
 
