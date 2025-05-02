@@ -186,6 +186,7 @@ export function ClipSummaryContent({
               muted={false}
               playsInline
               controls
+              poster={clipData.thumbnailUrl || undefined}
               className="absolute inset-0 w-full h-full object-cover rounded-md"
             />
           </div>
