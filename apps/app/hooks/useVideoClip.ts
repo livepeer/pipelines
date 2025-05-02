@@ -25,6 +25,8 @@ export const useVideoClip = () => {
   const [clipFilename, setClipFilename] = useState<string | null>(null);
   const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
   const [showClipModal, setShowClipModal] = useState(false);
+  const [recordingMode, setRecordingMode] =
+    useState<ClipRecordingMode>("output-only");
 
   const [showOptionsModal, setShowOptionsModal] = useState(false);
 
@@ -165,6 +167,8 @@ export const useVideoClip = () => {
       return;
     }
     setShowOptionsModal(false);
+
+    setRecordingMode(mode);
 
     const videos = document.querySelectorAll("video");
     if (videos.length < 2) {
@@ -427,5 +431,6 @@ export const useVideoClip = () => {
     cleanupClipUrl,
     showOptionsModal,
     closeOptionsModal,
+    recordingMode,
   };
 };
