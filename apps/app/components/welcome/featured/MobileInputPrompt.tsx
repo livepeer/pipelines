@@ -48,14 +48,17 @@ type PipelineParam = {
   widget?: string;
 };
 
-interface InputPromptProps {
+interface MobileInputPromptProps {
   onPromptSubmit?: () => void;
 }
 
-export const InputPrompt = ({ onPromptSubmit }: InputPromptProps) => {
+export const MobileInputPrompt = ({
+  onPromptSubmit,
+}: MobileInputPromptProps) => {
   const { pipeline, stream, updating } = useDreamshaperStore();
   const { handleStreamUpdate } = useStreamUpdates();
   const { isFullscreen } = useFullscreenStore();
+  const { isMobile } = useMobileStore();
   const { lastSubmittedPrompt, setLastSubmittedPrompt, setHasSubmittedPrompt } =
     usePromptStore();
   const { promptVersion, incrementPromptVersion } = usePromptVersionStore();
@@ -214,6 +217,10 @@ export const InputPrompt = ({ onPromptSubmit }: InputPromptProps) => {
 
   const submitPrompt = () => {
     if (inputValue) {
+      if (document.activeElement instanceof HTMLElement) {
+        document.activeElement.blur();
+      }
+
       if (onPromptSubmit && onPromptSubmit()) {
         return;
       }
@@ -274,8 +281,8 @@ export const InputPrompt = ({ onPromptSubmit }: InputPromptProps) => {
       className={cn(
         "relative mx-auto flex justify-center items-start gap-2 h-auto min-h-14 md:h-auto md:min-h-14 md:gap-2 mt-4 mb-2 dark:bg-[#1A1A1A] bg-[#fefefe] md:rounded-xl py-2.5 px-3 md:py-1.5 md:px-3 w-[calc(100%-2rem)] md:w-[calc(min(100%,800px))] border-2 border-muted-foreground/10",
         isFullscreen
-          ? "fixed left-1/2 bottom-0 -translate-x-1/2 z-[10000] w-[600px] max-w-[calc(100%-2rem)] rounded-[100px]"
-          : "rounded-[100px]",
+          ? "fixed left-1/2 bottom-[calc(env(safe-area-inset-bottom)+16px)] -translate-x-1/2 z-[10000] w-[600px] max-w-[calc(100%-2rem)] max-h-16 rounded-2xl"
+          : "rounded-2xl shadow-[4px_12px_16px_0px_#37373F40]",
         (profanity || exceedsMaxLength) && "dark:border-red-700 border-red-600",
       )}
     >
@@ -312,10 +319,11 @@ export const InputPrompt = ({ onPromptSubmit }: InputPromptProps) => {
             </div>
           )}
 
+          {/* TextArea for mobile */}
           <TextareaAutosize
             ref={ref}
             minRows={1}
-            maxRows={5}
+            maxRows={15}
             className="text-black w-full shadow-none border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-sm outline-none bg-transparent py-3 break-all font-sans pl-3"
             style={{
               resize: "none",
@@ -329,7 +337,13 @@ export const InputPrompt = ({ onPromptSubmit }: InputPromptProps) => {
             value={inputValue}
             onChange={e => setInputValue(e.target.value)}
             onKeyDown={handleKeyDown}
-            onFocus={() => setIsFocused(true)}
+            onFocus={() => {
+              window.scrollTo({
+                top: document.body.scrollHeight,
+                behavior: "smooth",
+              });
+              setIsFocused(true);
+            }}
             onBlur={() => setIsFocused(false)}
             spellCheck="false"
             autoComplete="off"
@@ -448,7 +462,7 @@ export const InputPrompt = ({ onPromptSubmit }: InputPromptProps) => {
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 rounded-full md:flex"
+                className="h-8 w-8 rounded-full"
                 onClick={e => {
                   e.preventDefault();
                   setSettingsOpened(!settingsOpened);
@@ -526,29 +540,6 @@ export const InputPrompt = ({ onPromptSubmit }: InputPromptProps) => {
           )}
         </div>
       )}
-    </div>
-  );
-};
-
-const ClipRecordButton = () => {
-  return (
-    <div className="rounded-full bg-gradient-to-r from-[#BCBCBC] via-[#1BB6FF] to-[#767676] p-[1px]">
-      <Button
-        variant="ghost"
-        size="icon"
-        className={cn(
-          "w-full px-3 h-8 rounded-full bg-white border-none",
-          "flex items-center gap-2",
-        )}
-        onClick={e => {
-          e.preventDefault();
-        }}
-      >
-        <CircleDot className="px-[0.5px] text-muted-foreground" />
-        <span className="text-[0.65rem] text-muted-foreground">
-          Record a clip
-        </span>
-      </Button>
     </div>
   );
 };
