@@ -48,6 +48,11 @@ export const storeClip = async (
 
       request.onsuccess = () => {
         localStorage.setItem("daydream_has_pending_clip", "true");
+
+        if (prompt) {
+          localStorage.setItem("daydream_pending_clip_prompt", prompt);
+        }
+
         resolve();
       };
 
