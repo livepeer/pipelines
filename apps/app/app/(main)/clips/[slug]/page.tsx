@@ -8,8 +8,9 @@ import {
 import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { Metadata, ResolvingMetadata } from "next";
+import { cache } from "react";
 
-async function getClipBySlug(slug: string) {
+const getClipBySlug = cache(async (slug: string) => {
   const result = await db
     .select({
       id: clipsTable.id,
@@ -29,7 +30,7 @@ async function getClipBySlug(slug: string) {
     .where(eq(clipSlugsTable.slug, slug));
 
   return result[0];
-}
+});
 
 // Generate metadata for the page
 export async function generateMetadata(
