@@ -372,7 +372,7 @@ export default function ClipApprovalQueue() {
                 <img
                   src={clip.thumbnail_url || "https://placehold.co/400x400"}
                   alt={clip.video_title || "Clip thumbnail"}
-                  className="w-full h-full object-contain"
+                  className="w-full h-full object-cover"
                   style={{
                     display:
                       hoveredClipId === clip.id.toString() &&
@@ -384,7 +384,7 @@ export default function ClipApprovalQueue() {
                 {hoveredClipId === clip.id.toString() && (
                   <video
                     src={clip.video_url}
-                    className="w-full h-full object-contain"
+                    className="w-full h-full object-cover"
                     style={{
                       display: loadedVideos.includes(clip.id.toString())
                         ? "block"

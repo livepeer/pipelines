@@ -56,7 +56,6 @@ export const ClipButton = ({
     closeClipModal,
     showOptionsModal,
     closeOptionsModal,
-    recordingMode,
   } = useVideoClip();
 
   const handleClick = () => {
@@ -145,7 +144,6 @@ export const ClipButton = ({
         clipFilename={clipFilename}
         thumbnailUrl={thumbnailUrl}
         isGuestMode={isGuestMode}
-        recordingMode={recordingMode}
       />
 
       <ClipOptionsModal

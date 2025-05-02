@@ -259,7 +259,7 @@ export function VideoProvider({
             playsInline
             loop
             className={cn(
-              "absolute inset-0 w-full h-full object-contain z-1 transition-opacity duration-300",
+              "absolute inset-0 w-full h-full object-cover z-1 transition-opacity duration-300",
               state.duration === 0 ? "opacity-0" : "opacity-100",
             )}
           />

@@ -5,7 +5,6 @@ type ClipData = {
   lastSubmittedPrompt?: string;
   thumbnailUrl?: string | null;
   slug?: string;
-  recordingMode?: "horizontal" | "vertical" | "output-only";
 };
 
 export type { ClipData };
