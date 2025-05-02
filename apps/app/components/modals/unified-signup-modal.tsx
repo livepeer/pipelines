@@ -3,12 +3,11 @@
 import useCloudAnimation from "@/hooks/useCloudAnimation";
 import { Button } from "@repo/design-system/components/ui/button";
 import { usePrivy } from "@/hooks/usePrivy";
-import { cn } from "@repo/design-system/lib/utils";
 import track from "@/lib/track";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import useMobileStore from "@/hooks/useMobileStore";
-import { useRouter } from "next/navigation";
 import { DiscordLogoIcon } from "@radix-ui/react-icons";
+import Link from "next/link";
 
 interface UnifiedSignupModalProps {
   open: boolean;
@@ -207,12 +206,12 @@ export function UnifiedSignupModal({
         </div>
 
         <div className="absolute bottom-10 z-10 text-center">
-          <a
+          <Link
             href="/"
             className="text-gray-500 font-light text-sm tracking-wide"
           >
             Back to browsing
-          </a>
+          </Link>
         </div>
       </div>
     </div>

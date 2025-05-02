@@ -339,6 +339,18 @@ export default function Dreamshaper({ isGuestMode = false }: DreamshaperProps) {
     return false;
   };
 
+  if (showSignupModal) {
+    return (
+      <div className="flex-1 flex flex-col pb-6 md:pb-0 h-screen overflow-y-auto">
+        <UnifiedSignupModal
+          open={showSignupModal}
+          onOpenChange={setShowSignupModal}
+          reason={signupModalReason}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="flex-1 flex flex-col pb-6 md:pb-0 h-screen overflow-y-auto">
       <div className={currentStep !== "main" ? "hidden" : "block"}>
@@ -399,12 +411,6 @@ export default function Dreamshaper({ isGuestMode = false }: DreamshaperProps) {
           <StreamDebugPanel />
         </div>
       </div>
-
-      <UnifiedSignupModal
-        open={showSignupModal}
-        onOpenChange={setShowSignupModal}
-        reason={signupModalReason}
-      />
 
       {/* BentoGrid overlay for never-ending prompt cloning */}
       <div
