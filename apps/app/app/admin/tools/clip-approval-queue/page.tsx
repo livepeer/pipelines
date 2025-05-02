@@ -250,6 +250,25 @@ export default function ClipApprovalQueue() {
       console.log("Uploading preview...");
       await uploadWithPresignedUrl(presignedData.uploadUrl, previewBlob);
       console.log("Preview uploaded successfully.");
+
+      console.log("Making preview file public...");
+      const makePublicResponse = await fetch(
+        "/api/admin/clips/presigned-preview-upload",
+        {
+          method: "PUT",
+          headers,
+          body: JSON.stringify({ filePath: presignedData.previewFilePath }),
+        },
+      );
+
+      if (!makePublicResponse.ok) {
+        console.warn(
+          "Failed to make preview file public, it may not be accessible.",
+        );
+      } else {
+        console.log("Preview file is now publicly accessible.");
+      }
+
       setConfirmDialog(prev => ({ ...prev, previewStatus: "done" }));
 
       const updateSuccess = await updateClipStatus(clipId, "approved");

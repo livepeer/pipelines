@@ -89,11 +89,65 @@ export async function POST(req: NextRequest) {
       uploadUrl,
       publicUrl,
       previewFilePath,
+      makePublicAfterUpload: true,
     });
   } catch (error) {
     console.error("Error generating presigned URL for preview:", error);
     return NextResponse.json(
       { error: "Internal server error" },
+      { status: 500 },
+    );
+  }
+}
+
+export async function PUT(req: NextRequest) {
+  try {
+    const authResponse = await requireAdminAuth(req);
+    if (authResponse.status !== 200) {
+      return authResponse;
+    }
+
+    const { filePath } = await req.json();
+
+    if (!filePath) {
+      return NextResponse.json(
+        { error: "filePath is required" },
+        { status: 400 },
+      );
+    }
+
+    const { Storage } = await import("@google-cloud/storage");
+    const { gcpConfig } = await import("@/lib/serverEnv");
+
+    let storage;
+    try {
+      if (gcpConfig.credentials) {
+        const credentials = JSON.parse(gcpConfig.credentials);
+        storage = new Storage({ credentials });
+      } else {
+        storage = new Storage();
+      }
+    } catch (error) {
+      console.error("Failed to initialize GCP Storage:", error);
+      throw new Error("Failed to initialize GCP Storage");
+    }
+
+    const bucketName = gcpConfig.bucketName || "daydream-clips";
+    const bucket = storage.bucket(bucketName);
+    const file = bucket.file(filePath);
+
+    await file.makePublic();
+
+    const publicUrl = getPublicUrl(filePath);
+
+    return NextResponse.json({
+      success: true,
+      publicUrl,
+    });
+  } catch (error) {
+    console.error("Error making file public:", error);
+    return NextResponse.json(
+      { error: "Failed to make file public" },
       { status: 500 },
     );
   }
