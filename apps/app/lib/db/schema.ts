@@ -284,6 +284,7 @@ export const clips = pgTable(
     thumbnail_url: text("thumbnail_url"),
     author_user_id: text("author_user_id").notNull(),
     source_clip_id: integer("source_clip_id"),
+    remix_count: integer("remix_count").default(0),
     prompt: text("prompt").notNull(),
     priority: integer("priority"),
     status: clipStatusEnum("status").default("uploading").notNull(),

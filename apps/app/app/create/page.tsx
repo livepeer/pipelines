@@ -37,6 +37,7 @@ export default function HomePage({
     shared: string;
     privy_oauth_code: string;
     inputPrompt: string;
+    sourceClipId: string;
   };
 }) {
   const { shared, privy_oauth_code, inputPrompt } = searchParams;

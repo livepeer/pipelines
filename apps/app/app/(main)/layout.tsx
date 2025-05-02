@@ -18,6 +18,7 @@ type InitialFetchedClip = {
   prompt: string;
   remix_count: number;
   author_name: string | null;
+  author_details: Record<string, any> | null;
   slug: string | null;
   priority: number | null;
 };
@@ -29,12 +30,9 @@ async function getInitialClips() {
     video_title: clipsTable.video_title,
     created_at: clipsTable.created_at,
     prompt: clipsTable.prompt,
-    remix_count: sql<number>`(
-          SELECT count(*) 
-          FROM ${clipsTable} AS remixed_clips
-          WHERE remixed_clips.source_clip_id = ${clipsTable.id}
-        )`.mapWith(Number),
+    remix_count: clipsTable.remix_count,
     author_name: usersTable.name,
+    author_details: usersTable.additionalDetails,
     slug: clipSlugsTable.slug,
     priority: clipsTable.priority,
   };
@@ -143,6 +141,7 @@ async function getInitialClips() {
     created_at: clip.created_at.toISOString(),
     prompt: clip.prompt,
     author_name: clip.author_name,
+    author_details: clip.author_details,
     remix_count: clip.remix_count,
     slug: clip.slug,
     priority: clip.priority,
