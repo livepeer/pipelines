@@ -10,6 +10,7 @@ import {
   DialogTitle,
 } from "@repo/design-system/components/ui/dialog";
 import { Loader2 } from "lucide-react";
+import { DiscordLogoIcon } from "@radix-ui/react-icons";
 import track from "@/lib/track";
 
 interface CapacityNotificationModalProps {
@@ -144,7 +145,7 @@ export function CapacityNotificationModal({
           </div>
         ) : (
           <>
-            <p className="text-muted-foreground text-sm text-center mb-6">
+            <p className="text-muted-foreground text-sm text-center mb-3">
               Our community is growing fast, and we are currently at full
               capacity. Drop your email below to stay in touch.
             </p>

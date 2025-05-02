@@ -113,20 +113,21 @@ export default function Header() {
               <span className="hidden sm:inline ml-2">Join Discord</span>
             </TrackedButton>
             {/* Desktop-only Create button */}
-            <TrackedButton
-              trackingEvent="explore_header_start_creating_clicked"
-              trackingProperties={{ location: "explore_header" }}
-              variant="outline"
-              className={cn(
-                "alwaysAnimatedButton",
-                isPreviewOpen && "opacity-0 pointer-events-none",
-                "px-4 ml-4 hidden sm:flex",
-              )}
-              onClick={handleCreateClick}
-            >
-              <VideoAISparkles className={cn("text-black !w-10 !h-10")} />{" "}
-              Create
-            </TrackedButton>
+            <div className="hidden sm:block ml-4" onClick={handleCreateClick}>
+              <TrackedButton
+                trackingEvent="explore_header_start_creating_clicked"
+                trackingProperties={{ location: "explore_header" }}
+                variant="outline"
+                className={cn(
+                  "alwaysAnimatedButton",
+                  isPreviewOpen && "opacity-0 pointer-events-none",
+                  "px-4",
+                )}
+              >
+                <VideoAISparkles className={cn("text-black !w-10 !h-10")} />{" "}
+                Create
+              </TrackedButton>
+            </div>
           </div>
         </nav>
       </header>
@@ -135,7 +136,7 @@ export default function Header() {
       <div
         className={cn(
           "fixed bottom-6 right-6 sm:hidden z-50",
-          isPreviewOpen && "opacity-0 pointer-events-none",
+          (isPreviewOpen || !hasCapacity) && "opacity-0 pointer-events-none",
         )}
       >
         <div className="rounded-full floating-shadow">

@@ -47,7 +47,7 @@ export function CapacityToast({
                 viewBox="0 0 18 18"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
-                className="flex-shrink-0 mr-1 -mt-0.5"
+                className="flex-shrink-0 mr-1 mt-0"
               >
                 <path
                   fillRule="evenodd"
@@ -56,7 +56,7 @@ export function CapacityToast({
                   fill="#2E2E2E"
                 />
               </svg>
-              Daydream is full
+              Daydream is currently full
             </p>
             <p className="text-[10px] sm:text-xs text-gray-500">
               We can let you know when a spot is available
@@ -76,7 +76,7 @@ export function CapacityToast({
             setIsModalOpen(true);
           }}
         >
-          Get notified
+          Notify me
         </Button>
       </div>,
       {
@@ -84,7 +84,7 @@ export function CapacityToast({
         duration: Infinity,
         position: "bottom-right",
         className:
-          "capacity-toast-custom mx-auto px-3 sm:px-4 max-w-[calc(100vw-24px)] sm:max-w-md",
+          "capacity-toast-custom mx-auto px-3 sm:px-4 max-w-[calc(100vw-24px)] sm:max-w-md sm:-mb-7 sm:mr-12",
       },
     );
 

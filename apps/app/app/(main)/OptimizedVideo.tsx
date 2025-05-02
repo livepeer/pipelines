@@ -2,7 +2,7 @@ import { GradientAvatar } from "@/components/GradientAvatar";
 import { usePreviewStore } from "@/hooks/usePreviewStore";
 import { useOverlayStore } from "@/hooks/useOverlayStore";
 import { cn } from "@repo/design-system/lib/utils";
-import { Repeat, WandSparkles } from "lucide-react";
+import { Repeat } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { TrackedButton } from "@/components/analytics/TrackedButton";
 import { TrackedLink } from "@/components/analytics/TrackedLink";
@@ -239,7 +239,7 @@ export default function OptimizedVideo({
                     onClick={handleTryPrompt}
                   >
                     {/* Our default button overrides the size of child SVGs. Rather than change the button, I've overridden the CSS here. */}
-                    <VideoAISparkles className={cn("!w-6 !h-6")} />
+                    <VideoAISparkles className={cn("!w-7 !h-7")} />
                     <span className="text-[0.7rem] tracking-wide">
                       Try this prompt
                     </span>
@@ -252,7 +252,7 @@ export default function OptimizedVideo({
                     className="inline-flex items-center space-x-0.5 px-3 py-2 h-8 bg-black/20 backdrop-blur-md text-white rounded-full border-white border shadow-sm scale-90"
                     onClick={handleTryPrompt}
                   >
-                    <WandSparkles className="w-1.5 h-1.5" />
+                    <VideoAISparkles className={cn("!w-7 !h-7")} />
                     <span className="text-[0.7rem] tracking-wide">
                       Try this prompt
                     </span>

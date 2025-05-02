@@ -211,7 +211,7 @@ export function PlayerOverlay({
             <h3 className="text-3xl font-medium mb-3">You&apos;re all set!</h3>
             <p className="text-muted-foreground mb-8">
               {error
-                ? "We'll keep you updated on our progress as we continue to improve Daydream."
+                ? "We're hard at work improving Daydream, and we'll keep you updated on the journey."
                 : "We're hard at work adding more capacity, and we'll notify you when space opens up."}
             </p>
             <div className="hidden md:flex justify-center w-full">
