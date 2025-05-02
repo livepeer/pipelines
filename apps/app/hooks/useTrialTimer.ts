@@ -46,6 +46,7 @@ export function useTrialTimer() {
     if (!ready) return;
     if (!authenticated && timeRemaining === 0) {
       console.log("Trial expired - triggering expiration event");
+      localStorage.removeItem("unregistered_time_remaining");
       window.dispatchEvent(new CustomEvent("trialExpired"));
     }
   }, [timeRemaining, authenticated, ready]);
