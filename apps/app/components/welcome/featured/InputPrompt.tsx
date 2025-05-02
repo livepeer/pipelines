@@ -172,8 +172,8 @@ export const InputPrompt = ({ onPromptSubmit }: InputPromptProps) => {
     }
 
     return (
-      <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-        <pre className="text-sm font-sans whitespace-pre-wrap overflow-hidden w-full m-0 p-0 pl-3">
+      <div className="absolute inset-0 pointer-events-none flex items-start justify-start">
+        <pre className="text-sm font-sans whitespace-pre-wrap overflow-hidden w-full m-0 p-0 pl-3 pt-3">
           {parts.map((part, i) => (
             <span
               key={i}
@@ -267,7 +267,7 @@ export const InputPrompt = ({ onPromptSubmit }: InputPromptProps) => {
         isFullscreen
           ? isMobile
             ? "fixed left-1/2 bottom-[calc(env(safe-area-inset-bottom)+16px)] -translate-x-1/2 z-[10000] w-[600px] max-w-[calc(100%-2rem)] max-h-16 rounded-2xl"
-            : "fixed left-1/2 bottom-0 -translate-x-1/2 z-[10000] w-[600px] max-w-[calc(100%-2rem)] max-h-16 rounded-[100px]"
+            : "fixed left-1/2 bottom-0 -translate-x-1/2 z-[10000] w-[600px] max-w-[calc(100%-2rem)] rounded-[100px]"
           : isMobile
             ? "rounded-2xl shadow-[4px_12px_16px_0px_#37373F40]"
             : "rounded-[100px]",
@@ -336,8 +336,8 @@ export const InputPrompt = ({ onPromptSubmit }: InputPromptProps) => {
 
         {/* Input wrapper with highlighting */}
         <div
-          className="relative w-full flex items-center"
-          style={{ height: "auto" }}
+          className="relative w-full flex items-start"
+          style={{ minHeight: "42px" }}
         >
           {formatInputWithHighlights()}
           {isMobile ? (
@@ -376,6 +376,7 @@ export const InputPrompt = ({ onPromptSubmit }: InputPromptProps) => {
                 caretColor: "black",
                 whiteSpace: "pre-wrap",
                 wordBreak: "break-word",
+                overflow: "hidden",
               }}
             />
           )}
