@@ -224,9 +224,15 @@ export const Header = ({
 
       {isMobile && (
         <div className="z-50 flex justify-between w-full px-4 mt-6">
-          <div className="flex items-center">
-            <SidebarTrigger />
-          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="font-normal p-0 m-0 bg-transparent border-none hover:bg-transparent focus:outline-none rounded-md"
+            onClick={handleExploreClick}
+          >
+            <ChevronLeft />
+            <span>More prompts</span>
+          </Button>
 
           <div className="flex gap-2 justify-end max-w-[60%]">
             {isGuestMode ? (
@@ -273,16 +279,9 @@ export const Header = ({
               </Button>
             </Link>
 
-            {/* <Link href="/"> */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="p-0 m-0 bg-transparent border-none hover:bg-transparent focus:outline-none rounded-md"
-              onClick={handleExploreClick}
-            >
-              <Search className="h-4 w-4" />
-            </Button>
-            {/* </Link> */}
+            <div className="flex items-center">
+              <SidebarTrigger />
+            </div>
           </div>
         </div>
       )}
