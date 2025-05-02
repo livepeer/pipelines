@@ -35,6 +35,7 @@ export interface BentoGridsProps {
   isOverlayMode?: boolean;
   onTryPrompt?: (prompt: string) => void;
   onClipsLoaded?: (clips: any[]) => void;
+  hasCapacity?: boolean;
 }
 
 export function BentoGrids({
@@ -42,6 +43,7 @@ export function BentoGrids({
   isOverlayMode = false,
   onTryPrompt,
   onClipsLoaded,
+  hasCapacity = true,
 }: BentoGridsProps) {
   const { clips, loading, hasMore, fetchClips, page } =
     useClipsFetcher(initialClips);
@@ -194,6 +196,7 @@ export function BentoGrids({
                     overallIndex={overallIndex}
                     isOverlayMode={isOverlayMode}
                     onTryPrompt={onTryPrompt}
+                    hasCapacity={hasCapacity}
                   />
                 );
               })}
@@ -234,6 +237,7 @@ function GridItem({
   overallIndex,
   isOverlayMode = false,
   onTryPrompt,
+  hasCapacity,
 }: {
   clipId: string;
   src: string;
@@ -249,6 +253,7 @@ function GridItem({
   isOverlayMode?: boolean;
   authorDetails?: Record<string, any>;
   onTryPrompt?: (prompt: string) => void;
+  hasCapacity?: boolean;
 }) {
   const href = slug ? `/clip/${slug}` : `/clip/id/${clipId}`;
   const { isPreviewOpen } = usePreviewStore();
@@ -266,20 +271,11 @@ function GridItem({
   };
 
   return (
-    <TrackedLink
-      href={href}
-      trackingEvent="explore_clip_clicked"
-      trackingProperties={{
-        clip_id: clipId,
-        clip_slug: slug,
-        clip_author_name: authorName,
-        location: isOverlayMode ? "overlay_bento_grid" : "explore_bento_grid",
-      }}
+    <div
       className={cn(
         "relative aspect-square lg:min-h-[300px] lg:aspect-auto block",
         className,
       )}
-      onClick={isOverlayMode ? handleClick : undefined}
     >
       {isDebug && (
         <div className="absolute top-1 left-1 z-40 bg-black/60 text-white text-xs font-mono px-1.5 py-0.5 rounded">
@@ -302,11 +298,12 @@ function GridItem({
           remixCount={remixCount}
           isOverlayMode={isOverlayMode}
           onTryPrompt={onTryPrompt}
+          hasCapacity={hasCapacity}
         />
       </div>
 
       <div className="pointer-events-none absolute inset-px rounded-xl shadow ring-1 ring-black/5 z-30"></div>
-    </TrackedLink>
+    </div>
   );
 }
 

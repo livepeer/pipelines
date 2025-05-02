@@ -418,3 +418,20 @@
 .alwaysAnimatedButton.custom-signup::before {
   border-radius: 8px;
 }
+
+/* styles for toast capacity */
+.capacity-toast-custom {
+  width: 440px !important;
+  max-width: 440px !important;
+  right: 16px !important;
+  bottom: 16px !important;
+}
+
+@media (max-width: 480px) {
+  .capacity-toast-custom {
+    width: calc(100% - 32px) !important;
+    max-width: calc(100% - 32px) !important;
+    right: 16px !important;
+    left: 16px !important;
+  }
+}
