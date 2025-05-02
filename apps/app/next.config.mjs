@@ -21,8 +21,10 @@ const nextConfig = {
     serverActions: {
       allowedOrigins: [
         "localhost:3000",
-        "app.livepeer.org",
+        "*.livepeer.monster",
         "*.vercel.app",
+        "*.livepeer.org",
+        "*.daydream.live",
       ],
     },
   },
@@ -56,7 +58,6 @@ const nextConfig = {
           },
         ],
       },
-      // Add other global or path-specific headers here if needed
     ];
   },
 };
