@@ -178,11 +178,7 @@ export function ClipSummaryContent({
 
       <div className="flex justify-center w-full">
         {clipData.clipUrl && (
-          <div
-            className={`w-full aspect-square relative rounded-md flex items-center justify-center ${
-              clipData.recordingMode === "vertical" ? "bg-white" : "bg-black"
-            }`}
-          >
+          <div className="w-full aspect-square relative">
             <video
               src={clipData.clipUrl}
               autoPlay
@@ -190,11 +186,7 @@ export function ClipSummaryContent({
               muted={false}
               playsInline
               controls
-              className={`rounded-md ${
-                clipData.recordingMode === "vertical"
-                  ? "w-auto h-full"
-                  : "absolute inset-0 w-full h-full object-cover"
-              }`}
+              className="absolute inset-0 w-full h-full object-cover rounded-md"
             />
           </div>
         )}

@@ -50,20 +50,12 @@ const LayoutOption = ({
     }
     onClick={() => onSelect(value)}
   >
-    <div
-      className={`hidden sm:flex sm:h-52 rounded-xl overflow-hidden mb-3 justify-center items-center ${
-        value === "vertical" ? "bg-white" : "bg-black"
-      }`}
-    >
+    <div className="hidden sm:block sm:h-52 bg-black rounded-xl overflow-hidden mb-3">
       {previewImg ? (
         <img
           src={previewImg}
           alt={`${title} preview`}
-          className={`${
-            value === "vertical"
-              ? "h-full max-w-full w-auto object-contain"
-              : "w-full h-full object-cover"
-          }`}
+          className="w-full h-full object-cover"
         />
       ) : (
         <div className="w-full h-full flex items-center justify-center text-white">
@@ -82,9 +74,7 @@ const LayoutOption = ({
           {title}
         </label>
       </div>
-      <p className="hidden sm:block text-[#707070] text-sm leading-[1.4]">
-        {description}
-      </p>
+      <p className="text-[#707070] text-sm leading-[1.4]">{description}</p>
     </div>
 
     <div className="absolute top-0 left-0">
@@ -100,9 +90,8 @@ export function ClipOptionsModal({
 }: ClipOptionsModalProps) {
   const [previewBlobs, setPreviewBlobs] = useState<{
     horizontal: string | null;
-    vertical: string | null;
     outputOnly: string | null;
-  }>({ horizontal: null, vertical: null, outputOnly: null });
+  }>({ horizontal: null, outputOnly: null });
   const [isReady, setIsReady] = useState(false);
   const [isCaptured, setIsCaptured] = useState(false);
   const [selectedMode, setSelectedMode] = useState<string>("output-only");
@@ -136,11 +125,9 @@ export function ClipOptionsModal({
         }
 
         const horizontalCanvas = document.createElement("canvas");
-        const verticalCanvas = document.createElement("canvas");
         const outputOnlyCanvas = document.createElement("canvas");
 
         container.appendChild(horizontalCanvas);
-        container.appendChild(verticalCanvas);
         container.appendChild(outputOnlyCanvas);
 
         const previewWidth = 300;
@@ -153,14 +140,10 @@ export function ClipOptionsModal({
         outputOnlyCanvas.width = previewWidth;
         outputOnlyCanvas.height = previewHeight;
 
-        verticalCanvas.width = previewWidth;
-        verticalCanvas.height = previewHeight * 2;
-
         const horizontalCtx = horizontalCanvas.getContext("2d");
-        const verticalCtx = verticalCanvas.getContext("2d");
         const outputOnlyCtx = outputOnlyCanvas.getContext("2d");
 
-        if (!horizontalCtx || !verticalCtx || !outputOnlyCtx) {
+        if (!horizontalCtx || !outputOnlyCtx) {
           throw new Error("Could not get canvas contexts");
         }
 
@@ -171,36 +154,6 @@ export function ClipOptionsModal({
         outputOnlyCtx.fillStyle = "black";
         outputOnlyCtx.fillRect(0, 0, previewWidth, previewHeight);
         outputOnlyCtx.drawImage(outputVideo, 0, 0, previewWidth, previewHeight);
-
-        verticalCtx.fillStyle = "black";
-        verticalCtx.fillRect(0, 0, previewWidth, verticalCanvas.height);
-
-        const outputAspectRatio =
-          outputVideo.videoWidth / outputVideo.videoHeight;
-        const outputHeight = previewHeight;
-        const outputWidth = outputHeight * outputAspectRatio;
-        const outputX = (previewWidth - outputWidth) / 2;
-
-        verticalCtx.drawImage(
-          outputVideo,
-          outputX,
-          0,
-          outputWidth,
-          outputHeight,
-        );
-
-        const inputAspectRatio = inputVideo.videoWidth / inputVideo.videoHeight;
-        const inputHeight = previewHeight;
-        const inputWidth = inputHeight * inputAspectRatio;
-        const inputX = (previewWidth - inputWidth) / 2;
-
-        verticalCtx.drawImage(
-          inputVideo,
-          inputX,
-          previewHeight,
-          inputWidth,
-          inputHeight,
-        );
 
         const pipSize = 0.25;
         const pipWidth = Math.floor(previewWidth * pipSize);
@@ -237,12 +190,10 @@ export function ClipOptionsModal({
         };
 
         const horizontalBlob = await getCanvasBlob(horizontalCanvas);
-        const verticalBlob = await getCanvasBlob(verticalCanvas);
         const outputOnlyBlob = await getCanvasBlob(outputOnlyCanvas);
 
         setPreviewBlobs({
           horizontal: horizontalBlob,
-          vertical: verticalBlob,
           outputOnly: outputOnlyBlob,
         });
 
@@ -250,7 +201,6 @@ export function ClipOptionsModal({
         setIsReady(true);
 
         container.removeChild(horizontalCanvas);
-        container.removeChild(verticalCanvas);
         container.removeChild(outputOnlyCanvas);
       } catch (error) {
         console.error("Error capturing frames:", error);
@@ -267,7 +217,6 @@ export function ClipOptionsModal({
       document.body.removeChild(container);
 
       if (previewBlobs.horizontal) URL.revokeObjectURL(previewBlobs.horizontal);
-      if (previewBlobs.vertical) URL.revokeObjectURL(previewBlobs.vertical);
       if (previewBlobs.outputOnly) URL.revokeObjectURL(previewBlobs.outputOnly);
     };
   }, [
@@ -275,7 +224,6 @@ export function ClipOptionsModal({
     isCaptured,
     onClose,
     previewBlobs.horizontal,
-    previewBlobs.vertical,
     previewBlobs.outputOnly,
   ]);
 
@@ -296,18 +244,16 @@ export function ClipOptionsModal({
       });
       return;
     }
-    let thumbnailUrl = previewBlobs.outputOnly;
-    if (selectedMode === "horizontal") {
-      thumbnailUrl = previewBlobs.horizontal;
-    } else if (selectedMode === "vertical") {
-      thumbnailUrl = previewBlobs.vertical;
-    }
+    const thumbnailUrl =
+      selectedMode === "horizontal"
+        ? previewBlobs.horizontal
+        : previewBlobs.outputOnly;
     onCreateClip(selectedMode as ClipRecordingMode, thumbnailUrl);
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={open => !open && onClose()}>
-      <DialogContent className="h-fit max-h-[90dvh] w-[calc(100%-32px)] sm:w-full sm:max-w-[900px] mx-auto overflow-y-auto rounded-xl p-6 pt-8 sm:p-8">
+      <DialogContent className="h-fit max-h-[90dvh] w-[calc(100%-32px)] sm:w-full sm:max-w-[650px] mx-auto overflow-y-auto rounded-xl p-6 pt-8 sm:p-8">
         <DialogHeader className="flex items-center">
           <DialogTitle className="text-2xl">
             How Would You Like to Share?
@@ -322,7 +268,7 @@ export function ClipOptionsModal({
         <RadioGroup
           value={selectedMode}
           onValueChange={handleValueChange}
-          className="mt-2 sm:mt-4 mb-2 grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-4"
+          className="mt-2 sm:mt-4 mb-2 grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-8"
         >
           <LayoutOption
             title="Just the Output"
@@ -334,20 +280,11 @@ export function ClipOptionsModal({
           />
 
           <LayoutOption
-            title="Include input video (PiP)"
-            description="Share both your original video and the final result — your input video will be visible in the corner."
+            title="Include input video"
+            description="Share both your original video and the final result — your input video will be visible in the clip."
             value="horizontal"
             selectedValue={selectedMode}
             previewImg={previewBlobs.horizontal}
-            onSelect={handleValueChange}
-          />
-
-          <LayoutOption
-            title="Vertical Stack"
-            description="Stack your input video on top of the output video in a vertical layout."
-            value="vertical"
-            selectedValue={selectedMode}
-            previewImg={previewBlobs.vertical}
             onSelect={handleValueChange}
           />
         </RadioGroup>
