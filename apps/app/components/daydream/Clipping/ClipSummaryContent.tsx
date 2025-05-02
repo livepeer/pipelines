@@ -126,7 +126,7 @@ export function ClipSummaryContent({
           videoUrl: gcsPublicUrl,
           thumbnailUrl,
           isFeatured,
-          prompt: lastSubmittedPrompt || "",
+          prompt: clipData.lastSubmittedPrompt || lastSubmittedPrompt || "",
           filePath: presignedData.filePath,
           thumbnailPath,
         };
