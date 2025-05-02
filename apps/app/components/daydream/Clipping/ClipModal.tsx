@@ -5,6 +5,7 @@ import { ClipSummaryContent } from "./ClipSummaryContent";
 import ClipShareContent from "./ClipShareContent";
 import { ClipData } from "./types";
 import { GuestModeContent } from "./GuestModeContent";
+import { ClipRecordingMode } from "./ClipOptionsModal";
 
 interface ClipModalProps {
   isOpen: boolean;
@@ -13,6 +14,7 @@ interface ClipModalProps {
   clipFilename: string | null;
   thumbnailUrl?: string | null;
   isGuestMode?: boolean;
+  recordingMode?: ClipRecordingMode;
 }
 
 type ClipStep = "summary" | "share";
@@ -24,6 +26,7 @@ export function ClipModal({
   clipFilename,
   thumbnailUrl = null,
   isGuestMode = false,
+  recordingMode = "output-only",
 }: ClipModalProps) {
   const isRotating = usePhoneRotation();
   const [clipStep, setClipStep] = useState<ClipStep>("summary");
@@ -32,6 +35,7 @@ export function ClipModal({
     clipFilename: clipFilename || "",
     serverClipUrl: "",
     thumbnailUrl: thumbnailUrl || null,
+    recordingMode,
   });
 
   // Reset the clip data when it changes.
@@ -42,9 +46,10 @@ export function ClipModal({
         clipUrl,
         clipFilename,
         thumbnailUrl,
+        recordingMode,
       }));
     }
-  }, [clipUrl, clipFilename, thumbnailUrl]);
+  }, [clipUrl, clipFilename, thumbnailUrl, recordingMode]);
 
   const handleOpenChange = (open: boolean) => {
     if (!open && !isRotating) {
