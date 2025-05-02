@@ -16,9 +16,12 @@ import { cn } from "@repo/design-system/lib/utils";
 import { X } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { VideoPlayer } from "./VideoPlayer";
 import { VideoProvider } from "./VideoProvider";
+import { useCapacityCheck } from "@/hooks/useCapacityCheck";
+import { CapacityNotificationModal } from "@/components/modals/capacity-notification-modal";
+import track from "@/lib/track";
 
 const formatter = new Intl.DateTimeFormat("en-US", {
   month: "short",
@@ -52,6 +55,8 @@ export default function QuickviewVideo({
   const { setIsPreviewOpen, isPreviewOpen } = usePreviewStore();
   const router = useRouter();
   const pathname = usePathname();
+  const { hasCapacity } = useCapacityCheck();
+  const [isCapacityModalOpen, setIsCapacityModalOpen] = useState(false);
 
   useEffect(() => {
     const log = async () => {
@@ -80,6 +85,23 @@ export default function QuickviewVideo({
   const handleClose = () => {
     setIsPreviewOpen(false);
     router.push("/", { scroll: false });
+  };
+
+  const handleTryPrompt = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+
+    if (!hasCapacity) {
+      track("capacity_try_prompt_blocked", { location: "quickview_video" });
+      setIsCapacityModalOpen(true);
+      return;
+    }
+
+    router.push(
+      prompt
+        ? `/create?inputPrompt=${btoa(prompt)}&sourceClipId=${encodeURIComponent(clipId)}`
+        : "/create",
+    );
   };
 
   return (
@@ -132,25 +154,13 @@ export default function QuickviewVideo({
                 </div>
 
                 <Link
-                  href={
-                    prompt
-                      ? `/create?inputPrompt=${btoa(prompt)}&sourceClipId=${btoa(clipId)}`
-                      : "/create"
-                  }
+                  href="#"
+                  onClick={handleTryPrompt}
+                  className={cn(
+                    "alwaysAnimatedButton text-xs py-2 px-8 h-auto",
+                  )}
                 >
-                  <TrackedButton
-                    trackingEvent="quickview_create_clicked"
-                    trackingProperties={{ location: "quickview_video" }}
-                    variant="outline"
-                    className={cn(
-                      "alwaysAnimatedButton text-xs py-2 px-8 h-auto",
-                    )}
-                    onClick={e => {
-                      e.stopPropagation();
-                    }}
-                  >
-                    Try this prompt
-                  </TrackedButton>
+                  Try this prompt
                 </Link>
               </div>
             </DialogHeader>
@@ -173,6 +183,11 @@ export default function QuickviewVideo({
           </div>
         </DialogContent>
       </Dialog>
+
+      <CapacityNotificationModal
+        isOpen={isCapacityModalOpen}
+        onClose={() => setIsCapacityModalOpen(false)}
+      />
     </>
   );
 }

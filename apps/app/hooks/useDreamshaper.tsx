@@ -16,6 +16,7 @@ import { useStreamStatus } from "./useStreamStatus";
 import track from "@/lib/track";
 import { usePrivy } from "@/hooks/usePrivy";
 import { usePromptStore } from "@/hooks/usePromptStore";
+import { useCapacityCheck } from "@/hooks/useCapacityCheck";
 
 export const DEFAULT_PIPELINE_ID = "pip_DRQREDnSei4HQyC8"; // Staging Dreamshaper ID
 export const DUMMY_USER_ID_FOR_NON_AUTHENTICATED_USERS =
@@ -165,6 +166,7 @@ interface DreamshaperStore {
   pipeline: any | null;
   sharedParamsApplied: boolean;
   sharedPrompt: string | null;
+  errorState: boolean;
 
   setLoading: (loading: boolean) => void;
   setUpdating: (updating: boolean) => void;
@@ -173,6 +175,7 @@ interface DreamshaperStore {
   setPipeline: (pipeline: any) => void;
   setSharedParamsApplied: (applied: boolean) => void;
   setSharedPrompt: (prompt: string | null) => void;
+  setErrorState: (error: boolean) => void;
 }
 
 export const useDreamshaperStore = create<DreamshaperStore>(set => ({
@@ -183,6 +186,7 @@ export const useDreamshaperStore = create<DreamshaperStore>(set => ({
   pipeline: null,
   sharedParamsApplied: false,
   sharedPrompt: null,
+  errorState: false,
 
   setLoading: loading => set({ loading }),
   setUpdating: updating => set({ updating }),
@@ -191,6 +195,7 @@ export const useDreamshaperStore = create<DreamshaperStore>(set => ({
   setPipeline: pipeline => set({ pipeline }),
   setSharedParamsApplied: applied => set({ sharedParamsApplied: applied }),
   setSharedPrompt: prompt => set({ sharedPrompt: prompt }),
+  setErrorState: error => set({ errorState: error }),
 }));
 
 export function useInputPromptHandling() {
@@ -550,6 +555,7 @@ export function useStreamUpdates() {
 }
 
 export function useInitialization() {
+  const { loading: capacityLoading, hasCapacity } = useCapacityCheck();
   const { user, ready } = usePrivy();
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -563,6 +569,16 @@ export function useInitialization() {
     DEFAULT_PIPELINE_ID;
 
   useEffect(() => {
+    // Skip initialization entirely if we don't have capacity
+    if (capacityLoading) {
+      return; // Wait until capacity check is complete
+    }
+
+    if (!hasCapacity) {
+      setLoading(false); // Make sure to set loading to false when at capacity
+      return;
+    }
+
     if (!ready) return;
 
     let isMounted = true;
@@ -638,7 +654,7 @@ export function useInitialization() {
     return () => {
       isMounted = false;
     };
-  }, [pathname, ready, user, searchParams]);
+  }, [pathname, ready, user, searchParams, capacityLoading, hasCapacity]);
 
   useEffect(() => {
     if (!stream || !stream.stream_key) {
@@ -648,6 +664,8 @@ export function useInitialization() {
       getStreamUrl(stream?.stream_key, searchParams, stream.whip_url),
     );
   }, [stream]);
+
+  return { capacityLoading, hasCapacity };
 }
 
 export const useShareLink = () => {
@@ -694,39 +712,13 @@ export const useShareLink = () => {
 
 const MAX_STREAM_TIMEOUT_MS = 300000; // 5 minutes
 
-export const useCapacityMonitor = () => {
+export const useErrorMonitor = () => {
   const { authenticated } = usePrivy();
-  const { stream } = useDreamshaperStore();
+  const { stream, setErrorState } = useDreamshaperStore();
   const { live, capacityReached } = useStreamStatus(stream?.id, false);
 
   const [timeoutReached, setTimeoutReached] = useState(false);
-  const toastShownRef = useRef(false);
-
-  const showCapacityToast = () => {
-    track("capacity_reached", {
-      is_authenticated: authenticated,
-      stream_id: stream?.id,
-    });
-    toast("Platform at full capacity", {
-      description: (
-        <div className="flex flex-col gap-2">
-          <p>
-            We are currently at capacity, join the waitlist to use the platform
-            in the future
-          </p>
-          <a
-            href="https://www.livepeer.org/daydream-waitlist"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-primary hover:underline font-medium"
-          >
-            Join the waitlist
-          </a>
-        </div>
-      ),
-      duration: 1000000,
-    });
-  };
+  const errorDetectedRef = useRef(false);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -741,10 +733,10 @@ export const useCapacityMonitor = () => {
   useEffect(() => {
     if (
       (capacityReached || (timeoutReached && !live)) &&
-      !toastShownRef.current
+      !errorDetectedRef.current
     ) {
       const reason = capacityReached
-        ? "capacity_reached"
+        ? "no_orch_available"
         : "timeout_reached_not_live";
 
       console.error("Capacity reached, reason:", reason, {
@@ -753,21 +745,29 @@ export const useCapacityMonitor = () => {
         live,
       });
 
-      track("daydream_capacity_reached", {
+      track("daydream_error_overlay_shown", {
         is_authenticated: authenticated,
         reason,
         stream_id: stream?.id,
       });
-      showCapacityToast();
-      toastShownRef.current = true;
+
+      setErrorState(true);
+      errorDetectedRef.current = true;
     }
-  }, [capacityReached, timeoutReached, live, stream]);
+  }, [
+    capacityReached,
+    timeoutReached,
+    live,
+    stream,
+    authenticated,
+    setErrorState,
+  ]);
 };
 
 export function useDreamshaper() {
   useInitialization();
   useParamsHandling();
-  useCapacityMonitor();
+  useErrorMonitor();
   const { handleStreamUpdate } = useStreamUpdates();
   const { createShareLink } = useShareLink();
   const store = useDreamshaperStore();

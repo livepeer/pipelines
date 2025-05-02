@@ -16,6 +16,7 @@ const IntercomConfig = z.object({
 const HubspotConfig = z.object({
   portalId: z.string().min(1),
   formId: z.string().min(1),
+  capacityFormId: z.string().min(1),
 });
 
 const MixpanelConfig = z.object({
@@ -74,6 +75,7 @@ const envConfig = {
   hubspot: {
     portalId: process.env.NEXT_PUBLIC_HUBSPOT_PORTAL_ID,
     formId: process.env.NEXT_PUBLIC_HUBSPOT_FORM_ID,
+    capacityFormId: process.env.NEXT_PUBLIC_HUBSPOT_FORM_ID_CAPACITY,
   },
 } as const;
 

@@ -62,3 +62,38 @@ export async function submitToHubspot(user: PrivyUser) {
     console.error("Error submitting to HubSpot:", error);
   }
 }
+
+export async function submitCapacityNotification(
+  email: string,
+): Promise<boolean> {
+  try {
+    const fields: HubspotField[] = [
+      { name: "email", value: email },
+      { name: "source", value: "capacity_notification" },
+    ];
+
+    const url = `https://api.hsforms.com/submissions/v3/integration/submit/${HubspotConfig.portalId}/${HubspotConfig.capacityFormId}`;
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        fields,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(
+        `Failed to submit to HubSpot: ${errorData.error || response.statusText}`,
+      );
+    }
+
+    return true;
+  } catch (error) {
+    console.error("Error submitting capacity notification to HubSpot:", error);
+    return false;
+  }
+}

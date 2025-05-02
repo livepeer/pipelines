@@ -7,6 +7,7 @@ import { useOnboard } from "../OnboardContext";
 import { useMediaPermissions } from "../WelcomeScreen/CameraAccess";
 import Dreamshaper from "@/components/welcome/featured/Dreamshaper";
 import { usePrivy } from "@/hooks/usePrivy";
+import { useCapacityCheck } from "@/hooks/useCapacityCheck";
 
 interface MainExperienceProps {
   isGuestMode?: boolean;
@@ -19,10 +20,13 @@ export default function MainExperience({
   const { user } = usePrivy();
   const [isVisible, setIsVisible] = useState(false);
   const { requestMediaPermissions } = useMediaPermissions();
+  const { hasCapacity, loading } = useCapacityCheck();
 
   // Request camera permission if not granted (skip in guest mode)
   useEffect(() => {
     if (isGuestMode) return;
+    if (loading) return;
+    if (!hasCapacity) return;
 
     const requestCameraPermission = async () => {
       const hasAllowedCamera = await requestMediaPermissions();

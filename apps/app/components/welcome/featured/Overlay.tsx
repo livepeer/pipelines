@@ -16,7 +16,7 @@ const loadingMessages = [
   "Unwrapping visual possibilities...",
   "Firing up the wonder factory...",
   "Rendering realms of possibility...",
-  "Stirring the pixel potion..."
+  "Stirring the pixel potion...",
 ];
 
 export default function Overlay({ statusMessage }: OverlayProps) {
@@ -28,17 +28,21 @@ export default function Overlay({ statusMessage }: OverlayProps) {
     if (usedIndices.length === loadingMessages.length - 1) {
       setUsedIndices([currentMessageIndex]);
       // Get a random index from remaining unused indices
-      const unusedIndices = Array.from(Array(loadingMessages.length).keys())
-        .filter(i => i !== currentMessageIndex);
+      const unusedIndices = Array.from(
+        Array(loadingMessages.length).keys(),
+      ).filter(i => i !== currentMessageIndex);
       return unusedIndices[Math.floor(Math.random() * unusedIndices.length)];
     }
 
     // Get all unused indices (except current)
-    const availableIndices = Array.from(Array(loadingMessages.length).keys())
-      .filter(i => !usedIndices.includes(i) && i !== currentMessageIndex);
-    
+    const availableIndices = Array.from(
+      Array(loadingMessages.length).keys(),
+    ).filter(i => !usedIndices.includes(i) && i !== currentMessageIndex);
+
     // Return a random index from available indices
-    return availableIndices[Math.floor(Math.random() * availableIndices.length)];
+    return availableIndices[
+      Math.floor(Math.random() * availableIndices.length)
+    ];
   };
 
   useEffect(() => {
@@ -59,9 +63,9 @@ export default function Overlay({ statusMessage }: OverlayProps) {
         <Logo className="w-8 h-8 sm:w-10 sm:h-10 mb-6" />
         <div className="flex flex-col items-center gap-6 justify-center max-w-80 text-foreground sm:mb-6">
           <p className="shimmer-text shimmer-slow text-base sm:text-lg font-semibold whitespace-nowrap">
-          {loadingMessages[currentMessageIndex]}
-          </p> 
-            {/* 
+            {loadingMessages[currentMessageIndex]}
+          </p>
+          {/* 
             Keeping statusMessage Logic if we want to return to contextual status messages. Right now, 
             we think that non-contextual messages create a better user experience. 
             statusMessage ? (

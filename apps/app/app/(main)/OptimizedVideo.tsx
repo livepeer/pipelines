@@ -2,21 +2,23 @@ import { GradientAvatar } from "@/components/GradientAvatar";
 import { usePreviewStore } from "@/hooks/usePreviewStore";
 import { useOverlayStore } from "@/hooks/useOverlayStore";
 import { cn } from "@repo/design-system/lib/utils";
-import { Repeat, WandSparkles } from "lucide-react";
-import Link from "next/link";
+import { Repeat } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { TrackedButton } from "@/components/analytics/TrackedButton";
+import { TrackedLink } from "@/components/analytics/TrackedLink";
 import { useGuestUserStore } from "@/hooks/useGuestUser";
 import { usePrivy } from "@/hooks/usePrivy";
 import { useRouter } from "next/navigation";
 import { setSourceClipIdToCookies } from "@/components/daydream/Clipping/actions";
-import VideoAISparkles from "components/daydream/CustomIcons/VideoAISparkles";
+import VideoAISparkles from "@/components/daydream/CustomIcons/VideoAISparkles";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@repo/design-system/components/ui/tooltip";
+import { CapacityNotificationModal } from "@/components/modals/capacity-notification-modal";
+import track from "@/lib/track";
 
 interface OptimizedVideoProps {
   src: string;
@@ -31,6 +33,7 @@ interface OptimizedVideoProps {
   className?: string;
   isOverlayMode?: boolean;
   onTryPrompt?: (prompt: string) => void;
+  hasCapacity?: boolean;
 }
 
 export default function OptimizedVideo({
@@ -46,6 +49,7 @@ export default function OptimizedVideo({
   className,
   isOverlayMode = false,
   onTryPrompt,
+  hasCapacity = true,
 }: OptimizedVideoProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isNearViewport, setIsNearViewport] = useState(false);
@@ -56,6 +60,7 @@ export default function OptimizedVideo({
   const { authenticated, ready } = usePrivy();
   const router = useRouter();
   const { isOverlayOpen } = useOverlayStore();
+  const [isCapacityModalOpen, setIsCapacityModalOpen] = useState(false);
 
   const shortSrc = src.replace(/\.mp4$/, "-short.mp4");
   const [effectiveSrc, setEffectiveSrc] = useState(shortSrc);
@@ -120,7 +125,15 @@ export default function OptimizedVideo({
   }, [isNearViewport, isPreviewOpen]);
 
   const handleTryPrompt = async (e: React.MouseEvent) => {
+    // Ensure we prevent any link behavior
     e.stopPropagation();
+    e.preventDefault();
+
+    if (!hasCapacity) {
+      track("capacity_try_prompt_blocked", { location: "video_card" });
+      setIsCapacityModalOpen(true);
+      return;
+    }
 
     if (prompt) {
       setLastPrompt(prompt);
@@ -134,7 +147,7 @@ export default function OptimizedVideo({
         await setSourceClipIdToCookies(clipId);
       } else {
         router.push(
-          `/create?inputPrompt=${btoa(prompt)}&sourceClipId=${btoa(clipId)}`,
+          `/create?inputPrompt=${btoa(prompt)}&sourceClipId=${encodeURIComponent(clipId)}`,
         );
       }
     } else {
@@ -144,108 +157,116 @@ export default function OptimizedVideo({
     }
   };
 
+  // Only handle guest user setup here, not capacity (capacity is only for Try Prompt button)
+  const handleLinkClick = (e: React.MouseEvent) => {
+    if (prompt && !authenticated && ready) {
+      e.stopPropagation();
+      setIsGuestUser(true);
+      setLastPrompt(prompt);
+    }
+  };
+
   return (
     <div ref={containerRef} className={cn("size-full", className)}>
       {isNearViewport ? (
-        <Link
-          href={isOverlayMode ? "#" : `/clips/${slug || clipId}`}
-          scroll={false}
-          onClick={isOverlayMode ? e => e.preventDefault() : undefined}
-        >
+        <>
           <div className="size-full relative group">
-            <video
-              ref={videoRef}
-              src={effectiveSrc + "#t=0.5"}
-              muted
-              loop
-              playsInline
-              onLoadedData={() => setIsLoaded(true)}
-              onError={handleVideoError}
-              className={cn(
-                "absolute inset-0 size-full object-cover object-top bg-transparent",
-                !isLoaded && "opacity-0",
-                "transition-opacity duration-300",
-              )}
-            />
-            <div className="absolute bottom-3 left-3 p-0 z-10 flex gap-2 items-center">
-              <GradientAvatar
-                seed={authorDetails?.avatar ?? authorName}
-                size={24}
-                className="h-6 w-6"
+            <TrackedLink
+              href={isOverlayMode ? "#" : `/clips/${slug || clipId}`}
+              trackingEvent="explore_clip_clicked"
+              trackingProperties={{
+                clip_id: clipId,
+                clip_slug: slug,
+                clip_author_name: authorName,
+                location: isOverlayMode ? "overlay_video" : "explore_video",
+              }}
+              onClick={handleLinkClick}
+              className="block size-full"
+            >
+              <video
+                ref={videoRef}
+                src={effectiveSrc + "#t=0.5"}
+                muted
+                loop
+                playsInline
+                onLoadedData={() => setIsLoaded(true)}
+                onError={handleVideoError}
+                className={cn(
+                  "absolute inset-0 size-full object-cover object-top bg-transparent",
+                  !isLoaded && "opacity-0",
+                  "transition-opacity duration-300",
+                )}
               />
-              <span className="text-white text-[0.64rem] bg-black/20 backdrop-blur-sm px-2 py-1 rounded-lg">
-                {authorName}
-              </span>
-            </div>
+              <div className="absolute bottom-3 left-3 p-0 z-10 flex gap-2 items-center">
+                <GradientAvatar
+                  seed={authorDetails?.avatar ?? authorName}
+                  size={24}
+                  className="h-6 w-6"
+                />
+                <span className="text-white text-[0.64rem] bg-black/20 backdrop-blur-sm px-2 py-1 rounded-lg">
+                  {authorName}
+                </span>
+              </div>
 
-            <TooltipProvider delayDuration={0}>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div className="absolute bottom-3 right-4 p-0 z-10 flex gap-1 items-center  bg-black/20 backdrop-blur-sm px-2 py-1 rounded-lg">
-                    <Repeat className="w-3 h-3 text-white" />
-                    <span className="text-white text-[0.64rem]">
-                      {remixCount}
-                    </span>
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Remixes</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+              <TooltipProvider delayDuration={0}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="absolute bottom-3 right-4 p-0 z-10 flex gap-1 items-center bg-black/20 backdrop-blur-sm px-2 py-1 rounded-lg">
+                      <Repeat className="w-3 h-3 text-white" />
+                      <span className="text-white text-[0.64rem]">
+                        {remixCount}
+                      </span>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Remixes</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </TrackedLink>
 
             <div
-              className="absolute top-3 right-2 p-0 z-10 flex gap-1 items-center opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-150"
+              className="absolute top-3 right-2 p-0 z-20 flex gap-1 items-center opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-150"
               onClick={e => e.stopPropagation()}
             >
-              {isOverlayMode && onTryPrompt && prompt ? (
-                <TrackedButton
-                  trackingEvent="overlay_try_prompt_clicked"
-                  trackingProperties={{ location: "overlay_video_card" }}
-                  variant="outline"
-                  className="inline-flex items-center space-x-0.5 px-3 py-2 h-8 bg-black/20 backdrop-blur-md text-white rounded-full border-white border shadow-sm scale-90"
-                  onClick={handleTryPrompt}
-                >
-                  {/* Our default button overrides the size of child SVGs. Rather than change the button, I've overridden the CSS here. */}
-
-                  <VideoAISparkles className={cn("!w-6 !h-6")} />
-                  <span className="text-[0.7rem] tracking-wide">
-                    Try this prompt
-                  </span>
-                </TrackedButton>
-              ) : (
-                <Link
-                  href={
-                    prompt
-                      ? `/create?inputPrompt=${btoa(prompt)}&sourceClipId=${btoa(clipId)}`
-                      : "/create"
-                  }
-                  onClick={e => {
-                    e.stopPropagation();
-                    if (prompt && !authenticated) {
-                      setIsGuestUser(true);
-                      setLastPrompt(prompt);
-                    }
-                  }}
-                >
+              <div onClick={e => e.stopPropagation()}>
+                {isOverlayMode && onTryPrompt && prompt ? (
+                  <TrackedButton
+                    trackingEvent="overlay_try_prompt_clicked"
+                    trackingProperties={{ location: "overlay_video_card" }}
+                    variant="outline"
+                    className="inline-flex items-center space-x-0.5 px-3 py-2 h-8 bg-black/20 backdrop-blur-md text-white rounded-full border-white border shadow-sm scale-90"
+                    onClick={handleTryPrompt}
+                  >
+                    {/* Our default button overrides the size of child SVGs. Rather than change the button, I've overridden the CSS here. */}
+                    <VideoAISparkles className={cn("!w-7 !h-7")} />
+                    <span className="text-[0.7rem] tracking-wide">
+                      Try this prompt
+                    </span>
+                  </TrackedButton>
+                ) : (
                   <TrackedButton
                     trackingEvent="explore_try_prompt_clicked"
                     trackingProperties={{ location: "video_card" }}
                     variant="outline"
                     className="inline-flex items-center space-x-0.5 px-3 py-2 h-8 bg-black/20 backdrop-blur-md text-white rounded-full border-white border shadow-sm scale-90"
+                    onClick={handleTryPrompt}
                   >
-                    {/* Our default button overrides the size of child SVGs. Rather than change the button, I've overridden the CSS here. */}
-
-                    <VideoAISparkles className={cn("!w-6 !h-6")} />
+                    <VideoAISparkles className={cn("!w-7 !h-7")} />
                     <span className="text-[0.7rem] tracking-wide">
                       Try this prompt
                     </span>
                   </TrackedButton>
-                </Link>
-              )}
+                )}
+              </div>
             </div>
           </div>
-        </Link>
+
+          <CapacityNotificationModal
+            isOpen={isCapacityModalOpen}
+            onClose={() => setIsCapacityModalOpen(false)}
+          />
+        </>
       ) : (
         <div className="size-full bg-transparent" />
       )}
