@@ -3,11 +3,9 @@
 import useCloudAnimation from "@/hooks/useCloudAnimation";
 import { Button } from "@repo/design-system/components/ui/button";
 import { usePrivy } from "@/hooks/usePrivy";
-import { cn } from "@repo/design-system/lib/utils";
 import track from "@/lib/track";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import useMobileStore from "@/hooks/useMobileStore";
-import { useRouter } from "next/navigation";
 import { DiscordLogoIcon } from "@radix-ui/react-icons";
 
 interface UnifiedSignupModalProps {
