@@ -179,6 +179,14 @@ export default function ClipApprovalQueue() {
     return response;
   };
 
+  const handleConfirmApprove = async () => {
+    if (!confirmDialog.clipId) return;
+    const success = await updateClipStatus(confirmDialog.clipId, "approved");
+    if (success) {
+      handleCancelConfirmation();
+    }
+  };
+
   const handleGenerateAndApprove = async () => {
     if (
       !confirmDialog.clipId ||
@@ -408,11 +416,7 @@ export default function ClipApprovalQueue() {
                       )
                     }
                     className="flex-1 bg-gray-800 hover:bg-gray-700 text-white py-2 px-4 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    disabled={
-                      !ffmpegLoaded ||
-                      !!ffmpegError ||
-                      actionLoading === clip.id
-                    }
+                    disabled={actionLoading === clip.id}
                   >
                     {actionLoading === clip.id ? "Processing..." : "Approve"}
                   </button>
@@ -510,21 +514,31 @@ export default function ClipApprovalQueue() {
               </button>
 
               {confirmDialog.action === "approve" ? (
-                <button
-                  className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  onClick={handleGenerateAndApprove}
-                  disabled={
-                    actionLoading !== null ||
-                    isPreviewProcessing ||
-                    confirmDialog.previewStatus === "uploading" ||
-                    !ffmpegLoaded ||
-                    !!ffmpegError
-                  }
-                >
-                  {actionLoading !== null
-                    ? "Processing..."
-                    : "Generate Preview & Approve"}
-                </button>
+                ffmpegLoaded && !ffmpegError ? (
+                  <button
+                    className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    onClick={handleGenerateAndApprove}
+                    disabled={
+                      actionLoading !== null ||
+                      isPreviewProcessing ||
+                      confirmDialog.previewStatus === "uploading"
+                    }
+                  >
+                    {actionLoading !== null
+                      ? "Processing..."
+                      : "Generate Preview & Approve"}
+                  </button>
+                ) : (
+                  <button
+                    className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    onClick={handleConfirmApprove}
+                    disabled={actionLoading !== null}
+                  >
+                    {actionLoading !== null
+                      ? "Processing..."
+                      : "Confirm Approve"}
+                  </button>
+                )
               ) : (
                 <button
                   className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded transition-colors disabled:opacity-50"

@@ -1,23 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Storage } from "@google-cloud/storage";
 import { db } from "@/lib/db";
 import { clips as clipsTable } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { requireAdminAuth } from "@/app/api/admin/auth";
-
-const storage = new Storage({
-  projectId: process.env.GCP_PROJECT_ID,
-  credentials: {
-    client_email: process.env.GCS_CLIENT_EMAIL,
-    private_key: process.env.GCS_PRIVATE_KEY?.replace(/\n/g, "\n"),
-  },
-});
-
-const bucketName = process.env.GCS_BUCKET_NAME;
-if (!bucketName) {
-  throw new Error("GCS_BUCKET_NAME environment variable not set.");
-}
-const bucket = storage.bucket(bucketName);
+import { generatePresignedUploadUrl, getPublicUrl } from "@/lib/storage/gcp";
 
 export async function POST(req: NextRequest) {
   try {
@@ -68,18 +54,13 @@ export async function POST(req: NextRequest) {
     const previewFilePath = `${baseName}-short${extension}`;
     const contentType = "video/mp4";
 
-    const options = {
-      version: "v4" as const,
-      action: "write" as const,
-      expires: Date.now() + 15 * 60 * 1000,
-      contentType: contentType,
-    };
+    const uploadUrl = await generatePresignedUploadUrl(
+      previewFilePath,
+      contentType,
+      15,
+    );
 
-    const [uploadUrl] = await bucket
-      .file(previewFilePath)
-      .getSignedUrl(options);
-
-    const publicUrl = `https://storage.googleapis.com/${bucketName}/${previewFilePath}`;
+    const publicUrl = getPublicUrl(previewFilePath);
 
     console.log(`Generated presigned URL for preview: ${previewFilePath}`);
 
