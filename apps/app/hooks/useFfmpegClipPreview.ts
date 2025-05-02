@@ -76,20 +76,25 @@ export function useFfmpegClipPreview(): UseFfmpegClipPreviewReturn {
 
       console.log("Executing FFmpeg command...");
       await ffmpeg.run(
+        "-y", 
+        "-ss", 
+        "0", 
+        "-t",
+        "4", 
         "-i",
         inputFilename,
-        "-t",
-        "4", // Trim to first 4 seconds
         "-vf",
-        "scale=360:360:force_original_aspect_ratio=decrease,pad=360:360:(ow-iw)/2:(oh-ih)/2:color=black", // Scale & Pad
+        "scale=480:-2", 
         "-c:v",
-        "libx264", // Codec
+        "libx264", 
         "-preset",
-        "fast", // Speed/quality balance
+        "veryslow",
         "-crf",
-        "23", // Quality setting
-        "-an", // No audio
-        outputFilename, // Output file name
+        "26",
+        "-an", 
+        "-movflags",
+        "+faststart",
+        outputFilename,
       );
       console.log("FFmpeg command executed.");
 
