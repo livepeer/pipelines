@@ -45,6 +45,11 @@ export function ClipSummaryContent({
   const [isFeatured, setIsFeatured] = useState(true);
   const { lastSubmittedPrompt } = usePromptStore();
 
+  const storedPrompt =
+    typeof window !== "undefined"
+      ? localStorage.getItem("daydream_pending_clip_prompt")
+      : null;
+
   const handleNext = async () => {
     let clipId;
 
@@ -65,7 +70,11 @@ export function ClipSummaryContent({
           body: JSON.stringify({
             contentType: videoBlob.type,
             filename: clipData.clipFilename,
-            prompt: lastSubmittedPrompt,
+            prompt:
+              clipData.lastSubmittedPrompt ||
+              lastSubmittedPrompt ||
+              storedPrompt ||
+              "",
             isFeatured,
           }),
         });
@@ -102,6 +111,10 @@ export function ClipSummaryContent({
             status: "completed",
           }),
         });
+
+        if (storedPrompt) {
+          localStorage.removeItem("daydream_pending_clip_prompt");
+        }
 
         setClipData({
           ...clipData,
@@ -153,6 +166,7 @@ export function ClipSummaryContent({
               muted={false}
               playsInline
               controls
+              poster={clipData.thumbnailUrl || undefined}
               className="absolute inset-0 w-full h-full object-cover rounded-md"
             />
           </div>

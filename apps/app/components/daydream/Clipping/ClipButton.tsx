@@ -4,6 +4,7 @@ import { cn } from "@repo/design-system/lib/utils";
 import { ClipModal } from "./ClipModal";
 import { ClipOptionsModal, ClipRecordingMode } from "./ClipOptionsModal";
 import { Scissors, Square } from "lucide-react";
+import { usePromptStore } from "@/hooks/usePromptStore";
 
 interface ClipButtonProps {
   disabled?: boolean;
@@ -43,6 +44,7 @@ export const ClipButton = ({
   onRecordAttempt,
   isGuestMode = false,
 }: ClipButtonProps) => {
+  const { lastSubmittedPrompt } = usePromptStore();
   const {
     recordClip,
     stopRecording,
@@ -143,6 +145,7 @@ export const ClipButton = ({
         clipUrl={clipUrl}
         clipFilename={clipFilename}
         thumbnailUrl={thumbnailUrl}
+        lastSubmittedPrompt={lastSubmittedPrompt}
         isGuestMode={isGuestMode}
       />
 

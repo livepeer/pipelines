@@ -20,25 +20,49 @@ interface GuestModeContentProps {
 export function GuestModeContent({ clipData, onClose }: GuestModeContentProps) {
   const router = useRouter();
 
-  const handleJoinDaydream = () => {
+  const handleJoinDaydream = async () => {
     track("guest_join_from_clip_modal", {});
     localStorage.setItem("daydream_from_guest_experience", "true");
 
-    if (clipData.clipUrl && clipData.clipFilename) {
-      fetch(clipData.clipUrl)
-        .then(response => response.blob())
-        .then(blobData => {
-          storeClip(blobData, clipData.clipFilename)
-            .then(() => {
-              console.log("Clip stored successfully in IndexedDB");
-            })
-            .catch(error => {
-              console.error("Failed to store clip in IndexedDB:", error);
-            });
-        })
-        .catch(error => {
-          console.error("Error fetching clip data:", error);
-        });
+    if (clipData.lastSubmittedPrompt) {
+      localStorage.setItem(
+        "daydream_pending_clip_prompt",
+        clipData.lastSubmittedPrompt,
+      );
+    }
+
+    if (clipData.clipUrl && clipData.thumbnailUrl && clipData.clipFilename) {
+      try {
+        const [clipResponse, thumbnailResponse] = await Promise.all([
+          fetch(clipData.clipUrl),
+          fetch(clipData.thumbnailUrl),
+        ]);
+
+        if (!clipResponse.ok || !thumbnailResponse.ok) {
+          throw new Error("Failed to fetch clip or thumbnail data");
+        }
+
+        const [clipBlob, thumbnailBlob] = await Promise.all([
+          clipResponse.blob(),
+          thumbnailResponse.blob(),
+        ]);
+
+        await storeClip(
+          clipBlob,
+          clipData.clipFilename,
+          thumbnailBlob,
+          clipData.lastSubmittedPrompt,
+        );
+        console.log(
+          "Clip, thumbnail, and prompt stored successfully in IndexedDB",
+        );
+      } catch (error) {
+        console.error("Error processing or storing clip data:", error);
+      }
+    } else {
+      console.warn(
+        "Missing clipUrl, thumbnailUrl, or clipFilename. Cannot store clip.",
+      );
     }
 
     onClose();
@@ -69,6 +93,7 @@ export function GuestModeContent({ clipData, onClose }: GuestModeContentProps) {
             muted={false}
             playsInline
             controls
+            poster={clipData.thumbnailUrl || undefined}
             className="w-full max-h-[50vh] object-contain rounded-md"
           />
         )}

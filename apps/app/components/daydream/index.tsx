@@ -113,6 +113,12 @@ function DaydreamRenderer({ isGuestMode = false }: { isGuestMode?: boolean }) {
   const [pendingClipFilename, setPendingClipFilename] = useState<string | null>(
     null,
   );
+  const [pendingClipThumbnailUrl, setPendingClipThumbnailUrl] = useState<
+    string | null
+  >(null);
+  const [pendingClipPrompt, setPendingClipPrompt] = useState<string | null>(
+    null,
+  );
   const [showPendingClipModal, setShowPendingClipModal] = useState(false);
 
   useEffect(() => {
@@ -137,6 +143,26 @@ function DaydreamRenderer({ isGuestMode = false }: { isGuestMode?: boolean }) {
 
         setIsFromGuestExperience(fromGuestExperience);
 
+        // 1. Create or fetch the user from DB
+        const {
+          isNewUser,
+          user: { additional_details },
+        } = await createUser(user);
+
+        const distinctId = handleDistinctId();
+        localStorage.setItem("mixpanel_user_id", user.id);
+
+        await Promise.all([
+          identifyUser(user.id, distinctId || "", user),
+
+          isNewUser ? submitToHubspot(user) : Promise.resolve(),
+        ]);
+
+        track("user_logged_in", {
+          user_id: user.id,
+          distinct_id: distinctId,
+        });
+
         if (fromGuestExperience) {
           setCurrentStep("persona");
           setIsInitializing(false);
@@ -147,12 +173,6 @@ function DaydreamRenderer({ isGuestMode = false }: { isGuestMode?: boolean }) {
 
           return;
         }
-
-        // 1. Create or fetch the user from DB
-        const {
-          isNewUser,
-          user: { additional_details },
-        } = await createUser(user);
 
         const initialStep =
           additional_details.next_onboarding_step ?? "persona";
@@ -180,20 +200,6 @@ function DaydreamRenderer({ isGuestMode = false }: { isGuestMode?: boolean }) {
         setCustomPersona(initialCustomPersona);
         setCurrentStep(initialStep);
         setIsInitializing(false);
-
-        const distinctId = handleDistinctId();
-        localStorage.setItem("mixpanel_user_id", user.id);
-
-        await Promise.all([
-          identifyUser(user.id, distinctId || "", user),
-
-          isNewUser ? submitToHubspot(user) : Promise.resolve(),
-        ]);
-
-        track("user_logged_in", {
-          user_id: user.id,
-          distinct_id: distinctId,
-        });
       } catch (err) {
         console.error("Error initializing user:", err);
         setIsInitializing(false);
@@ -211,11 +217,14 @@ function DaydreamRenderer({ isGuestMode = false }: { isGuestMode?: boolean }) {
       retrieveClip()
         .then(clipData => {
           if (clipData) {
-            const { blob, filename } = clipData;
+            const { blob, filename, thumbnail, prompt } = clipData;
             const blobUrl = URL.createObjectURL(blob);
+            const thumbnailUrl = URL.createObjectURL(thumbnail);
 
             setPendingClipUrl(blobUrl);
             setPendingClipFilename(filename);
+            setPendingClipThumbnailUrl(thumbnailUrl);
+            setPendingClipPrompt(prompt);
             setShowPendingClipModal(true);
 
             deleteClip().catch(err => {
@@ -236,6 +245,11 @@ function DaydreamRenderer({ isGuestMode = false }: { isGuestMode?: boolean }) {
       setPendingClipUrl(null);
       setPendingClipFilename(null);
     }
+    if (pendingClipThumbnailUrl) {
+      URL.revokeObjectURL(pendingClipThumbnailUrl);
+      setPendingClipThumbnailUrl(null);
+    }
+    setPendingClipPrompt(null);
   };
 
   if (isInitializing) {
@@ -260,6 +274,8 @@ function DaydreamRenderer({ isGuestMode = false }: { isGuestMode?: boolean }) {
           onClose={handleClosePendingClipModal}
           clipUrl={pendingClipUrl}
           clipFilename={pendingClipFilename}
+          thumbnailUrl={pendingClipThumbnailUrl}
+          lastSubmittedPrompt={pendingClipPrompt}
         />
       )}
     </>
