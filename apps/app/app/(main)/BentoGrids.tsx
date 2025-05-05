@@ -11,6 +11,7 @@ import LoadingSpinner from "./LoadingSpinner";
 import NoMoreClipsFooter from "./NoMoreClipsFooter";
 import OptimizedVideo from "./OptimizedVideo";
 import { useOverlayStore } from "@/hooks/useOverlayStore";
+import { TrackedButton } from "@/components/analytics/TrackedButton";
 
 function chunkArray<T>(array: T[], size: number): T[][] {
   const result: T[][] = [];
@@ -147,23 +148,29 @@ export function BentoGrids({
           >
             Live Video Transformed
           </p>
-          <div className={cn(
-            "flex flex-col items-center gap-4 mt-6",
-            isPreviewOpen && "opacity-0"
-          )}>
+          <div
+            className={cn(
+              "flex flex-col items-center gap-4 mt-6",
+              isPreviewOpen && "opacity-0",
+            )}
+          >
             <div className="flex flex-col sm:flex-row gap-4 mt-2">
-              <button
+              <TrackedButton
+                variant="ghost"
+                trackingEvent="try_camera_click"
                 className="px-6 py-2 text-sm font-medium text-gray-900 border border-gray-900 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
                 aria-label="Try it with your camera"
               >
                 Try it with your camera
-              </button>
-              <button 
+              </TrackedButton>
+              <TrackedButton
+                variant="ghost"
+                trackingEvent="discover_creations_click"
                 className="px-6 py-2 text-sm font-medium text-gray-900 border border-gray-900 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
                 aria-label="Explore creations below"
               >
                 Discover community creations below
-              </button>
+              </TrackedButton>
             </div>
           </div>
         </>
