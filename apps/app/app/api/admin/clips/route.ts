@@ -21,6 +21,8 @@ type AdminFetchedClip = {
     id: string;
     name: string | null;
   } | null;
+  approval_status: string | null;
+  is_tutorial: boolean | null;
 };
 
 export async function GET(request: Request) {
@@ -47,6 +49,7 @@ export async function GET(request: Request) {
         id: users.id,
         name: users.name,
       },
+      is_tutorial: clipsTable.is_tutorial,
     };
 
     const prioritizedClips = (await db

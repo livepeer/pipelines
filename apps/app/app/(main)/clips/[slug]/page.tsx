@@ -23,6 +23,7 @@ const getClipBySlug = cache(async (slug: string) => {
       author_name: usersTable.name,
       author_details: usersTable.additionalDetails,
       slug: clipSlugsTable.slug,
+      is_tutorial: clipsTable.is_tutorial,
     })
     .from(clipsTable)
     .innerJoin(usersTable, eq(clipsTable.author_user_id, usersTable.id))
@@ -139,6 +140,7 @@ export default async function Page({ params }: { params: { slug: string } }) {
         authorName={clip.author_name || "Livepeer"}
         authorDetails={clip.author_details as any}
         createdAt={clip.created_at.toISOString()}
+        isTutorial={clip.is_tutorial || false}
       >
         <></>
       </QuickviewVideo>

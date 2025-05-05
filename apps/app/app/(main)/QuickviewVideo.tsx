@@ -22,6 +22,7 @@ import { VideoProvider } from "./VideoProvider";
 import { useCapacityCheck } from "@/hooks/useCapacityCheck";
 import { CapacityNotificationModal } from "@/components/modals/capacity-notification-modal";
 import track from "@/lib/track";
+import { toast } from "sonner";
 
 const formatter = new Intl.DateTimeFormat("en-US", {
   month: "short",
@@ -40,6 +41,7 @@ interface QuickviewVideoProps {
   createdAt: string;
   authorName: string;
   authorDetails?: Record<string, any>;
+  isTutorial?: boolean;
 }
 
 export default function QuickviewVideo({
@@ -51,6 +53,7 @@ export default function QuickviewVideo({
   authorName,
   authorDetails,
   createdAt,
+  isTutorial,
 }: QuickviewVideoProps) {
   const { setIsPreviewOpen, isPreviewOpen } = usePreviewStore();
   const router = useRouter();
@@ -153,15 +156,17 @@ export default function QuickviewVideo({
                   </div>
                 </div>
 
-                <Link
-                  href="#"
-                  onClick={handleTryPrompt}
-                  className={cn(
-                    "alwaysAnimatedButton text-xs py-2 px-8 h-auto",
-                  )}
-                >
-                  Try this prompt
-                </Link>
+                {!isTutorial && (
+                  <Link
+                    href="#"
+                    onClick={handleTryPrompt}
+                    className={cn(
+                      "alwaysAnimatedButton text-xs py-2 px-8 h-auto",
+                    )}
+                  >
+                    Try this prompt
+                  </Link>
+                )}
               </div>
             </DialogHeader>
 
@@ -173,7 +178,13 @@ export default function QuickviewVideo({
               </VideoProvider>
             </div>
 
-            <DialogFooter className="mt-6">
+            <DialogFooter
+              className="mt-6 hover:cursor-pointer"
+              onClick={() => {
+                navigator.clipboard.writeText(prompt || "");
+                toast.success("Prompt copied to clipboard");
+              }}
+            >
               <div className="w-[70%] mt-6 mx-auto">
                 <p className="text-xs font-normal text-[#707070] text-center line-clamp-2">
                   {prompt || "No prompt available"}

@@ -29,4 +29,5 @@ export interface Clip {
   deleted_at?: string | null;
   author?: string | { id: string; name: string };
   approval_status: (typeof clipApprovalEnum.enumValues)[number];
+  is_tutorial: boolean;
 }

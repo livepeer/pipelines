@@ -1,0 +1,1 @@
+ALTER TABLE "clips" ADD COLUMN "is_tutorial" boolean DEFAULT false;

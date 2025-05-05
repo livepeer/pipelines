@@ -288,7 +288,7 @@ export const clips = pgTable(
     prompt: text("prompt").notNull(),
     priority: integer("priority"),
     status: clipStatusEnum("status").default("uploading").notNull(),
-
+    is_tutorial: boolean("is_tutorial").default(false),
     approval_status: clipApprovalEnum("approval_status")
       .default("none")
       .notNull(),
