@@ -164,10 +164,10 @@ export function BentoGrids({
                 aria-label="Try it with your camera"
               >
                 <span className="border-b border-gray-300 pb-[3px] align-baseline">
-                  Try it with your camera{" "}
+                  Try it with your camera{" "}<span className="hidden sm:inline">→</span>
                 </span>
               </TrackedButton>
-              <span className="hidden sm:inline text-xl font-extralight text-gray-950 align-baseline">
+              <span className="hidden sm:inline text-xl font-extralight text-gray-950 align-baseline pb-1">
                 or explore community creations below
               </span>
             </div>
