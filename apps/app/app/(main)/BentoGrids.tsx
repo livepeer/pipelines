@@ -159,13 +159,13 @@ export function BentoGrids({
                 variant="ghost"
                 trackingEvent="try_camera_click"
                 className={cn(
-                  "px-0 py-0 text-2xl font-normal h-auto leading-none flex items-center",
+                  "px-2 py-0 text-xl font-normal h-auto leading-none font-extralight text-gray-950 flex items-center underline",
                 )}
                 aria-label="Try it with your camera"
               >
                 Try it with your camera
               </TrackedButton>
-              <span className="hidden sm:inline text-2xl font-normal text-gray-900">
+              <span className="hidden sm:inline text-xxl font-normal text-gray-900">
                 or explore community creations below
               </span>
             </div>
