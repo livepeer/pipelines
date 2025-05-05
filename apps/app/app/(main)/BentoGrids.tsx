@@ -209,7 +209,7 @@ export function BentoGrids({
           ) : hasMore && (!isOverlayMode || initialClips.length === 0) ? (
             <p className="text-gray-500 font-light">Scroll for more</p>
           ) : (
-            <NoMoreClipsFooter />
+            <NoMoreClipsFooter isOverlayMode={isOverlayMode} />
           )}
           <div
             aria-hidden="true"
