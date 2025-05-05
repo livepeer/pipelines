@@ -233,7 +233,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     userId = privyUser.userId;
-    console.log(userId);
 
     const jsonData = await request.json();
 

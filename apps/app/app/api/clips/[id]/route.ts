@@ -1,7 +1,11 @@
 import { z } from "zod";
 import { getPrivyUser } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { clips as clipsTable, users as usersTable } from "@/lib/db/schema";
+import {
+  clips as clipsTable,
+  clipStatusEnum,
+  users as usersTable,
+} from "@/lib/db/schema";
 import { buildFilePath, makePublicFromfileUrl } from "@/lib/storage/gcp";
 import { and, eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
@@ -197,7 +201,7 @@ export async function PATCH(
     const updates: Partial<{
       video_url: string;
       thumbnail_url: string;
-      status: "completed" | "failed";
+      status: (typeof clipStatusEnum.enumValues)[number];
       updated_at: Date;
     }> = {};
 
@@ -213,7 +217,8 @@ export async function PATCH(
     }
 
     if (updateData.status !== undefined) {
-      updates.status = updateData.status as "completed" | "failed";
+      updates.status =
+        updateData.status as (typeof clipStatusEnum.enumValues)[number];
     }
 
     if (Object.keys(updates).length > 0) {
