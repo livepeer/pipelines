@@ -43,8 +43,6 @@ export interface BentoGridsProps {
   hasCapacity?: boolean;
 }
 
-
-
 export function BentoGrids({
   initialClips,
   isOverlayMode = false,
@@ -120,18 +118,16 @@ export function BentoGrids({
 
   const groupedClips = chunkArray(clips, 4);
 
+  const handleTryWithCameraClick = (e: React.MouseEvent) => {
+    e.preventDefault();
 
-
-const handleTryWithCameraClick = (e: React.MouseEvent) => {
-  e.preventDefault();
-
-  if (!hasCapacity) {
-    track("capacity_create_blocked", { location: "header" });
-    setIsCapacityModalOpen(true);
-  } else {
-    router.push("/create");
-  }
-};
+    if (!hasCapacity) {
+      track("capacity_create_blocked", { location: "header" });
+      setIsCapacityModalOpen(true);
+    } else {
+      router.push("/create");
+    }
+  };
 
   return (
     <div className="bg-transparent py-8 z-10">

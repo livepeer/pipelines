@@ -69,8 +69,8 @@ export default function Daydream({
     );
   }
 
-  // If in guest mode and coming from "Try this prompt", allow access to create page
-  if (isGuestUser && inputPrompt && ready) {
+  // If in guest mode and coming from a "Create" or "Try this prompt" CTA, allow access to create page
+  if (isGuestUser && ready) {
     return (
       <OnboardProvider hasSharedPrompt={hasSharedPrompt || !!inputPrompt}>
         <DaydreamRenderer isGuestMode={true} />
@@ -78,7 +78,7 @@ export default function Daydream({
     );
   }
 
-  // If the user is not logged in, show the login screen
+  // Catchall for unauthed users that somehow escape the condition above - if the user is not logged in, show the login screen
   if (!user) {
     return (
       <LayoutWrapper>
