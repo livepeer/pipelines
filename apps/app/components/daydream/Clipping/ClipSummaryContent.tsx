@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { ClipData } from "./types";
 import { Switch } from "@repo/design-system/components/ui/switch";
 import { usePromptStore } from "@/hooks/usePromptStore";
+import { TrackedButton } from "@/components/analytics/TrackedButton";
 
 interface ClipSummaryContentProps {
   clipData: ClipData;
@@ -146,7 +147,7 @@ export function ClipSummaryContent({
   };
 
   return (
-    <DialogContent className="h-fit max-h-[90dvh] w-[calc(100%-32px)] sm:w-full sm:max-w-[55dvh] mx-auto rounded-xl p-4 pt-5 sm:p-5">
+    <DialogContent className="h-fit max-h-[100dvh] overflow-y-auto w-[calc(100%-32px)] sm:w-full sm:max-w-[55dvh] mx-auto rounded-xl p-4 pt-5 sm:p-5">
       <DialogHeader className="flex items-center mb-1">
         <DialogTitle className="text-xl sm:text-2xl">
           Almost Ready to Share!
@@ -193,13 +194,17 @@ export function ClipSummaryContent({
       </div>
 
       <div className="w-full mt-3">
-        <Button
+        <TrackedButton
+          trackingEvent="daydream_clip_modal_next_clicked"
+          trackingProperties={{
+            submit_to_be_featured: isFeatured,
+          }}
           onClick={handleNext}
           className="w-full items-center justify-center gap-2 rounded-md h-[40px] sm:h-[44px]"
           disabled={isUploading}
         >
           {isUploading ? "Processing..." : "Next"}
-        </Button>
+        </TrackedButton>
       </div>
     </DialogContent>
   );

@@ -158,6 +158,13 @@ function DaydreamRenderer({ isGuestMode = false }: { isGuestMode?: boolean }) {
           isNewUser ? submitToHubspot(user) : Promise.resolve(),
         ]);
 
+        if (isNewUser) {
+          track("user_account_created", {
+            user_id: user.id,
+            distinct_id: distinctId,
+          });
+        }
+
         track("user_logged_in", {
           user_id: user.id,
           distinct_id: distinctId,
