@@ -325,7 +325,7 @@ export async function POST(request: NextRequest) {
             thumbnail_url: finalThumbnailUrl || null,
             author_user_id: userId,
             source_clip_id: remixedClipId ? Number(remixedClipId) : null,
-            prompt: prompt || null,
+            prompt: prompt || "",
             status: "completed",
             approval_status: isFeatured ? "pending" : "none",
           })
