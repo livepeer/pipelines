@@ -163,14 +163,7 @@ export function BentoGrids({
               >
                 Try it with your camera
               </TrackedButton>
-              <TrackedButton
-                variant="ghost"
-                trackingEvent="discover_creations_click"
-                className="px-6 py-2 text-sm font-medium text-gray-900 border border-gray-900 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
-                aria-label="Explore creations below"
-              >
-                Discover community creations below
-              </TrackedButton>
+              <span className="hidden sm:inline text-gray-900">or explore community creations below</span>
             </div>
           </div>
         </>
