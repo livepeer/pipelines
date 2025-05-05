@@ -159,7 +159,7 @@ export function BentoGrids({
                 variant="ghost"
                 trackingEvent="try_camera_click"
                 className={cn(
-                  "px-0 py-0 text-2xl font-normal h-auto leading-none flex items-center"
+                  "px-0 py-0 text-2xl font-normal h-auto leading-none flex items-center",
                 )}
                 aria-label="Try it with your camera"
               >
