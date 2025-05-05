@@ -31,6 +31,7 @@ export interface BentoGridsProps {
     remix_count: number;
     slug: string | null;
     priority: number | null;
+    is_tutorial?: boolean;
   }>;
   isOverlayMode?: boolean;
   onTryPrompt?: (prompt: string) => void;

@@ -11,6 +11,7 @@ export type Clip = {
   remix_count: number;
   slug: string | null;
   priority: number | null;
+  is_tutorial?: boolean;
 };
 
 export default function useClipsFetcher(initialClips: Clip[] = []) {
@@ -42,6 +43,7 @@ export default function useClipsFetcher(initialClips: Clip[] = []) {
             author_details?: Record<string, any>;
             remix_count: number;
             slug: string | null;
+            is_tutorial?: boolean;
             [key: string]: any;
           }) => ({
             ...clip,
@@ -56,6 +58,7 @@ export default function useClipsFetcher(initialClips: Clip[] = []) {
             author_details: clip.author_details,
             remix_count: clip.remix_count,
             slug: clip.slug,
+            is_tutorial: clip.is_tutorial || false,
           }),
         );
 
