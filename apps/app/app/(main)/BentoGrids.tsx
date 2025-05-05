@@ -2,7 +2,7 @@
 
 import { usePreviewStore } from "@/hooks/usePreviewStore";
 import { cn } from "@repo/design-system/lib/utils";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { TrackedLink } from "@/components/analytics/TrackedLink";
 import { useTrackEvent } from "@/hooks/useTrackEvent";
@@ -12,6 +12,9 @@ import NoMoreClipsFooter from "./NoMoreClipsFooter";
 import OptimizedVideo from "./OptimizedVideo";
 import { useOverlayStore } from "@/hooks/useOverlayStore";
 import { TrackedButton } from "@/components/analytics/TrackedButton";
+import { useCapacityCheck } from "@/hooks/useCapacityCheck";
+import track from "@/lib/track";
+import { useRouter } from "next/navigation";
 
 function chunkArray<T>(array: T[], size: number): T[][] {
   const result: T[][] = [];
@@ -40,6 +43,8 @@ export interface BentoGridsProps {
   hasCapacity?: boolean;
 }
 
+
+
 export function BentoGrids({
   initialClips,
   isOverlayMode = false,
@@ -55,9 +60,10 @@ export function BentoGrids({
   const { trackAction } = useTrackEvent("explore_scroll_interaction", {
     location: "explore_bento_grid_scroll",
   });
-
+  const router = useRouter();
   const searchParams = useSearchParams();
   const isDebug = searchParams.has("debug");
+  const [isCapacityModalOpen, setIsCapacityModalOpen] = useState(false);
 
   useEffect(() => {
     if (onClipsLoaded && clips.length > 0) {
@@ -114,6 +120,19 @@ export function BentoGrids({
 
   const groupedClips = chunkArray(clips, 4);
 
+
+
+const handleTryWithCameraClick = (e: React.MouseEvent) => {
+  e.preventDefault();
+
+  if (!hasCapacity) {
+    track("capacity_create_blocked", { location: "header" });
+    setIsCapacityModalOpen(true);
+  } else {
+    router.push("/create");
+  }
+};
+
   return (
     <div className="bg-transparent py-8 z-10">
       <div
@@ -162,6 +181,7 @@ export function BentoGrids({
                   "px-2 py-2 text-xl font-normal h-auto leading-none font-extralight text-gray-950 flex items-center align-baseline",
                 )}
                 aria-label="Try it with your camera"
+                onClick={handleTryWithCameraClick}
               >
                 <span className="border-b border-gray-300 pb-[3px] align-baseline">
                   Try with your camera{" "}
