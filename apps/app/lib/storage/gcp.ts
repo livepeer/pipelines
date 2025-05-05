@@ -17,6 +17,12 @@ try {
 
 const bucketName = gcpConfig.bucketName || "daydream-clips";
 
+export async function makePublicFromfileUrl(filePath: string) {
+  const bucket = storage.bucket(bucketName);
+  const file = bucket.file(filePath.split(`${bucketName}/`)[1]!);
+  await file.makePublic();
+}
+
 export function getPublicUrl(path: string): string {
   return `https://storage.googleapis.com/${bucketName}/${path}`;
 }
@@ -83,28 +89,12 @@ export async function generatePresignedUploadUrl(
   }
 }
 
-export function buildClipPath(
+export function buildFilePath(
   userId: string,
   clipId: string | number,
-  filename: string = "clip.mp4",
-): string {
-  const id = clipId;
-
-  return `clips/${userId}/${id}/${filename}`;
-}
-
-function buildThumbnailPath(userId: string, clipId: string | number): string {
-  return `clips/${userId}/${clipId}/thumbnail.jpg`;
-}
-
-export function buildThumbnailUrl(
-  userId: string,
-  clipId: string | number,
-): string {
-  return `https://storage.googleapis.com/${bucketName}/${buildThumbnailPath(
-    userId,
-    clipId,
-  )}`;
+  filename: string,
+) {
+  return `clips/${userId}/${String(clipId)}/${filename}`;
 }
 
 export async function deleteFromGCS(path: string): Promise<void> {
