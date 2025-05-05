@@ -51,12 +51,12 @@ export default function Daydream({
     }
   }, [authenticated, user, isGuestUser, setIsGuestUser]);
 
-  // If guest access is allowed and input prompt exists, enable guest mode
+  // If guest access is allowed, enable guest mode
   useEffect(() => {
-    if (allowGuestAccess && inputPrompt && !user && ready) {
+    if (allowGuestAccess && !user && ready) {
       setIsGuestUser(true);
     }
-  }, [allowGuestAccess, inputPrompt, user, setIsGuestUser]);
+  }, [allowGuestAccess, user, setIsGuestUser]);
 
   // If the user is not ready, show a loading screen
   if (!ready) {
