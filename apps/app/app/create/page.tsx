@@ -41,7 +41,7 @@ export default function HomePage({
   };
 }) {
   const { shared, privy_oauth_code, inputPrompt } = searchParams;
-  const isGuestAccess = !!inputPrompt; // If there's an inputPrompt, the user is coming from "Try this prompt"
+  const isGuestAccess = true; // !!inputPrompt; // If there's an inputPrompt, the user is coming from "Try this prompt"
 
   return (
     <Daydream
