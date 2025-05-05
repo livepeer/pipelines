@@ -190,6 +190,7 @@ export function BentoGrids({
                     prompt={clip.prompt}
                     createdAt={clip.created_at}
                     remixCount={clip.remix_count}
+                    isTutorial={clip.is_tutorial}
                     className={`${index % 2 === 0 ? "lg:row-span-2" : ""} cursor-pointer`}
                     isDebug={isDebug}
                     overallIndex={overallIndex}
@@ -237,6 +238,7 @@ function GridItem({
   isOverlayMode = false,
   onTryPrompt,
   hasCapacity,
+  isTutorial,
 }: {
   clipId: string;
   src: string;
@@ -253,6 +255,7 @@ function GridItem({
   authorDetails?: Record<string, any>;
   onTryPrompt?: (prompt: string) => void;
   hasCapacity?: boolean;
+  isTutorial?: boolean;
 }) {
   const href = slug ? `/clip/${slug}` : `/clip/id/${clipId}`;
   const { isPreviewOpen } = usePreviewStore();
@@ -298,6 +301,7 @@ function GridItem({
           isOverlayMode={isOverlayMode}
           onTryPrompt={onTryPrompt}
           hasCapacity={hasCapacity}
+          isTutorial={isTutorial}
         />
       </div>
 

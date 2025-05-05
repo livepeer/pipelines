@@ -113,6 +113,7 @@ export default function ClipsAdminPage() {
         "prompt",
         "priority",
         "approval_status",
+        "is_tutorial",
       ];
 
       Object.keys(fieldsToUpdate).forEach(key => {
@@ -204,6 +205,7 @@ export default function ClipsAdminPage() {
       prompt: "",
       created_at: new Date().toISOString(),
       approval_status: "none",
+      is_tutorial: false,
     };
 
     setSelectedClip(newClip);

@@ -29,6 +29,7 @@ export async function GET(
         author_details: usersTable.additionalDetails,
         created_at: clipsTable.created_at,
         prompt: clipsTable.prompt,
+        is_tutorial: clipsTable.is_tutorial,
       })
       .from(clipsTable)
       .innerJoin(usersTable, eq(clipsTable.author_user_id, usersTable.id))
@@ -68,6 +69,7 @@ export async function GET(
       authorDetails: clip.author_details,
       createdAt: clip.created_at,
       prompt: clip.prompt,
+      isTutorial: clip.is_tutorial,
     });
   } catch (error) {
     console.error("Error fetching clip:", error);

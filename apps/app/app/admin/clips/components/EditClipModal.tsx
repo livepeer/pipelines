@@ -38,6 +38,7 @@ export default function EditClipModal({
         prompt: clip.prompt,
         priority: clip.priority,
         approval_status: clip.approval_status,
+        is_tutorial: clip.is_tutorial,
       });
       setSelectedUserName(null);
     } else {
@@ -65,6 +66,11 @@ export default function EditClipModal({
       setFormData(prev => ({
         ...prev,
         [name]: value,
+      }));
+    } else if (name === "is_tutorial") {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value === "true",
       }));
     } else {
       setFormData(prev => ({
@@ -179,6 +185,38 @@ export default function EditClipModal({
 
                 <form onSubmit={handleSubmit} className="mt-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex flex-col md:flex-row items-center col-span-2 space-y-2 md:space-y-0 md:space-x-4">
+                      <label className="block text-sm font-medium text-gray-700">
+                        Is Tutorial Video
+                      </label>
+                      <div className="flex space-x-4">
+                        <label className="flex items-center gap-2">
+                          <input
+                            type="radio"
+                            name="is_tutorial"
+                            value="true"
+                            checked={formData.is_tutorial === true}
+                            onChange={handleChange}
+                            className="form-radio h-5 w-5 text-blue-600"
+                          />
+                          <span className="text-sm">True</span>
+                        </label>
+                      </div>
+                      <div className="flex space-x-4">
+                        <label className="flex items-center gap-2">
+                          <input
+                            type="radio"
+                            name="is_tutorial"
+                            value="false"
+                            checked={formData.is_tutorial === false}
+                            onChange={handleChange}
+                            className="form-radio h-5 w-5 text-blue-600"
+                          />
+                          <span className="text-sm">False</span>
+                        </label>
+                      </div>
+                    </div>
+
                     <div className="col-span-1">
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Approval Status

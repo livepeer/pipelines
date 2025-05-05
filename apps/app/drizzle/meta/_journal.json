@@ -57,6 +57,13 @@
       "when": 1745977765564,
       "tag": "0007_perpetual_dragon_lord",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1746424466073,
+      "tag": "0008_loud_lockjaw",
+      "breakpoints": true
     }
   ]
 }

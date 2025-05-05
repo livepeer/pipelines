@@ -96,6 +96,7 @@ export async function GET(request: Request) {
       remix_count: clipsTable.remix_count,
       slug: clipSlugsTable.slug,
       priority: clipsTable.priority,
+      is_tutorial: clipsTable.is_tutorial,
     };
 
     const prioritizedClips = (await db

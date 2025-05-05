@@ -21,6 +21,7 @@ type InitialFetchedClip = {
   author_details: Record<string, any> | null;
   slug: string | null;
   priority: number | null;
+  is_tutorial: boolean;
 };
 
 async function getInitialClips() {
@@ -35,6 +36,7 @@ async function getInitialClips() {
     author_details: usersTable.additionalDetails,
     slug: clipSlugsTable.slug,
     priority: clipsTable.priority,
+    is_tutorial: clipsTable.is_tutorial,
   };
 
   const prioritizedClips = (await db
@@ -145,6 +147,7 @@ async function getInitialClips() {
     remix_count: clip.remix_count,
     slug: clip.slug,
     priority: clip.priority,
+    is_tutorial: clip.is_tutorial,
   }));
 }
 

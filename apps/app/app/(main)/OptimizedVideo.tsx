@@ -2,7 +2,7 @@ import { GradientAvatar } from "@/components/GradientAvatar";
 import { usePreviewStore } from "@/hooks/usePreviewStore";
 import { useOverlayStore } from "@/hooks/useOverlayStore";
 import { cn } from "@repo/design-system/lib/utils";
-import { Repeat } from "lucide-react";
+import { PlayCircle, Repeat } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { TrackedButton } from "@/components/analytics/TrackedButton";
 import { TrackedLink } from "@/components/analytics/TrackedLink";
@@ -34,6 +34,7 @@ interface OptimizedVideoProps {
   isOverlayMode?: boolean;
   onTryPrompt?: (prompt: string) => void;
   hasCapacity?: boolean;
+  isTutorial?: boolean;
 }
 
 export default function OptimizedVideo({
@@ -50,6 +51,7 @@ export default function OptimizedVideo({
   isOverlayMode = false,
   onTryPrompt,
   hasCapacity = true,
+  isTutorial = false,
 }: OptimizedVideoProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isNearViewport, setIsNearViewport] = useState(false);
@@ -230,7 +232,24 @@ export default function OptimizedVideo({
               onClick={e => e.stopPropagation()}
             >
               <div onClick={e => e.stopPropagation()}>
-                {isOverlayMode && onTryPrompt && prompt ? (
+                {isTutorial ? (
+                  <TrackedButton
+                    trackingEvent="tutorial_video_clicked"
+                    trackingProperties={{ location: "video_card" }}
+                    variant="outline"
+                    className="inline-flex items-center space-x-0.5 px-3 py-2 h-8 bg-black/20 backdrop-blur-md text-white rounded-full border-white border shadow-sm scale-90"
+                    onClick={e => {
+                      e.stopPropagation();
+                      router.push(`/clips/${slug || clipId}`);
+                    }}
+                  >
+                    {/* Our default button overrides the size of child SVGs. Rather than change the button, I've overridden the CSS here. */}
+                    <PlayCircle className={cn("!w-3 !h-3")} />
+                    <span className="text-[0.7rem] tracking-wide">
+                      Tutorial
+                    </span>
+                  </TrackedButton>
+                ) : isOverlayMode && onTryPrompt && prompt ? (
                   <TrackedButton
                     trackingEvent="overlay_try_prompt_clicked"
                     trackingProperties={{ location: "overlay_video_card" }}
