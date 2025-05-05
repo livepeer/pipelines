@@ -18,6 +18,24 @@ interface ClipSummaryContentProps {
   setClipData: (clipData: ClipData) => void;
 }
 
+const uploadWithPresignedUrl = async (url: string, blob: Blob) => {
+  const response = await fetch(url, {
+    method: "PUT",
+    body: blob,
+    headers: {
+      "Content-Type": blob.type,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      `Failed to upload to presigned URL: ${response.status} ${response.statusText}`,
+    );
+  }
+
+  return response;
+};
+
 export function ClipSummaryContent({
   clipData,
   setClipStep,
@@ -32,145 +50,94 @@ export function ClipSummaryContent({
       ? localStorage.getItem("daydream_pending_clip_prompt")
       : null;
 
-  const uploadWithPresignedUrl = async (url: string, blob: Blob) => {
-    const response = await fetch(url, {
-      method: "PUT",
-      body: blob,
-      headers: {
-        "Content-Type": blob.type,
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(
-        `Failed to upload to presigned URL: ${response.status} ${response.statusText}`,
-      );
-    }
-
-    return response;
-  };
-
   const handleNext = async () => {
+    let clipId;
+
     if (clipData.clipUrl && clipData.clipFilename) {
       try {
         setIsUploading(true);
 
-        // Fetch the blob from the URL
-        const response = await fetch(clipData.clipUrl);
-        const blob = await response.blob();
+        const videoBlob = await (await fetch(clipData.clipUrl)).blob();
+        const thumbnailBlob =
+          clipData.thumbnailUrl &&
+          (await (await fetch(clipData.thumbnailUrl)).blob());
 
-        // Get a presigned URL for uploading the clip
-        const presignedResponse = await fetch("/api/clips/presigned-upload", {
+        const response = await fetch("/api/clips", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            contentType: blob.type,
+            contentType: videoBlob.type,
             filename: clipData.clipFilename,
+            prompt:
+              clipData.lastSubmittedPrompt ||
+              lastSubmittedPrompt ||
+              storedPrompt ||
+              "",
+            isFeatured,
           }),
         });
 
-        if (!presignedResponse.ok) {
-          throw new Error("Failed to get presigned URL");
-        }
-
-        const presignedData = await presignedResponse.json();
-
-        // Upload the clip directly to Google Cloud Storage
-        await uploadWithPresignedUrl(presignedData.uploadUrl, blob);
-
-        // Get the public URL of the uploaded clip (use the one provided by the API)
-        const gcsPublicUrl = presignedData.publicUrl;
-
-        // Upload thumbnail if available
-        let thumbnailUrl = null;
-        let thumbnailPath = null;
-        if (clipData.thumbnailUrl) {
-          try {
-            const thumbnailResponse = await fetch(clipData.thumbnailUrl);
-            const thumbnailBlob = await thumbnailResponse.blob();
-
-            // Get a presigned URL for uploading the thumbnail
-            const thumbnailPresignedResponse = await fetch(
-              "/api/clips/presigned-thumbnail",
-              {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                  clipId: presignedData.clipId,
-                  contentType: "image/jpeg",
-                }),
-              },
-            );
-
-            if (thumbnailPresignedResponse.ok) {
-              const thumbnailPresignedData =
-                await thumbnailPresignedResponse.json();
-
-              // Upload the thumbnail directly to Google Cloud Storage
-              await uploadWithPresignedUrl(
-                thumbnailPresignedData.uploadUrl,
-                thumbnailBlob,
-              );
-
-              // Get the public URL of the uploaded thumbnail (use the one provided by the API)
-              thumbnailUrl = thumbnailPresignedData.publicUrl;
-              thumbnailPath = thumbnailPresignedData.thumbnailPath;
-            }
-          } catch (thumbnailError) {
-            console.error("Error uploading thumbnail:", thumbnailError);
-          }
-        }
-
-        // Notify the server that uploads are complete and create database entries
-        const finalizationData = {
-          clipId: presignedData.clipId,
-          videoUrl: gcsPublicUrl,
+        const {
+          videoUploadUrl,
+          thumbnailUploadUrl,
+          videoUrl,
           thumbnailUrl,
-          isFeatured,
-          prompt:
-            clipData.lastSubmittedPrompt ||
-            lastSubmittedPrompt ||
-            storedPrompt ||
-            "",
-          filePath: presignedData.filePath,
-          thumbnailPath,
-        };
+          slug,
+          id,
+        } = await response.json();
 
-        const apiResponse = await fetch("/api/clips", {
-          method: "POST",
+        clipId = id;
+
+        const uploadPromises = [];
+        uploadPromises.push(uploadWithPresignedUrl(videoUploadUrl, videoBlob));
+        if (thumbnailBlob) {
+          uploadPromises.push(
+            await uploadWithPresignedUrl(thumbnailUploadUrl, thumbnailBlob),
+          );
+        }
+
+        await Promise.all(uploadPromises);
+
+        await fetch(`/api/clips/${clipId}`, {
+          method: "PATCH",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(finalizationData),
+          body: JSON.stringify({
+            videoUrl,
+            thumbnailUrl,
+            status: "completed",
+          }),
         });
 
-        if (apiResponse.ok) {
-          if (storedPrompt) {
-            localStorage.removeItem("daydream_pending_clip_prompt");
-          }
-
-          const data = await apiResponse.json();
-          if (!data.success) {
-            throw new Error("Failed to finalize clip");
-          }
-
-          setClipData({
-            ...clipData,
-            serverClipUrl: data.clip?.videoUrl,
-            slug: data.clip?.slug,
-          });
-
-          setClipStep("share");
-        } else {
-          console.error("Failed to finalize clip");
-          toast.error("Failed to process clip");
+        if (storedPrompt) {
+          localStorage.removeItem("daydream_pending_clip_prompt");
         }
+
+        setClipData({
+          ...clipData,
+          serverClipUrl: videoUrl,
+          slug,
+        });
+
+        setClipStep("share");
       } catch (error) {
         console.error("Error uploading clip:", error);
+
+        if (clipId) {
+          await fetch(`/api/clips/${clipId}`, {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              status: "failed",
+            }),
+          });
+        }
+
         toast.error("Failed to upload clip");
       } finally {
         setIsUploading(false);

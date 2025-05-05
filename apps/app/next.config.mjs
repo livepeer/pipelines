@@ -1,5 +1,9 @@
-const config = {
+import { withAxiom } from "next-axiom";
+
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   reactStrictMode: false,
+  transpilePackages: ["@livepeer/react", "@livepeer/core"],
   images: {
     remotePatterns: [
       {
@@ -14,7 +18,48 @@ const config = {
   },
   experimental: {
     missingSuspenseWithCSRBailout: false,
+    serverActions: {
+      allowedOrigins: [
+        "localhost:3000",
+        "*.livepeer.monster",
+        "*.vercel.app",
+        "*.livepeer.org",
+        "*.daydream.live",
+      ],
+    },
+  },
+  async headers() {
+    return [
+      {
+        // Apply FFmpeg required headers ONLY to specific admin tool paths
+        source: "/admin/tools/clip-preview-generator",
+        headers: [
+          {
+            key: "Cross-Origin-Embedder-Policy",
+            value: "credentialless",
+          },
+          {
+            key: "Cross-Origin-Opener-Policy",
+            value: "same-origin",
+          },
+        ],
+      },
+      {
+        // Apply FFmpeg required headers ONLY to specific admin tool paths
+        source: "/admin/tools/clip-approval-queue",
+        headers: [
+          {
+            key: "Cross-Origin-Embedder-Policy",
+            value: "credentialless",
+          },
+          {
+            key: "Cross-Origin-Opener-Policy",
+            value: "same-origin",
+          },
+        ],
+      },
+    ];
   },
 };
 
-export default config;
+export default withAxiom(nextConfig);

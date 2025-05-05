@@ -1,8 +1,13 @@
+import { z } from "zod";
 import { getPrivyUser } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { clips as clipsTable, users as usersTable } from "@/lib/db/schema";
-import { buildClipPath } from "@/lib/storage/gcp";
-import { eq } from "drizzle-orm";
+import {
+  clips as clipsTable,
+  clipStatusEnum,
+  users as usersTable,
+} from "@/lib/db/schema";
+import { buildFilePath, makePublicFromfileUrl } from "@/lib/storage/gcp";
+import { and, eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
@@ -47,7 +52,7 @@ export async function GET(
     if (canAccessNoWatermark) {
       const videoUrl = clip.video_url;
       if (videoUrl && videoUrl.includes("storage.googleapis.com")) {
-        const noWatermarkPath = buildClipPath(
+        const noWatermarkPath = buildFilePath(
           clip.author_user_id,
           clipId.toString(),
           "clip.mp4",
@@ -128,6 +133,137 @@ export async function DELETE(
     console.error("Error deleting clip:", error);
     return NextResponse.json(
       { error: "Failed to delete clip" },
+      { status: 500 },
+    );
+  }
+}
+
+const ClipUpdateSchema = z.object({
+  videoUrl: z.string().url({ message: "Invalid video URL format" }).optional(),
+  thumbnailUrl: z
+    .string()
+    .url({ message: "Invalid thumbnail URL format" })
+    .optional(),
+  status: z.string().min(1, { message: "Status cannot be empty" }).optional(),
+});
+
+export async function PATCH(
+  request: NextRequest,
+  {
+    params,
+  }: {
+    params: {
+      id: string;
+    };
+  },
+) {
+  const clipId = parseInt(params.id, 10);
+
+  if (isNaN(clipId)) {
+    return NextResponse.json({ error: "Invalid clip ID" }, { status: 400 });
+  }
+
+  let updateData: z.infer<typeof ClipUpdateSchema>;
+
+  try {
+    const jsonData = await request.json();
+    const validationResult = ClipUpdateSchema.safeParse(jsonData);
+
+    if (!validationResult.success) {
+      return NextResponse.json(
+        {
+          error: "Invalid request body",
+          details: validationResult.error.format(),
+        },
+        { status: 400 },
+      );
+    }
+
+    updateData = validationResult.data;
+
+    if (Object.keys(updateData).length === 0) {
+      return NextResponse.json(
+        {
+          error: "Invalid request body",
+          details:
+            "At least one field (videoUrl, thumbnailUrl, status) must be provided for update.",
+        },
+        { status: 400 },
+      );
+    }
+
+    const privyUser = await getPrivyUser();
+    if (!privyUser) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const userId = privyUser.userId;
+
+    const updates: Partial<{
+      video_url: string;
+      thumbnail_url: string;
+      status: (typeof clipStatusEnum.enumValues)[number];
+      updated_at: Date;
+    }> = {};
+
+    const promises = [];
+
+    if (updateData.videoUrl !== undefined) {
+      updates.video_url = updateData.videoUrl;
+      promises.push(makePublicFromfileUrl(updateData.videoUrl));
+    }
+    if (updateData.thumbnailUrl !== undefined) {
+      updates.thumbnail_url = updateData.thumbnailUrl;
+      promises.push(makePublicFromfileUrl(updateData.thumbnailUrl));
+    }
+
+    if (updateData.status !== undefined) {
+      updates.status =
+        updateData.status as (typeof clipStatusEnum.enumValues)[number];
+    }
+
+    if (Object.keys(updates).length > 0) {
+      updates.updated_at = new Date();
+    } else {
+      return NextResponse.json(
+        { error: "No fields to update" },
+        { status: 400 },
+      );
+    }
+
+    await Promise.all(promises);
+
+    const [updatedClip] = await db
+      .update(clipsTable)
+      .set(updates)
+      .where(
+        and(eq(clipsTable.id, clipId), eq(clipsTable.author_user_id, userId)),
+      )
+      .returning({
+        id: clipsTable.id,
+        status: clipsTable.status,
+        video_url: clipsTable.video_url,
+        thumbnail_url: clipsTable.thumbnail_url,
+      });
+
+    if (!updatedClip) {
+      throw new Error("Failed to update clip in database.");
+    }
+
+    console.log(`Clip ${clipId} updated successfully.`);
+
+    return NextResponse.json({ ...updatedClip });
+  } catch (error) {
+    console.error(`Error processing PATCH request for clip ${clipId}:`, error);
+
+    if (error instanceof SyntaxError) {
+      return NextResponse.json(
+        { error: "Invalid JSON in request body" },
+        { status: 400 },
+      );
+    }
+
+    return NextResponse.json(
+      { error: "Failed to update clip" },
       { status: 500 },
     );
   }
