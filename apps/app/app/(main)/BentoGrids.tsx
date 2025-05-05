@@ -156,9 +156,9 @@ export function BentoGrids({
           >
             <div className="flex flex-col sm:flex-row gap-4 mt-2">
               <TrackedButton
-                variant="outline"
+                variant="ghost"
                 trackingEvent="try_camera_click"
-                className="px-6 py-2 text-sm font-medium text-gray-900 border border-gray-900 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
+                className={cn("h-8 gap-2 relative overflow-hidden")}
                 aria-label="Try it with your camera"
               >
                 Try it with your camera
