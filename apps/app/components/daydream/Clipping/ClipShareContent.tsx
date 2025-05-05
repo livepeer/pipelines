@@ -11,6 +11,7 @@ import { CheckIcon, CopyIcon, DownloadIcon } from "lucide-react";
 import { ClipData } from "./types";
 import { toast } from "sonner";
 import useMobileStore from "@/hooks/useMobileStore";
+import { TrackedButton } from "@/components/analytics/TrackedButton";
 
 interface ClipShareContentProps {
   clipData: ClipData;
@@ -136,34 +137,50 @@ export default function ClipShareContent({ clipData }: ClipShareContentProps) {
           value={shareableUrl}
           className="flex-1 rounded-full py-6 px-8 pr-12 overflow-ellipsis"
         />
-        <Button
+        <TrackedButton
+          trackingEvent="daydream_clip_modal_share_clicked"
+          trackingProperties={{
+            method: "unique sharing link",
+          }}
           onClick={handleCopy}
           variant="link"
           className="absolute right-0"
         >
           {copied ? <CheckIcon /> : <CopyIcon />}
-        </Button>
+        </TrackedButton>
       </div>
 
       <p className="text-sm font-light">Share Directly to:</p>
 
       <div className="flex flex-row flex-wrap justify-center items-center gap-5">
-        <button
+        <TrackedButton
+          trackingEvent="daydream_clip_modal_share_clicked"
+          trackingProperties={{
+            method: "download",
+          }}
           onClick={() => handleDownload()}
-          className="animatedGradientButton w-12 h-12 !rounded-full bg-white border-2 border-transparent flex items-center justify-center relative overflow-hidden "
+          className="animatedGradientButton w-12 h-12 !rounded-full bg-white border-2 border-transparent flex items-center justify-center relative overflow-hidden hover:bg-background"
           aria-label="Download clip"
         >
           <DownloadIcon className="w-6 h-6 text-black" />
-        </button>
+        </TrackedButton>
 
-        <button
+        <TrackedButton
+          trackingEvent="daydream_clip_modal_share_clicked"
+          trackingProperties={{
+            method: "tiktok",
+          }}
           onClick={() => handleSocialShare("tiktok")}
           className="w-12 h-12 rounded-full flex items-center justify-center bg-black"
         >
           <TikTokIcon />
-        </button>
+        </TrackedButton>
 
-        <button
+        <TrackedButton
+          trackingEvent="daydream_clip_modal_share_clicked"
+          trackingProperties={{
+            method: "instagram",
+          }}
           onClick={() => handleSocialShare("instagram")}
           className="w-12 h-12 rounded-full flex items-center justify-center overflow-hidden"
           style={{
@@ -172,14 +189,18 @@ export default function ClipShareContent({ clipData }: ClipShareContentProps) {
           }}
         >
           <InstagramIcon />
-        </button>
+        </TrackedButton>
 
-        <button
+        <TrackedButton
+          trackingEvent="daydream_clip_modal_share_clicked"
+          trackingProperties={{
+            method: "X",
+          }}
           onClick={() => handleSocialShare("x")}
           className="w-12 h-12 rounded-full flex items-center justify-center bg-black"
         >
           <XIcon />
-        </button>
+        </TrackedButton>
       </div>
     </DialogContent>
   );
@@ -201,7 +222,7 @@ const InstagramIcon = () => (
 );
 
 const XIcon = () => (
-  <div className="relative w-6 h-6">
+  <div className="relative w-4 h-4">
     <svg
       viewBox="0 0 24 24"
       aria-hidden="true"
@@ -219,7 +240,7 @@ const XIcon = () => (
 );
 
 const TikTokIcon = () => (
-  <div className="relative w-6 h-6">
+  <div className="relative w-4 h-4">
     <svg
       width="24"
       height="24"
