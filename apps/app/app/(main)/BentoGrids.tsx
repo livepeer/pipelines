@@ -154,18 +154,18 @@ export function BentoGrids({
               isPreviewOpen && "opacity-0",
             )}
           >
-            <div className="flex flex-col sm:flex-row gap-4 mt-2 items-center">
+            <div className="flex flex-col sm:flex-row gap-0 mt-2 items-center">
               <TrackedButton
                 variant="ghost"
                 trackingEvent="try_camera_click"
                 className={cn(
-                  "px-2 py-0 text-xl font-normal h-auto leading-none font-extralight text-gray-950 flex items-center underline",
+                  "px-2 py-2 text-xl font-normal h-auto leading-none font-extralight text-gray-950 flex items-center",
                 )}
                 aria-label="Try it with your camera"
               >
-                Try it with your camera
+                <span className="border-b border-gray-300 pb-[3px]">Try it with your camera </span>
               </TrackedButton>
-              <span className="hidden sm:inline text-xxl font-normal text-gray-900">
+              <span className="hidden sm:inline text-xl font-extralight text-gray-950">
                 or explore community creations below
               </span>
             </div>
