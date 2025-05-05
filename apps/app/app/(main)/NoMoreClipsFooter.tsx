@@ -1,12 +1,27 @@
 "use client";
 
 import Link from "next/link";
-import { cn } from "@repo/design-system/lib/utils";
 import { Button } from "@repo/design-system/components/ui/button";
 import { usePrivy } from "@/hooks/usePrivy";
+import { useOverlayStore } from "@/hooks/useOverlayStore";
+import { useRouter } from "next/navigation";
 
-export default function NoMoreClipsFooter() {
+export default function NoMoreClipsFooter({
+  isOverlayMode = false,
+}: {
+  isOverlayMode?: boolean;
+}) {
   const { authenticated } = usePrivy();
+  const { closeOverlay } = useOverlayStore();
+  const router = useRouter();
+
+  const handleCTAClick = () => {
+    if (isOverlayMode) {
+      closeOverlay();
+    } else {
+      router.push("/create");
+    }
+  };
 
   return (
     <div className="relative w-full mt-[-12rem]">
@@ -41,22 +56,25 @@ export default function NoMoreClipsFooter() {
           Your adventure awaits
         </h2>
 
-        <Link href="/create" className="relative z-10 mt-12">
-          <Button
-            variant="outline"
-            className="alwaysAnimatedButton"
-            style={{
-              paddingTop: "20px",
-              paddingRight: "53px",
-              paddingBottom: "20px",
-              paddingLeft: "53px",
-              gap: "4px",
-              borderRadius: "8px",
-            }}
-          >
-            {authenticated ? "Create" : "Sign Up"}
-          </Button>
-        </Link>
+        <Button
+          variant="outline"
+          className="z-10 mt-12 alwaysAnimatedButton"
+          style={{
+            paddingTop: "20px",
+            paddingRight: "53px",
+            paddingBottom: "20px",
+            paddingLeft: "53px",
+            gap: "4px",
+            borderRadius: "8px",
+          }}
+          onClick={handleCTAClick}
+        >
+          {authenticated
+            ? isOverlayMode
+              ? "Continue Creating"
+              : "Create"
+            : "Sign Up"}
+        </Button>
       </div>
     </div>
   );
