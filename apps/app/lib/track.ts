@@ -1,3 +1,4 @@
+import mixpanel from "mixpanel-browser";
 import { getSharedParamsAuthor } from "@/app/api/streams/share-params";
 import { User } from "@/hooks/usePrivy";
 
@@ -103,7 +104,7 @@ const track = async (
       body: JSON.stringify({
         event: eventName,
         properties: {
-          distinct_id: user?.id,
+          distinct_id: user?.id || mixpanel.get_distinct_id(),
           referrer_type: referrerType,
           ...sharedInfo,
           ...browserInfo,
