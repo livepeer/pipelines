@@ -1,7 +1,7 @@
 import { usePrivy } from "@/hooks/usePrivy";
 import { useState, useEffect, useMemo } from "react";
 
-const UNREGISTERED_TIMEOUT_SECONDS = 3 * 60; // 3 minutes
+const UNREGISTERED_TIMEOUT_SECONDS = 500 * 60; // 3 minutes
 
 export function useTrialTimer() {
   const { authenticated, ready } = usePrivy();

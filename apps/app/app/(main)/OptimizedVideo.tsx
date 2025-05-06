@@ -209,22 +209,6 @@ export default function OptimizedVideo({
                   {authorName}
                 </span>
               </div>
-
-              <TooltipProvider delayDuration={0}>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div className="absolute bottom-3 right-4 p-0 z-10 flex gap-1 items-center bg-black/20 backdrop-blur-sm px-2 py-1 rounded-lg">
-                      <Repeat className="w-3 h-3 text-white" />
-                      <span className="text-white text-[0.64rem]">
-                        {remixCount}
-                      </span>
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Remixes</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
             </TrackedLink>
 
             <div

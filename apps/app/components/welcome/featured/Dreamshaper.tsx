@@ -35,6 +35,8 @@ import {
   DREAMSHAPER_PARAMS_VERSION_KEY,
 } from "@/hooks/useDreamshaper";
 import { PlayerOverlay } from "./PlayerOverlay";
+import { useCapacityCheck } from "@/hooks/useCapacityCheck";
+import { useSearchParams } from "next/navigation";
 
 interface DreamshaperProps {
   isGuestMode?: boolean;
@@ -60,8 +62,12 @@ export default function Dreamshaper({ isGuestMode = false }: DreamshaperProps) {
     setHasRecordedClip,
     setHasShared,
     lastPrompt,
+    setLastPrompt,
   } = useGuestUserStore();
   const { timeRemaining } = useTrialTimer();
+  const { hasCapacity: capacityCheckHasCapacity } = useCapacityCheck();
+  const searchParams = useSearchParams();
+  const inputPrompt = searchParams.get("inputPrompt");
 
   usePlayerPositionUpdater(playerRef);
 
@@ -290,6 +296,19 @@ export default function Dreamshaper({ isGuestMode = false }: DreamshaperProps) {
     }
   }, [capacityLoading, hasCapacity, authenticated, isGuestMode]);
 
+  useEffect(() => {
+    if (inputPrompt && handleStreamUpdate) {
+      handleStreamUpdate(inputPrompt, { silent: true });
+      setLastSubmittedPrompt(inputPrompt);
+      setHasSubmittedPrompt(true);
+      setLastPrompt(inputPrompt);
+
+      if (!authenticated) {
+        incrementPromptCount();
+      }
+    }
+  }, [inputPrompt]);
+
   const handleTutorialComplete = () => {
     setShowTutorial(false);
     localStorage.setItem("has_seen_tutorial", "true");
@@ -352,7 +371,7 @@ export default function Dreamshaper({ isGuestMode = false }: DreamshaperProps) {
   }
 
   return (
-    <div className="flex-1 flex flex-col pb-6 md:pb-0 h-screen overflow-y-auto">
+    <div className="flex-1 flex flex-col pb-6 pt-12 md:pb-0 h-screen overflow-y-auto">
       <div className={currentStep !== "main" ? "hidden" : "block"}>
         <div className="relative flex flex-col min-h-screen overflow-y-auto">
           <div
@@ -366,48 +385,58 @@ export default function Dreamshaper({ isGuestMode = false }: DreamshaperProps) {
             />
           </div>
 
-          <div
-            className={cn(
-              "px-4 my-4 flex items-center justify-center md:mb-0 md:my-2 mb-5",
-              isFullscreen && "fixed inset-0 z-[9999] p-0 m-0",
-            )}
-          >
-            <div
-              ref={playerRef}
-              className={cn(
-                "w-full max-w-[calc(min(100%,calc((100vh-16rem)*16/9)))] mx-auto md:aspect-video aspect-square bg-sidebar rounded-2xl overflow-hidden relative",
-                isFullscreen && "w-full h-full max-w-none rounded-none",
-                "md:min-w-[596px]",
-              )}
-            >
-              {hasCapacity ? (
-                <>
-                  <MainContent />
-                  {showTutorial && (
-                    <TutorialVideo onComplete={handleTutorialComplete} />
+          <div className="flex flex-1 gap-4">
+            {/* Main content area */}
+            <div className="flex-1">
+              <div
+                className={cn(
+                  "px-4 my-4 flex items-center justify-center md:mb-0 md:my-2 mb-5",
+                  isFullscreen && "fixed inset-0 z-[9999] p-0 m-0",
+                )}
+              >
+                <div
+                  ref={playerRef}
+                  className={cn(
+                    "w-full max-w-[calc(min(100%,calc((100vh-16rem)*16/9)))] mx-auto md:aspect-video aspect-square bg-sidebar rounded-2xl overflow-hidden relative",
+                    isFullscreen && "w-full h-full max-w-none rounded-none",
+                    "md:min-w-[596px]",
                   )}
-                </>
-              ) : (
-                <PlayerOverlay isLoading={capacityLoading} />
-              )}
+                >
+                  {hasCapacity ? (
+                    <>
+                      <MainContent
+                        stream={stream}
+                        isGuestMode={isGuestMode}
+                        hasCapacity={hasCapacity}
+                      />
+                      {showTutorial && (
+                        <TutorialVideo onComplete={handleTutorialComplete} />
+                      )}
+                    </>
+                  ) : (
+                    <PlayerOverlay isLoading={capacityLoading} />
+                  )}
 
-              {(forceError || errorState) && (
-                <PlayerOverlay isLoading={capacityLoading} error={true} />
-              )}
+                  {(forceError || errorState) && (
+                    <PlayerOverlay isLoading={capacityLoading} error={true} />
+                  )}
+                </div>
+              </div>
+
+              {/* Input and Broadcast Section */}
+              <div
+                className={
+                  !hasCapacity ? "opacity-0 pointer-events-none" : "opacity-100"
+                }
+              >
+                {!showTutorial && <ManagedBroadcast />}
+                {!showTutorial && (
+                  <ResponsiveInputPrompt onPromptSubmit={handleGuestPromptSubmit} />
+                )}
+              </div>
             </div>
           </div>
 
-          {/* Input and Broadcast Section */}
-          <div
-            className={
-              !hasCapacity ? "opacity-0 pointer-events-none" : "opacity-100"
-            }
-          >
-            {!showTutorial && <ManagedBroadcast />}
-            {!showTutorial && (
-              <ResponsiveInputPrompt onPromptSubmit={handleGuestPromptSubmit} />
-            )}
-          </div>
           <StreamDebugPanel />
         </div>
       </div>

@@ -98,21 +98,7 @@ export const Header = ({
     <>
       {!isMobile && (
         <div className="fixed top-4 right-4 z-50">
-          <Link target="_blank" href="https://discord.com/invite/hxyNHeSzCK">
-            <TrackedButton
-              trackingEvent="daydream_join_community_clicked"
-              trackingProperties={{
-                is_authenticated: authenticated,
-                is_guest_mode: isGuestMode,
-                location: "welcome_header",
-              }}
-              variant="outline"
-              className="alwaysAnimatedButton rounded-md"
-              size="sm"
-            >
-              <DiscordLogoIcon className="h-4 w-4" /> Join Discord
-            </TrackedButton>
-          </Link>
+          {/* Discord button removed */}
         </div>
       )}
 
@@ -120,25 +106,13 @@ export const Header = ({
         className={cn(
           "flex items-start w-full max-w-[calc(min(100%,calc((100vh-16rem)*16/9)))] mx-auto relative",
           isFullscreen && "hidden",
-          isMobile ? "justify-center px-3 py-3" : "justify-between py-3 mt-20",
+          isMobile ? "justify-center px-3 py-3" : "justify-between py-3 pt-6",
           isMinHeightScreen && "flex-col gap-6",
           "md:min-w-[596px]",
         )}
       >
         {/* Desktop Beta Badge */}
-        {!isMobile && !isFullscreen && (
-          <div className="fixed top-4 left-1/2 -translate-x-1/2 w-full flex justify-center">
-            <a
-              href="https://livepeer.notion.site/15f0a348568781aab037c863d91b05e2"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center px-4 py-1 rounded-full border border-blue-200 bg-white/70 backdrop-blur-sm text-blue-600 text-sm font-medium gap-2 shadow-sm hover:bg-white/90 transition-colors"
-            >
-              <span className="inline-block w-2 h-2 rounded-full bg-blue-500"></span>
-              We&apos;re in beta. Send us your feedback and ideas →
-            </a>
-          </div>
-        )}
+        {/* Beta badge now next to create clip button on desktop */}
 
         {/* Mobile Beta Badge */}
         {isMobile && !isFullscreen && (
@@ -157,31 +131,25 @@ export const Header = ({
 
         {!isMobile && !isFullscreen && (
           <>
-            <div className="absolute bottom-3 left-0 flex items-center">
-              <TrackedButton
-                trackingEvent="daydream_back_to_explore_clicked"
-                trackingProperties={{
-                  is_authenticated: authenticated,
-                  is_guest_mode: isGuestMode,
-                  via_overlay: true,
-                }}
-                variant="ghost"
-                size="sm"
-                className="h-8 gap-2 rounded-md"
-                onClick={handleExploreClick}
-              >
-                <ChevronLeft className="h-4 w-4" />
-                <span>Explore more prompts</span>
-              </TrackedButton>
-            </div>
-
             <div
               className={cn(
-                "absolute bottom-3 right-0 flex gap-2 items-center",
+                "absolute bottom-3 right-0 flex gap-2 items-center mt-12",
                 isMinHeightScreen && "relative",
               )}
             >
               <div className="flex items-center gap-2">
+                
+                {/* Beta badge next to create clip button */}
+                <a
+                  href="https://livepeer.notion.site/15f0a348568781aab037c863d91b05e2"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center px-4 py-1 rounded-full border border-blue-200 bg-white/70 backdrop-blur-sm text-blue-600 text-sm font-medium gap-2 shadow-sm hover:bg-white/90 transition-colors"
+                  style={{ marginLeft: 0 }}
+                >
+                  <span className="inline-block w-2 h-2 rounded-full bg-blue-500"></span>
+                  We&apos;re in beta. Send us your feedback and ideas →
+                </a>
                 {isGuestMode ? (
                   <ClipButton
                     trackAnalytics={track}
@@ -268,16 +236,6 @@ export const Header = ({
                 <Share2 className="h-4 w-4" />
               </Button>
             )}
-
-            <Link target="_blank" href="https://discord.com/invite/hxyNHeSzCK">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="p-0 m-0 bg-transparent border-none hover:bg-transparent focus:outline-none rounded-md"
-              >
-                <DiscordLogoIcon className="h-4 w-4" />
-              </Button>
-            </Link>
 
             <div className="flex items-center">
               <SidebarTrigger />

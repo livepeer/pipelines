@@ -15,6 +15,16 @@ interface SettingsMenuProps {
   originalPrompt?: string;
 }
 
+// Map internal param names to user-friendly display names
+function getDisplayName(paramName: string) {
+  const mapping: Record<string, string> = {
+    denoise: "Strength",
+    creativity: "Prompt Adherence",
+    quality: "Detail",
+  };
+  return mapping[paramName.toLowerCase()] || paramName;
+}
+
 function SettingsMenu({
   pipeline,
   inputValue,
@@ -33,37 +43,33 @@ function SettingsMenu({
 
   const hasSliderParams = sliderParams.length > 0;
 
+
+  
+
   return (
     <AnimatePresence>
       <motion.div
-        initial={{ opacity: 0, y: 10 }}
+        initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: 10 }}
+        exit={{ opacity: 0, y: -10 }}
         transition={{ duration: 0.2 }}
         className={cn(
-          "absolute bottom-full right-0 mb-2 w-64 bg-popover rounded-md border shadow-md z-50 p-3 pt-0 space-y-3",
+          "w-full bg-popover rounded-t-md border-b p-3 pt-0 space-y-3 mt-4",
           className,
         )}
       >
-        {/* Triangle pointer */}
-        <div className="absolute bottom-[-6px] right-3 w-3 h-3 bg-popover border-r border-b transform rotate-45 border-inherit"></div>
-
         {/* Close button */}
-        <Button
+        {/* <Button
           variant="ghost"
           size="icon"
-          className="absolute -top-2 -right-0 h-6 w-6 rounded-full p-0 bg-popover"
+          className="absolute top-2 right-2 h-6 w-6 rounded-full p-0"
           onClick={onClose}
         >
           <X className="h-3 w-3" />
-        </Button>
-
-        <div className="pb-2">
-          <h4 className="text-sm font-medium">Parameter Settings</h4>
-        </div>
+        </Button> */}
 
         {hasSliderParams ? (
-          <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-1 -mr-1">
+          <div className="flex flex-row gap-8 flex-wrap max-h-[60vh] overflow-y-auto pr-1 -mr-1">
             {sliderParams.map((param: any) => {
               const commandId = param.name.toLowerCase().replace(/\s+/g, "-");
               const min = param.widgetConfig?.min || 0;
@@ -92,25 +98,23 @@ function SettingsMenu({
                   : defaultValue;
 
               return (
-                <div key={param.name} className="space-y-1.5">
-                  <div className="flex justify-between items-center">
-                    <Label className="text-xs font-medium">{param.name}</Label>
-                    <span className="text-[10px] text-muted-foreground truncate ml-2 max-w-[60%]">
-                      {param.description}
-                    </span>
-                  </div>
-                  <div className="flex items-center py-2">
-                    <div className="relative w-full h-4">
+                <div key={param.name} className="flex flex-col w-[20%] flex-1">
+                  <Label className="text-sm font-medium mb-1 truncate">{getDisplayName(param.name)}</Label>
+                  {/* <span className="text-xs text-muted-foreground mt-1 text-right block min-h-[18px] min-w-[20%]">
+                    {param.description}
+                  </span> */}
+                  <div className="flex items-center w-full">
+                    <div className="relative w-full h-2">
                       {/* Progress fill - very subtle blue */}
                       <div
-                        className="absolute top-0 left-0 h-4 bg-primary/10 rounded-l-full z-30 mt-[2px] pointer-events-none"
+                        className="absolute top-0 left-0 h-2 bg-primary/10 rounded-l-full z-30 mt-[1px] pointer-events-none"
                         style={{
                           width: `${((currentValue - min) / (max - min)) * 100}%`,
                         }}
                       />
 
                       {/* Tick marks for steps */}
-                      <div className="absolute top-0 left-0 right-0 bottom-0 pointer-events-none z-20 overflow-hidden rounded-full mt-[4px]">
+                      {/* <div className="absolute top-0 left-0 right-0 bottom-0 pointer-events-none z-20 overflow-hidden rounded-full mt-[2px]">
                         {Array.from({
                           length: Math.min(
                             Math.ceil((max - min) / step) + 1,
@@ -150,22 +154,23 @@ function SettingsMenu({
                             />
                           );
                         })}
-                      </div>
+                      </div> */}
                       <input
                         type="range"
                         min={min}
                         max={max}
                         step={step}
                         className={cn(
-                          "w-full appearance-none h-4 rounded-full bg-muted relative z-10",
+                          "w-full appearance-none h-2 rounded-full bg-muted relative z-10",
                           "focus:outline-none",
-                          "[&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4",
+                          // Smaller thumb
+                          "[&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5",
                           "[&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary",
                           "[&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:border-0 [&::-webkit-slider-thumb]:relative [&::-webkit-slider-thumb]:z-50",
-                          "[&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:w-4",
+                          "[&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:w-5",
                           "[&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-primary",
                           "[&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:relative [&::-moz-range-thumb]:z-50",
-                          "[&::-ms-thumb]:appearance-none [&::-ms-thumb]:h-4 [&::-ms-thumb]:w-4",
+                          "[&::-ms-thumb]:appearance-none [&::-ms-thumb]:h-5 [&::-ms-thumb]:w-5",
                           "[&::-ms-thumb]:rounded-full [&::-ms-thumb]:bg-primary",
                           "[&::-ms-thumb]:cursor-pointer [&::-ms-thumb]:border-0 [&::-ms-thumb]:relative [&::-ms-thumb]:z-50",
                         )}
@@ -220,16 +225,40 @@ function SettingsMenu({
                       />
                     </div>
                   </div>
+                 
                 </div>
               );
             })}
+            {/* Negative Prompt text input */}
+            <div className="flex flex-col min-w-[180px] max-w-[240px] flex-1">
+              <Label className="text-sm font-medium mb-1 truncate">Exclude</Label>
+              <input
+                type="text"
+                className="w-full rounded-md border border-muted bg-background px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                placeholder="Enter negative prompt..."
+                value={(() => {
+                  const match = inputValue.match(/--negative-prompt\s+"([^"]*)"|--negative-prompt\s+([^\s]+)/);
+                  return match ? (match[1] ?? match[2] ?? "") : "";
+                })()}
+                onChange={e => {
+                  const value = e.target.value;
+                  // Remove any existing negative prompt command
+                  const promptWithoutNegative = inputValue.replace(/--negative-prompt\s+"[^"]*"|--negative-prompt\s+[^\s]+/g, '').trim();
+                  
+                  // Only add new negative prompt if there's a value
+                  if (value) {
+                    const newInput = promptWithoutNegative + (promptWithoutNegative ? ' ' : '') + `--negative-prompt "${value}"`;
+                    setInputValue(newInput);
+                  } else {
+                    setInputValue(promptWithoutNegative);
+                  }
+                }}
+              />
+              
+            </div>
           </div>
         ) : (
-          <div className="flex items-center justify-center py-6">
-            <span className="text-xs text-center text-muted-foreground">
-              No slider parameters available
-            </span>
-          </div>
+          <></>
         )}
       </motion.div>
     </AnimatePresence>

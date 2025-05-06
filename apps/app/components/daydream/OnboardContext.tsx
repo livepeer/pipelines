@@ -1,4 +1,8 @@
-import { createContext, useContext, useState, useMemo, ReactNode } from "react";
+"use client";
+
+import { createContext, useContext, useState, useEffect } from "react";
+import { usePrivy } from "@/hooks/usePrivy";
+import { useSearchParams } from "next/navigation";
 
 // Define the possible onboarding steps
 export type OnboardingStep = "persona" | "camera" | "prompt" | "main";
@@ -7,7 +11,7 @@ export type CameraPermission = "prompt" | "granted" | "denied";
 
 interface OnboardContextType {
   // Current step in the onboarding flow
-  currentStep: OnboardingStep;
+  currentStep: "welcome" | "main";
   // Initialization of user and camera permissions
   isInitializing: boolean;
   hasSharedPrompt: boolean;
@@ -23,7 +27,7 @@ interface OnboardContextType {
   // When a prompt is selected, we fade out the welcome screen
   isFadingOut: boolean;
   // Methods to update state
-  setCurrentStep: (step: OnboardingStep) => void;
+  setCurrentStep: (step: "welcome" | "main") => void;
   setCameraPermission: (permission: CameraPermission) => void;
   setSelectedPersonas: (
     personas: string[] | ((prev: string[]) => string[]),
@@ -43,14 +47,15 @@ const OnboardContext = createContext<OnboardContextType | undefined>(undefined);
 // Provider component
 export function OnboardProvider({
   children,
-  hasSharedPrompt,
+  hasSharedPrompt = false,
 }: {
-  children: ReactNode;
+  children: React.ReactNode;
   hasSharedPrompt: boolean;
 }) {
-  const [currentStep, setCurrentStep] = useState<OnboardingStep>("persona");
-  const [cameraPermission, setCameraPermission] =
-    useState<CameraPermission>("prompt");
+  const [currentStep, setCurrentStep] = useState<"welcome" | "main">("main");
+  const [cameraPermission, setCameraPermission] = useState<CameraPermission>("prompt");
+  const { user } = usePrivy();
+  const searchParams = useSearchParams();
   const [selectedPersonas, setSelectedPersonas] = useState<string[]>([]);
   const [customPersona, setCustomPersona] = useState<string>("");
   const [selectedPrompt, setSelectedPrompt] = useState<string | null>(null);
@@ -60,47 +65,41 @@ export function OnboardProvider({
   const [displayNameError, setDisplayNameError] = useState<string | null>(null);
   const [avatarSeed, setAvatarSeed] = useState("");
 
-  const value = useMemo(
-    () => ({
-      currentStep,
-      cameraPermission,
-      selectedPersonas,
-      customPersona,
-      selectedPrompt,
-      isInitializing,
-      isFadingOut,
-      displayName,
-      displayNameError,
-      avatarSeed,
-      setCurrentStep,
-      setCameraPermission,
-      setSelectedPersonas,
-      setCustomPersona,
-      setSelectedPrompt,
-      setIsInitializing,
-      setFadingOut,
-      setDisplayName,
-      setDisplayNameError,
-      setAvatarSeed,
-      hasSharedPrompt,
-    }),
-    [
-      currentStep,
-      cameraPermission,
-      selectedPersonas,
-      customPersona,
-      selectedPrompt,
-      isInitializing,
-      isFadingOut,
-      displayName,
-      displayNameError,
-      avatarSeed,
-      hasSharedPrompt,
-    ],
-  );
+  useEffect(() => {
+    // If user is authenticated or has a shared prompt, go straight to main
+    if (user?.id || hasSharedPrompt) {
+      setCurrentStep("main");
+    }
+  }, [user?.id, hasSharedPrompt]);
 
   return (
-    <OnboardContext.Provider value={value}>{children}</OnboardContext.Provider>
+    <OnboardContext.Provider
+      value={{
+        currentStep,
+        setCurrentStep,
+        cameraPermission,
+        setCameraPermission,
+        selectedPersonas,
+        customPersona,
+        selectedPrompt,
+        isInitializing,
+        isFadingOut,
+        displayName,
+        displayNameError,
+        avatarSeed,
+        setSelectedPersonas,
+        setCustomPersona,
+        setSelectedPrompt,
+        setIsInitializing,
+        setFadingOut,
+        setDisplayName,
+        setDisplayNameError,
+        setAvatarSeed,
+        hasSharedPrompt,
+      }}
+    >
+      {children}
+    </OnboardContext.Provider>
   );
 }
 

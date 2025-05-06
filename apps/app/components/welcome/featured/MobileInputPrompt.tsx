@@ -279,15 +279,25 @@ export const MobileInputPrompt = ({
   return (
     <div
       className={cn(
-        "relative mx-auto flex justify-center items-start gap-2 h-auto min-h-14 md:h-auto md:min-h-14 md:gap-2 mt-7 mb-2 dark:bg-[#1A1A1A] bg-[#fefefe] md:rounded-xl py-2.5 px-3 md:py-1.5 md:px-3 w-[calc(100%-2rem)] md:w-[calc(min(100%,800px))] border-2 border-muted-foreground/10",
+        "relative mx-auto flex flex-col justify-center items-start gap-2 h-auto min-h-14 md:h-auto md:min-h-14 md:gap-2 mt-7 mb-2 dark:bg-[#1A1A1A] bg-[#fefefe] md:rounded-xl py-2.5 px-3 md:py-1.5 md:px-3 w-[calc(100%-2rem)] md:w-[calc(min(100%,800px))] border-2 border-muted-foreground/10",
         isFullscreen
           ? "fixed left-1/2 bottom-[calc(env(safe-area-inset-bottom)+16px)] -translate-x-1/2 z-[10000] w-[600px] max-w-[calc(100%-2rem)] max-h-16 rounded-2xl"
           : "rounded-2xl shadow-[2px_6px_10px_0px_#37373F30]",
         (profanity || exceedsMaxLength) && "dark:border-red-700 border-red-600",
       )}
     >
+      {settingsOpened && (
+        <SettingsMenu
+          pipeline={pipeline}
+          inputValue={inputValue}
+          setInputValue={setInputValue}
+          onClose={() => setSettingsOpened(false)}
+          onSubmit={submitPrompt}
+          originalPrompt={lastSubmittedPrompt || undefined}
+        />
+      )}
       <div
-        className="flex-1 relative flex items-center"
+        className="flex-1 relative flex items-center w-full"
         onMouseEnter={() => setInputHovered(true)}
         onMouseLeave={() => setInputHovered(false)}
       >
@@ -332,100 +342,7 @@ export const MobileInputPrompt = ({
           />
         </div>
 
-        {commandMenuOpen && filteredOptions.length > 0 && (
-          <div
-            className="absolute z-50 bottom-full mb-2 w-60 bg-popover rounded-md border shadow-md"
-            style={{
-              left: caretRef.current?.left ?? 0,
-            }}
-          >
-            <div className="p-1">
-              {filteredOptions.map((option, index) => (
-                <button
-                  key={option.id}
-                  className={`flex w-full items-start gap-2 rounded-sm px-2 py-1.5 text-left text-sm ${
-                    index === selectedOptionIndex
-                      ? "bg-accent"
-                      : "hover:bg-accent"
-                  } focus:outline-none`}
-                  onClick={() => handleSelectOption(option)}
-                >
-                  <div className="flex flex-col">
-                    <div className="font-medium flex items-center">
-                      <span>--{option.id}</span>
-                      {option.type && (
-                        <span className="ml-1.5 text-muted-foreground opacity-70 text-xs">
-                          {option.type}
-                        </span>
-                      )}
-                    </div>
-                    {option.description && (
-                      <span className="text-xs text-muted-foreground">
-                        {option.description}
-                      </span>
-                    )}
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-
-      <div className="flex items-center self-stretch">
-        {inputValue ? (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 rounded-full"
-            onClick={e => {
-              e.preventDefault();
-              setInputValue("");
-            }}
-          >
-            <span className="text-muted-foreground text-lg">×</span>
-          </Button>
-        ) : lastSubmittedPrompt ? (
-          <Tooltip delayDuration={0}>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 rounded-full"
-                onClick={e => {
-                  e.stopPropagation();
-                  restoreLastPrompt();
-                }}
-                aria-label="Restore last prompt"
-              >
-                <span className="text-muted-foreground text-lg">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="h-4 w-4"
-                  >
-                    <path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-                    <path d="m15 5 4 4" />
-                  </svg>
-                </span>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent
-              side="top"
-              sideOffset={5}
-              className="bg-white text-black border border-gray-200 shadow-md dark:bg-zinc-900 dark:text-white dark:border-zinc-700"
-            >
-              Edit prompt
-            </TooltipContent>
-          </Tooltip>
-        ) : null}
-
-        <div className="relative">
+        <div className="flex items-center gap-1">
           <Tooltip delayDuration={50}>
             <TooltipTrigger asChild>
               <Button
@@ -448,52 +365,93 @@ export const MobileInputPrompt = ({
             </TooltipContent>
           </Tooltip>
 
-          {settingsOpened && (
-            <SettingsMenu
-              pipeline={pipeline}
-              inputValue={inputValue}
-              setInputValue={setInputValue}
-              onClose={() => setSettingsOpened(false)}
-              onSubmit={submitPrompt}
-              originalPrompt={lastSubmittedPrompt || undefined}
-            />
-          )}
-        </div>
+          <Separator orientation="vertical" className="h-6 mr-2" />
 
-        <Separator orientation="vertical" className="h-6 mr-2" />
-
-        <Tooltip delayDuration={50}>
-          <TooltipTrigger asChild>
-            <div className="relative inline-block">
-              <Button
-                disabled={
-                  updating || !inputValue || profanity || exceedsMaxLength
-                }
-                onClick={e => {
-                  e.preventDefault();
-                  submitPrompt();
-                }}
-                className={cn(
-                  "border-none items-center justify-center font-semibold text-xs bg-[#000000] flex disabled:bg-[#000000] disabled:opacity-80",
-                  "w-auto h-9 aspect-square rounded-md",
-                )}
+          {inputValue ? (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 rounded-full"
+              onClick={e => {
+                e.preventDefault();
+                setInputValue("");
+              }}
+            >
+              <span className="text-muted-foreground text-lg">×</span>
+            </Button>
+          ) : lastSubmittedPrompt ? (
+            <Tooltip delayDuration={0}>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 rounded-full"
+                  onClick={e => {
+                    e.stopPropagation();
+                    restoreLastPrompt();
+                  }}
+                  aria-label="Restore last prompt"
+                >
+                  <span className="text-muted-foreground text-lg">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="h-4 w-4"
+                    >
+                      <path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                      <path d="m15 5 4 4" />
+                    </svg>
+                  </span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent
+                side="top"
+                sideOffset={5}
+                className="bg-white text-black border border-gray-200 shadow-md dark:bg-zinc-900 dark:text-white dark:border-zinc-700"
               >
-                {updating ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <WandSparkles className="h-4 w-4 stroke-[2]" />
-                )}
-              </Button>
-            </div>
-          </TooltipTrigger>
-          <TooltipContent
-            side="top"
-            className="bg-white text-black border border-gray-200 shadow-md dark:bg-zinc-900 dark:text-white dark:border-zinc-700"
-          >
-            Prompt{" "}
-            <span className="text-gray-400 dark:text-gray-500">Enter</span>
-          </TooltipContent>
-        </Tooltip>
+                Edit prompt
+              </TooltipContent>
+            </Tooltip>
+          ) : null}
+
+          <Tooltip delayDuration={50}>
+            <TooltipTrigger asChild>
+              <div className="relative inline-block">
+                <Button
+                  disabled={
+                    updating || !inputValue || profanity || exceedsMaxLength
+                  }
+                  onClick={e => {
+                    e.preventDefault();
+                    submitPrompt();
+                  }}
+                  className={cn(
+                    "border-none items-center justify-center font-semibold text-xs bg-[#000000] flex disabled:bg-[#000000] disabled:opacity-80",
+                    "w-auto h-9 aspect-square rounded-md",
+                  )}
+                >
+                  {updating ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <WandSparkles className="h-4 w-4 stroke-[2]" />
+                  )}
+                </Button>
+              </div>
+            </TooltipTrigger>
+            <TooltipContent
+              side="top"
+              className="bg-white text-black border border-gray-200 shadow-md dark:bg-zinc-900 dark:text-white dark:border-zinc-700"
+            >
+              Prompt{" "}
+              <span className="text-gray-400 dark:text-gray-500">Enter</span>
+            </TooltipContent>
+          </Tooltip>
+        </div>
       </div>
 
       {(profanity || exceedsMaxLength) && (
