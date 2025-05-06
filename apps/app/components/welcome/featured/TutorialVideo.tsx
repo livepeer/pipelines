@@ -219,6 +219,17 @@ export const TutorialVideo = ({ onComplete }: TutorialVideoProps) => {
     }
   }, [isFadingOut, onComplete]);
 
+  // Reset video state when it becomes visible again
+  useEffect(() => {
+    if (isVisible) {
+      setIsFadingOut(false);
+      setIsPlaying(false);
+      if (videoRef.current) {
+        videoRef.current.currentTime = 0;
+      }
+    }
+  }, [isVisible]);
+
   const togglePlayPause = () => {
     if (videoRef.current) {
       if (isPlaying) {
@@ -274,7 +285,7 @@ export const TutorialVideo = ({ onComplete }: TutorialVideoProps) => {
   return (
     <div
       className={cn(
-        "absolute inset-0 z-[100] bg-black flex items-center justify-center",
+        "relative w-full aspect-video bg-black rounded-xl overflow-hidden",
         isFadingOut && "opacity-0",
       )}
       style={{

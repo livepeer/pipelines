@@ -11,18 +11,36 @@ import {
   TooltipTrigger,
 } from "@repo/design-system/components/ui/tooltip";
 import { Loader2, Maximize, Minimize } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useDreamshaperStore } from "../../../hooks/useDreamshaper";
 import { LivepeerPlayer } from "./player";
 import { usePrivy } from "@/hooks/usePrivy";
 import { Logo } from "@/components/sidebar";
 import Overlay from "./Overlay";
+import { useStreamUpdates } from "@/hooks/useDreamshaper";
+import { useSearchParams } from "next/navigation";
+import { useGuestUserStore } from "@/hooks/useGuestUser";
+import { usePromptStore } from "@/hooks/usePromptStore";
 
-export const MainContent = () => {
-  const { stream, loading } = useDreamshaperStore();
+interface MainContentProps {
+  stream: any;
+  isGuestMode?: boolean;
+  hasCapacity?: boolean;
+}
+
+export function MainContent({
+  stream,
+  isGuestMode = false,
+  hasCapacity = true,
+}: MainContentProps) {
+  const { handleStreamUpdate } = useStreamUpdates();
+  const { setLastSubmittedPrompt, setHasSubmittedPrompt } = usePromptStore();
+  const { setLastPrompt, incrementPromptCount } = useGuestUserStore();
+  const { authenticated } = usePrivy();
+  const searchParams = useSearchParams();
+  const inputPrompt = searchParams.get("inputPrompt");
   const { live, statusMessage } = useStreamStatus(stream?.id, false);
   const { isMobile } = useMobileStore();
-  const { authenticated } = usePrivy();
   const { timeRemaining, formattedTime } = useTrialTimer();
   const { isFullscreen, toggleFullscreen } = useFullscreenStore();
 
@@ -39,8 +57,28 @@ export const MainContent = () => {
     }
   }, [live]);
 
+  useEffect(() => {
+    if (inputPrompt && handleStreamUpdate) {
+      handleStreamUpdate(inputPrompt, { silent: true });
+      setLastSubmittedPrompt(inputPrompt);
+      setHasSubmittedPrompt(true);
+      setLastPrompt(inputPrompt);
+
+      if (!authenticated) {
+        incrementPromptCount();
+      }
+    }
+  }, [inputPrompt]);
+
   return (
-    <>
+    <div className="flex flex-col h-full">
+      <div className="flex-1 flex flex-col">
+        {/* Main content area */}
+        <div className="flex-1 flex flex-col items-center justify-center p-4">
+          {/* Your main content here */}
+        </div>
+      </div>
+
       {/* Hide controls for mobile (TODO: when it's a react component,
             we can use the component's own controls - now it's an iframe) */}
       {isFullscreen && isMobile && (
@@ -92,11 +130,7 @@ export const MainContent = () => {
         </div>
       )}
 
-      {loading ? (
-        <div className="w-full h-full flex items-center justify-center">
-          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-        </div>
-      ) : stream?.output_playback_id ? (
+      {stream?.output_playback_id ? (
         <>
           <div className="relative w-full h-full">
             <LivepeerPlayer />
@@ -108,6 +142,6 @@ export const MainContent = () => {
           Waiting for stream to start...
         </div>
       )}
-    </>
+    </div>
   );
-};
+}

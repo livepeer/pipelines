@@ -2,7 +2,7 @@
 
 import { usePreviewStore } from "@/hooks/usePreviewStore";
 import { cn } from "@repo/design-system/lib/utils";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { TrackedLink } from "@/components/analytics/TrackedLink";
 import { useTrackEvent } from "@/hooks/useTrackEvent";
@@ -11,6 +11,12 @@ import LoadingSpinner from "./LoadingSpinner";
 import NoMoreClipsFooter from "./NoMoreClipsFooter";
 import OptimizedVideo from "./OptimizedVideo";
 import { useOverlayStore } from "@/hooks/useOverlayStore";
+import { ChevronDown, ChevronUp } from "lucide-react";
+import { Button } from "@repo/design-system/components/ui/button";
+import { DiscordLogoIcon } from "@radix-ui/react-icons";
+import { TrackedButton } from "@/components/analytics/TrackedButton";
+import Link from "next/link";
+import { usePrivy } from "@/hooks/usePrivy";
 
 function chunkArray<T>(array: T[], size: number): T[][] {
   const result: T[][] = [];
@@ -54,6 +60,8 @@ export function BentoGrids({
   const { trackAction } = useTrackEvent("explore_scroll_interaction", {
     location: "explore_bento_grid_scroll",
   });
+  const [isMobileExpanded, setIsMobileExpanded] = useState(false);
+  const { authenticated } = usePrivy();
 
   const searchParams = useSearchParams();
   const isDebug = searchParams.has("debug");
@@ -114,71 +122,90 @@ export function BentoGrids({
   const groupedClips = chunkArray(clips, 4);
 
   return (
-    <div className="bg-transparent py-8 z-10">
-      <div
-        aria-hidden="true"
-        className="fixed inset-x-0 -top-40 -z-10 transform-gpu overflow-hidden sm:-top-60"
-      >
-        <div
-          style={{
-            backgroundImage: "url(/background.png)",
-            maskImage:
-              "linear-gradient(to bottom, black 60%, transparent 100%)",
-            WebkitMaskImage:
-              "linear-gradient(to bottom, black 60%, transparent 100%)",
-          }}
-          className="w-full h-[70vh] mx-auto bg-cover bg-center opacity-50"
-        />
-      </div>
-
-      {/* Backdrop blur layer */}
-      <div
-        className="fixed inset-0 backdrop-blur z-0"
-        style={{ background: "transparent!important" }}
-      ></div>
-
-      <div className="relative z-10 max-w-7xl mx-auto px-8 lg:px-12">
-        <>
-          <p
-            className={cn(
-              "mx-auto mt-2 max-w-lg text-balance text-center text-4xl font-extralight tracking-tight text-gray-950 sm:text-6xl",
-              isPreviewOpen && "opacity-0",
-            )}
-          >
-            Live Video Transformed
-          </p>
-          <h2
-            className={cn(
-              "text-center text-base/7 font-light text-zinc-500 max-w-lg mx-auto mt-6 leading-[135%]",
-              isPreviewOpen && "opacity-0",
-            )}
-          >
-            From imagination to creation — all in real time.
+    <div className="bg-transparent py-4">
+      <div className="relative z-10">
+        {/* Header Text with Discord Button */}
+        <div className="mb-2 flex items-center justify-between">
+          <h2 className="text-2xl font-light tracking-tight">
+            Community Creations
           </h2>
-        </>
-
-        {groupedClips.map((group, groupIndex) => {
-          const configuration =
-            groupIndex % 2 === 0
-              ? GridSetConfiguration.first
-              : GridSetConfiguration.second;
-
-          const baseIndex = groupIndex * 4;
-
-          return (
-            <GridSet
-              key={groupIndex}
-              configuration={configuration}
-              className={
-                groupIndex === 0
-                  ? isOverlayMode
-                    ? "mt-10 sm:mt-16"
-                    : "mt-10 sm:mt-16"
-                  : "mt-4"
-              }
+          <Link target="_blank" href="https://discord.com/invite/hxyNHeSzCK">
+            <TrackedButton
+              trackingEvent="daydream_join_community_clicked"
+              trackingProperties={{
+                is_authenticated: authenticated,
+                location: "bento_grid_header",
+              }}
+              variant="outline"
+              className="alwaysAnimatedButton rounded-md"
+              size="sm"
             >
+              <DiscordLogoIcon className="h-6 w-6" />
+            </TrackedButton>
+          </Link>
+        </div>
+        {/* Subheader */}
+        <div className="mb-4">
+          <p className="text-base text-gray-500">
+            Click on a clip to try the prompt
+          </p>
+        </div>
+
+        {/* Mobile Collapsible Header */}
+        <div className="lg:hidden">
+          <Button
+            variant="ghost"
+            className="w-full flex items-center justify-between p-4 text-lg font-light"
+            onClick={() => setIsMobileExpanded(!isMobileExpanded)}
+          >
+            <span>Explore prompts</span>
+            {isMobileExpanded ? (
+              <ChevronUp className="h-5 w-5" />
+            ) : (
+              <ChevronDown className="h-5 w-5" />
+            )}
+          </Button>
+        </div>
+
+        {/* Mobile Carousel */}
+        <div
+          className={cn(
+            "lg:hidden overflow-x-auto pb-4",
+            isMobileExpanded ? "block" : "hidden",
+          )}
+        >
+          <div className="flex gap-4 px-4">
+            {clips.map((clip, index) => (
+              <div key={clip.id} className="flex-none w-[280px] aspect-square">
+                <GridItem
+                  clipId={clip.id}
+                  slug={clip.slug}
+                  title={clip.video_title || "Vincent Van Gogh"}
+                  authorName={clip.author_name || "Livepeer"}
+                  authorDetails={clip.author_details as Record<string, any>}
+                  src={clip.video_url}
+                  prompt={clip.prompt}
+                  createdAt={clip.created_at}
+                  remixCount={clip.remix_count}
+                  isTutorial={clip.is_tutorial}
+                  className="w-full h-full"
+                  isDebug={isDebug}
+                  overallIndex={index}
+                  isOverlayMode={isOverlayMode}
+                  onTryPrompt={onTryPrompt}
+                  hasCapacity={hasCapacity}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Desktop Grid */}
+        <div className="hidden lg:block">
+          {chunkArray(clips, 2).map((group, groupIndex) => (
+            <div key={groupIndex} className="grid grid-cols-2 gap-4 mt-4">
               {group.map((clip, index) => {
-                const overallIndex = baseIndex + index;
+                const overallIndex = groupIndex * 2 + index;
                 return (
                   <GridItem
                     key={clip.id}
@@ -192,7 +219,7 @@ export function BentoGrids({
                     createdAt={clip.created_at}
                     remixCount={clip.remix_count}
                     isTutorial={clip.is_tutorial}
-                    className={`${index % 2 === 0 ? "lg:row-span-2" : ""} cursor-pointer`}
+                    className="aspect-square"
                     isDebug={isDebug}
                     overallIndex={overallIndex}
                     isOverlayMode={isOverlayMode}
@@ -201,11 +228,11 @@ export function BentoGrids({
                   />
                 );
               })}
-            </GridSet>
-          );
-        })}
+            </div>
+          ))}
+        </div>
 
-        <div ref={loadingRef} className="py-8 text-center relative z-50">
+        <div ref={loadingRef} className="py-4 text-center relative z-50">
           {loading ? (
             <LoadingSpinner />
           ) : hasMore && (!isOverlayMode || initialClips.length === 0) ? (
@@ -213,10 +240,6 @@ export function BentoGrids({
           ) : (
             <NoMoreClipsFooter isOverlayMode={isOverlayMode} />
           )}
-          <div
-            aria-hidden="true"
-            className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-gray-50 to-transparent pointer-events-none"
-          />
         </div>
       </div>
     </div>
@@ -266,7 +289,6 @@ function GridItem({
   const handleClick = (e: React.MouseEvent) => {
     if (isOverlayMode) {
       e.preventDefault();
-      // Handle clip preview within overlay
       setSelectedClipId(clipId);
       setOverlayType("clip");
       setIsOverlayOpen(true);
@@ -274,12 +296,7 @@ function GridItem({
   };
 
   return (
-    <div
-      className={cn(
-        "relative aspect-square lg:min-h-[300px] lg:aspect-auto block",
-        className,
-      )}
-    >
+    <div className={cn("relative aspect-square block", className)}>
       {isDebug && (
         <div className="absolute top-1 left-1 z-40 bg-black/60 text-white text-xs font-mono px-1.5 py-0.5 rounded">
           #{overallIndex + 1}
