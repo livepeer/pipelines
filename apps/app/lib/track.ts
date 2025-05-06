@@ -1,6 +1,5 @@
 import { getSharedParamsAuthor } from "@/app/api/streams/share-params";
 import { User } from "@/hooks/usePrivy";
-import mixpanel from "mixpanel-browser";
 
 interface TrackProperties {
   [key: string]: any;
@@ -69,22 +68,6 @@ const getBrowserInfo = async () => {
   return browserInfo;
 };
 
-const ensureUserIdentity = (user?: User) => {
-  if (!user || typeof window === "undefined") return;
-
-  const currentDistinctId = mixpanel.get_distinct_id();
-
-  if (user.id && user.id !== currentDistinctId) {
-    mixpanel.alias(user.id, currentDistinctId);
-
-    mixpanel.identify(user.id);
-
-    console.log(
-      `Mixpanel: Aliased ${currentDistinctId} to ${user.id} and identified user`,
-    );
-  }
-};
-
 const track = async (
   eventName: string,
   eventProperties?: TrackProperties,
@@ -100,10 +83,6 @@ const track = async (
     return false;
   }
 
-  if (user) {
-    ensureUserIdentity(user);
-  }
-
   const [browserInfo, sharedInfo] = await Promise.all([
     getBrowserInfo(),
     getSharedParamsInfo(),
@@ -116,12 +95,29 @@ const track = async (
       : "direct";
 
   try {
-    mixpanel.track(eventName, {
-      referrer_type: referrerType,
-      ...sharedInfo,
-      ...browserInfo,
-      ...eventProperties,
+    const response = await fetch("/api/mixpanel", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        event: eventName,
+        properties: {
+          distinct_id: user?.id,
+          referrer_type: referrerType,
+          ...sharedInfo,
+          ...browserInfo,
+          ...eventProperties,
+        },
+      }),
     });
+
+    if (!response.ok) {
+      throw new Error(
+        `Server returned ${response.status}: ${response.statusText}`,
+      );
+    }
+
     return true;
   } catch (error) {
     console.error("Error tracking event:", error);
