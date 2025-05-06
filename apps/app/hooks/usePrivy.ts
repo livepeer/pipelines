@@ -35,20 +35,32 @@ const usePrivyWithMixpanel = () => {
   const userId = privy?.user?.id;
 
   useEffect(() => {
-    if (userId && userId !== DUMMY_USER_ID_FOR_NON_AUTHENTICATED_USERS) {
-      const currentDistinctId = mixpanel.get_distinct_id();
+    if (
+      userId &&
+      userId !== DUMMY_USER_ID_FOR_NON_AUTHENTICATED_USERS &&
+      typeof window !== "undefined"
+    ) {
+      setTimeout(() => {
+        const currentDistinctId = mixpanel.get_distinct_id();
 
-      if (currentDistinctId && userId !== currentDistinctId) {
-        mixpanel.alias(userId, currentDistinctId);
-        console.log(
-          `Mixpanel Alias: Aliased ${currentDistinctId} to ${userId}`,
-        );
-      }
+        if (currentDistinctId && userId !== currentDistinctId) {
+          mixpanel.alias(userId, currentDistinctId);
+          console.log(
+            `Mixpanel Alias: Aliased ${currentDistinctId} to ${userId}`,
+          );
 
-      mixpanel.identify(userId);
-      console.log("Mixpanel Identify: Identified user", userId);
+          mixpanel.identify(userId);
+          console.log("Mixpanel Identify: Identified user", userId);
+
+          try {
+            localStorage.setItem("mixpanel_user_id", userId);
+          } catch (e) {
+            console.error("Failed to save user ID to localStorage:", e);
+          }
+        }
+      }, 1000);
     }
-  }, [userId]);
+  }, [userId, privy?.authenticated, privy?.ready]);
 
   return privy;
 };

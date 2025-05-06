@@ -24,7 +24,6 @@ const getSharedParamsInfo = async (): Promise<SharedInfo> => {
 
   let sharedInfo: SharedInfo = {};
   if (sharedParam) {
-    // Check if we already have this shared param data in cache
     if (sharedParamsCache[sharedParam]) {
       sharedInfo = sharedParamsCache[sharedParam];
     } else {
@@ -37,7 +36,6 @@ const getSharedParamsInfo = async (): Promise<SharedInfo> => {
             shared_pipeline_id: data.pipeline,
             shared_created_at: data.created_at,
           };
-          // Store in cache for future use
           sharedParamsCache[sharedParam] = sharedInfo;
         }
       } catch (error) {
@@ -71,6 +69,22 @@ const getBrowserInfo = async () => {
   return browserInfo;
 };
 
+const ensureUserIdentity = (user?: User) => {
+  if (!user || typeof window === "undefined") return;
+
+  const currentDistinctId = mixpanel.get_distinct_id();
+
+  if (user.id && user.id !== currentDistinctId) {
+    mixpanel.alias(user.id, currentDistinctId);
+
+    mixpanel.identify(user.id);
+
+    console.log(
+      `Mixpanel: Aliased ${currentDistinctId} to ${user.id} and identified user`,
+    );
+  }
+};
+
 const track = async (
   eventName: string,
   eventProperties?: TrackProperties,
@@ -84,6 +98,10 @@ const track = async (
       "Analytics disabled or running on server, skipping event tracking.",
     );
     return false;
+  }
+
+  if (user) {
+    ensureUserIdentity(user);
   }
 
   const [browserInfo, sharedInfo] = await Promise.all([
