@@ -1,5 +1,7 @@
+import mixpanel from "mixpanel-browser";
 import { usePrivy as _usePrivy, PrivyInterface } from "@privy-io/react-auth";
 import { DUMMY_USER_ID_FOR_NON_AUTHENTICATED_USERS } from "./useDreamshaper";
+import { useEffect } from "react";
 export {
   useLoginWithEmail,
   useLoginWithOAuth,
@@ -28,6 +30,18 @@ const shouldMock =
   process.env.NEXT_PUBLIC_USE_PRIVY_MOCK === "true" &&
   process.env.NODE_ENV === "development";
 
+const usePrivyWithMixpanel = () => {
+  const privy = _usePrivy();
+
+  useEffect(() => {
+    if (privy?.user?.id) {
+      mixpanel.identify(privy?.user?.id);
+    }
+  }, [privy?.user?.id]);
+
+  return privy;
+};
+
 export const usePrivy = shouldMock
   ? () => mockPrivy as unknown as PrivyInterface
-  : _usePrivy;
+  : usePrivyWithMixpanel;
