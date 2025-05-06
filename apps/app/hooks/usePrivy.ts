@@ -32,35 +32,87 @@ const shouldMock =
 
 const usePrivyWithMixpanel = () => {
   const privy = _usePrivy();
-  const userId = privy?.user?.id;
+  const { user, authenticated, ready } = privy;
+  const userId = user?.id;
 
   useEffect(() => {
     if (
-      userId &&
-      userId !== DUMMY_USER_ID_FOR_NON_AUTHENTICATED_USERS &&
-      typeof window !== "undefined"
+      !ready ||
+      !authenticated ||
+      !userId ||
+      userId === DUMMY_USER_ID_FOR_NON_AUTHENTICATED_USERS
     ) {
-      setTimeout(() => {
-        const currentDistinctId = mixpanel.get_distinct_id();
-
-        if (currentDistinctId && userId !== currentDistinctId) {
-          mixpanel.alias(userId, currentDistinctId);
-          console.log(
-            `Mixpanel Alias: Aliased ${currentDistinctId} to ${userId}`,
-          );
-
-          mixpanel.identify(userId);
-          console.log("Mixpanel Identify: Identified user", userId);
-
-          try {
-            localStorage.setItem("mixpanel_user_id", userId);
-          } catch (e) {
-            console.error("Failed to save user ID to localStorage:", e);
-          }
-        }
-      }, 1000);
+      return;
     }
-  }, [userId, privy?.authenticated, privy?.ready]);
+
+    if (
+      typeof window === "undefined" ||
+      typeof mixpanel.get_distinct_id !== "function"
+    ) {
+      console.warn("Mixpanel SDK not available yet.");
+      return;
+    }
+
+    const currentMixpanelId = mixpanel.get_distinct_id();
+    const mixpanelAliasProcessedKey = `mixpanel_alias_${userId}`;
+
+    if (userId === currentMixpanelId) {
+      console.log(
+        `Mixpanel: User ${userId} is already identified. Current distinct_id matches userId.`,
+      );
+
+      try {
+        if (!localStorage.getItem(mixpanelAliasProcessedKey)) {
+          localStorage.setItem(mixpanelAliasProcessedKey, "true");
+        }
+      } catch (e) {
+        console.error(
+          "Failed to update localStorage for alias processed key:",
+          e,
+        );
+      }
+
+      return;
+    }
+    let aliasProcessed = false;
+    try {
+      aliasProcessed =
+        localStorage.getItem(mixpanelAliasProcessedKey) === "true";
+    } catch (e) {
+      console.error("Failed to read alias status from localStorage:", e);
+    }
+
+    if (!aliasProcessed && currentMixpanelId && userId !== currentMixpanelId) {
+      mixpanel.alias(userId, currentMixpanelId);
+      console.log(
+        `Mixpanel Alias: Aliased anonymous ID ${currentMixpanelId} to ${userId}.`,
+      );
+      try {
+        localStorage.setItem(mixpanelAliasProcessedKey, "true");
+      } catch (e) {
+        console.error("Failed to save alias status to localStorage:", e);
+      }
+    } else if (aliasProcessed) {
+      console.log(
+        `Mixpanel: Alias for ${userId} was already processed. Identifying.`,
+      );
+    }
+
+    mixpanel.identify(userId);
+    console.log("Mixpanel Identify: Identified user", userId);
+
+    if (user?.email?.address) {
+      mixpanel.people.set({
+        $email: user.email.address,
+        "Privy User ID": userId,
+        "Account Created At": user.createdAt,
+      });
+      mixpanel.register_once({
+        $initial_email: user.email.address,
+        "Initial Sign Up Date": new Date().toISOString(),
+      });
+    }
+  }, [userId, authenticated, ready, user]);
 
   return privy;
 };
