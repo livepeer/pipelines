@@ -100,18 +100,6 @@ const usePrivyWithMixpanel = () => {
 
     mixpanel.identify(userId);
     console.log("Mixpanel Identify: Identified user", userId);
-
-    if (user?.email?.address) {
-      mixpanel.people.set({
-        $email: user.email.address,
-        "Privy User ID": userId,
-        "Account Created At": user.createdAt,
-      });
-      mixpanel.register_once({
-        $initial_email: user.email.address,
-        "Initial Sign Up Date": new Date().toISOString(),
-      });
-    }
   }, [userId, authenticated, ready, user]);
 
   return privy;
