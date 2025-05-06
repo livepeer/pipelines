@@ -48,23 +48,21 @@ test.describe("Daydream Page Tests", () => {
   });
 
   test.afterEach(async ({}, testInfo) => {
-    const fullTestName = testInfo.titlePath.join(" > ");
-
     if (SEND_METRICS) {
       if (testInfo.status === "passed") {
         testSuccessCounter.inc({
-          test_name: fullTestName,
+          test_name: testInfo.title,
           environment: ENVIRONMENT,
         });
       } else {
         testFailureCounter.inc({
-          test_name: fullTestName,
+          test_name: testInfo.title,
           environment: ENVIRONMENT,
         });
       }
 
       testDurationGauge.set(
-        { test_name: fullTestName, environment: ENVIRONMENT },
+        { test_name: testInfo.title, environment: ENVIRONMENT },
         testInfo.duration / 1000,
       );
 
@@ -74,7 +72,7 @@ test.describe("Daydream Page Tests", () => {
 
   test("video elements load and play correctly", async ({ page }) => {
     test.setTimeout(OVERALL_TEST_TIMEOUT_MS);
-    const testName = test.info().titlePath.join(" > ");
+    const testName = test.info().title;
 
     try {
       const emailInput = page.getByTestId("email-input");

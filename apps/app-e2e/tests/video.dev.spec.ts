@@ -16,9 +16,8 @@ test.describe("Daydream Page Tests", () => {
     await page.goto(selectWhipServer("/create"));
   });
 
-  test("video elements load and play correctly", async ({ page }) => {
+  test("video elements load and play correctly", async ({ page }, testInfo) => {
     test.setTimeout(OVERALL_TEST_TIMEOUT_MS);
-    const testName = test.info().titlePath.join(" > ");
 
     const broadcast = page.getByTestId(BROADCAST_VIDEO_TEST_ID);
     const playback = page.getByTestId(PLAYBACK_VIDEO_TEST_ID);
@@ -28,7 +27,7 @@ test.describe("Daydream Page Tests", () => {
 
     await assertVideoContentChanging(
       broadcast,
-      testName,
+      testInfo.title,
       "broadcast",
       NUM_SCREENSHOTS,
       SCREENSHOT_INTERVAL_MS,
@@ -40,7 +39,7 @@ test.describe("Daydream Page Tests", () => {
     });
     await assertVideoContentChanging(
       playback,
-      testName,
+      testInfo.title,
       "playback",
       NUM_SCREENSHOTS,
       SCREENSHOT_INTERVAL_MS,
