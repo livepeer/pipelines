@@ -53,7 +53,13 @@ export default function MainExperience({
     if (cameraPermission === "prompt") {
       requestCameraPermission();
     }
-  }, [cameraPermission, requestMediaPermissions, isGuestMode, loading, hasCapacity]);
+  }, [
+    cameraPermission,
+    requestMediaPermissions,
+    isGuestMode,
+    loading,
+    hasCapacity,
+  ]);
 
   useEffect(() => {
     console.log("Current step:", currentStep);

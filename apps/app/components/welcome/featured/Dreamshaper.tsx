@@ -431,7 +431,9 @@ export default function Dreamshaper({ isGuestMode = false }: DreamshaperProps) {
               >
                 {!showTutorial && <ManagedBroadcast />}
                 {!showTutorial && (
-                  <ResponsiveInputPrompt onPromptSubmit={handleGuestPromptSubmit} />
+                  <ResponsiveInputPrompt
+                    onPromptSubmit={handleGuestPromptSubmit}
+                  />
                 )}
               </div>
             </div>

@@ -28,7 +28,11 @@ interface MainContentProps {
   hasCapacity?: boolean;
 }
 
-export function MainContent({ stream, isGuestMode = false, hasCapacity = true }: MainContentProps) {
+export function MainContent({
+  stream,
+  isGuestMode = false,
+  hasCapacity = true,
+}: MainContentProps) {
   const { handleStreamUpdate } = useStreamUpdates();
   const { setLastSubmittedPrompt, setHasSubmittedPrompt } = usePromptStore();
   const { setLastPrompt, incrementPromptCount } = useGuestUserStore();

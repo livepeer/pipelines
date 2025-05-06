@@ -43,9 +43,6 @@ function SettingsMenu({
 
   const hasSliderParams = sliderParams.length > 0;
 
-
-  
-
   return (
     <AnimatePresence>
       <motion.div
@@ -99,7 +96,9 @@ function SettingsMenu({
 
               return (
                 <div key={param.name} className="flex flex-col w-[20%] flex-1">
-                  <Label className="text-sm font-medium mb-1 truncate">{getDisplayName(param.name)}</Label>
+                  <Label className="text-sm font-medium mb-1 truncate">
+                    {getDisplayName(param.name)}
+                  </Label>
                   {/* <span className="text-xs text-muted-foreground mt-1 text-right block min-h-[18px] min-w-[20%]">
                     {param.description}
                   </span> */}
@@ -225,36 +224,46 @@ function SettingsMenu({
                       />
                     </div>
                   </div>
-                 
                 </div>
               );
             })}
             {/* Negative Prompt text input */}
             <div className="flex flex-col min-w-[180px] max-w-[240px] flex-1">
-              <Label className="text-sm font-medium mb-1 truncate">Exclude</Label>
+              <Label className="text-sm font-medium mb-1 truncate">
+                Exclude
+              </Label>
               <input
                 type="text"
                 className="w-full rounded-md border border-muted bg-background px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                 placeholder="Enter negative prompt..."
                 value={(() => {
-                  const match = inputValue.match(/--negative-prompt\s+"([^"]*)"|--negative-prompt\s+([^\s]+)/);
+                  const match = inputValue.match(
+                    /--negative-prompt\s+"([^"]*)"|--negative-prompt\s+([^\s]+)/,
+                  );
                   return match ? (match[1] ?? match[2] ?? "") : "";
                 })()}
                 onChange={e => {
                   const value = e.target.value;
                   // Remove any existing negative prompt command
-                  const promptWithoutNegative = inputValue.replace(/--negative-prompt\s+"[^"]*"|--negative-prompt\s+[^\s]+/g, '').trim();
-                  
+                  const promptWithoutNegative = inputValue
+                    .replace(
+                      /--negative-prompt\s+"[^"]*"|--negative-prompt\s+[^\s]+/g,
+                      "",
+                    )
+                    .trim();
+
                   // Only add new negative prompt if there's a value
                   if (value) {
-                    const newInput = promptWithoutNegative + (promptWithoutNegative ? ' ' : '') + `--negative-prompt "${value}"`;
+                    const newInput =
+                      promptWithoutNegative +
+                      (promptWithoutNegative ? " " : "") +
+                      `--negative-prompt "${value}"`;
                     setInputValue(newInput);
                   } else {
                     setInputValue(promptWithoutNegative);
                   }
                 }}
               />
-              
             </div>
           </div>
         ) : (

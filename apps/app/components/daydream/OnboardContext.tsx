@@ -53,7 +53,8 @@ export function OnboardProvider({
   hasSharedPrompt: boolean;
 }) {
   const [currentStep, setCurrentStep] = useState<"welcome" | "main">("main");
-  const [cameraPermission, setCameraPermission] = useState<CameraPermission>("prompt");
+  const [cameraPermission, setCameraPermission] =
+    useState<CameraPermission>("prompt");
   const { user } = usePrivy();
   const searchParams = useSearchParams();
   const [selectedPersonas, setSelectedPersonas] = useState<string[]>([]);

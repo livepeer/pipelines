@@ -126,7 +126,9 @@ export function BentoGrids({
       <div className="relative z-10">
         {/* Header Text with Discord Button */}
         <div className="mb-2 flex items-center justify-between">
-          <h2 className="text-2xl font-light tracking-tight">Community Creations</h2>
+          <h2 className="text-2xl font-light tracking-tight">
+            Community Creations
+          </h2>
           <Link target="_blank" href="https://discord.com/invite/hxyNHeSzCK">
             <TrackedButton
               trackingEvent="daydream_join_community_clicked"
@@ -138,13 +140,15 @@ export function BentoGrids({
               className="alwaysAnimatedButton rounded-md"
               size="sm"
             >
-              <DiscordLogoIcon className="h-6 w-6" /> 
+              <DiscordLogoIcon className="h-6 w-6" />
             </TrackedButton>
           </Link>
         </div>
         {/* Subheader */}
         <div className="mb-4">
-          <p className="text-base text-gray-500">Click on a clip to try the prompt</p>
+          <p className="text-base text-gray-500">
+            Click on a clip to try the prompt
+          </p>
         </div>
 
         {/* Mobile Collapsible Header */}
@@ -167,15 +171,12 @@ export function BentoGrids({
         <div
           className={cn(
             "lg:hidden overflow-x-auto pb-4",
-            isMobileExpanded ? "block" : "hidden"
+            isMobileExpanded ? "block" : "hidden",
           )}
         >
           <div className="flex gap-4 px-4">
             {clips.map((clip, index) => (
-              <div
-                key={clip.id}
-                className="flex-none w-[280px] aspect-square"
-              >
+              <div key={clip.id} className="flex-none w-[280px] aspect-square">
                 <GridItem
                   clipId={clip.id}
                   slug={clip.slug}
@@ -202,10 +203,7 @@ export function BentoGrids({
         {/* Desktop Grid */}
         <div className="hidden lg:block">
           {chunkArray(clips, 2).map((group, groupIndex) => (
-            <div
-              key={groupIndex}
-              className="grid grid-cols-2 gap-4 mt-4"
-            >
+            <div key={groupIndex} className="grid grid-cols-2 gap-4 mt-4">
               {group.map((clip, index) => {
                 const overallIndex = groupIndex * 2 + index;
                 return (
@@ -298,12 +296,7 @@ function GridItem({
   };
 
   return (
-    <div
-      className={cn(
-        "relative aspect-square block",
-        className,
-      )}
-    >
+    <div className={cn("relative aspect-square block", className)}>
       {isDebug && (
         <div className="absolute top-1 left-1 z-40 bg-black/60 text-white text-xs font-mono px-1.5 py-0.5 rounded">
           #{overallIndex + 1}

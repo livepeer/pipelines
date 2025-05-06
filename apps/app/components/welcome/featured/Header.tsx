@@ -138,7 +138,6 @@ export const Header = ({
               )}
             >
               <div className="flex items-center gap-2">
-                
                 {/* Beta badge next to create clip button */}
                 <a
                   href="https://livepeer.notion.site/15f0a348568781aab037c863d91b05e2"
