@@ -11,7 +11,6 @@ import { useCapacityCheck } from "@/hooks/useCapacityCheck";
 import { CapacityNotificationModal } from "@/components/modals/capacity-notification-modal";
 import { useRouter } from "next/navigation";
 import track from "@/lib/track";
-import Link from "next/link";
 
 export default function Header() {
   const { isPreviewOpen } = usePreviewStore();
