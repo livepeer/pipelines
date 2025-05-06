@@ -11,7 +11,7 @@ export type CameraPermission = "prompt" | "granted" | "denied";
 
 interface OnboardContextType {
   // Current step in the onboarding flow
-  currentStep: "welcome" | "main";
+  currentStep: OnboardingStep;
   // Initialization of user and camera permissions
   isInitializing: boolean;
   hasSharedPrompt: boolean;
@@ -27,7 +27,7 @@ interface OnboardContextType {
   // When a prompt is selected, we fade out the welcome screen
   isFadingOut: boolean;
   // Methods to update state
-  setCurrentStep: (step: "welcome" | "main") => void;
+  setCurrentStep: (step: OnboardingStep) => void;
   setCameraPermission: (permission: CameraPermission) => void;
   setSelectedPersonas: (
     personas: string[] | ((prev: string[]) => string[]),
@@ -52,7 +52,7 @@ export function OnboardProvider({
   children: React.ReactNode;
   hasSharedPrompt: boolean;
 }) {
-  const [currentStep, setCurrentStep] = useState<"welcome" | "main">("main");
+  const [currentStep, setCurrentStep] = useState<OnboardingStep>("persona");
   const [cameraPermission, setCameraPermission] =
     useState<CameraPermission>("prompt");
   const { user } = usePrivy();
