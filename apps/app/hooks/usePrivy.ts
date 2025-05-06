@@ -67,4 +67,4 @@ const usePrivyWithMixpanel = () => {
 
 export const usePrivy = shouldMock
   ? () => mockPrivy as unknown as PrivyInterface
-  : _usePrivy;
+  : usePrivyWithMixpanel;

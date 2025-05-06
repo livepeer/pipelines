@@ -102,7 +102,7 @@ const track = async (
     event: eventName,
     properties: {
       distinct_id: mixpanel.get_distinct_id(),
-      $user_id: user?.id,
+      ...(user?.id && { $user_id: user.id }),
       $session_id: handleSessionId(),
       referrer_type: referrerType,
       ...sharedInfo,
