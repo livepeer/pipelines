@@ -25,6 +25,9 @@ export default function EmailLoginButton() {
       setInputState("success");
     } catch (error) {
       console.error(error);
+      track("daydream_login_email_error", {
+        msg: error,
+      });
       setInputState("error");
     }
   };
