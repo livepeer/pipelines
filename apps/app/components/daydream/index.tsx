@@ -9,7 +9,6 @@ import { useEffect, useState } from "react";
 import LayoutWrapper from "./LayoutWrapper";
 import { AuthProvider } from "./LoginScreen/AuthContext";
 import { createUser } from "@/app/actions/user";
-import { handleDistinctId, identifyUser } from "@/lib/analytics/mixpanel";
 import { submitToHubspot } from "@/lib/analytics/hubspot";
 import track from "@/lib/track";
 import { usePrivy } from "@/hooks/usePrivy";
@@ -18,6 +17,7 @@ import { useSearchParams } from "next/navigation";
 import { ClipModal } from "./Clipping/ClipModal";
 import { retrieveClip, deleteClip } from "@/lib/clipStorage";
 import { setSourceClipIdToCookies } from "./Clipping/actions";
+import mixpanel from "mixpanel-browser";
 
 interface DaydreamProps {
   hasSharedPrompt: boolean;
@@ -149,12 +149,10 @@ function DaydreamRenderer({ isGuestMode = false }: { isGuestMode?: boolean }) {
           user: { additional_details },
         } = await createUser(user);
 
-        const distinctId = handleDistinctId();
+        const distinctId = mixpanel.get_distinct_id();
         localStorage.setItem("mixpanel_user_id", user.id);
 
         await Promise.all([
-          // identifyUser(user.id, distinctId || "", user),
-
           isNewUser ? submitToHubspot(user) : Promise.resolve(),
         ]);
 

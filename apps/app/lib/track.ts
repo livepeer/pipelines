@@ -1,6 +1,6 @@
-import { handleDistinctId, handleSessionId } from "@/lib/analytics/mixpanel";
 import { getSharedParamsAuthor } from "@/app/api/streams/share-params";
 import { User } from "@/hooks/usePrivy";
+import mixpanel from "mixpanel-browser";
 
 interface TrackProperties {
   [key: string]: any;
@@ -14,20 +14,6 @@ interface SharedInfo {
   shared_author_id?: string;
   shared_pipeline_id?: string;
   shared_created_at?: string;
-}
-
-function getStoredIds() {
-  if (typeof window === "undefined") return {};
-
-  const distinctId = handleDistinctId();
-  const sessionId = handleSessionId();
-  const userId = localStorage.getItem("mixpanel_user_id");
-
-  return {
-    distinctId,
-    sessionId,
-    userId,
-  };
 }
 
 const getSharedParamsInfo = async (): Promise<SharedInfo> => {
@@ -90,15 +76,13 @@ const track = async (
   eventProperties?: TrackProperties,
   user?: User,
 ): Promise<boolean> => {
-  if (process.env.DISABLE_ANALYTICS === "true") {
-    console.log("Analytics disabled, skipping event tracking.");
-    return false;
-  }
-
-  const { distinctId, sessionId, userId } = getStoredIds();
-
-  if (!sessionId) {
-    console.log("No sessionId found, skipping event tracking");
+  if (
+    process.env.DISABLE_ANALYTICS === "true" ||
+    typeof window === "undefined"
+  ) {
+    console.log(
+      "Analytics disabled or running on server, skipping event tracking.",
+    );
     return false;
   }
 
@@ -113,41 +97,13 @@ const track = async (
       ? "external"
       : "direct";
 
-  const data = {
-    event: eventName,
-    properties: {
-      distinct_id: distinctId,
-      $user_id: userId,
-      $session_id: sessionId,
+  try {
+    mixpanel.track(eventName, {
       referrer_type: referrerType,
       ...sharedInfo,
       ...browserInfo,
       ...eventProperties,
-    },
-  };
-
-  try {
-    const response = await fetch(`/api/mixpanel`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
     });
-    if (!response.ok) {
-      try {
-        const errorBody = await response.text();
-        console.error(
-          `HTTP error! status: ${response.status}, body: ${errorBody}`,
-        );
-      } catch (e) {
-        console.error(
-          `HTTP error! status: ${response.status}. Failed to read error body.`,
-        );
-      }
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
     return true;
   } catch (error) {
     console.error("Error tracking event:", error);

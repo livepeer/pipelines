@@ -3,8 +3,8 @@
 import { TrackedButton } from "@/components/analytics/TrackedButton";
 import { GradientAvatar } from "@/components/GradientAvatar";
 import { usePreviewStore } from "@/hooks/usePreviewStore";
-import { handleSessionId } from "@/lib/analytics/mixpanel";
 import { getAccessToken } from "@privy-io/react-auth";
+import mixpanel from "mixpanel-browser";
 import {
   Dialog,
   DialogContent,
@@ -70,7 +70,9 @@ export default function QuickviewVideo({
           ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ sessionId: handleSessionId() }),
+        body: JSON.stringify({
+          sessionId: mixpanel.get_property("$session_id"),
+        }),
       });
     };
 
