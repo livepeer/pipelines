@@ -1,3 +1,4 @@
+import mixpanel from "mixpanel-browser";
 import { User as PrivyUser } from "@/hooks/usePrivy";
 import { v4 as uuidv4 } from "uuid";
 
@@ -58,13 +59,7 @@ export async function identifyUser(
 export const DISTINCT_ID_KEY = "mixpanel_distinct_id";
 
 export function handleDistinctId() {
-  let distinctId = localStorage.getItem(DISTINCT_ID_KEY);
-  if (!distinctId) {
-    distinctId = uuidv4();
-    localStorage.setItem(DISTINCT_ID_KEY, distinctId);
-  }
-
-  return distinctId;
+  return mixpanel.get_distinct_id();
 }
 
 export const SESSION_ID_KEY = "mixpanel_session_id";

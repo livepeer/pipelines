@@ -11,7 +11,12 @@ export function MixpanelProvider({ children }: { children: ReactNode }) {
     if (mixpanelConfig.projectToken) {
       try {
         console.log("Initializing Mixpanel");
-        mixpanel.init(mixpanelConfig.projectToken, { debug: true });
+        mixpanel.init(mixpanelConfig.projectToken, {
+          debug: true,
+          track_pageview: true,
+          persistence: "localStorage",
+          cross_subdomain_cookie: false,
+        });
 
         const distinctId = handleDistinctId();
         const sessionId = handleSessionId();
