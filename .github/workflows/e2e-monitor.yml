@@ -14,13 +14,21 @@ on:
           - staging
   schedule:
     - cron: "*/30 * * * *"
+  push:
+    branches:
+      - main
+      - production
 
 jobs:
   e2e-staging:
-    if: (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'staging') || github.event_name == 'schedule'
+    if: (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'staging') || github.event_name == 'schedule' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
     runs-on: ubuntu-latest
     environment: "Staging - e2e"
     steps:
+      - name: Wait for builds to complete
+        if: github.event_name == 'push'
+        run: sleep 240
+
       - name: Checkout code
         uses: actions/checkout@v4
 
@@ -77,10 +85,14 @@ jobs:
           exit 1
 
   e2e-production:
-    if: (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'production') || github.event_name == 'schedule'
+    if: (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'production') || github.event_name == 'schedule' || (github.event_name == 'push' && github.ref == 'refs/heads/production')
     runs-on: ubuntu-latest
     environment: "Production - e2e"
     steps:
+      - name: Wait for builds to complete
+        if: github.event_name == 'push'
+        run: sleep 240
+
       - name: Checkout code
         uses: actions/checkout@v4
 
