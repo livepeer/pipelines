@@ -102,6 +102,14 @@ const usePrivyWithMixpanel = () => {
     console.log("Mixpanel Identify: Identified user", userId);
   }, [userId, authenticated, ready, user]);
 
+  useEffect(() => {
+    if (user?.id) {
+      localStorage.setItem("mixpanel_user_id", user.id);
+    } else {
+      localStorage.removeItem("mixpanel_user_id");
+    }
+  }, [user]);
+
   return privy;
 };
 
