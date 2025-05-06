@@ -2,6 +2,7 @@ import mixpanel from "mixpanel-browser";
 import { usePrivy as _usePrivy, PrivyInterface } from "@privy-io/react-auth";
 import { DUMMY_USER_ID_FOR_NON_AUTHENTICATED_USERS } from "./useDreamshaper";
 import { useEffect } from "react";
+import { handleDistinctId } from "@/lib/analytics/mixpanel";
 export {
   useLoginWithEmail,
   useLoginWithOAuth,
@@ -41,7 +42,7 @@ const usePrivyWithMixpanel = () => {
       typeof window !== "undefined"
     ) {
       setTimeout(() => {
-        const currentDistinctId = mixpanel.get_distinct_id();
+        const currentDistinctId = handleDistinctId();
 
         if (currentDistinctId && userId !== currentDistinctId) {
           mixpanel.alias(userId, currentDistinctId);
