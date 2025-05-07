@@ -308,7 +308,7 @@ export function ClipOptionsModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={open => !open && onClose()}>
-      <DialogContent className="h-fit max-h-[90dvh] w-[calc(100%-32px)] sm:w-full sm:max-w-[650px] mx-auto overflow-y-auto rounded-xl p-6 pt-8 sm:p-8">
+      <DialogContent className="h-fit max-h-[86dvh] w-[calc(100%-32px)] sm:w-full sm:max-w-[650px] mx-auto overflow-y-auto rounded-xl p-6 pt-8 sm:p-8">
         <DialogHeader className="flex items-center">
           <DialogTitle className="text-2xl">
             How Would You Like to Share?
