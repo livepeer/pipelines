@@ -131,7 +131,7 @@ export default function QuickviewVideo({
             <X className="w-4 h-4" />
           </button>
           <div
-            className="max-h-[90vh] max-w-2xl w-full aspect-video max-w-[73vh]"
+            className="max-h-[90vh] w-full aspect-video max-w-[73vh]"
             onClick={e => e.stopPropagation()}
           >
             <DialogHeader className="space-y-12">
