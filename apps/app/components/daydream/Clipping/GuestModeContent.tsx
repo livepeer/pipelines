@@ -71,43 +71,41 @@ export function GuestModeContent({ clipData, onClose }: GuestModeContentProps) {
   };
 
   return (
-    <DialogContent className="max-w-[calc(100%-2rem)] mx-auto sm:max-w-[600px] p-6 sm:p-8 rounded-xl">
-      <div className="flex justify-center mb-4">
-        <Logo className="w-[120px]" />
+    <DialogContent className="max-w-[calc(100%-2rem)] max-h-[86dvh] mx-auto sm:max-w-[600px] p-6 sm:p-8 rounded-xl flex flex-col">
+      <div className="flex-grow overflow-y-auto">
+        <div className="flex justify-center mb-4">
+          <Logo className="w-[120px]" />
+        </div>
+        <DialogHeader className="text-center mb-4">
+          <DialogTitle className="text-2xl font-semibold mb-2 text-center">
+            Create Your Free Daydream Account
+          </DialogTitle>
+          <DialogDescription className="text-base text-center">
+            One quick step before sharing your amazing creation
+          </DialogDescription>
+        </DialogHeader>
+        <div
+          className={cn(
+            "mt-4 mb-6 flex justify-center",
+            clipData.recordingMode === "vertical" ? "bg-white" : "bg-black",
+          )}
+        >
+          {clipData.clipUrl && (
+            <video
+              src={clipData.clipUrl}
+              autoPlay
+              loop
+              muted={false}
+              playsInline
+              controls
+              poster={clipData.thumbnailUrl || undefined}
+              className="w-full max-h-[50vh] object-contain rounded-md" // 이 부분의 max-h도 조절이 필요할 수 있습니다.
+            />
+          )}
+        </div>
+        <Separator className="my-2" />
       </div>
-
-      <DialogHeader className="text-center mb-4">
-        <DialogTitle className="text-2xl font-semibold mb-2 text-center">
-          Create Your Free Daydream Account
-        </DialogTitle>
-        <DialogDescription className="text-base text-center">
-          One quick step before sharing your amazing creation
-        </DialogDescription>
-      </DialogHeader>
-
-      <div
-        className={cn(
-          "mt-4 mb-6 flex justify-center",
-          clipData.recordingMode === "vertical" ? "bg-white" : "bg-black",
-        )}
-      >
-        {clipData.clipUrl && (
-          <video
-            src={clipData.clipUrl}
-            autoPlay
-            loop
-            muted={false}
-            playsInline
-            controls
-            poster={clipData.thumbnailUrl || undefined}
-            className="w-full max-h-[50vh] object-contain rounded-md"
-          />
-        )}
-      </div>
-
-      <Separator className="my-2" />
-
-      <div className="w-full mt-4">
+      <div className="w-full mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
         <Button
           onClick={handleJoinDaydream}
           className="w-full flex items-center justify-center gap-2 rounded-md py-6"
