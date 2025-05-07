@@ -242,8 +242,9 @@ export default function OptimizedVideo({
                     trackingEvent="tutorial_video_clicked"
                     trackingProperties={{ location: "video_card" }}
                     className={cn(
-                      "inline-flex items-center px-3 py-2 h-8 text-black rounded-full shadow-sm scale-90",
-                      "bg-gradient-to-r from-[#C8F2FF] via-[#FFFFFF] to-[#D8F6FE] border border-[#B9EEFF] backdrop-blur-[35px]",
+                      "inline-flex items-center px-3 py-2 h-8 text-black rounded-full shadow-sm scale-90 transition-all",
+                      "bg-white border border-[#B9EEFF] backdrop-blur-md",
+                      "hover:bg-black/20 hover:text-white",
                       isTutorial ? "opacity-100" : "opacity-0",
                     )}
                     onClick={e => {
