@@ -1,3 +1,5 @@
+import { ClipRecordingMode } from "@/components/daydream/Clipping/ClipOptionsModal";
+
 // IndexedDB storage for clips
 const DB_NAME = "daydream_clip_storage";
 const DB_VERSION = 1;
@@ -48,6 +50,7 @@ export const storeClip = async (
   filename: string,
   thumbnailBlob: Blob,
   prompt?: string,
+  recordingMode?: string,
 ): Promise<void> => {
   console.log(`Attempting to store clip: ${filename}`);
   try {
@@ -79,6 +82,7 @@ export const storeClip = async (
         thumbnailType: thumbType,
         prompt: prompt || "",
         timestamp: Date.now(),
+        recordingMode: recordingMode || "output-only",
       };
 
       console.log(`Putting clip data into store with key: pendingClip`);
@@ -140,6 +144,7 @@ export const retrieveClip = async (): Promise<{
   filename: string;
   thumbnail: Blob;
   prompt: string;
+  recordingMode: ClipRecordingMode;
 } | null> => {
   console.log("Attempting to retrieve clip from storage.");
   try {
@@ -210,6 +215,7 @@ export const retrieveClip = async (): Promise<{
             filename: clipData.filename,
             thumbnail: reconstructedThumbnailBlob,
             prompt: clipData.prompt || "",
+            recordingMode: clipData.recordingMode || "output-only",
           });
         } catch (reconstructionError) {
           console.error(

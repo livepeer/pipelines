@@ -18,6 +18,7 @@ import { useSearchParams } from "next/navigation";
 import { ClipModal } from "./Clipping/ClipModal";
 import { retrieveClip, deleteClip } from "@/lib/clipStorage";
 import { setSourceClipIdToCookies } from "./Clipping/actions";
+import { ClipRecordingMode } from "./Clipping/ClipOptionsModal";
 
 interface DaydreamProps {
   hasSharedPrompt: boolean;
@@ -120,6 +121,8 @@ function DaydreamRenderer({ isGuestMode = false }: { isGuestMode?: boolean }) {
     null,
   );
   const [showPendingClipModal, setShowPendingClipModal] = useState(false);
+  const [pendingClipRecordingMode, setPendingClipRecordingMode] =
+    useState<ClipRecordingMode>();
 
   useEffect(() => {
     // For guest mode, skip directly to main experience
@@ -224,7 +227,8 @@ function DaydreamRenderer({ isGuestMode = false }: { isGuestMode?: boolean }) {
       retrieveClip()
         .then(clipData => {
           if (clipData) {
-            const { blob, filename, thumbnail, prompt } = clipData;
+            const { blob, filename, thumbnail, prompt, recordingMode } =
+              clipData;
             const blobUrl = URL.createObjectURL(blob);
             const thumbnailUrl = URL.createObjectURL(thumbnail);
 
@@ -232,6 +236,7 @@ function DaydreamRenderer({ isGuestMode = false }: { isGuestMode?: boolean }) {
             setPendingClipFilename(filename);
             setPendingClipThumbnailUrl(thumbnailUrl);
             setPendingClipPrompt(prompt);
+            setPendingClipRecordingMode(recordingMode);
             setShowPendingClipModal(true);
 
             deleteClip().catch(err => {
@@ -283,6 +288,7 @@ function DaydreamRenderer({ isGuestMode = false }: { isGuestMode?: boolean }) {
           clipFilename={pendingClipFilename}
           thumbnailUrl={pendingClipThumbnailUrl}
           lastSubmittedPrompt={pendingClipPrompt}
+          recordingMode={pendingClipRecordingMode}
         />
       )}
     </>

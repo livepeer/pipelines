@@ -52,6 +52,7 @@ export function GuestModeContent({ clipData, onClose }: GuestModeContentProps) {
           clipData.clipFilename,
           thumbnailBlob,
           clipData.lastSubmittedPrompt,
+          clipData.recordingMode,
         );
         console.log(
           "Clip, thumbnail, and prompt stored successfully in IndexedDB",
@@ -84,7 +85,12 @@ export function GuestModeContent({ clipData, onClose }: GuestModeContentProps) {
         </DialogDescription>
       </DialogHeader>
 
-      <div className="mt-4 mb-6 flex justify-center">
+      <div
+        className={cn(
+          "mt-4 mb-6 flex justify-center",
+          clipData.recordingMode === "vertical" ? "bg-white" : "bg-black",
+        )}
+      >
         {clipData.clipUrl && (
           <video
             src={clipData.clipUrl}
