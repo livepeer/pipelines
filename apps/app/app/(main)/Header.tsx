@@ -38,7 +38,7 @@ export default function Header() {
       track("capacity_create_blocked", { location: "header" });
       setIsCapacityModalOpen(true);
     } else {
-      router.push("/create");
+      router.push(`/create?inputPrompt=${btoa(" ")}`);
     }
   };
 

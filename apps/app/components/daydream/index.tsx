@@ -53,10 +53,10 @@ export default function Daydream({
 
   // If guest access is allowed, enable guest mode
   useEffect(() => {
-    if (allowGuestAccess && !user && ready) {
+    if (allowGuestAccess && inputPrompt && !user && ready) {
       setIsGuestUser(true);
     }
-  }, [allowGuestAccess, user, setIsGuestUser]);
+  }, [allowGuestAccess, user, inputPrompt, setIsGuestUser]);
 
   // If the user is not ready, show a loading screen
   if (!ready) {
@@ -70,7 +70,7 @@ export default function Daydream({
   }
 
   // If in guest mode, allow access to create page
-  if (isGuestUser && ready) {
+  if (isGuestUser && inputPrompt && ready) {
     return (
       <OnboardProvider hasSharedPrompt={hasSharedPrompt || !!inputPrompt}>
         <DaydreamRenderer isGuestMode={true} />

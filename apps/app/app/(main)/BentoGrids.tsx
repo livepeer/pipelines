@@ -125,7 +125,7 @@ export function BentoGrids({
       track("capacity_create_blocked", { location: "header" });
       setIsCapacityModalOpen(true);
     } else {
-      router.push("/create");
+      router.push(`/create?inputPrompt=${btoa(" ")}`);
     }
   };
 
