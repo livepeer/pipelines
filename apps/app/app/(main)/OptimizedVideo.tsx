@@ -191,6 +191,7 @@ export default function OptimizedVideo({
                 muted
                 loop
                 playsInline
+                webkit-playsinline
                 onLoadedData={() => setIsLoaded(true)}
                 onError={handleVideoError}
                 className={cn(
