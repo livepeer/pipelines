@@ -1,4 +1,4 @@
-import { handleDistinctId, handleSessionId } from "@/lib/analytics/mixpanel";
+import mixpanel from "mixpanel-browser";
 import { getSharedParamsAuthor } from "@/app/api/streams/share-params";
 import { User } from "@/hooks/usePrivy";
 
@@ -16,20 +16,6 @@ interface SharedInfo {
   shared_created_at?: string;
 }
 
-function getStoredIds() {
-  if (typeof window === "undefined") return {};
-
-  const distinctId = handleDistinctId();
-  const sessionId = handleSessionId();
-  const userId = localStorage.getItem("mixpanel_user_id");
-
-  return {
-    distinctId,
-    sessionId,
-    userId,
-  };
-}
-
 const getSharedParamsInfo = async (): Promise<SharedInfo> => {
   if (typeof window === "undefined") return {};
 
@@ -38,7 +24,6 @@ const getSharedParamsInfo = async (): Promise<SharedInfo> => {
 
   let sharedInfo: SharedInfo = {};
   if (sharedParam) {
-    // Check if we already have this shared param data in cache
     if (sharedParamsCache[sharedParam]) {
       sharedInfo = sharedParamsCache[sharedParam];
     } else {
@@ -51,7 +36,6 @@ const getSharedParamsInfo = async (): Promise<SharedInfo> => {
             shared_pipeline_id: data.pipeline,
             shared_created_at: data.created_at,
           };
-          // Store in cache for future use
           sharedParamsCache[sharedParam] = sharedInfo;
         }
       } catch (error) {
@@ -90,15 +74,13 @@ const track = async (
   eventProperties?: TrackProperties,
   user?: User,
 ): Promise<boolean> => {
-  if (process.env.DISABLE_ANALYTICS === "true") {
-    console.log("Analytics disabled, skipping event tracking.");
-    return false;
-  }
-
-  const { distinctId, sessionId, userId } = getStoredIds();
-
-  if (!sessionId) {
-    console.log("No sessionId found, skipping event tracking");
+  if (
+    process.env.DISABLE_ANALYTICS === "true" ||
+    typeof window === "undefined"
+  ) {
+    console.log(
+      "Analytics disabled or running on server, skipping event tracking.",
+    );
     return false;
   }
 
@@ -113,39 +95,28 @@ const track = async (
       ? "external"
       : "direct";
 
-  const data = {
-    event: eventName,
-    properties: {
-      distinct_id: distinctId,
-      $user_id: userId,
-      $session_id: sessionId,
-      referrer_type: referrerType,
-      ...sharedInfo,
-      ...browserInfo,
-      ...eventProperties,
-    },
-  };
-
   try {
-    const response = await fetch(`/api/mixpanel`, {
+    const response = await fetch("/api/mixpanel", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(data),
+      body: JSON.stringify({
+        event: eventName,
+        properties: {
+          distinct_id: user?.id || mixpanel.get_distinct_id(),
+          referrer_type: referrerType,
+          ...sharedInfo,
+          ...browserInfo,
+          ...eventProperties,
+        },
+      }),
     });
+
     if (!response.ok) {
-      try {
-        const errorBody = await response.text();
-        console.error(
-          `HTTP error! status: ${response.status}, body: ${errorBody}`,
-        );
-      } catch (e) {
-        console.error(
-          `HTTP error! status: ${response.status}. Failed to read error body.`,
-        );
-      }
-      throw new Error(`HTTP error! status: ${response.status}`);
+      throw new Error(
+        `Server returned ${response.status}: ${response.statusText}`,
+      );
     }
 
     return true;
