@@ -67,7 +67,7 @@ export function CapacityNotificationModal({
 
   const handleCommunityClick = () => {
     track("capacity_community_clicked");
-    window.open("https://discord.com/invite/hxyNHeSzCK", "_blank");
+    window.open("https://discord.gg/DwBPjfhmUt", "_blank");
   };
 
   const handleModalClose = () => {

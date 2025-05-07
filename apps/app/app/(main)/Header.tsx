@@ -103,7 +103,7 @@ export default function Header() {
               className="text-sm rounded-md sm:px-4 aspect-square sm:aspect-auto"
               onClick={() => {
                 window.open(
-                  "https://discord.com/invite/hxyNHeSzCK",
+                  "https://discord.gg/DwBPjfhmUt",
                   "_blank",
                   "noopener noreferrer",
                 );
