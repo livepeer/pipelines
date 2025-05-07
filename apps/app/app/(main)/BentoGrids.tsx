@@ -2,7 +2,7 @@
 
 import { usePreviewStore } from "@/hooks/usePreviewStore";
 import { cn } from "@repo/design-system/lib/utils";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { TrackedLink } from "@/components/analytics/TrackedLink";
 import { useTrackEvent } from "@/hooks/useTrackEvent";
@@ -11,10 +11,6 @@ import LoadingSpinner from "./LoadingSpinner";
 import NoMoreClipsFooter from "./NoMoreClipsFooter";
 import OptimizedVideo from "./OptimizedVideo";
 import { useOverlayStore } from "@/hooks/useOverlayStore";
-import { TrackedButton } from "@/components/analytics/TrackedButton";
-import { useCapacityCheck } from "@/hooks/useCapacityCheck";
-import track from "@/lib/track";
-import { useRouter } from "next/navigation";
 
 function chunkArray<T>(array: T[], size: number): T[][] {
   const result: T[][] = [];
@@ -58,10 +54,9 @@ export function BentoGrids({
   const { trackAction } = useTrackEvent("explore_scroll_interaction", {
     location: "explore_bento_grid_scroll",
   });
-  const router = useRouter();
+
   const searchParams = useSearchParams();
   const isDebug = searchParams.has("debug");
-  const [isCapacityModalOpen, setIsCapacityModalOpen] = useState(false);
 
   useEffect(() => {
     if (onClipsLoaded && clips.length > 0) {
@@ -118,17 +113,6 @@ export function BentoGrids({
 
   const groupedClips = chunkArray(clips, 4);
 
-  const handleTryWithCameraClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-
-    if (!hasCapacity) {
-      track("capacity_create_blocked", { location: "header" });
-      setIsCapacityModalOpen(true);
-    } else {
-      router.push(`/create?inputPrompt=${btoa(" ")}`);
-    }
-  };
-
   return (
     <div className="bg-transparent py-8 z-10">
       <div
@@ -163,32 +147,14 @@ export function BentoGrids({
           >
             Live Video Transformed
           </p>
-          <div
+          <h2
             className={cn(
-              "flex flex-col items-center gap-4 mt-6",
+              "text-center text-base/7 font-light text-zinc-500 max-w-lg mx-auto mt-6 leading-[135%]",
               isPreviewOpen && "opacity-0",
             )}
           >
-            <div className="flex flex-col sm:flex-row gap-0 mt-2 items-center">
-              <TrackedButton
-                variant="ghost"
-                trackingEvent="try_camera_click"
-                className={cn(
-                  "px-2 py-2 text-xl font-extralight h-auto leading-none text-gray-950 flex items-center align-baseline rounded-2xl",
-                )}
-                aria-label="Try it with your camera"
-                onClick={handleTryWithCameraClick}
-              >
-                <span className="border-b border-gray-300 pb-[3px] align-baseline">
-                  Try with your camera{" "}
-                  <span className="sm:hidden inline">→</span>
-                </span>
-              </TrackedButton>
-              <span className="hidden sm:inline text-xl font-extralight text-gray-950 align-baseline pb-1">
-                or explore community creations below
-              </span>
-            </div>
-          </div>
+            From imagination to creation — all in real time.
+          </h2>
         </>
 
         {groupedClips.map((group, groupIndex) => {
