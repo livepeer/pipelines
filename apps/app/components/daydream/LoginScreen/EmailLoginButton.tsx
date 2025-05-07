@@ -10,6 +10,7 @@ import { useAuth } from "./AuthContext";
 
 export default function EmailLoginButton() {
   const [email, setEmail] = useState("");
+
   const [inputState, setInputState] = useState<
     "idle" | "loading" | "success" | "error"
   >("idle");
@@ -24,10 +25,12 @@ export default function EmailLoginButton() {
       await sendCode({ email });
       setInputState("success");
     } catch (error) {
-      console.error(error);
+      console.error("[EmailLoginButton] Error sending code:", error);
+
       track("daydream_login_email_error", {
-        msg: error,
+        error: error instanceof Error ? error.message : "Unknown error",
       });
+
       setInputState("error");
     }
   };
@@ -55,7 +58,7 @@ export default function EmailLoginButton() {
           className="text-center text-sm text-red-500"
           data-testid="email-error"
         >
-          Please enter a valid email and try again.
+          Login failed. Please check your email and try again.
         </div>
       )}
 
