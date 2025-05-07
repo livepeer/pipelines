@@ -33,7 +33,12 @@ export function useCapacityCheck() {
           ? parseInt(minCapacityParam, 10)
           : 0;
 
-        setHasCapacity(data.idleContainers > minCapacity);
+        // There are currently issues with the reported capacity and machines that are
+        // reporting having capacity when broken. Because of this, we err on the side of caution
+        // and check if we're over 80% of capacity before returning false.
+        setHasCapacity(
+          data.idleContainers - 0.2 * data.totalContainers > minCapacity,
+        );
       } catch (err) {
         console.error("Failed to check capacity:", err);
         setError(err instanceof Error ? err : new Error(String(err)));

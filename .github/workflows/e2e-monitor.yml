@@ -13,13 +13,62 @@ on:
           - production
           - staging
   schedule:
-    - cron: "*/30 * * * *"
+    - cron: "*/5 * * * *"
 
 jobs:
-  e2e-staging:
-    if: (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'staging') || github.event_name == 'schedule'
+  prepare:
+    name: Prepare dynamic matrix for job execution
     runs-on: ubuntu-latest
-    environment: "Staging - e2e"
+    outputs:
+      matrix: ${{ steps.prepare.outputs.matrix }}
+      trigger: ${{ steps.prepare.outputs.trigger }}
+    steps:
+      - name: Read workflow input
+        id: prepare
+        shell: python
+        run: |
+          import json
+          import os
+
+          ENV_MAPPING = {
+              'staging': {"name": "staging", "environment": "Staging - e2e"},
+              'production': {"name": "production", "environment": "Production - e2e"},
+          }
+
+          def jsonify(item_lists: list[str]) -> str:
+              return json.dumps(item_lists, separators=(",", ":"))
+
+          def output(items: list[dict]):
+              trigger = "true"
+              if not items:
+                  trigger = "false"
+              print(f"Trigger condition is {trigger}")
+
+              json_modules = jsonify({"env": items})
+              github_output = f"matrix={json_modules}\n"
+              with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+                  f.write(github_output)
+                  f.write(f"trigger={trigger}\n")
+
+          def main(event_name):
+              if event_name == 'schedule':
+                  return output(list(ENV_MAPPING.values()))
+              elif event_name == 'workflow_dispatch' and "${{ inputs.environment }}" in ENV_MAPPING.keys():
+                  return output([ENV_MAPPING["${{ inputs.environment }}"]])
+
+          if __name__ == "__main__":
+              main("${{ github.event_name }}")
+
+  e2e:
+    needs: prepare
+    if: ${{ needs.prepare.outputs.trigger == 'true' }}
+    name: Run E2E for ${{ matrix.env.name }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.prepare.outputs.matrix) }}
+    environment: ${{ matrix.env.environment }}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -49,7 +98,7 @@ jobs:
       - name: Install Playwright Browsers and Dependencies
         run: pnpm --filter app-e2e exec playwright install --with-deps chrome
 
-      - name: Run Playwright tests for staging
+      - name: Run Playwright tests for ${{ matrix.env.name }}
         id: playwright
         env:
           TEST_APP_URL: ${{ secrets.TEST_APP_URL }}
@@ -58,7 +107,7 @@ jobs:
           WHIP_REGIONS: ${{ vars.WHIP_REGIONS }}
           LIVEPEER_PROMETHEUS_JOB_NAME: e2e
           LIVEPEER_PROMETHEUS_URL: ${{ secrets.LIVEPEER_PROMETHEUS_URL }}
-          ENVIRONMENT: staging
+          ENVIRONMENT: ${{ matrix.env.name }}
         run: pnpm --filter app-e2e monitor
         continue-on-error: true
 
@@ -66,72 +115,12 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: screenshots-staging
+          name: screenshots-${{ matrix.env.name }}
           path: apps/app-e2e/screenshots/
           retention-days: 14
 
-      - name: Fail workflow if tests failed for staging
+      - name: Fail workflow if tests failed for ${{ matrix.env.name }}
         if: steps.playwright.outcome == 'failure'
         run: |
-          echo "::error::Playwright tests failed for the staging environment."
-          exit 1
-
-  e2e-production:
-    if: (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'production') || github.event_name == 'schedule'
-    runs-on: ubuntu-latest
-    environment: "Production - e2e"
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: 9
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: "pnpm"
-
-      - name: Install dependencies
-        run: pnpm install --filter app-e2e...
-
-      - name: Cache Playwright Browsers
-        uses: actions/cache@v3
-        with:
-          path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-browsers-${{ hashFiles('pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-playwright-browsers-
-
-      - name: Install Playwright Browsers and Dependencies
-        run: pnpm --filter app-e2e exec playwright install --with-deps chrome
-
-      - name: Run Playwright tests for production
-        id: playwright
-        env:
-          TEST_APP_URL: ${{ secrets.TEST_APP_URL }}
-          TEST_EMAIL: ${{ secrets.TEST_EMAIL }}
-          TEST_OTP_CODE: ${{ secrets.TEST_OTP_CODE }}
-          WHIP_REGIONS: ${{ vars.WHIP_REGIONS }}
-          LIVEPEER_PROMETHEUS_JOB_NAME: e2e
-          LIVEPEER_PROMETHEUS_URL: ${{ secrets.LIVEPEER_PROMETHEUS_URL }}
-          ENVIRONMENT: production
-        run: pnpm --filter app-e2e monitor
-        continue-on-error: true
-
-      - name: Upload test screenshots for production
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: screenshots-production
-          path: apps/app-e2e/screenshots/
-          retention-days: 14
-
-      - name: Fail workflow if tests failed for production
-        if: steps.playwright.outcome == 'failure'
-        run: |
-          echo "::error::Playwright tests failed for the production environment."
+          echo "::error::Playwright tests failed for the ${{ matrix.env.name }} environment."
           exit 1
