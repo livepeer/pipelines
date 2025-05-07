@@ -308,7 +308,7 @@ export function ClipOptionsModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={open => !open && onClose()}>
-      <DialogContent className="h-fit max-h-[90dvh] w-[calc(100%-32px)] sm:w-full sm:max-w-[900px] mx-auto overflow-y-auto rounded-xl p-6 pt-8 sm:p-8">
+      <DialogContent className="h-fit max-h-[90dvh] w-[calc(100%-32px)] sm:w-full sm:max-w-[650px] mx-auto overflow-y-auto rounded-xl p-6 pt-8 sm:p-8">
         <DialogHeader className="flex items-center">
           <DialogTitle className="text-2xl">
             How Would You Like to Share?
@@ -323,7 +323,7 @@ export function ClipOptionsModal({
         <RadioGroup
           value={selectedMode}
           onValueChange={handleValueChange}
-          className="mt-2 sm:mt-4 mb-2 grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-4"
+          className="mt-2 sm:mt-4 mb-2 grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-8"
         >
           <LayoutOption
             title="Just the Output"
@@ -331,15 +331,6 @@ export function ClipOptionsModal({
             value="output-only"
             selectedValue={selectedMode}
             previewImg={previewBlobs.outputOnly}
-            onSelect={handleValueChange}
-          />
-
-          <LayoutOption
-            title="Include input video (PiP)"
-            description="Share both your original video and the final result — your input video will be visible in the corner."
-            value="horizontal"
-            selectedValue={selectedMode}
-            previewImg={previewBlobs.horizontal}
             onSelect={handleValueChange}
           />
 
