@@ -168,11 +168,6 @@ export default function OptimizedVideo({
     }
   };
 
-  useEffect(() => {
-    videoRef.current?.setAttribute("webkit-playsinline", "true");
-    videoRef.current?.setAttribute("playsinline", "true");
-  }, []);
-
   return (
     <div ref={containerRef} className={cn("size-full", className)}>
       {isNearViewport ? (
@@ -196,6 +191,7 @@ export default function OptimizedVideo({
                 muted
                 loop
                 playsInline
+                autoPlay
                 webkit-playsinline
                 onLoadedData={() => setIsLoaded(true)}
                 onError={handleVideoError}
