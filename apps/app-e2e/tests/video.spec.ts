@@ -111,7 +111,7 @@ test.describe("Daydream Page Tests", () => {
         "playback",
         NUM_SCREENSHOTS,
         SCREENSHOT_INTERVAL_MS,
-        5000,
+        4000,
         5,
       );
     } catch (error) {
