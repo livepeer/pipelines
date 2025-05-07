@@ -51,12 +51,12 @@ export default function Daydream({
     }
   }, [authenticated, user, isGuestUser, setIsGuestUser]);
 
-  // If guest access is allowed and input prompt exists, enable guest mode
+  // If guest access is allowed, enable guest mode
   useEffect(() => {
     if (allowGuestAccess && inputPrompt && !user && ready) {
       setIsGuestUser(true);
     }
-  }, [allowGuestAccess, inputPrompt, user, setIsGuestUser]);
+  }, [allowGuestAccess, user, inputPrompt, setIsGuestUser]);
 
   // If the user is not ready, show a loading screen
   if (!ready) {
@@ -69,7 +69,7 @@ export default function Daydream({
     );
   }
 
-  // If in guest mode and coming from "Try this prompt", allow access to create page
+  // If in guest mode, allow access to create page
   if (isGuestUser && inputPrompt && ready) {
     return (
       <OnboardProvider hasSharedPrompt={hasSharedPrompt || !!inputPrompt}>
@@ -78,7 +78,7 @@ export default function Daydream({
     );
   }
 
-  // If the user is not logged in, show the login screen
+  // Catchall - if the user is not logged in, show the login screen
   if (!user) {
     return (
       <LayoutWrapper>
