@@ -111,9 +111,11 @@ export default function OptimizedVideo({
     const playbackObserver = new IntersectionObserver(
       entries => {
         if (entries[0].isIntersecting) {
-          videoElement.play().catch(error => {
-            console.log("Browser is preventing autoplay:", error);
-          });
+          setTimeout(() => {
+            videoElement.play().catch(error => {
+              console.log("Browser is preventing autoplay:", error);
+            });
+          }, 100);
         } else {
           videoElement.pause();
         }
@@ -191,8 +193,6 @@ export default function OptimizedVideo({
                 muted
                 loop
                 playsInline
-                autoPlay={false}
-                webkit-playsinline
                 onLoadedData={() => setIsLoaded(true)}
                 onError={handleVideoError}
                 className={cn(
