@@ -173,21 +173,21 @@ export default function OptimizedVideo({
       {isNearViewport ? (
         <>
           <div className="size-full relative group">
-            <TrackedLink
-              href={isOverlayMode ? "#" : `/clips/${slug || clipId}`}
-              trackingEvent="explore_clip_clicked"
-              trackingProperties={{
-                clip_id: clipId,
-                clip_slug: slug,
-                clip_author_name: authorName,
-                location: isOverlayMode ? "overlay_video" : "explore_video",
-              }}
+            <div
+              // href={isOverlayMode ? "#" : `/clips/${slug || clipId}`}
+              // trackingEvent="explore_clip_clicked"
+              // trackingProperties={{
+              //   clip_id: clipId,
+              //   clip_slug: slug,
+              //   clip_author_name: authorName,
+              //   location: isOverlayMode ? "overlay_video" : "explore_video",
+              // }}
               onClick={handleLinkClick}
               className="block size-full"
             >
               <video
                 ref={videoRef}
-                src={effectiveSrc}
+                src={effectiveSrc + "#t=0.5"}
                 muted
                 loop
                 playsInline
@@ -225,7 +225,7 @@ export default function OptimizedVideo({
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
-            </TrackedLink>
+            </div>
 
             <div
               className="absolute top-3 right-2 p-0 z-20 flex gap-1 items-center opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-150"
