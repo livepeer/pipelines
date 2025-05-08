@@ -335,7 +335,7 @@ export const InputPrompt = ({ onPromptSubmit }: InputPromptProps) => {
 
         {commandMenuOpen && filteredOptions.length > 0 && (
           <div
-            className="absolute z-50 bottom-full mb-2 w-60 bg-popover rounded-md border shadow-md"
+            className="absolute z-[51] bottom-full mb-2 w-60 bg-popover rounded-md border shadow-md"
             style={{
               left: caretRef.current?.left ?? 0,
             }}
