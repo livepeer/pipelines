@@ -157,7 +157,6 @@ function DaydreamRenderer({ isGuestMode = false }: { isGuestMode?: boolean }) {
 
         await Promise.all([
           identifyUser(user.id, distinctId || "", user),
-
           isNewUser ? submitToHubspot(user) : Promise.resolve(),
         ]);
 
@@ -174,14 +173,9 @@ function DaydreamRenderer({ isGuestMode = false }: { isGuestMode?: boolean }) {
         });
 
         if (fromGuestExperience) {
-          setCurrentStep("persona");
-          setIsInitializing(false);
-
           track("user_from_guest_experience", {
             user_id: user.id,
           });
-
-          return;
         }
 
         const initialStep =
