@@ -98,7 +98,7 @@ export const Header = ({
     <>
       {!isMobile && (
         <div className="fixed top-4 right-4 z-50">
-          <Link target="_blank" href="https://discord.com/invite/hxyNHeSzCK">
+          <Link target="_blank" href="https://discord.gg/DwBPjfhmUt">
             <TrackedButton
               trackingEvent="daydream_join_community_clicked"
               trackingProperties={{
@@ -269,7 +269,7 @@ export const Header = ({
               </Button>
             )}
 
-            <Link target="_blank" href="https://discord.com/invite/hxyNHeSzCK">
+            <Link target="_blank" href="https://discord.gg/DwBPjfhmUt">
               <Button
                 variant="ghost"
                 size="icon"
