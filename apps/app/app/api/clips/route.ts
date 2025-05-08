@@ -16,7 +16,7 @@ import {
   getPublicUrl,
 } from "@/lib/storage/gcp";
 import { Storage } from "@google-cloud/storage";
-import { and, asc, eq, isNotNull, isNull, sql } from "drizzle-orm";
+import { and, asc, desc, eq, isNotNull, isNull, sql } from "drizzle-orm";
 import { customAlphabet } from "nanoid";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
@@ -32,21 +32,6 @@ try {
   }
 } catch (error) {
   console.error("Failed to initialize GCP Storage in API route:", error);
-}
-
-const bucketName = gcpConfig.bucketName || "daydream-clips";
-
-// Function to make a file public
-async function makeFilePublic(filePath: string): Promise<boolean> {
-  try {
-    const bucket = storage.bucket(bucketName);
-    const file = bucket.file(filePath);
-    await file.makePublic();
-    return true;
-  } catch (error) {
-    console.error(`Failed to make file ${filePath} public:`, error);
-    return false;
-  }
 }
 
 type FetchedClip = {
@@ -125,7 +110,10 @@ export async function GET(request: Request) {
           eq(clipsTable.approval_status, "approved"),
         ),
       )
-      .orderBy(asc(clipsTable.created_at))) as FetchedClip[];
+      .orderBy(
+        desc(clipsTable.remix_count),
+        asc(clipsTable.created_at),
+      )) as FetchedClip[];
 
     const finalClips: (FetchedClip | null)[] = [];
     const priorityMap = new Map<number, FetchedClip>();
@@ -148,9 +136,13 @@ export async function GET(request: Request) {
           `Clip ${clip.id} has invalid priority: ${clip.priority}. Ignoring priority.`,
         );
         nonPrioritizedClips.push(clip);
-        nonPrioritizedClips.sort(
-          (a, b) => a.created_at.getTime() - b.created_at.getTime(),
-        );
+        nonPrioritizedClips.sort((a, b) => {
+          if (b.remix_count !== a.remix_count) {
+            return b.remix_count - a.remix_count;
+          }
+          // tie-breaker, older first
+          return a.created_at.getTime() - b.created_at.getTime();
+        });
       }
     }
 
