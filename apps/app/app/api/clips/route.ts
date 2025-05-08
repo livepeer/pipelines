@@ -16,7 +16,7 @@ import {
   getPublicUrl,
 } from "@/lib/storage/gcp";
 import { Storage } from "@google-cloud/storage";
-import { and, asc, eq, isNotNull, isNull, sql } from "drizzle-orm";
+import { and, asc, desc, eq, isNotNull, isNull, sql } from "drizzle-orm";
 import { customAlphabet } from "nanoid";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
@@ -32,21 +32,6 @@ try {
   }
 } catch (error) {
   console.error("Failed to initialize GCP Storage in API route:", error);
-}
-
-const bucketName = gcpConfig.bucketName || "daydream-clips";
-
-// Function to make a file public
-async function makeFilePublic(filePath: string): Promise<boolean> {
-  try {
-    const bucket = storage.bucket(bucketName);
-    const file = bucket.file(filePath);
-    await file.makePublic();
-    return true;
-  } catch (error) {
-    console.error(`Failed to make file ${filePath} public:`, error);
-    return false;
-  }
 }
 
 type FetchedClip = {
@@ -112,7 +97,7 @@ export async function GET(request: Request) {
       )
       .orderBy(asc(clipsTable.priority))) as FetchedClip[];
 
-    const nonPrioritizedClips = (await db
+    const initialNonPrioritizedClips = (await db
       .select(selectFields)
       .from(clipsTable)
       .innerJoin(usersTable, eq(clipsTable.author_user_id, usersTable.id))
@@ -125,11 +110,16 @@ export async function GET(request: Request) {
           eq(clipsTable.approval_status, "approved"),
         ),
       )
-      .orderBy(asc(clipsTable.created_at))) as FetchedClip[];
+      .orderBy(
+        desc(clipsTable.remix_count),
+        asc(clipsTable.created_at),
+      )) as FetchedClip[];
 
     const finalClips: (FetchedClip | null)[] = [];
     const priorityMap = new Map<number, FetchedClip>();
     let maxPriority = 0;
+
+    const demotedClips: FetchedClip[] = [];
 
     for (const clip of prioritizedClips) {
       if (clip.priority !== null && clip.priority > 0) {
@@ -147,12 +137,33 @@ export async function GET(request: Request) {
         console.warn(
           `Clip ${clip.id} has invalid priority: ${clip.priority}. Ignoring priority.`,
         );
-        nonPrioritizedClips.push(clip);
-        nonPrioritizedClips.sort(
-          (a, b) => a.created_at.getTime() - b.created_at.getTime(),
-        );
+        demotedClips.push(clip);
       }
     }
+
+    const nonPrioritizedClips = [
+      ...initialNonPrioritizedClips,
+      ...demotedClips,
+    ];
+    nonPrioritizedClips.sort((a, b) => {
+      if (a.remix_count === null && b.remix_count === null) return 0;
+      if (a.remix_count === null) return 1; // a가 null이면 뒤로
+      if (b.remix_count === null) return -1; // b가 null이면 앞으로
+
+      if (b.remix_count !== a.remix_count) {
+        return b.remix_count - a.remix_count;
+      }
+      // tie-breaker, older first
+      const timeA =
+        a.created_at instanceof Date
+          ? a.created_at.getTime()
+          : new Date(a.created_at).getTime();
+      const timeB =
+        b.created_at instanceof Date
+          ? b.created_at.getTime()
+          : new Date(b.created_at).getTime();
+      return timeA - timeB;
+    });
 
     const initialLength = Math.max(
       maxPriority,
