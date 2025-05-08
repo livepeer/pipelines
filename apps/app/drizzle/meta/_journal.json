@@ -64,13 +64,6 @@
       "when": 1746424466073,
       "tag": "0008_loud_lockjaw",
       "breakpoints": true
-    },
-    {
-      "idx": 9,
-      "version": "7",
-      "when": 1746686250142,
-      "tag": "0009_ambitious_skin",
-      "breakpoints": true
     }
   ]
 }

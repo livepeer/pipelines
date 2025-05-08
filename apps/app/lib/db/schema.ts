@@ -299,7 +299,6 @@ export const clips = pgTable(
       .defaultNow()
       .notNull(),
     deleted_at: timestamp("deleted_at", { withTimezone: true }),
-    dummy_column: text("dummy_column"),
   },
   table => [
     foreignKey({
