@@ -1,3 +1,4 @@
+import React, { useEffect, useRef } from "react";
 import {
   DialogContent,
   DialogDescription,
@@ -19,6 +20,8 @@ interface GuestModeContentProps {
 
 export function GuestModeContent({ clipData, onClose }: GuestModeContentProps) {
   const router = useRouter();
+  const mainVideoRef = useRef<HTMLVideoElement>(null);
+  const bgVideoRef = useRef<HTMLVideoElement>(null);
 
   const handleJoinDaydream = async () => {
     track("guest_join_from_clip_modal", {});
@@ -70,6 +73,51 @@ export function GuestModeContent({ clipData, onClose }: GuestModeContentProps) {
     router.push("/create");
   };
 
+  useEffect(() => {
+    if (
+      mainVideoRef.current &&
+      bgVideoRef.current &&
+      clipData.recordingMode === "vertical"
+    ) {
+      const mainVideo = mainVideoRef.current;
+      const bgVideo = bgVideoRef.current;
+
+      const syncPlay = () => {
+        bgVideo.play().catch(e => console.error("Bg video play error:", e));
+      };
+      const syncPause = () => bgVideo.pause();
+      const syncTime = () => {
+        if (Math.abs(mainVideo.currentTime - bgVideo.currentTime) > 0.1) {
+          bgVideo.currentTime = mainVideo.currentTime;
+        }
+      };
+      const syncBgVideoTimeOnLoad = () => {
+        if (mainVideo.readyState >= 1) {
+          bgVideo.currentTime = mainVideo.currentTime;
+        }
+      };
+
+      mainVideo.addEventListener("play", syncPlay);
+      mainVideo.addEventListener("pause", syncPause);
+      mainVideo.addEventListener("seeked", syncTime);
+      mainVideo.addEventListener("loadedmetadata", syncTime);
+      bgVideo.addEventListener("loadedmetadata", syncBgVideoTimeOnLoad);
+
+      if (!mainVideo.paused) {
+        syncPlay();
+      }
+      syncTime();
+
+      return () => {
+        mainVideo.removeEventListener("play", syncPlay);
+        mainVideo.removeEventListener("pause", syncPause);
+        mainVideo.removeEventListener("seeked", syncTime);
+        mainVideo.removeEventListener("loadedmetadata", syncTime);
+        bgVideo.removeEventListener("loadedmetadata", syncBgVideoTimeOnLoad);
+      };
+    }
+  }, [clipData.clipUrl, clipData.recordingMode]);
+
   return (
     <DialogContent className="max-w-[calc(100%-2rem)] max-h-[86dvh] mx-auto sm:max-w-[600px] p-6 sm:p-8 rounded-xl flex flex-col">
       <div className="flex-grow overflow-y-auto">
@@ -86,21 +134,39 @@ export function GuestModeContent({ clipData, onClose }: GuestModeContentProps) {
         </DialogHeader>
         <div
           className={cn(
-            "mt-4 mb-6 flex justify-center",
+            "mt-4 mb-6 flex justify-center items-center relative overflow-hidden rounded-md",
             clipData.recordingMode === "vertical" ? "bg-white" : "bg-black",
+            "w-full max-h-[50vh]",
           )}
         >
           {clipData.clipUrl && (
-            <video
-              src={clipData.clipUrl}
-              autoPlay
-              loop
-              muted={false}
-              playsInline
-              controls
-              poster={clipData.thumbnailUrl || undefined}
-              className="w-full max-h-[50vh] object-contain rounded-md" // 이 부분의 max-h도 조절이 필요할 수 있습니다.
-            />
+            <>
+              {clipData.recordingMode === "vertical" && (
+                <video
+                  ref={bgVideoRef}
+                  src={clipData.clipUrl}
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="absolute inset-0 w-full h-full object-cover filter blur-xl scale-110 z-0"
+                />
+              )}
+              <video
+                ref={mainVideoRef}
+                src={clipData.clipUrl}
+                autoPlay
+                loop
+                muted={false}
+                playsInline
+                controls
+                poster={clipData.thumbnailUrl || undefined}
+                className={cn(
+                  "z-10 rounded-md",
+                  "w-full max-h-[inherit] object-contain",
+                )}
+              />
+            </>
           )}
         </div>
         <Separator className="my-2" />

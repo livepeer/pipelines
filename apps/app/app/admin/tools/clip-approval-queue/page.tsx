@@ -8,6 +8,18 @@ import { Clip } from "@/app/admin/types";
 import { useFfmpegClipPreview } from "@/hooks/useFfmpegClipPreview";
 import { toast } from "sonner";
 
+const uploadWithPresignedUrl = async (url: string, blob: Blob) => {
+  const response = await fetch(url, {
+    method: "PUT",
+    body: blob,
+    headers: { "Content-Type": blob.type },
+  });
+  if (!response.ok) {
+    throw new Error(`Upload failed: ${response.status} ${response.statusText}`);
+  }
+  return response;
+};
+
 export default function ClipApprovalQueue() {
   const { user } = usePrivy();
   const { isAdmin, isLoading: adminLoading, email } = useAdmin();
@@ -163,20 +175,6 @@ export default function ClipApprovalQueue() {
     } finally {
       setActionLoading(null);
     }
-  };
-
-  const uploadWithPresignedUrl = async (url: string, blob: Blob) => {
-    const response = await fetch(url, {
-      method: "PUT",
-      body: blob,
-      headers: { "Content-Type": blob.type },
-    });
-    if (!response.ok) {
-      throw new Error(
-        `Upload failed: ${response.status} ${response.statusText}`,
-      );
-    }
-    return response;
   };
 
   const handleConfirmApprove = async () => {
