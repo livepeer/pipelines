@@ -1,17 +1,16 @@
 "use client";
 
-import { Logo } from "@/components/sidebar";
 import { TrackedButton } from "@/components/analytics/TrackedButton";
-import { usePreviewStore } from "@/hooks/usePreviewStore";
-import { cn } from "@repo/design-system/lib/utils";
-import { useEffect, useState } from "react";
-import { DiscordLogoIcon } from "@radix-ui/react-icons";
-import VideoAISparkles from "components/daydream/CustomIcons/VideoAISparkles";
-import { useCapacityCheck } from "@/hooks/useCapacityCheck";
 import { CapacityNotificationModal } from "@/components/modals/capacity-notification-modal";
-import { useRouter } from "next/navigation";
+import { Logo } from "@/components/sidebar";
+import { useCapacityCheck } from "@/hooks/useCapacityCheck";
+import { usePreviewStore } from "@/hooks/usePreviewStore";
 import track from "@/lib/track";
-import Link from "next/link";
+import { DiscordLogoIcon } from "@radix-ui/react-icons";
+import { cn } from "@repo/design-system/lib/utils";
+import VideoAISparkles from "components/daydream/CustomIcons/VideoAISparkles";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export default function Header() {
   const { isPreviewOpen } = usePreviewStore();

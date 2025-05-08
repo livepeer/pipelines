@@ -1,3 +1,4 @@
+import mixpanel from "mixpanel-browser";
 import { handleDistinctId, handleSessionId } from "@/lib/analytics/mixpanel";
 import { getSharedParamsAuthor } from "@/app/api/streams/share-params";
 import { User } from "@/hooks/usePrivy";
@@ -14,20 +15,6 @@ interface SharedInfo {
   shared_author_id?: string;
   shared_pipeline_id?: string;
   shared_created_at?: string;
-}
-
-function getStoredIds() {
-  if (typeof window === "undefined") return {};
-
-  const distinctId = handleDistinctId();
-  const sessionId = handleSessionId();
-  const userId = localStorage.getItem("mixpanel_user_id");
-
-  return {
-    distinctId,
-    sessionId,
-    userId,
-  };
 }
 
 const getSharedParamsInfo = async (): Promise<SharedInfo> => {
@@ -90,15 +77,13 @@ const track = async (
   eventProperties?: TrackProperties,
   user?: User,
 ): Promise<boolean> => {
-  if (process.env.DISABLE_ANALYTICS === "true") {
-    console.log("Analytics disabled, skipping event tracking.");
-    return false;
-  }
-
-  const { distinctId, sessionId, userId } = getStoredIds();
-
-  if (!sessionId) {
-    console.log("No sessionId found, skipping event tracking");
+  if (
+    process.env.DISABLE_ANALYTICS === "true" ||
+    typeof window === "undefined"
+  ) {
+    console.log(
+      "Analytics disabled or running on server, skipping event tracking.",
+    );
     return false;
   }
 
@@ -116,9 +101,13 @@ const track = async (
   const data = {
     event: eventName,
     properties: {
-      distinct_id: distinctId,
-      $user_id: userId,
-      $session_id: sessionId,
+      distinct_id: mixpanel.get_distinct_id(),
+      ...(user?.id
+        ? { $user_id: user.id }
+        : localStorage.getItem("mixpanel_user_id")
+          ? { $user_id: localStorage.getItem("mixpanel_user_id") }
+          : {}),
+      $session_id: handleSessionId(),
       referrer_type: referrerType,
       ...sharedInfo,
       ...browserInfo,

@@ -156,8 +156,7 @@ function DaydreamRenderer({ isGuestMode = false }: { isGuestMode?: boolean }) {
         localStorage.setItem("mixpanel_user_id", user.id);
 
         await Promise.all([
-          identifyUser(user.id, distinctId || "", user),
-
+          // identifyUser(user.id, distinctId || "", user),
           isNewUser ? submitToHubspot(user) : Promise.resolve(),
         ]);
 
