@@ -4,7 +4,7 @@ import {
   clips as clipsTable,
   users as usersTable,
 } from "@/lib/db/schema";
-import { and, asc, eq, isNotNull, isNull, sql } from "drizzle-orm";
+import { and, asc, desc, eq, isNotNull, isNull, sql } from "drizzle-orm";
 import Header from "./Header";
 import MainLayoutClient from "./MainLayoutClient";
 
@@ -54,7 +54,7 @@ async function getInitialClips() {
     )
     .orderBy(asc(clipsTable.priority))) as InitialFetchedClip[];
 
-  const nonPrioritizedClips = (await db
+  const initialNonPrioritizedClips = (await db
     .select(selectFields)
     .from(clipsTable)
     .innerJoin(usersTable, eq(clipsTable.author_user_id, usersTable.id))
@@ -67,11 +67,16 @@ async function getInitialClips() {
         eq(clipsTable.approval_status, "approved"),
       ),
     )
-    .orderBy(asc(clipsTable.created_at))) as InitialFetchedClip[]; // Older first
+    .orderBy(
+      desc(clipsTable.remix_count),
+      asc(clipsTable.created_at),
+    )) as InitialFetchedClip[];
 
   const finalClips: (InitialFetchedClip | null)[] = [];
   const priorityMap = new Map<number, InitialFetchedClip>();
   let maxPriority = 0;
+
+  const demotedClips: InitialFetchedClip[] = [];
 
   for (const clip of prioritizedClips) {
     if (clip.priority !== null && clip.priority > 0) {
@@ -89,12 +94,30 @@ async function getInitialClips() {
       console.warn(
         `[getInitialClips] Clip ${clip.id} has invalid priority: ${clip.priority}. Ignoring priority.`,
       );
-      nonPrioritizedClips.push(clip);
-      nonPrioritizedClips.sort(
-        (a, b) => a.created_at.getTime() - b.created_at.getTime(),
-      );
+      demotedClips.push(clip);
     }
   }
+
+  const nonPrioritizedClips = [...initialNonPrioritizedClips, ...demotedClips];
+  nonPrioritizedClips.sort((a, b) => {
+    if (a.remix_count === null && b.remix_count === null) return 0;
+    if (a.remix_count === null) return 1; // a가 null이면 뒤로
+    if (b.remix_count === null) return -1; // b가 null이면 앞으로
+
+    if (b.remix_count !== a.remix_count) {
+      return b.remix_count - a.remix_count;
+    }
+    // tie-breaker, older first
+    const timeA =
+      a.created_at instanceof Date
+        ? a.created_at.getTime()
+        : new Date(a.created_at).getTime();
+    const timeB =
+      b.created_at instanceof Date
+        ? b.created_at.getTime()
+        : new Date(b.created_at).getTime();
+    return timeA - timeB;
+  });
 
   const initialLength = Math.max(
     maxPriority,
