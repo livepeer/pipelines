@@ -29,12 +29,192 @@ import { useDreamshaperStore } from "@/hooks/useDreamshaper";
 import { create } from "zustand";
 import { usePrivy } from "@/hooks/usePrivy";
 
+interface PlaybackUrlStore {
+  playbackUrl: string | null;
+  setPlaybackUrl: (url: string | null) => void;
+}
+
+export const usePlaybackUrlStore = create<PlaybackUrlStore>(set => ({
+  playbackUrl: null,
+  setPlaybackUrl: url => set({ playbackUrl: url }),
+}));
+
+if (typeof window !== "undefined") {
+  console.log("Setting up WHIP response interceptors");
+
+  // Debug
+  const checkForStoredUrl = () => {
+    const storedUrl = sessionStorage.getItem("livepeer-playback-url");
+    if (storedUrl) {
+      console.log("Found stored playback URL:", storedUrl);
+      usePlaybackUrlStore.getState().setPlaybackUrl(storedUrl);
+    }
+  };
+
+  checkForStoredUrl();
+  setInterval(checkForStoredUrl, 3000);
+
+  if ("PerformanceObserver" in window) {
+    try {
+      const observer = new PerformanceObserver(list => {
+        list.getEntries().forEach(entry => {
+          const resourceEntry = entry as PerformanceResourceTiming;
+          if (resourceEntry.name && typeof resourceEntry.name === "string") {
+            const url = resourceEntry.name;
+
+            if (url.includes("/whip") && !url.includes("/whep")) {
+              console.log("Performance API detected WHIP request:", url);
+            }
+          }
+        });
+      });
+
+      observer.observe({ entryTypes: ["resource"] });
+    } catch (e) {
+      console.error("Failed to setup PerformanceObserver:", e);
+    }
+  }
+
+  const { XMLHttpRequest: OriginalXHR } = window;
+
+  // @ts-ignore
+  window.XMLHttpRequest = function () {
+    const xhr = new OriginalXHR();
+    const originalOpen = xhr.open;
+    const originalSend = xhr.send;
+
+    // @ts-ignore
+    xhr.open = function () {
+      const url = arguments[1];
+      if (typeof url === "string" && url.includes("/whip")) {
+        console.log("Detected WHIP XHR request:", url);
+        this.addEventListener("load", function () {
+          console.log("XHR WHIP response received:", this.status);
+
+          try {
+            const headers = this.getAllResponseHeaders();
+            console.log("XHR WHIP response headers:", headers);
+
+            const playbackUrl = this.getResponseHeader("Livepeer-Playback-Url");
+            if (playbackUrl) {
+              console.log("Intercepted WHIP playback URL (XHR):", playbackUrl);
+              sessionStorage.setItem("livepeer-playback-url", playbackUrl);
+              usePlaybackUrlStore.getState().setPlaybackUrl(playbackUrl);
+            } else {
+              console.log("headers: ", headers);
+              console.log(
+                "No livepeer-playback-url header found in XHR response",
+              );
+            }
+          } catch (err) {
+            console.error("Error processing XHR WHIP response:", err);
+          }
+        });
+      }
+      // @ts-ignore
+      return originalOpen.apply(this, arguments);
+    };
+
+    xhr.send = function () {
+      // @ts-ignore
+      return originalSend.apply(this, arguments);
+    };
+
+    return xhr;
+  };
+
+  const originalFetch = window.fetch;
+  window.fetch = async function (...args) {
+    const [resource, config] = args;
+
+    let url = "";
+    if (typeof resource === "string") {
+      url = resource;
+    } else if (resource instanceof URL) {
+      url = resource.href;
+    } else if (resource instanceof Request) {
+      url = resource.url;
+    }
+
+    // intercept whip
+    if (url.includes("/whip") && !url.includes("/whep")) {
+      console.log("Detected WHIP fetch request:", url);
+
+      try {
+        const response = await originalFetch.apply(this, args);
+
+        const clonedResponse = response.clone();
+
+        console.log("Fetch WHIP response status:", clonedResponse.status);
+
+        const headers: Record<string, string> = {};
+        clonedResponse.headers.forEach((value, key) => {
+          headers[key] = value;
+          console.log(`${key}: ${value}`);
+        });
+        console.log("Fetch WHIP response headers:", headers);
+
+        const playbackUrl = clonedResponse.headers.get("livepeer-playback-url");
+        if (playbackUrl) {
+          console.log("Intercepted WHIP playback URL (fetch):", playbackUrl);
+          sessionStorage.setItem("livepeer-playback-url", playbackUrl);
+          usePlaybackUrlStore.getState().setPlaybackUrl(playbackUrl);
+        } else {
+          console.log(
+            "No livepeer-playback-url header found in fetch response",
+          );
+        }
+
+        return clonedResponse;
+      } catch (err) {
+        console.error("Error intercepting fetch WHIP request:", err);
+        return originalFetch.apply(this, args);
+      }
+    }
+
+    return originalFetch.apply(this, args);
+  };
+}
+
 const StatusMonitor = () => {
   const { user } = usePrivy();
   const { stream, pipeline } = useDreamshaperStore();
   const liveEventSentRef = useRef(false);
   const context = Broadcast.useBroadcastContext("StatusMonitor", undefined);
   const state = Broadcast.useStore(context.store, state => state);
+
+  // Intercept WHIP response headers and store playback URL
+  // We might want to this better later on updating the ui-kit package to surface
+  // the playback url
+  useEffect(() => {
+    if (!stream?.id || !pipeline?.id) return;
+
+    // Create a MutationObserver to monitor network requests
+    const observer = new MutationObserver(mutations => {
+      // Check if any network request to /whip endpoint has completed
+      const requests = performance.getEntriesByType("resource");
+      const whipResponses = requests.filter(
+        req =>
+          req.name.includes("/whip") &&
+          !req.name.includes("/whep") &&
+          req instanceof PerformanceResourceTiming,
+      );
+
+      if (whipResponses.length > 0) {
+        if (state.status === "live") {
+          sessionStorage.setItem("whip-connection-established", "true");
+        }
+      }
+    });
+
+    observer.observe(document, {
+      subtree: true,
+      childList: true,
+      attributes: true,
+    });
+
+    return () => observer.disconnect();
+  }, [stream?.id, pipeline?.id, state.status]);
 
   useEffect(() => {
     if (!stream?.id || !pipeline?.id || !pipeline?.type) return;

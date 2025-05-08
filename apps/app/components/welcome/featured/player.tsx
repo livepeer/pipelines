@@ -24,6 +24,7 @@ import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
 import * as React from "react";
 import { useEffect, useRef, useState } from "react";
+import { usePlaybackUrlStore } from "@/components/playground/broadcast";
 
 const VideoJSPlayer = dynamic(() => import("./videojs-player"), {
   ssr: false,
@@ -43,11 +44,22 @@ export const LivepeerPlayer = () => {
   const { isFullscreen } = useFullscreenStore();
   const appConfig = useAppConfig();
   const [playbackInfo, setPlaybackInfo] = useState<PlaybackInfo | null>(null);
+  const { playbackUrl: interceptedPlaybackUrl } = usePlaybackUrlStore();
 
   const { useFallbackPlayer: useFallbackVideoJSPlayer, handleError } =
     useFallbackDetection(stream?.output_playback_id!);
 
-  const playerUrl = `${appConfig.whipUrl}${appConfig?.whipUrl?.endsWith("/") ? "" : "/"}${stream?.stream_key}-out/whep`;
+  // Check for the intercepted URL from the WHIP response headers
+  // or fall back to the constructed URL
+  const storedPlaybackUrl =
+    typeof window !== "undefined"
+      ? sessionStorage.getItem("livepeer-playback-url")
+      : null;
+
+  const defaultPlayerUrl = `${appConfig.whipUrl}${appConfig?.whipUrl?.endsWith("/") ? "" : "/"}${stream?.stream_key}-out/whep`;
+
+  const playerUrl =
+    interceptedPlaybackUrl || storedPlaybackUrl || defaultPlayerUrl;
 
   const searchParams = useSearchParams();
   const useMediamtx =
