@@ -5,7 +5,7 @@ on:
       - reopened
       - ready_for_review
       - synchronize
-
+  issue_comment:
 jobs:
   pr_agent_job:
     if: ${{ github.event.sender.type != 'Bot' && github.event.sender.login == 'junhyoung-ryu' }}
