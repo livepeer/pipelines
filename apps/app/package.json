@@ -8,6 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "analyze": "ANALYZE=true pnpm build",
+    "db:push": "drizzle-kit push",
+    "db:generate": "drizzle-kit generate",
     "test": "vitest run"
   },
   "dependencies": {
