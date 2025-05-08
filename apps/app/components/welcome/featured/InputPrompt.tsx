@@ -2,12 +2,10 @@
 
 import { useCommandSuggestions } from "@/hooks/useCommandSuggestions";
 import useFullscreenStore from "@/hooks/useFullscreenStore";
-import useMobileStore from "@/hooks/useMobileStore";
 import { usePromptStore } from "@/hooks/usePromptStore";
 import { usePromptVersionStore } from "@/hooks/usePromptVersionStore";
 import track from "@/lib/track";
 import { Button } from "@repo/design-system/components/ui/button";
-import { Input } from "@repo/design-system/components/ui/input";
 import {
   Tooltip,
   TooltipContent,
@@ -19,19 +17,14 @@ import {
   Loader2,
   SlidersHorizontal,
   WandSparkles,
-  X,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import TextareaAutosize from "react-textarea-autosize";
-import {
-  useDreamshaperStore,
-  useStreamUpdates,
-} from "../../../hooks/useDreamshaper";
+import { useDreamshaperStore, useStreamUpdates } from "@/hooks/useDreamshaper";
 import SettingsMenu from "./prompt-settings";
 import { MAX_PROMPT_LENGTH, useValidateInput } from "./useValidateInput";
 import { Separator } from "@repo/design-system/components/ui/separator";
 import { usePrivy } from "@/hooks/usePrivy";
-import { useGuestUserStore } from "@/hooks/useGuestUser";
 
 const PROMPT_PLACEHOLDER = "Enter your prompt...";
 
@@ -61,13 +54,10 @@ export const InputPrompt = ({ onPromptSubmit }: InputPromptProps) => {
   const { promptVersion, incrementPromptVersion } = usePromptVersionStore();
 
   const { authenticated } = usePrivy();
-  const { promptCount } = useGuestUserStore();
 
   const [inputValue, setInputValue] = useState("");
-  const [isInputHovered, setInputHovered] = useState(false);
   const [settingsOpened, setSettingsOpened] = useState(false);
   const ref = useRef<HTMLTextAreaElement>(null);
-  const [isFocused, setIsFocused] = useState(false);
 
   const { profanity, exceedsMaxLength } = useValidateInput(inputValue);
 
@@ -279,11 +269,7 @@ export const InputPrompt = ({ onPromptSubmit }: InputPromptProps) => {
         (profanity || exceedsMaxLength) && "dark:border-red-700 border-red-600",
       )}
     >
-      <div
-        className="flex-1 relative flex items-center"
-        onMouseEnter={() => setInputHovered(true)}
-        onMouseLeave={() => setInputHovered(false)}
-      >
+      <div className="flex-1 relative flex items-center">
         <div
           className="relative w-full flex items-start overflow-hidden"
           style={{
@@ -313,8 +299,6 @@ export const InputPrompt = ({ onPromptSubmit }: InputPromptProps) => {
             value={inputValue}
             onChange={e => setInputValue(e.target.value)}
             onKeyDown={handleKeyDown}
-            onFocus={() => setIsFocused(true)}
-            onBlur={() => setIsFocused(false)}
             spellCheck="false"
             autoComplete="off"
             autoCorrect="off"
