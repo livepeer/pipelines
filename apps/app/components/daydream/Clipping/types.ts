@@ -1,3 +1,5 @@
+import { ClipRecordingMode } from "@/hooks/useVideoClip";
+
 type ClipData = {
   clipUrl: string;
   clipFilename: string;
@@ -5,7 +7,7 @@ type ClipData = {
   lastSubmittedPrompt?: string;
   thumbnailUrl?: string | null;
   slug?: string;
-  recordingMode?: "horizontal" | "vertical" | "output-only";
+  recordingMode?: ClipRecordingMode;
 };
 
 export type { ClipData };

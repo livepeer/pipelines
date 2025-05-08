@@ -5,7 +5,7 @@ import { ClipSummaryContent } from "./ClipSummaryContent";
 import ClipShareContent from "./ClipShareContent";
 import { ClipData } from "./types";
 import { GuestModeContent } from "./GuestModeContent";
-import { ClipRecordingMode } from "./ClipOptionsModal";
+import { ClipRecordingMode } from "@/hooks/useVideoClip";
 
 interface ClipModalProps {
   isOpen: boolean;

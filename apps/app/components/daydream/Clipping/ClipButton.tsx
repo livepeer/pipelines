@@ -1,8 +1,8 @@
 import { Button } from "@repo/design-system/components/ui/button";
-import { useVideoClip } from "@/hooks/useVideoClip";
+import { ClipRecordingMode, useVideoClip } from "@/hooks/useVideoClip";
 import { cn } from "@repo/design-system/lib/utils";
 import { ClipModal } from "./ClipModal";
-import { ClipOptionsModal, ClipRecordingMode } from "./ClipOptionsModal";
+import { ClipOptionsModal } from "./ClipOptionsModal";
 import { Scissors, Square } from "lucide-react";
 import { usePromptStore } from "@/hooks/usePromptStore";
 

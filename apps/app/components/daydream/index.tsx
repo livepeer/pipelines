@@ -18,7 +18,7 @@ import { useSearchParams } from "next/navigation";
 import { ClipModal } from "./Clipping/ClipModal";
 import { retrieveClip, deleteClip } from "@/lib/clipStorage";
 import { setSourceClipIdToCookies } from "./Clipping/actions";
-import { ClipRecordingMode } from "./Clipping/ClipOptionsModal";
+import { ClipRecordingMode } from "@/hooks/useVideoClip";
 
 interface DaydreamProps {
   hasSharedPrompt: boolean;

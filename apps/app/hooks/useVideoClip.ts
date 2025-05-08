@@ -10,6 +10,7 @@ declare global {
   }
 }
 
+// Note: "horizontal" mode is deprecated and will be removed
 export type ClipRecordingMode = "horizontal" | "vertical" | "output-only";
 
 export const CLIP_DURATION = 60000;
@@ -159,7 +160,7 @@ export const useVideoClip = () => {
   }, [isRecording, recordingResources]);
 
   const recordClip = async (
-    mode: ClipRecordingMode = "horizontal",
+    mode: ClipRecordingMode = "output-only",
     thumbnailUrl: string | null = null,
   ) => {
     if (isRecording) {

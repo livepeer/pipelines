@@ -1,4 +1,4 @@
-import { ClipRecordingMode } from "@/components/daydream/Clipping/ClipOptionsModal";
+import { ClipRecordingMode } from "@/hooks/useVideoClip";
 
 // IndexedDB storage for clips
 const DB_NAME = "daydream_clip_storage";

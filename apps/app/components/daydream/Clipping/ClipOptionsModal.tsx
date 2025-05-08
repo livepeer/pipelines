@@ -13,8 +13,7 @@ import {
   RadioGroupItem,
 } from "@repo/design-system/components/ui/radio-group";
 import { Button } from "@repo/design-system/components/ui/button";
-
-export type ClipRecordingMode = "horizontal" | "vertical" | "output-only";
+import { ClipRecordingMode } from "@/hooks/useVideoClip";
 
 interface ClipOptionsModalProps {
   isOpen: boolean;
@@ -99,10 +98,9 @@ export function ClipOptionsModal({
   onCreateClip,
 }: ClipOptionsModalProps) {
   const [previewBlobs, setPreviewBlobs] = useState<{
-    horizontal: string | null;
     vertical: string | null;
     outputOnly: string | null;
-  }>({ horizontal: null, vertical: null, outputOnly: null });
+  }>({ vertical: null, outputOnly: null });
   const [isReady, setIsReady] = useState(false);
   const [isCaptured, setIsCaptured] = useState(false);
   const [selectedMode, setSelectedMode] = useState<string>("output-only");
@@ -135,11 +133,9 @@ export function ClipOptionsModal({
           return;
         }
 
-        const horizontalCanvas = document.createElement("canvas");
         const verticalCanvas = document.createElement("canvas");
         const outputOnlyCanvas = document.createElement("canvas");
 
-        container.appendChild(horizontalCanvas);
         container.appendChild(verticalCanvas);
         container.appendChild(outputOnlyCanvas);
 
@@ -148,49 +144,21 @@ export function ClipOptionsModal({
           previewWidth * (outputVideo.videoHeight / outputVideo.videoWidth),
         );
 
-        horizontalCanvas.width = previewWidth;
-        horizontalCanvas.height = previewHeight;
         outputOnlyCanvas.width = previewWidth;
         outputOnlyCanvas.height = previewHeight;
         verticalCanvas.width = previewWidth;
         verticalCanvas.height = previewHeight * 2;
 
-        const horizontalCtx = horizontalCanvas.getContext("2d");
         const verticalCtx = verticalCanvas.getContext("2d");
         const outputOnlyCtx = outputOnlyCanvas.getContext("2d");
 
-        if (!horizontalCtx || !verticalCtx || !outputOnlyCtx) {
+        if (!verticalCtx || !outputOnlyCtx) {
           throw new Error("Could not get canvas contexts");
         }
-
-        horizontalCtx.fillStyle = "black";
-        horizontalCtx.fillRect(0, 0, previewWidth, previewHeight);
-        horizontalCtx.drawImage(outputVideo, 0, 0, previewWidth, previewHeight);
 
         outputOnlyCtx.fillStyle = "black";
         outputOnlyCtx.fillRect(0, 0, previewWidth, previewHeight);
         outputOnlyCtx.drawImage(outputVideo, 0, 0, previewWidth, previewHeight);
-
-        const pipSize = 0.25;
-        const pipWidth = Math.floor(previewWidth * pipSize);
-        const pipHeight = Math.floor(
-          pipWidth * (inputVideo.videoHeight / inputVideo.videoWidth),
-        );
-        const pipX = previewWidth - pipWidth - 16;
-        const pipY = previewHeight - pipHeight - 16;
-
-        horizontalCtx.fillStyle = "rgba(0, 0, 0, 0.5)";
-        horizontalCtx.beginPath();
-        horizontalCtx.roundRect(
-          pipX - 2,
-          pipY - 2,
-          pipWidth + 4,
-          pipHeight + 4,
-          8,
-        );
-        horizontalCtx.fill();
-
-        horizontalCtx.drawImage(inputVideo, pipX, pipY, pipWidth, pipHeight);
 
         verticalCtx.fillStyle = "black";
         verticalCtx.fillRect(0, 0, previewWidth, verticalCanvas.height);
@@ -235,12 +203,10 @@ export function ClipOptionsModal({
           });
         };
 
-        const horizontalBlob = await getCanvasBlob(horizontalCanvas);
         const verticalBlob = await getCanvasBlob(verticalCanvas);
         const outputOnlyBlob = await getCanvasBlob(outputOnlyCanvas);
 
         setPreviewBlobs({
-          horizontal: horizontalBlob,
           vertical: verticalBlob,
           outputOnly: outputOnlyBlob,
         });
@@ -248,7 +214,6 @@ export function ClipOptionsModal({
         setIsCaptured(true);
         setIsReady(true);
 
-        container.removeChild(horizontalCanvas);
         container.removeChild(verticalCanvas);
         container.removeChild(outputOnlyCanvas);
       } catch (error) {
@@ -265,7 +230,6 @@ export function ClipOptionsModal({
     return () => {
       document.body.removeChild(container);
 
-      if (previewBlobs.horizontal) URL.revokeObjectURL(previewBlobs.horizontal);
       if (previewBlobs.vertical) URL.revokeObjectURL(previewBlobs.vertical);
       if (previewBlobs.outputOnly) URL.revokeObjectURL(previewBlobs.outputOnly);
     };
@@ -273,9 +237,7 @@ export function ClipOptionsModal({
     isOpen,
     isCaptured,
     onClose,
-    previewBlobs.horizontal,
     previewBlobs.vertical,
-
     previewBlobs.outputOnly,
   ]);
 
@@ -296,10 +258,9 @@ export function ClipOptionsModal({
       });
       return;
     }
+
     let thumbnailUrl = previewBlobs.outputOnly;
-    if (selectedMode === "horizontal") {
-      thumbnailUrl = previewBlobs.horizontal;
-    } else if (selectedMode === "vertical") {
+    if (selectedMode === "vertical") {
       thumbnailUrl = previewBlobs.vertical;
     }
 
