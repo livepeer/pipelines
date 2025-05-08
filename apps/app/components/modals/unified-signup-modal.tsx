@@ -180,7 +180,7 @@ export function UnifiedSignupModal({
                 className="w-48 px-12 h-12 rounded-md bg-black text-white hover:bg-gray-800"
                 onClick={() => {
                   window.open(
-                    "https://discord.gg/DwBPjfhmUt",
+                    "https://discord.gg/5sZu8xmn6U",
                     "_blank",
                     "noopener noreferrer",
                   );
