@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   DialogContent,
   DialogDescription,
@@ -46,11 +46,14 @@ export function ClipSummaryContent({
   const [isUploading, setIsUploading] = useState(false);
   const [isFeatured, setIsFeatured] = useState(true);
   const { lastSubmittedPrompt } = usePromptStore();
+  const mainVideoRef = useRef<HTMLVideoElement>(null);
+  const bgVideoRef = useRef<HTMLVideoElement>(null);
 
-  const storedPrompt =
-    typeof window !== "undefined"
+  const storedPrompt = useMemo(() => {
+    return typeof window !== "undefined"
       ? localStorage.getItem("daydream_pending_clip_prompt")
       : null;
+  }, []);
 
   const handleNext = async () => {
     let clipId;
@@ -147,6 +150,34 @@ export function ClipSummaryContent({
     }
   };
 
+  useEffect(() => {
+    if (mainVideoRef.current && bgVideoRef.current) {
+      const mainVideo = mainVideoRef.current;
+      const bgVideo = bgVideoRef.current;
+
+      const syncPlay = () =>
+        bgVideo.play().catch(e => console.error("Bg video play error:", e));
+      const syncPause = () => bgVideo.pause();
+      const syncTime = () => {
+        if (Math.abs(mainVideo.currentTime - bgVideo.currentTime) > 0.1) {
+          bgVideo.currentTime = mainVideo.currentTime;
+        }
+      };
+
+      mainVideo.addEventListener("play", syncPlay);
+      mainVideo.addEventListener("pause", syncPause);
+      mainVideo.addEventListener("seeked", syncTime);
+      mainVideo.addEventListener("loadedmetadata", syncTime);
+
+      return () => {
+        mainVideo.removeEventListener("play", syncPlay);
+        mainVideo.removeEventListener("pause", syncPause);
+        mainVideo.removeEventListener("seeked", syncTime);
+        mainVideo.removeEventListener("loadedmetadata", syncTime);
+      };
+    }
+  }, [clipData.clipUrl, clipData.recordingMode]);
+
   return (
     <DialogContent className="h-fit max-h-[86dvh] overflow-y-auto w-[calc(100%-32px)] sm:w-full sm:max-w-[55dvh] mx-auto rounded-xl p-4 pt-5 sm:p-5">
       <DialogHeader className="flex items-center mb-1">
@@ -162,23 +193,35 @@ export function ClipSummaryContent({
         {clipData.clipUrl && (
           <div
             className={cn(
-              "w-full aspect-square relative rounded-md flex items-center justify-center",
-              clipData.recordingMode === "vertical" ? "bg-white" : "bg-black",
+              "w-full aspect-square relative rounded-md flex items-center justify-center overflow-hidden",
             )}
           >
+            {clipData.recordingMode === "vertical" && (
+              <video
+                ref={bgVideoRef}
+                src={clipData.clipUrl}
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="absolute inset-0 w-full h-full object-cover filter blur-xl scale-110 z-0 rounded-md"
+              />
+            )}
             <video
               src={clipData.clipUrl}
+              ref={mainVideoRef}
               autoPlay
               loop
               muted={false}
               playsInline
               controls
               poster={clipData.thumbnailUrl || undefined}
-              className={`rounded-md ${
+              className={cn(
+                "rounded-md z-10",
                 clipData.recordingMode === "vertical"
                   ? "w-auto h-full"
-                  : "absolute inset-0 w-full h-full object-cover"
-              }`}
+                  : "absolute inset-0 w-full h-full object-cover",
+              )}
             />
           </div>
         )}
