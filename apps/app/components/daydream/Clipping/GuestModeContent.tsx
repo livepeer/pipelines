@@ -99,7 +99,7 @@ export function GuestModeContent({ clipData, onClose }: GuestModeContentProps) {
               playsInline
               controls
               poster={clipData.thumbnailUrl || undefined}
-              className="w-full max-h-[50vh] object-contain rounded-md" // 이 부분의 max-h도 조절이 필요할 수 있습니다.
+              className="w-full max-h-[50vh] object-contain rounded-md"
             />
           )}
         </div>
