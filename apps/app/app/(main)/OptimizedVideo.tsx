@@ -2,7 +2,7 @@ import { GradientAvatar } from "@/components/GradientAvatar";
 import { usePreviewStore } from "@/hooks/usePreviewStore";
 import { useOverlayStore } from "@/hooks/useOverlayStore";
 import { cn } from "@repo/design-system/lib/utils";
-import { PlayCircle, Repeat } from "lucide-react";
+import { Play, PlayCircle, Repeat } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { TrackedButton } from "@/components/analytics/TrackedButton";
 import { TrackedLink } from "@/components/analytics/TrackedLink";
@@ -229,7 +229,12 @@ export default function OptimizedVideo({
             </TrackedLink>
 
             <div
-              className="absolute top-3 right-2 p-0 z-20 flex gap-1 items-center opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-150"
+              className={cn(
+                "absolute top-3 right-2 p-0 z-20 flex gap-1 items-center opacity-100 transition-opacity duration-150",
+                isTutorial
+                  ? "sm:opacity-100"
+                  : "sm:opacity-0 sm:group-hover:opacity-100",
+              )}
               onClick={e => e.stopPropagation()}
             >
               <div onClick={e => e.stopPropagation()}>
@@ -237,15 +242,19 @@ export default function OptimizedVideo({
                   <TrackedButton
                     trackingEvent="tutorial_video_clicked"
                     trackingProperties={{ location: "video_card" }}
-                    variant="outline"
-                    className="inline-flex items-center space-x-0.5 px-3 py-2 h-8 bg-black/20 backdrop-blur-md text-white rounded-full border-white border shadow-sm scale-90"
+                    className={cn(
+                      "inline-flex items-center px-3 py-2 h-8 text-black rounded-full shadow-sm scale-90 transition-all",
+                      "bg-white border border-[#B9EEFF] backdrop-blur-md",
+                      "hover:bg-black/20 hover:text-white",
+                      isTutorial ? "opacity-100" : "opacity-0",
+                    )}
                     onClick={e => {
                       e.stopPropagation();
                       router.push(`/clips/${slug || clipId}`);
                     }}
                   >
                     {/* Our default button overrides the size of child SVGs. Rather than change the button, I've overridden the CSS here. */}
-                    <PlayCircle className={cn("!w-3 !h-3")} />
+                    <Play className={cn("!w-3 !h-3")} />
                     <span className="text-[0.7rem] tracking-wide">
                       Tutorial
                     </span>
@@ -255,7 +264,7 @@ export default function OptimizedVideo({
                     trackingEvent="overlay_try_prompt_clicked"
                     trackingProperties={{ location: "overlay_video_card" }}
                     variant="outline"
-                    className="inline-flex items-center space-x-0.5 px-3 py-2 h-8 bg-black/20 backdrop-blur-md text-white rounded-full border-white border shadow-sm scale-90"
+                    className="inline-flex items-center px-3 py-2 h-8 bg-black/20 backdrop-blur-md text-white rounded-full border-white border shadow-sm scale-90"
                     onClick={handleTryPrompt}
                   >
                     {/* Our default button overrides the size of child SVGs. Rather than change the button, I've overridden the CSS here. */}
@@ -269,7 +278,7 @@ export default function OptimizedVideo({
                     trackingEvent="explore_try_prompt_clicked"
                     trackingProperties={{ location: "video_card" }}
                     variant="outline"
-                    className="inline-flex items-center space-x-0.5 px-3 py-2 h-8 bg-black/20 backdrop-blur-md text-white rounded-full border-white border shadow-sm scale-90"
+                    className="inline-flex items-center px-3 py-2 h-8 bg-black/20 backdrop-blur-md text-white rounded-full border-white border shadow-sm scale-90"
                     onClick={handleTryPrompt}
                   >
                     <VideoAISparkles className={cn("!w-7 !h-7")} />

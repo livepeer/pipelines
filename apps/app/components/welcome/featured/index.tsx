@@ -70,7 +70,7 @@ export default function Winners() {
         </div>
         <div>
           <Link
-            href={"https://discord.com/invite/hxyNHeSzCK"}
+            href={"https://discord.gg/DwBPjfhmUt"}
             target="_blank"
             className="text-sm gap-1 flex items-center -ml-20 -mt-8 md:-ml-0 md:-mt-0"
           >

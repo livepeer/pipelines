@@ -12,6 +12,7 @@ import { ClipData } from "./types";
 import { Switch } from "@repo/design-system/components/ui/switch";
 import { usePromptStore } from "@/hooks/usePromptStore";
 import { TrackedButton } from "@/components/analytics/TrackedButton";
+import { cn } from "@repo/design-system/lib/utils";
 
 interface ClipSummaryContentProps {
   clipData: ClipData;
@@ -147,7 +148,7 @@ export function ClipSummaryContent({
   };
 
   return (
-    <DialogContent className="h-fit max-h-[100dvh] overflow-y-auto w-[calc(100%-32px)] sm:w-full sm:max-w-[55dvh] mx-auto rounded-xl p-4 pt-5 sm:p-5">
+    <DialogContent className="h-fit max-h-[86dvh] overflow-y-auto w-[calc(100%-32px)] sm:w-full sm:max-w-[55dvh] mx-auto rounded-xl p-4 pt-5 sm:p-5">
       <DialogHeader className="flex items-center mb-1">
         <DialogTitle className="text-xl sm:text-2xl">
           Almost Ready to Share!
@@ -159,7 +160,12 @@ export function ClipSummaryContent({
 
       <div className="flex justify-center w-full">
         {clipData.clipUrl && (
-          <div className="w-full aspect-square relative">
+          <div
+            className={cn(
+              "w-full aspect-square relative rounded-md flex items-center justify-center",
+              clipData.recordingMode === "vertical" ? "bg-white" : "bg-black",
+            )}
+          >
             <video
               src={clipData.clipUrl}
               autoPlay
@@ -168,7 +174,11 @@ export function ClipSummaryContent({
               playsInline
               controls
               poster={clipData.thumbnailUrl || undefined}
-              className="absolute inset-0 w-full h-full object-cover rounded-md"
+              className={`rounded-md ${
+                clipData.recordingMode === "vertical"
+                  ? "w-auto h-full"
+                  : "absolute inset-0 w-full h-full object-cover"
+              }`}
             />
           </div>
         )}

@@ -173,7 +173,7 @@ const MyStats = () => {
 const CTA = () => {
   return (
     <Link
-      href={"https://discord.com/invite/hxyNHeSzCK"}
+      href={"https://discord.gg/DwBPjfhmUt"}
       target="_blank"
       style={{
         backgroundImage:
