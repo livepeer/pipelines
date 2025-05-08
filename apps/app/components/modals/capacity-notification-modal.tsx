@@ -139,7 +139,7 @@ export function CapacityNotificationModal({
                   onClose();
                 }}
               >
-                Got it
+                Explore community creations
               </Button>
             </div>
           </div>
