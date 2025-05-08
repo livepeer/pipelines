@@ -10,6 +10,7 @@ declare global {
   }
 }
 
+// Note: "horizontal" mode is deprecated and will be removed
 export type ClipRecordingMode = "horizontal" | "vertical" | "output-only";
 
 export const CLIP_DURATION = 60000;
@@ -25,6 +26,8 @@ export const useVideoClip = () => {
   const [clipFilename, setClipFilename] = useState<string | null>(null);
   const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
   const [showClipModal, setShowClipModal] = useState(false);
+  const [recordingMode, setRecordingMode] =
+    useState<ClipRecordingMode>("output-only");
 
   const [showOptionsModal, setShowOptionsModal] = useState(false);
 
@@ -157,7 +160,7 @@ export const useVideoClip = () => {
   }, [isRecording, recordingResources]);
 
   const recordClip = async (
-    mode: ClipRecordingMode = "horizontal",
+    mode: ClipRecordingMode = "output-only",
     thumbnailUrl: string | null = null,
   ) => {
     if (isRecording) {
@@ -165,6 +168,8 @@ export const useVideoClip = () => {
       return;
     }
     setShowOptionsModal(false);
+
+    setRecordingMode(mode);
 
     const videos = document.querySelectorAll("video");
     if (videos.length < 2) {
@@ -427,5 +432,6 @@ export const useVideoClip = () => {
     cleanupClipUrl,
     showOptionsModal,
     closeOptionsModal,
+    recordingMode,
   };
 };

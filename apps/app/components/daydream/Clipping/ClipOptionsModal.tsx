@@ -13,8 +13,7 @@ import {
   RadioGroupItem,
 } from "@repo/design-system/components/ui/radio-group";
 import { Button } from "@repo/design-system/components/ui/button";
-
-export type ClipRecordingMode = "horizontal" | "vertical" | "output-only";
+import { ClipRecordingMode } from "@/hooks/useVideoClip";
 
 interface ClipOptionsModalProps {
   isOpen: boolean;
@@ -50,12 +49,20 @@ const LayoutOption = ({
     }
     onClick={() => onSelect(value)}
   >
-    <div className="hidden sm:block sm:h-52 bg-black rounded-xl overflow-hidden mb-3">
+    <div
+      className={`hidden sm:flex sm:h-52 rounded-xl overflow-hidden mb-3 justify-center items-center ${
+        value === "vertical" ? "bg-white" : "bg-black"
+      }`}
+    >
       {previewImg ? (
         <img
           src={previewImg}
           alt={`${title} preview`}
-          className="w-full h-full object-cover"
+          className={`${
+            value === "vertical"
+              ? "h-full max-w-full w-auto object-contain"
+              : "w-full h-full object-cover"
+          }`}
         />
       ) : (
         <div className="w-full h-full flex items-center justify-center text-white">
@@ -74,7 +81,9 @@ const LayoutOption = ({
           {title}
         </label>
       </div>
-      <p className="text-[#707070] text-sm leading-[1.4]">{description}</p>
+      <p className="hidden sm:block text-[#707070] text-sm leading-[1.4]">
+        {description}
+      </p>
     </div>
 
     <div className="absolute top-0 left-0">
@@ -89,9 +98,9 @@ export function ClipOptionsModal({
   onCreateClip,
 }: ClipOptionsModalProps) {
   const [previewBlobs, setPreviewBlobs] = useState<{
-    horizontal: string | null;
+    vertical: string | null;
     outputOnly: string | null;
-  }>({ horizontal: null, outputOnly: null });
+  }>({ vertical: null, outputOnly: null });
   const [isReady, setIsReady] = useState(false);
   const [isCaptured, setIsCaptured] = useState(false);
   const [selectedMode, setSelectedMode] = useState<string>("output-only");
@@ -124,10 +133,10 @@ export function ClipOptionsModal({
           return;
         }
 
-        const horizontalCanvas = document.createElement("canvas");
+        const verticalCanvas = document.createElement("canvas");
         const outputOnlyCanvas = document.createElement("canvas");
 
-        container.appendChild(horizontalCanvas);
+        container.appendChild(verticalCanvas);
         container.appendChild(outputOnlyCanvas);
 
         const previewWidth = 300;
@@ -135,46 +144,51 @@ export function ClipOptionsModal({
           previewWidth * (outputVideo.videoHeight / outputVideo.videoWidth),
         );
 
-        horizontalCanvas.width = previewWidth;
-        horizontalCanvas.height = previewHeight;
         outputOnlyCanvas.width = previewWidth;
         outputOnlyCanvas.height = previewHeight;
+        verticalCanvas.width = previewWidth;
+        verticalCanvas.height = previewHeight * 2;
 
-        const horizontalCtx = horizontalCanvas.getContext("2d");
+        const verticalCtx = verticalCanvas.getContext("2d");
         const outputOnlyCtx = outputOnlyCanvas.getContext("2d");
 
-        if (!horizontalCtx || !outputOnlyCtx) {
+        if (!verticalCtx || !outputOnlyCtx) {
           throw new Error("Could not get canvas contexts");
         }
-
-        horizontalCtx.fillStyle = "black";
-        horizontalCtx.fillRect(0, 0, previewWidth, previewHeight);
-        horizontalCtx.drawImage(outputVideo, 0, 0, previewWidth, previewHeight);
 
         outputOnlyCtx.fillStyle = "black";
         outputOnlyCtx.fillRect(0, 0, previewWidth, previewHeight);
         outputOnlyCtx.drawImage(outputVideo, 0, 0, previewWidth, previewHeight);
 
-        const pipSize = 0.25;
-        const pipWidth = Math.floor(previewWidth * pipSize);
-        const pipHeight = Math.floor(
-          pipWidth * (inputVideo.videoHeight / inputVideo.videoWidth),
-        );
-        const pipX = previewWidth - pipWidth - 16;
-        const pipY = previewHeight - pipHeight - 16;
+        verticalCtx.fillStyle = "black";
+        verticalCtx.fillRect(0, 0, previewWidth, verticalCanvas.height);
 
-        horizontalCtx.fillStyle = "rgba(0, 0, 0, 0.5)";
-        horizontalCtx.beginPath();
-        horizontalCtx.roundRect(
-          pipX - 2,
-          pipY - 2,
-          pipWidth + 4,
-          pipHeight + 4,
-          8,
-        );
-        horizontalCtx.fill();
+        const outputAspectRatio =
+          outputVideo.videoWidth / outputVideo.videoHeight;
+        const outputHeight = previewHeight;
+        const outputWidth = outputHeight * outputAspectRatio;
+        const outputX = (previewWidth - outputWidth) / 2;
 
-        horizontalCtx.drawImage(inputVideo, pipX, pipY, pipWidth, pipHeight);
+        verticalCtx.drawImage(
+          outputVideo,
+          outputX,
+          0,
+          outputWidth,
+          outputHeight,
+        );
+
+        const inputAspectRatio = inputVideo.videoWidth / inputVideo.videoHeight;
+        const inputHeight = previewHeight;
+        const inputWidth = inputHeight * inputAspectRatio;
+        const inputX = (previewWidth - inputWidth) / 2;
+
+        verticalCtx.drawImage(
+          inputVideo,
+          inputX,
+          previewHeight,
+          inputWidth,
+          inputHeight,
+        );
 
         const getCanvasBlob = (canvas: HTMLCanvasElement): Promise<string> => {
           return new Promise((resolve, reject) => {
@@ -189,18 +203,18 @@ export function ClipOptionsModal({
           });
         };
 
-        const horizontalBlob = await getCanvasBlob(horizontalCanvas);
+        const verticalBlob = await getCanvasBlob(verticalCanvas);
         const outputOnlyBlob = await getCanvasBlob(outputOnlyCanvas);
 
         setPreviewBlobs({
-          horizontal: horizontalBlob,
+          vertical: verticalBlob,
           outputOnly: outputOnlyBlob,
         });
 
         setIsCaptured(true);
         setIsReady(true);
 
-        container.removeChild(horizontalCanvas);
+        container.removeChild(verticalCanvas);
         container.removeChild(outputOnlyCanvas);
       } catch (error) {
         console.error("Error capturing frames:", error);
@@ -216,14 +230,14 @@ export function ClipOptionsModal({
     return () => {
       document.body.removeChild(container);
 
-      if (previewBlobs.horizontal) URL.revokeObjectURL(previewBlobs.horizontal);
+      if (previewBlobs.vertical) URL.revokeObjectURL(previewBlobs.vertical);
       if (previewBlobs.outputOnly) URL.revokeObjectURL(previewBlobs.outputOnly);
     };
   }, [
     isOpen,
     isCaptured,
     onClose,
-    previewBlobs.horizontal,
+    previewBlobs.vertical,
     previewBlobs.outputOnly,
   ]);
 
@@ -244,16 +258,18 @@ export function ClipOptionsModal({
       });
       return;
     }
-    const thumbnailUrl =
-      selectedMode === "horizontal"
-        ? previewBlobs.horizontal
-        : previewBlobs.outputOnly;
+
+    let thumbnailUrl = previewBlobs.outputOnly;
+    if (selectedMode === "vertical") {
+      thumbnailUrl = previewBlobs.vertical;
+    }
+
     onCreateClip(selectedMode as ClipRecordingMode, thumbnailUrl);
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={open => !open && onClose()}>
-      <DialogContent className="h-fit max-h-[90dvh] w-[calc(100%-32px)] sm:w-full sm:max-w-[650px] mx-auto overflow-y-auto rounded-xl p-6 pt-8 sm:p-8">
+      <DialogContent className="h-fit max-h-[86dvh] w-[calc(100%-32px)] sm:w-full sm:max-w-[650px] mx-auto overflow-y-auto rounded-xl p-6 pt-8 sm:p-8">
         <DialogHeader className="flex items-center">
           <DialogTitle className="text-2xl">
             How Would You Like to Share?
@@ -280,11 +296,11 @@ export function ClipOptionsModal({
           />
 
           <LayoutOption
-            title="Include input video"
-            description="Share both your original video and the final result — your input video will be visible in the clip."
-            value="horizontal"
+            title="Vertical Stack"
+            description="Stack your input video on top of the output video in a vertical layout."
+            value="vertical"
             selectedValue={selectedMode}
-            previewImg={previewBlobs.horizontal}
+            previewImg={previewBlobs.vertical}
             onSelect={handleValueChange}
           />
         </RadioGroup>
