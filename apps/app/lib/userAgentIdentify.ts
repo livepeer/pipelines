@@ -47,9 +47,12 @@ export const identifyMobileInAppBrowser = (userAgent: string) => {
 };
 
 export const identifyTikTokInAppBrowser = (userAgent: string) => {
-  return (
+  const isTikTok =
     userAgent?.includes("tiktok") ||
     userAgent?.includes("musical_ly") ||
-    userAgent?.includes("bytedance")
-  );
+    userAgent?.includes("bytedance");
+  // Andriod tiktok is supported
+  const isIphone = /iphone/i.test(userAgent);
+
+  return isTikTok && isIphone;
 };
