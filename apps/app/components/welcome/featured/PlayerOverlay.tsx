@@ -222,7 +222,7 @@ export function PlayerOverlay({
                 onClick={() => track("capacity_got_it_clicked")}
                 asChild
               >
-                <a href="/">Got it</a>
+                <a href="/">Explore community creations</a>
               </Button>
             </div>
           </div>
@@ -281,7 +281,7 @@ export function PlayerOverlay({
           onClick={() => track("capacity_got_it_clicked")}
           asChild
         >
-          <a href="/">Got it</a>
+          <a href="/">Explore community creations</a>
         </Button>
       </div>
     </div>
