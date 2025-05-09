@@ -29,7 +29,7 @@ import { useGuestUserStore } from "@/hooks/useGuestUser";
 import { BentoGridOverlay } from "./BentoGridOverlay";
 import { useTrialTimer } from "@/hooks/useTrialTimer";
 import { UnifiedSignupModal } from "@/components/modals/unified-signup-modal";
-import { TutorialVideo } from "./TutorialVideo";
+import { TutorialVideo, useTutorialVideoStore } from "./TutorialVideo";
 import {
   DREAMSHAPER_PARAMS_STORAGE_KEY,
   DREAMSHAPER_PARAMS_VERSION_KEY,
@@ -45,6 +45,7 @@ export default function Dreamshaper({ isGuestMode = false }: DreamshaperProps) {
   useParamsHandling();
   useErrorMonitor();
 
+  const { isVisible } = useTutorialVideoStore();
   const { handleStreamUpdate } = useStreamUpdates();
   const { stream, pipeline, sharedPrompt, errorState } = useDreamshaperStore();
   const { status, live } = useStreamStatus(stream?.id, false);
@@ -382,7 +383,7 @@ export default function Dreamshaper({ isGuestMode = false }: DreamshaperProps) {
             >
               {hasCapacity ? (
                 <>
-                  <MainContent />
+                  {!showTutorial && !isVisible && <MainContent />}
                   {showTutorial && (
                     <TutorialVideo onComplete={handleTutorialComplete} />
                   )}
