@@ -13,7 +13,7 @@ import {
 } from "@repo/design-system/components/ui/tooltip";
 import { cn } from "@repo/design-system/lib/utils";
 import { Loader2, SlidersHorizontal, WandSparkles } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import TextareaAutosize from "react-textarea-autosize";
 import { useDreamshaperStore, useStreamUpdates } from "@/hooks/useDreamshaper";
 import SettingsMenu from "./prompt-settings";
@@ -70,11 +70,27 @@ export const MobileInputPrompt = ({
     }));
   }, [pipeline?.prioritized_params]);
 
-  useEffect(() => {
+  const restoreLastPrompt = useCallback(() => {
     if (lastSubmittedPrompt) {
       setInputValue(lastSubmittedPrompt);
+      setTimeout(() => {
+        if (ref && typeof ref !== "function" && ref.current) {
+          ref.current.focus();
+
+          if ("setSelectionRange" in ref.current) {
+            const length = lastSubmittedPrompt.length;
+            ref.current.setSelectionRange(length, length);
+          }
+        }
+      }, 0);
     }
-  }, [lastSubmittedPrompt, setInputValue]);
+  }, [lastSubmittedPrompt, ref, setInputValue]);
+
+  useEffect(() => {
+    if (lastSubmittedPrompt) {
+      restoreLastPrompt();
+    }
+  }, [lastSubmittedPrompt, restoreLastPrompt]);
 
   const {
     commandMenuOpen,
