@@ -5,15 +5,25 @@ import { Separator } from "@repo/design-system/components/ui/separator";
 import LivepeerLogo from "../../components/daydream/LivepeerLogo";
 import { Logo } from "@/components/sidebar";
 import Link from "next/link";
+import { useState } from "react";
 
 export default function TikTokFallback() {
   const linkToCopy = "https://daydream.live/";
+  const [isCopied, setIsCopied] = useState(false);
 
   const handleCopyLink = () => {
-    navigator.clipboard.writeText(linkToCopy).catch(err => {
-      console.error("Failed to copy link: ", err);
-      alert("Failed to copy link.");
-    });
+    navigator.clipboard
+      .writeText(linkToCopy)
+      .then(() => {
+        setIsCopied(true);
+        setTimeout(() => {
+          setIsCopied(false);
+        }, 3000);
+      })
+      .catch(err => {
+        console.error("Failed to copy link: ", err);
+        alert("Failed to copy link.");
+      });
   };
 
   return (
@@ -37,8 +47,12 @@ export default function TikTokFallback() {
             className="focus:outline-none bg-inherit"
             readOnly
           />
-          <Button className="rounded-full" onClick={handleCopyLink}>
-            Copy link
+          <Button
+            className="rounded-full"
+            onClick={handleCopyLink}
+            disabled={isCopied}
+          >
+            {isCopied ? "Copied!" : "Copy link"}
           </Button>
         </div>
       </div>
