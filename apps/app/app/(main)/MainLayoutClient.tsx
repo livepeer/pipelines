@@ -7,6 +7,7 @@ import { useCapacityCheck } from "@/hooks/useCapacityCheck";
 import { useCapacityToastStore } from "@/hooks/useCapacityToast";
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
+import TikTokBrowserWarning from "./TikTokBrowserWarning";
 
 export default function MainLayoutClient({
   initialClips,
