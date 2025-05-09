@@ -24,6 +24,7 @@ import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
 import * as React from "react";
 import { useEffect, useRef, useState } from "react";
+import { create } from "zustand";
 
 const VideoJSPlayer = dynamic(() => import("./videojs-player"), {
   ssr: false,
@@ -37,10 +38,21 @@ const VideoJSPlayer = dynamic(() => import("./videojs-player"), {
   ),
 });
 
+interface PlayerState {
+  isPlaying: boolean;
+  setIsPlaying: (value: boolean) => void;
+}
+
+export const usePlayerStore = create<PlayerState>(set => ({
+  isPlaying: false,
+  setIsPlaying: (value: boolean) => set({ isPlaying: value }),
+}));
+
 export const LivepeerPlayer = () => {
   const { stream, pipeline } = useDreamshaperStore();
   const { isMobile } = useMobileStore();
   const { isFullscreen } = useFullscreenStore();
+  const { setIsPlaying } = usePlayerStore();
   const appConfig = useAppConfig();
   const [playbackInfo, setPlaybackInfo] = useState<PlaybackInfo | null>(null);
 
@@ -142,6 +154,9 @@ export const LivepeerPlayer = () => {
           title="Live stream"
           data-testid="playback-video"
           className={`h-full w-full transition-all object-contain relative z-0 ${!isMobile ? "-scale-x-100" : ""} bg-[#fefefe]`}
+          onLoadedMetadata={() => {
+            setIsPlaying(true);
+          }}
         />
 
         <Player.LoadingIndicator className="w-full relative h-full bg-black/50 backdrop-blur data-[visible=true]:animate-in data-[visible=false]:animate-out data-[visible=false]:fade-out-0 data-[visible=true]:fade-in-0 z-[6]">
