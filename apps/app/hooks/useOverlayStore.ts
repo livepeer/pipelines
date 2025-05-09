@@ -17,8 +17,8 @@ interface OverlayStore {
 }
 
 export const useOverlayStore = create<OverlayStore>(set => ({
-  isOverlayOpen: false,
-  overlayType: null,
+  isOverlayOpen: true,
+  overlayType: "bento",
   selectedClipId: null,
   selectedPrompt: null,
   cachedClips: [],
