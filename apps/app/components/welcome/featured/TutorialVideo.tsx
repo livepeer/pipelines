@@ -1,5 +1,6 @@
 "use client";
 
+import { create } from "zustand";
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@repo/design-system/lib/utils";
 import track from "@/lib/track";
@@ -119,14 +120,23 @@ const PlayIcon = () => (
   </svg>
 );
 
+interface TutorialVideoState {
+  isVisible: boolean;
+  setIsVisible: (value: boolean) => void;
+}
+
+export const useTutorialVideoStore = create<TutorialVideoState>(set => ({
+  isVisible: true,
+  setIsVisible: (value: boolean) => set({ isVisible: value }),
+}));
+
 export const TutorialVideo = ({ onComplete }: TutorialVideoProps) => {
   const [isPlaying, setIsPlaying] = useState(false);
-  const [isVisible, setIsVisible] = useState(true);
   const [isFadingOut, setIsFadingOut] = useState(false);
+  const { isVisible, setIsVisible } = useTutorialVideoStore();
   const [showIntro, setShowIntro] = useState(true);
   const [introOpacity, setIntroOpacity] = useState(0);
   const [isMuted, setIsMuted] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
