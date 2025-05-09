@@ -60,6 +60,15 @@ const nextConfig = {
       },
     ];
   },
+  async redirects() {
+    return [
+      {
+        source: "/:platform(x|tt|tiktok|twitter|ig|instagram|fb|facebook)",
+        destination: "/",
+        permanent: false,
+      },
+    ];
+  },
 };
 
 export default withAxiom(nextConfig);
