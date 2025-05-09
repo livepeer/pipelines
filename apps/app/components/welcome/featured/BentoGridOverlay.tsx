@@ -190,7 +190,7 @@ export const BentoGridOverlay = () => {
         className={cn(
           isMobile
             ? "fixed bottom-0 left-0 right-0 h-0 z-[100] overflow-y-auto overflow-x-visible overscroll-contain bg-white dark:bg-black border-t border-gray-200 dark:border-gray-800 shadow-lg opacity-0 pointer-events-none"
-            : "fixed right-0 w-[25%] inset-y-0 z-[100] overflow-y-auto overflow-x-visible overscroll-contain bg-white dark:bg-black border-l border-gray-200 dark:border-gray-800 shadow-lg opacity-0 pointer-events-none",
+            : "fixed right-0 w-[35%] inset-y-0 z-[100] overflow-y-auto overflow-x-visible overscroll-contain bg-white dark:bg-black border-l border-gray-200 dark:border-gray-800 shadow-lg opacity-0 pointer-events-none",
         )}
         style={{ visibility: "hidden" }}
       />
@@ -204,7 +204,7 @@ export const BentoGridOverlay = () => {
           "fixed z-[201]",
           isMobile
             ? "bottom-[40vh] left-1/2 transform -translate-x-1/2 translate-y-[20px]"
-            : "left-[75%] top-1/2 transform -translate-x-1/2 -translate-y-1/2",
+            : "left-[65%] top-1/2 transform -translate-x-1/2 -translate-y-1/2",
         )}
         style={{
           filter:
@@ -233,7 +233,7 @@ export const BentoGridOverlay = () => {
           "fixed z-[100] overflow-y-auto overflow-x-visible overscroll-contain bg-white dark:bg-black transition-all duration-150",
           isMobile
             ? "inset-x-0 bottom-0 h-[40vh] border-[8px] border-solid border-[#ededed] dark:border-[#ededed] border-b-0 rounded-t-[30px] shadow-[0_-12px_25px_-5px_rgba(0,0,0,0.25)]"
-            : "right-0 w-[25%] inset-y-0 border-l border-gray-200 dark:border-gray-800 shadow-lg",
+            : "right-0 w-[35%] inset-y-0 border-l border-gray-200 dark:border-gray-800 shadow-lg",
           isOverlayOpen ? "opacity-100" : "opacity-0 pointer-events-none",
         )}
         onClick={e => {
