@@ -2,11 +2,10 @@
 
 import useCloudAnimation from "@/hooks/useCloudAnimation";
 import { Button } from "@repo/design-system/components/ui/button";
-import { usePrivy } from "@/hooks/usePrivy";
 import track from "@/lib/track";
 import { useEffect } from "react";
-import useMobileStore from "@/hooks/useMobileStore";
 import { DiscordLogoIcon } from "@radix-ui/react-icons";
+import { useGuestUserStore } from "@/hooks/useGuestUser";
 
 interface UnifiedSignupModalProps {
   open: boolean;
@@ -19,9 +18,8 @@ export function UnifiedSignupModal({
   onOpenChange,
   reason,
 }: UnifiedSignupModalProps) {
-  const { login } = usePrivy();
   const { containerRef, getCloudTransform } = useCloudAnimation(0);
-  const { isMobile } = useMobileStore();
+  const { setIsGuestUser } = useGuestUserStore();
 
   useEffect(() => {
     if (open) {
@@ -189,7 +187,8 @@ export function UnifiedSignupModal({
                 <DiscordLogoIcon className="h-4 w-4" /> Join Discord
               </Button>
               <Button
-                onClick={e => {
+                onClick={() => {
+                  setIsGuestUser(false);
                   localStorage.setItem(
                     "daydream_from_guest_experience",
                     "true",
