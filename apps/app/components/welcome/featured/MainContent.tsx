@@ -13,23 +13,23 @@ import {
 import { Loader2, Maximize, Minimize } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useDreamshaperStore } from "../../../hooks/useDreamshaper";
-import { LivepeerPlayer } from "./player";
+import { LivepeerPlayer, usePlayerStore } from "./player";
 import { usePrivy } from "@/hooks/usePrivy";
 import { Logo } from "@/components/sidebar";
 import Overlay from "./Overlay";
 
 export const MainContent = () => {
   const { stream, loading } = useDreamshaperStore();
-  const { live, statusMessage } = useStreamStatus(stream?.id, false);
   const { isMobile } = useMobileStore();
   const { authenticated } = usePrivy();
   const { timeRemaining, formattedTime } = useTrialTimer();
+  const { isPlaying } = usePlayerStore();
   const { isFullscreen, toggleFullscreen } = useFullscreenStore();
 
   const [showOverlay, setShowOverlay] = useState(true);
 
   useEffect(() => {
-    if (live) {
+    if (isPlaying) {
       const timer = setTimeout(() => {
         setShowOverlay(false);
       }, 1000);
@@ -37,7 +37,7 @@ export const MainContent = () => {
     } else {
       setShowOverlay(true);
     }
-  }, [live]);
+  }, [isPlaying]);
 
   return (
     <>
@@ -79,7 +79,7 @@ export const MainContent = () => {
       </Tooltip>
 
       {/* Live indicator*/}
-      {live && (
+      {isPlaying && (
         <div className="absolute top-4 left-4 bg-neutral-800 text-gray-400 px-5 py-1 text-xs rounded-full border border-gray-500">
           <span className="inline-block w-2 h-2 bg-red-500 rounded-full mr-2"></span>
           <span className="text-white font-bold">Live</span>
@@ -101,7 +101,7 @@ export const MainContent = () => {
           <div className="relative w-full h-full">
             <LivepeerPlayer />
           </div>
-          {/* {(!live || showOverlay) && <Overlay statusMessage={statusMessage} />} */}
+          {(!isPlaying || showOverlay) && <Overlay />}
         </>
       ) : (
         <div className="w-full h-full flex items-center justify-center text-muted-foreground">
