@@ -55,7 +55,7 @@ export const InputPrompt = ({ onPromptSubmit }: InputPromptProps) => {
 
   const { authenticated } = usePrivy();
 
-  const [inputValue, setInputValue] = useState("");
+  const [inputValue, setInputValue] = useState(lastSubmittedPrompt || "");
   const [settingsOpened, setSettingsOpened] = useState(false);
   const ref = useRef<HTMLTextAreaElement>(null);
 
@@ -72,22 +72,6 @@ export const InputPrompt = ({ onPromptSubmit }: InputPromptProps) => {
     }));
   }, [pipeline?.prioritized_params]);
 
-  const restoreLastPrompt = () => {
-    if (lastSubmittedPrompt) {
-      setInputValue(lastSubmittedPrompt);
-      setTimeout(() => {
-        if (ref && typeof ref !== "function" && ref.current) {
-          ref.current.focus();
-
-          if ("setSelectionRange" in ref.current) {
-            const length = lastSubmittedPrompt.length;
-            ref.current.setSelectionRange(length, length);
-          }
-        }
-      }, 0);
-    }
-  };
-
   const {
     commandMenuOpen,
     filteredOptions,
@@ -101,6 +85,12 @@ export const InputPrompt = ({ onPromptSubmit }: InputPromptProps) => {
     setInputValue,
     inputRef: ref as React.RefObject<HTMLTextAreaElement>,
   });
+
+  useEffect(() => {
+    if (lastSubmittedPrompt) {
+      setInputValue(lastSubmittedPrompt);
+    }
+  }, [lastSubmittedPrompt, setInputValue]);
 
   const formatInputWithHighlights = () => {
     if (!inputValue) return null;
@@ -217,7 +207,6 @@ export const InputPrompt = ({ onPromptSubmit }: InputPromptProps) => {
       handleStreamUpdate(inputValue, { silent: true });
       setLastSubmittedPrompt(inputValue);
       setHasSubmittedPrompt(true);
-      setInputValue("");
       incrementPromptVersion(promptVersion + 1);
     } else {
       console.error("No input value to submit");
@@ -227,12 +216,6 @@ export const InputPrompt = ({ onPromptSubmit }: InputPromptProps) => {
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (commandMenuOpen) {
       handleCommandKeyDown(e);
-      return;
-    }
-
-    if (e.key === "ArrowUp" && !inputValue && lastSubmittedPrompt) {
-      e.preventDefault();
-      restoreLastPrompt();
       return;
     }
 
@@ -302,7 +285,7 @@ export const InputPrompt = ({ onPromptSubmit }: InputPromptProps) => {
             spellCheck="false"
             autoComplete="off"
             autoCorrect="off"
-            placeholder={lastSubmittedPrompt || PROMPT_PLACEHOLDER}
+            placeholder={PROMPT_PLACEHOLDER}
           />
 
           {!inputValue && (
@@ -311,7 +294,7 @@ export const InputPrompt = ({ onPromptSubmit }: InputPromptProps) => {
               aria-hidden="true"
             >
               <div className="text-sm font-sans py-3 pl-3 break-all whitespace-pre-wrap">
-                {lastSubmittedPrompt || PROMPT_PLACEHOLDER}
+                {PROMPT_PLACEHOLDER}
               </div>
             </div>
           )}
@@ -370,44 +353,6 @@ export const InputPrompt = ({ onPromptSubmit }: InputPromptProps) => {
           >
             <span className="text-muted-foreground text-lg">×</span>
           </Button>
-        ) : lastSubmittedPrompt ? (
-          <Tooltip delayDuration={0}>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 rounded-full"
-                onClick={e => {
-                  e.stopPropagation();
-                  restoreLastPrompt();
-                }}
-                aria-label="Restore last prompt"
-              >
-                <span className="text-muted-foreground text-lg">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="h-4 w-4"
-                  >
-                    <path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-                    <path d="m15 5 4 4" />
-                  </svg>
-                </span>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent
-              side="top"
-              sideOffset={5}
-              className="bg-white text-black border border-gray-200 shadow-md dark:bg-zinc-900 dark:text-white dark:border-zinc-700"
-            >
-              Edit prompt
-            </TooltipContent>
-          </Tooltip>
         ) : null}
 
         <div className="relative">
