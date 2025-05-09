@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useOverlayStore } from "@/hooks/useOverlayStore";
-import { BentoGrids } from "@/app/(main)/BentoGrids";
 import { ChevronLeft } from "lucide-react";
 import { Button } from "@repo/design-system/components/ui/button";
 import { useDreamshaperStore, useStreamUpdates } from "@/hooks/useDreamshaper";
@@ -13,6 +12,7 @@ import track from "@/lib/track";
 import { cn } from "@repo/design-system/lib/utils";
 import { OverlayClipViewer } from "./OverlayClipViewer";
 import { setSourceClipIdToCookies } from "@/components/daydream/Clipping/actions";
+import { GridVideoItem } from "./GridVideoItem";
 
 export const BentoGridOverlay = () => {
   const {
@@ -34,16 +34,11 @@ export const BentoGridOverlay = () => {
   const { authenticated } = usePrivy();
   const [initialClips, setInitialClips] = useState<any[]>([]);
   const [selectedClip, setSelectedClip] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const overlayRef = useRef<HTMLDivElement>(null);
 
   const initialOpenRef = useRef(true);
   const scrollRestoredRef = useRef(false);
-
-  const handleReportClips = (loadedClips: any[]) => {
-    if (loadedClips.length > cachedClips.length) {
-      setCachedClips(loadedClips);
-    }
-  };
 
   const restoreScrollPosition = () => {
     if (
@@ -67,15 +62,18 @@ export const BentoGridOverlay = () => {
         scrollRestoredRef.current = false;
         restoreScrollPosition();
       } else {
+        setIsLoading(true);
         fetch("/api/clips?page=0&limit=96")
           .then(res => res.json())
           .then(data => {
             const clips = data.clips || [];
             setInitialClips(clips);
             setCachedClips(clips);
+            setIsLoading(false);
           })
           .catch(error => {
             console.error("Error fetching clips:", error);
+            setIsLoading(false);
           });
       }
     }
@@ -184,7 +182,7 @@ export const BentoGridOverlay = () => {
     return (
       <div
         ref={overlayRef}
-        className="fixed inset-0 z-[100] overflow-y-auto overscroll-contain bg-white dark:bg-black opacity-0 pointer-events-none"
+        className="fixed right-0 w-1/2 inset-y-0 z-[100] overflow-y-auto overscroll-contain bg-white dark:bg-black border-l border-gray-200 dark:border-gray-800 shadow-lg opacity-0 pointer-events-none"
         style={{ visibility: "hidden" }}
       />
     );
@@ -194,7 +192,7 @@ export const BentoGridOverlay = () => {
     <div
       ref={overlayRef}
       className={cn(
-        "fixed inset-0 z-[100] overflow-y-auto overscroll-contain bg-white dark:bg-black",
+        "fixed right-0 w-1/2 inset-y-0 z-[100] overflow-y-auto overscroll-contain bg-white dark:bg-black border-l border-gray-200 dark:border-gray-800 shadow-lg",
         "transition-opacity duration-150",
         isOverlayOpen ? "opacity-100" : "opacity-0 pointer-events-none",
       )}
@@ -255,21 +253,30 @@ export const BentoGridOverlay = () => {
       <div className="relative z-10 h-full">
         {overlayType === "bento" && (
           <div className="p-4">
-            {initialClips.length > 0 ? (
-              <BentoGrids
-                initialClips={initialClips}
-                isOverlayMode={true}
-                onTryPrompt={handleTryPrompt}
-                onClipsLoaded={handleReportClips}
-              />
+            {isLoading ? (
+              <div className="flex justify-center py-8">
+                <div className="w-8 h-8 border-4 border-t-primary rounded-full animate-spin"></div>
+              </div>
+            ) : initialClips.length > 0 ? (
+              <div className="max-w-7xl mx-auto px-4 lg:px-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {initialClips.map((clip) => (
+                    <GridVideoItem 
+                      key={clip.id}
+                      clip={clip}
+                      onTryPrompt={handleTryPrompt}
+                    />
+                  ))}
+                </div>
+              </div>
             ) : (
-              <div className="flex justify-center py-8"></div>
+              <div className="flex justify-center py-8">No clips available</div>
             )}
           </div>
         )}
 
-        {overlayType === "clip" && selectedClipId && (
-          <div
+        {overlayType === "clip" && selectedClip && (
+          <div 
             className="h-screen flex justify-center items-center p-4"
             onClick={e => {
               if (e.target === e.currentTarget) {
@@ -278,22 +285,10 @@ export const BentoGridOverlay = () => {
               }
             }}
           >
-            {selectedClip ? (
-              <OverlayClipViewer
-                clip={{
-                  id: selectedClipId,
-                  url: selectedClip.url,
-                  prompt: selectedClip.prompt,
-                  title: selectedClip.title || "",
-                  authorName: selectedClip.authorName || "Livepeer",
-                  authorDetails: selectedClip.authorDetails,
-                  createdAt: selectedClip.createdAt,
-                }}
-                onTryPrompt={handleTryPrompt}
-              />
-            ) : (
-              <div className="flex items-center justify-center"></div>
-            )}
+            <OverlayClipViewer
+              clip={selectedClip}
+              onTryPrompt={handleTryPrompt}
+            />
           </div>
         )}
       </div>
