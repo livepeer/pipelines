@@ -75,12 +75,13 @@ export default function HomePage() {
 
   useEffect(() => {
     if (!authenticated && ready && showContent) {
-      const getRandomInterval = () => Math.floor(Math.random() * 2000) + 3000;
+      const getRandomInterval = () => Math.floor(Math.random() * 2000) + 1500;
 
-      const timerId = setTimeout(function addPrompt() {
+      let timerId: NodeJS.Timeout;
+
+      timerId = setTimeout(function addPrompt() {
         addRandomPrompt();
-        const nextInterval = getRandomInterval();
-        setTimeout(addPrompt, nextInterval);
+        timerId = setTimeout(addPrompt, getRandomInterval());
       }, getRandomInterval());
 
       return () => clearTimeout(timerId);
@@ -260,16 +261,22 @@ export default function HomePage() {
         </div>
 
         <div
-          className={`z-10 w-full max-w-[90%] mx-auto px-4 flex flex-col gap-8 transition-all duration-1000 ease-in-out ${
+          className={`z-10 w-full max-w-[98%] md:max-w-[90%] mx-auto px-2 md:px-4 flex flex-col gap-4 md:gap-8 transition-all duration-1000 ease-in-out ${
             showContent ? "opacity-100 scale-100" : "opacity-0 scale-[0.98]"
           }`}
-          style={{ height: "calc(100vh - 140px)" }}
+          style={{ height: "calc(100vh - 80px)", marginTop: "0" }}
         >
-          <div className="flex-1 flex flex-row gap-8 h-full">
-            <div className="w-[70%] relative rounded-lg overflow-hidden bg-black/10 backdrop-blur-sm flex items-center justify-center shadow-lg">
-              <div className="absolute top-6 left-6 z-20">
+          <h1
+            className="text-3xl font-bold tracking-widest italic md:hidden mx-auto"
+            style={{ color: "rgb(255, 255, 255)" }}
+          >
+            DAYDREAM
+          </h1>
+          <div className="flex-1 flex flex-col md:flex-row gap-2 md:gap-8 h-full overflow-auto">
+            <div className="w-full md:w-[70%] relative rounded-lg overflow-hidden bg-black/10 backdrop-blur-sm shadow-lg aspect-video">
+              <div className="absolute top-6 left-6 z-20 hidden md:block">
                 <h1
-                  className="text-6xl font-bold tracking-widest italic mix-blend-difference"
+                  className="text-4xl md:text-[120px] font-bold tracking-widest italic mix-blend-difference"
                   style={{ color: "rgb(255, 255, 255)" }}
                 >
                   DAYDREAM
@@ -291,7 +298,7 @@ export default function HomePage() {
               </div>
             </div>
 
-            <div className="w-[30%] flex flex-col bg-white/10 backdrop-blur-sm rounded-lg overflow-hidden">
+            <div className="w-full md:w-[30%] flex flex-col bg-white/10 backdrop-blur-sm rounded-lg overflow-hidden">
               <form
                 onSubmit={handlePromptSubmit}
                 className="p-4 border-b border-gray-200/30"
@@ -302,7 +309,7 @@ export default function HomePage() {
                     placeholder={
                       isThrottled
                         ? `Wait ${throttleTimeLeft}s...`
-                        : "Input your prompt"
+                        : "Apply your prompt"
                     }
                     className={`w-full bg-white/50 rounded-lg border-none focus:ring-0 focus:border-none focus:outline-none ${isThrottled ? "opacity-50" : ""}`}
                     value={prompt}
@@ -312,12 +319,12 @@ export default function HomePage() {
                 </div>
               </form>
 
-              <div className="flex-1 p-4 flex flex-col justify-start overflow-hidden">
+              <div className="flex-1 max-h-[25vh] md:max-h-none p-4 flex flex-col justify-start overflow-hidden">
                 <div className="space-y-0.5">
                   {displayedPrompts.map((prevPrompt, index) => (
                     <div
                       key={`prompt-${index}-${prevPrompt.substring(0, 10)}`}
-                      className={`p-2 rounded-lg ${index === 0 ? "text-black font-normal flex items-center animate-fadeSlideIn" : "text-gray-500 italic"}`}
+                      className={`p-2 rounded-lg text-sm md:text-base ${index === 0 ? "text-black font-normal flex items-center animate-fadeSlideIn" : "text-gray-500 italic"}`}
                       style={{
                         opacity: index === 0 ? 1 : 1 - index * 0.08,
                         transition: "all 0.3s ease-out",
@@ -342,14 +349,14 @@ export default function HomePage() {
                   className="flex-1 px-4 py-2 h-10 rounded-md bg-black text-white hover:bg-gray-800 flex items-center justify-center gap-2"
                   onClick={handleTryCameraClick}
                 >
-                  <Camera className="h-4 w-4" />
+                  <Camera className="hidden md:inline h-4 w-4" />
                   Try it with your camera
                 </Button>
                 <Button
                   onClick={() => setIsTutorialModalOpen(true)}
-                  className="flex-1 px-4 py-2 h-10 rounded-md alwaysAnimatedButton text-black flex items-center justify-center gap-2"
+                  className="w-24 md:flex-1 px-4 py-2 h-10 rounded-md alwaysAnimatedButton text-black flex items-center justify-center gap-2"
                 >
-                  <Play className="h-4 w-4 stroke-2 fill-none" />
+                  <Play className="hidden md:inline h-4 w-4 stroke-2 fill-none" />
                   Watch demo
                 </Button>
               </div>
