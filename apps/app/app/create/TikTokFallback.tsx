@@ -27,7 +27,7 @@ export default function TikTokFallback() {
           <Logo className="h-8" />
         </Link>
       </div>
-      <div className="max-w-md space-y-10">
+      <div className="max-w-md space-y-10 px-5">
         <div>
           <h2 className="font-bold text-2xl text-center">
             For the best experience, please use Safari or Chrome browser.
