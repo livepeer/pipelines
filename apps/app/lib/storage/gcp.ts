@@ -5,14 +5,18 @@ let storage: Storage;
 
 try {
   if (gcpConfig.credentials) {
-    const credentials = JSON.parse(gcpConfig.credentials);
-    storage = new Storage({ credentials });
+    try {
+      const credentials = JSON.parse(gcpConfig.credentials);
+      storage = new Storage({ credentials });
+    } catch (parseError) {
+      storage = new Storage();
+    }
   } else {
     storage = new Storage();
   }
-} catch (error) {
+} catch (error) { 
   console.error("Failed to initialize GCP Storage:", error);
-  throw new Error("Failed to initialize GCP Storage");
+  throw new Error("Failed to initialize GCP Storage", { cause: error });
 }
 
 const bucketName = gcpConfig.bucketName || "daydream-clips";
