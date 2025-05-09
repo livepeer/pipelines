@@ -383,7 +383,7 @@ export default function Dreamshaper({ isGuestMode = false }: DreamshaperProps) {
             >
               {hasCapacity ? (
                 <>
-                  {!showTutorial && !isVisible && <MainContent />}
+                  {(!showTutorial || !isVisible) && <MainContent />}
                   {showTutorial && (
                     <TutorialVideo onComplete={handleTutorialComplete} />
                   )}

@@ -26,19 +26,6 @@ export const MainContent = () => {
   const { isPlaying } = usePlayerStore();
   const { isFullscreen, toggleFullscreen } = useFullscreenStore();
 
-  const [showOverlay, setShowOverlay] = useState(true);
-
-  useEffect(() => {
-    if (isPlaying) {
-      const timer = setTimeout(() => {
-        setShowOverlay(false);
-      }, 1000);
-      return () => clearTimeout(timer);
-    } else {
-      setShowOverlay(true);
-    }
-  }, [isPlaying]);
-
   return (
     <>
       {/* Hide controls for mobile (TODO: when it's a react component,
@@ -101,7 +88,7 @@ export const MainContent = () => {
           <div className="relative w-full h-full">
             <LivepeerPlayer />
           </div>
-          {(!isPlaying || showOverlay) && <Overlay />}
+          {!isPlaying && <Overlay />}
         </>
       ) : (
         <div className="w-full h-full flex items-center justify-center text-muted-foreground">
