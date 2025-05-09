@@ -7,24 +7,20 @@ export default async function Page({
   params,
   searchParams,
 }: {
-  params: { id: string };
-  searchParams: { streamId: string; validation: string };
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ streamId: string; validation: string }>;
 }) {
-  const pipelineId = params.id;
+  const pipelineId = (await params).id;
   const isSearchMode = pipelineId === "create";
-  const isValidationMode = searchParams.validation === "true";
+  const { streamId, validation } = await searchParams;
+  const isValidationMode = validation === "true";
 
   if (isSearchMode) {
     return <CreatePipeline />;
   }
 
   if (isValidationMode) {
-    return (
-      <ValidatePipeline
-        pipelineId={pipelineId}
-        streamId={searchParams.streamId}
-      />
-    );
+    return <ValidatePipeline pipelineId={pipelineId} streamId={streamId} />;
   }
 
   const pipeline = await getPipeline(pipelineId);

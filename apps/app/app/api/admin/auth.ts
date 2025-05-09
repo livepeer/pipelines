@@ -2,7 +2,6 @@
 
 import { createServerClient } from "@repo/supabase";
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 
 const ADMIN_DOMAIN = "livepeer.org";
 

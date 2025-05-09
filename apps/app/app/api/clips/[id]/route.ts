@@ -12,9 +12,9 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
-  const { id } = params;
+  const { id } = await params;
 
   if (!id || isNaN(parseInt(id))) {
     return NextResponse.json({ error: "Invalid clip ID" }, { status: 400 });
@@ -87,9 +87,9 @@ export async function GET(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
-  const { id } = params;
+  const { id } = await params;
 
   if (!id || isNaN(parseInt(id))) {
     return NextResponse.json({ error: "Invalid clip ID" }, { status: 400 });
@@ -154,12 +154,13 @@ export async function PATCH(
   {
     params,
   }: {
-    params: {
+    params: Promise<{
       id: string;
-    };
+    }>;
   },
 ) {
-  const clipId = parseInt(params.id, 10);
+  const { id } = await params;
+  const clipId = parseInt(id, 10);
 
   if (isNaN(clipId)) {
     return NextResponse.json({ error: "Invalid clip ID" }, { status: 400 });

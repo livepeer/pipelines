@@ -55,21 +55,24 @@ async function handleRequest(
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { streamkey: string } },
+  { params }: { params: Promise<{ streamkey: string }> },
 ) {
-  return handleRequest(req, "POST", params.streamkey);
+  const { streamkey } = await params;
+  return handleRequest(req, "POST", streamkey);
 }
 
 export async function OPTIONS(
   req: NextRequest,
-  { params }: { params: { streamkey: string } },
+  { params }: { params: Promise<{ streamkey: string }> },
 ) {
-  return handleRequest(req, "OPTIONS", params.streamkey);
+  const { streamkey } = await params;
+  return handleRequest(req, "OPTIONS", streamkey);
 }
 
 export async function HEAD(
   req: NextRequest,
-  { params }: { params: { streamkey: string } },
+  { params }: { params: Promise<{ streamkey: string }> },
 ) {
-  return handleRequest(req, "HEAD", params.streamkey);
+  const { streamkey } = await params;
+  return handleRequest(req, "HEAD", streamkey);
 }

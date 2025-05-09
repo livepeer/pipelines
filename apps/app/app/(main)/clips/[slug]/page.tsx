@@ -35,10 +35,10 @@ const getClipBySlug = cache(async (slug: string) => {
 
 // Generate metadata for the page
 export async function generateMetadata(
-  { params }: { params: { slug: string } },
+  { params }: { params: Promise<{ slug: string }> },
   parent: ResolvingMetadata,
 ): Promise<Metadata> {
-  const { slug } = params;
+  const { slug } = await params;
   const clip = await getClipBySlug(slug);
 
   if (!clip) {
@@ -120,8 +120,12 @@ export async function generateMetadata(
   };
 }
 
-export default async function Page({ params }: { params: { slug: string } }) {
-  const { slug } = params;
+export default async function Page({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
 
   const clip = await getClipBySlug(slug);
 
