@@ -74,7 +74,6 @@ export const useStreamStatus = (
   const loading = !error && !fullResponse;
   const capacityReached = orchestratorFailureCountRef.current >= 5;
 
-  console.log(fullResponse);
   const live =
     [
       StreamStatus.Online,

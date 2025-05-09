@@ -59,6 +59,10 @@ export const LivepeerPlayer = () => {
   const { useFallbackPlayer: useFallbackVideoJSPlayer, handleError } =
     useFallbackDetection(stream?.output_playback_id!);
 
+  useEffect(() => {
+    setIsPlaying(false);
+  }, []);
+
   const playerUrl = `${appConfig.whipUrl}${appConfig?.whipUrl?.endsWith("/") ? "" : "/"}${stream?.stream_key}-out/whep`;
 
   const searchParams = useSearchParams();

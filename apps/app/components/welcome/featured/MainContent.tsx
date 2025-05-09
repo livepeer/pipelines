@@ -11,11 +11,9 @@ import {
   TooltipTrigger,
 } from "@repo/design-system/components/ui/tooltip";
 import { Loader2, Maximize, Minimize } from "lucide-react";
-import { useEffect, useState } from "react";
 import { useDreamshaperStore } from "../../../hooks/useDreamshaper";
 import { LivepeerPlayer, usePlayerStore } from "./player";
 import { usePrivy } from "@/hooks/usePrivy";
-import { Logo } from "@/components/sidebar";
 import Overlay from "./Overlay";
 
 export const MainContent = () => {
