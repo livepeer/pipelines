@@ -253,28 +253,7 @@ export const BentoGridOverlay = () => {
           scrollRestoredRef.current = true;
         }}
       >
-        <div className="absolute inset-0 bg-transparent pointer-events-none"></div>
-
-        <div
-          aria-hidden="true"
-          className="absolute inset-x-0 -top-40 transform-gpu overflow-hidden sm:-top-60 z-0 pointer-events-none"
-        >
-          <div
-            style={{
-              backgroundImage: "url(/background.png)",
-              maskImage:
-                "linear-gradient(to bottom, black 60%, transparent 100%)",
-              WebkitMaskImage:
-                "linear-gradient(to bottom, black 60%, transparent 100%)",
-            }}
-            className="w-full h-[70vh] mx-auto bg-cover bg-center opacity-50"
-          />
-        </div>
-
-        <div
-          className="absolute inset-0 backdrop-blur z-0 pointer-events-none"
-          style={{ background: "transparent!important" }}
-        ></div>
+        <div className="absolute inset-0 bg-white dark:bg-black pointer-events-none"></div>
 
         <div className="relative z-10 h-full pt-6">
           {overlayType === "bento" && (
