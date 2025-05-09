@@ -10,9 +10,9 @@ const getCachedSharedParams = cache(async (shareParamsId: string) => {
 export const generateMetadata = async ({
   searchParams,
 }: {
-  searchParams: { shared: string };
+  searchParams: Promise<{ shared: string }>;
 }) => {
-  const { shared } = searchParams;
+  const { shared } = await searchParams;
   const metaData = {
     title: "Daydream",
     description: "Transform your video in real-time with AI",
@@ -30,17 +30,17 @@ export const generateMetadata = async ({
   return { ...metaData, openGraph: metaData };
 };
 
-export default function HomePage({
+export default async function HomePage({
   searchParams,
 }: {
-  searchParams: {
+  searchParams: Promise<{
     shared: string;
     privy_oauth_code: string;
     inputPrompt: string;
     sourceClipId: string;
-  };
+  }>;
 }) {
-  const { shared, privy_oauth_code, inputPrompt } = searchParams;
+  const { shared, privy_oauth_code, inputPrompt } = await searchParams;
   const isGuestAccess = !!inputPrompt; // If there's an inputPrompt, the user is coming from "Try this prompt"
 
   return (

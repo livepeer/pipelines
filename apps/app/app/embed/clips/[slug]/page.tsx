@@ -29,9 +29,9 @@ export const metadata: Metadata = {
 export default async function EmbedPage({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }) {
-  const { slug } = params;
+  const { slug } = await params;
   const clip = await getClipBySlug(slug);
 
   if (!clip) {

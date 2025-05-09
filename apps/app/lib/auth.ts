@@ -8,10 +8,10 @@ const privy = new PrivyClient(
 );
 
 export async function getPrivyUser() {
-  const headersList = headers();
+  const headersList = await headers();
   const accessToken = headersList.get("Authorization")?.replace(/^Bearer /, "");
 
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const privyCookie = cookieStore.get("privy-token");
 
   if (!accessToken && !privyCookie) {
