@@ -1,13 +1,13 @@
 "use client";
 
 import useCloudAnimation from "@/hooks/useCloudAnimation";
-import { Button } from "@repo/design-system/components/ui/button";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { useEffect, useState } from "react";
-import { Camera, Play } from "lucide-react";
+import { useEffect, useState, useCallback } from "react";
 import { usePrivy } from "@/hooks/usePrivy";
 import { useGuestUserStore } from "@/hooks/useGuestUser";
+import { Input } from "@repo/design-system/components/ui/input";
+import { Button } from "@repo/design-system/components/ui/button";
+import { Camera, Play } from "lucide-react";
 import TutorialModal from "./components/TutorialModal";
 
 export default function HomePage() {
@@ -15,30 +15,86 @@ export default function HomePage() {
   const router = useRouter();
   const { authenticated, ready } = usePrivy();
   const { setIsGuestUser } = useGuestUserStore();
-  const [isTutorialModalOpen, setIsTutorialModalOpen] = useState(false);
   const [animationStarted, setAnimationStarted] = useState(false);
   const [showContent, setShowContent] = useState(false);
+  const [prompt, setPrompt] = useState("");
+  const [isTutorialModalOpen, setIsTutorialModalOpen] = useState(false);
+  const [lastPromptTime, setLastPromptTime] = useState(0);
+  const [isThrottled, setIsThrottled] = useState(false);
+  const [throttleTimeLeft, setThrottleTimeLeft] = useState(0);
+
+  const initialPrompts = [
+    "cyberpunk cityscape with neon lights",
+    "underwater scene with bioluminescent creatures",
+    "forest with magical creatures and glowing plants",
+    "cosmic nebula with vibrant colors",
+    "futuristic landscape with floating islands",
+    "dreamy pastel colored clouds at sunset",
+    "abstract geometric patterns with vibrant colors",
+    "retro pixel art style mountain landscape",
+    "steampunk mechanical creatures in motion",
+    "surreal desert with floating objects",
+    "minimalist Japanese garden with koi pond",
+    "synthwave sunset over a digital grid city",
+    "watercolor style city in the rain",
+    "low poly forest with mystical elements",
+    "art deco style portrait with gold accents",
+  ];
+
+  const otherPeoplePrompts = [
+    "hyperrealistic portrait of an alien queen",
+    "fantasy castle floating among clouds at sunset",
+    "cybernetic animal with glowing parts",
+    "dreamlike surreal landscape with impossible physics",
+    "ancient ruins overgrown with luminescent plants",
+    "underwater city with bioluminescent architecture",
+    "samurai in a cherry blossom storm",
+    "psychedelic mandala with fractal patterns",
+    "synthwave city with holographic billboards",
+    "dystopian cityscape with heavy industrial elements",
+    "crystal cave with glowing minerals",
+    "aurora borealis over a mountain lake",
+    "fantastical creatures in a magical forest",
+    "abstract digital glitch art with vivid colors",
+    "victorian steampunk laboratory with gadgets",
+  ];
+
+  const [displayedPrompts, setDisplayedPrompts] = useState(initialPrompts);
+
+  const addRandomPrompt = useCallback(() => {
+    if (!showContent) return;
+
+    const randomIndex = Math.floor(Math.random() * otherPeoplePrompts.length);
+    const randomPrompt = otherPeoplePrompts[randomIndex];
+
+    setDisplayedPrompts(prevPrompts => [
+      randomPrompt,
+      ...prevPrompts.slice(0, prevPrompts.length - 1),
+    ]);
+  }, [otherPeoplePrompts, showContent]);
+
+  useEffect(() => {
+    if (!authenticated && ready && showContent) {
+      const getRandomInterval = () => Math.floor(Math.random() * 2000) + 3000;
+
+      const timerId = setTimeout(function addPrompt() {
+        addRandomPrompt();
+        const nextInterval = getRandomInterval();
+        setTimeout(addPrompt, nextInterval);
+      }, getRandomInterval());
+
+      return () => clearTimeout(timerId);
+    }
+  }, [authenticated, ready, showContent, addRandomPrompt]);
 
   const redirectAsGuest = () => {
     setIsGuestUser(true);
     let b64Prompt = btoa(
-      "((cubism)) tesseract ((flat colors)) --creativity 0.6 --quality 3",
+      prompt ||
+        "((cubism)) tesseract ((flat colors)) --creativity 0.6 --quality 3",
     );
     router.push(`/create?inputPrompt=${b64Prompt}`);
   };
-
-  useEffect(() => {
-    // Check if user has already seen the landing page
-    if (typeof window !== "undefined" && ready && !authenticated) {
-      const hasSeenLanding = localStorage.getItem("hasSeenLandingPage");
-      if (hasSeenLanding) {
-        redirectAsGuest();
-        return;
-      }
-      // Mark that user has seen the landing page
-      localStorage.setItem("hasSeenLandingPage", "true");
-    }
-  }, [ready, authenticated, router]);
 
   useEffect(() => {
     if (ready && authenticated) {
@@ -51,7 +107,7 @@ export default function HomePage() {
       setAnimationStarted(true);
       const timer = setTimeout(() => {
         setShowContent(true);
-      }, 800); // Show content after clouds start appearing
+      }, 800);
 
       return () => clearTimeout(timer);
     }
@@ -69,8 +125,69 @@ export default function HomePage() {
     redirectAsGuest();
   };
 
+  const handlePromptSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    if (!prompt.trim()) return;
+
+    const now = Date.now();
+    const timeElapsed = now - lastPromptTime;
+    const cooldownPeriod = 5000; // 5 seconds cooldown
+
+    if (timeElapsed < cooldownPeriod && lastPromptTime !== 0) {
+      setIsThrottled(true);
+      setThrottleTimeLeft(Math.ceil((cooldownPeriod - timeElapsed) / 1000));
+
+      const countdownInterval = setInterval(() => {
+        setThrottleTimeLeft(prevTime => {
+          if (prevTime <= 1) {
+            clearInterval(countdownInterval);
+            setIsThrottled(false);
+            return 0;
+          }
+          return prevTime - 1;
+        });
+      }, 1000);
+
+      return;
+    }
+
+    const newPrompts = [
+      prompt,
+      ...displayedPrompts.slice(0, displayedPrompts.length - 1),
+    ];
+    setDisplayedPrompts(newPrompts);
+    setPrompt(""); // Clear the input field
+    setLastPromptTime(now);
+
+    // Simulating the interaction only
+    // redirectAsGuest();
+  };
+
   return (
     <div className="fixed inset-0 z-[1000] flex items-center justify-center">
+      <style jsx global>{`
+        @keyframes fadeSlideIn {
+          from {
+            opacity: 0;
+            transform: translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        @keyframes slideDown {
+          from {
+            transform: translateY(-100%);
+          }
+          to {
+            transform: translateY(0);
+          }
+        }
+      `}</style>
+
       <div
         ref={containerRef}
         className="w-full h-full flex flex-col items-center justify-center relative"
@@ -143,72 +260,101 @@ export default function HomePage() {
         </div>
 
         <div
-          className={`z-10 p-8 max-w-4xl w-full mx-4 relative rounded-full transition-all duration-1000 ease-in-out ${showContent ? "opacity-100 scale-100" : "opacity-0 scale-[0.98]"}`}
+          className={`z-10 w-full max-w-[90%] mx-auto px-4 flex flex-col gap-8 transition-all duration-1000 ease-in-out ${
+            showContent ? "opacity-100 scale-100" : "opacity-0 scale-[0.98]"
+          }`}
+          style={{ height: "calc(100vh - 140px)" }}
         >
-          <div
-            className="absolute -inset-8 blur-lg z-0 rounded-full"
-            style={{
-              background:
-                "radial-gradient(circle, rgba(254,254,254,0.2) 30%, rgba(254,254,254,0.8) 60%, rgba(254,254,254,0.2) 80%, rgba(254,254,254,0) 100%)",
-              pointerEvents: "none",
-            }}
-          ></div>
-
-          <div className="flex flex-col items-center justify-center relative z-10">
-            <div className="mb-4 relative z-10">
-              <div className="p-2 rounded-full flex items-center justify-center">
-                <svg
-                  className="translate-x-2"
-                  width="50"
-                  height="50"
-                  viewBox="0 0 18 18"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
+          <div className="flex-1 flex flex-row gap-8 h-full">
+            <div className="w-[70%] relative rounded-lg overflow-hidden bg-black/10 backdrop-blur-sm flex items-center justify-center shadow-lg">
+              <div className="absolute top-6 left-6 z-20">
+                <h1
+                  className="text-6xl font-bold tracking-widest italic mix-blend-difference"
+                  style={{ color: "rgb(255, 255, 255)" }}
                 >
-                  <path
-                    fillRule="evenodd"
-                    clipRule="evenodd"
-                    d="M0.305908 14.4529L0.305908 17.5L3.2968 17.5L3.2968 14.4529L0.305908 14.4529ZM0.305908 7.39808L0.305908 10.4451L3.2968 10.4451L3.2968 7.39808L0.305908 7.39808ZM13.2147 7.39808L13.2147 10.4451L16.2056 10.4451L16.2056 7.39808L13.2147 7.39808ZM0.305908 3.54706L0.305907 0.499996L3.2968 0.499996L3.2968 3.54706L0.305908 3.54706ZM6.76031 6.91402L6.76031 3.86696L9.75121 3.86696L9.75121 6.91402L6.76031 6.91402ZM6.76031 10.9258L6.76031 13.9728L9.75121 13.9728L9.75121 10.9258L6.76031 10.9258Z"
-                    fill="#2E2E2E"
-                  />
-                </svg>
+                  DAYDREAM
+                </h1>
+              </div>
+
+              <div className="w-full h-full relative">
+                <video
+                  className="absolute inset-0 w-full h-full object-cover"
+                  playsInline
+                  loop
+                  muted
+                  autoPlay
+                  controls={false}
+                >
+                  <source src="/placeholder.mp4" type="video/mp4" />
+                  Your browser does not support the video tag.
+                </video>
               </div>
             </div>
 
-            <div className="w-full flex justify-center">
-              <h2 className="text-balance text-center text-4xl font-extralight tracking-tight text-gray-950 sm:text-6xl whitespace-nowrap">
-                Daydream is live video, transformed
-              </h2>
-            </div>
+            <div className="w-[30%] flex flex-col bg-white/10 backdrop-blur-sm rounded-lg overflow-hidden">
+              <form
+                onSubmit={handlePromptSubmit}
+                className="p-4 border-b border-gray-200/30"
+              >
+                <div className="relative">
+                  <Input
+                    type="text"
+                    placeholder={
+                      isThrottled
+                        ? `Wait ${throttleTimeLeft}s...`
+                        : "Input your prompt"
+                    }
+                    className={`w-full bg-white/50 rounded-lg border-none focus:ring-0 focus:border-none focus:outline-none ${isThrottled ? "opacity-50" : ""}`}
+                    value={prompt}
+                    onChange={e => setPrompt(e.target.value)}
+                    disabled={isThrottled}
+                  />
+                </div>
+              </form>
 
-            <div className="mt-6 flex flex-row gap-4 w-full items-center justify-center">
-              <Button
-                className="min-w-[200px] px-6 h-12 rounded-md bg-black text-white hover:bg-gray-800 flex items-center justify-center gap-2"
-                onClick={handleTryCameraClick}
-              >
-                <Camera className="h-4 w-4" />
-                Try it with your camera
-              </Button>
-              <Button
-                onClick={() => setIsTutorialModalOpen(true)}
-                className="min-w-[200px] px-6 h-12 rounded-md alwaysAnimatedButton text-black flex items-center justify-center gap-2"
-              >
-                <Play className="h-4 w-4 stroke-2 fill-none" />
-                Watch demo
-              </Button>
+              <div className="flex-1 p-4 flex flex-col justify-start overflow-hidden">
+                <div className="space-y-0.5">
+                  {displayedPrompts.map((prevPrompt, index) => (
+                    <div
+                      key={`prompt-${index}-${prevPrompt.substring(0, 10)}`}
+                      className={`p-2 rounded-lg ${index === 0 ? "text-black font-normal flex items-center animate-fadeSlideIn" : "text-gray-500 italic"}`}
+                      style={{
+                        opacity: index === 0 ? 1 : 1 - index * 0.08,
+                        transition: "all 0.3s ease-out",
+                        transform: `translateY(0)`,
+                        animation:
+                          index === 0
+                            ? "fadeSlideIn 0.3s ease-out"
+                            : `slideDown 0.3s ease-out`,
+                      }}
+                    >
+                      {index === 0 && (
+                        <Play className="h-3 w-3 mr-2 fill-black stroke-0" />
+                      )}
+                      {prevPrompt}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="p-4 border-t border-gray-200/30 flex flex-row gap-3 w-full">
+                <Button
+                  className="flex-1 px-4 py-2 h-10 rounded-md bg-black text-white hover:bg-gray-800 flex items-center justify-center gap-2"
+                  onClick={handleTryCameraClick}
+                >
+                  <Camera className="h-4 w-4" />
+                  Try it with your camera
+                </Button>
+                <Button
+                  onClick={() => setIsTutorialModalOpen(true)}
+                  className="flex-1 px-4 py-2 h-10 rounded-md alwaysAnimatedButton text-black flex items-center justify-center gap-2"
+                >
+                  <Play className="h-4 w-4 stroke-2 fill-none" />
+                  Watch demo
+                </Button>
+              </div>
             </div>
           </div>
-        </div>
-
-        <div
-          className={`absolute bottom-10 z-10 text-center transition-all duration-1000 ease-in-out delay-200 ${showContent ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"}`}
-        >
-          <Link
-            href="/explore"
-            className="text-gray-500 font-light text-sm tracking-wide"
-          >
-            Explore community creations
-          </Link>
         </div>
       </div>
 

@@ -379,7 +379,39 @@ export default function Dreamshaper({
 
   usePlayerPositionUpdater(playerRef);
 
+  useEffect(() => {
+    if (authenticated && ready && showSignupModal) {
+      setShowSignupModal(false);
+    }
+  }, [authenticated, ready, showSignupModal]);
+
+  const [confirmedShow, setConfirmedShow] = useState(false);
+
+  useEffect(() => {
+    if (showSignupModal) {
+      const timer = setTimeout(() => {
+        if (!authenticated && ready) {
+          setConfirmedShow(true);
+        } else {
+          setShowSignupModal(false);
+        }
+      }, 500);
+
+      return () => clearTimeout(timer);
+    } else {
+      setConfirmedShow(false);
+    }
+  }, [showSignupModal, authenticated, ready]);
+
   if (showSignupModal) {
+    console.log("showSignupModal", authenticated, ready, showSignupModal);
+    if (authenticated && ready) {
+      setShowSignupModal(false);
+      return null;
+    }
+
+    if (!confirmedShow) return null;
+
     return (
       <div className="flex-1 flex flex-col pb-6 md:pb-0 h-screen overflow-y-auto">
         <UnifiedSignupModal
