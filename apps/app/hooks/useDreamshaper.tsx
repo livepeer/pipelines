@@ -698,6 +698,8 @@ export const useShareLink = () => {
       }
 
       const shareUrl = new URL(window.location.href);
+      shareUrl.searchParams.delete("inputPrompt");
+      shareUrl.searchParams.delete("sourceClipId");
       shareUrl.searchParams.set("shared", data.id);
 
       return { error: null, url: shareUrl.toString() };
