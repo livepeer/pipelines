@@ -132,7 +132,7 @@ export function PlayerOverlay({
   }
 
   return (
-    <div className="md:absolute fixed inset-0 z-[9999] flex items-center justify-center md:bg-transparent bg-white">
+    <div className="md:absolute fixed inset-0 z-[51] flex items-center justify-center md:bg-transparent bg-white">
       <div className="cloud-container absolute inset-0 z-0 hidden md:block">
         <div className="cloud-layer" id="cloud1" style={{ opacity: 0.1 }}></div>
         <div className="cloud-layer" id="cloud3" style={{ opacity: 0.2 }}></div>
