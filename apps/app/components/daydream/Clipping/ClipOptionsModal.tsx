@@ -269,45 +269,49 @@ export function ClipOptionsModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={open => !open && onClose()}>
-      <DialogContent className="h-fit max-h-[86dvh] w-[calc(100%-32px)] sm:w-full sm:max-w-[650px] mx-auto overflow-y-auto rounded-xl p-6 pt-8 sm:p-8">
-        <DialogHeader className="flex items-center">
-          <DialogTitle className="text-2xl">
-            How Would You Like to Share?
-          </DialogTitle>
-          <DialogDescription className="font-light text-center">
-            Choose your preferred sharing option
-          </DialogDescription>
-        </DialogHeader>
+      <DialogContent className="flex flex-col h-fit max-h-[86dvh] w-[calc(100%-32px)] sm:w-full sm:max-w-[650px] mx-auto overflow-hidden rounded-xl p-0 sm:p-0">
+        <div className="p-6 pt-8 sm:p-8">
+          <DialogHeader className="flex items-center">
+            <DialogTitle className="text-2xl">
+              How Would You Like to Share?
+            </DialogTitle>
+            <DialogDescription className="font-light text-center">
+              Choose your preferred sharing option
+            </DialogDescription>
+          </DialogHeader>
+        </div>
 
-        <Separator className="my-1" />
+        <Separator className="my-1 shrink-0" />
 
-        <RadioGroup
-          value={selectedMode}
-          onValueChange={handleValueChange}
-          className="mt-2 sm:mt-4 mb-2 grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-8"
-        >
-          <LayoutOption
-            title="Just the Output"
-            description="Share only the final result — your input video (face) won't be included."
-            value="output-only"
-            selectedValue={selectedMode}
-            previewImg={previewBlobs.outputOnly}
-            onSelect={handleValueChange}
-          />
+        <div className="flex-grow overflow-y-auto px-6 sm:px-8">
+          <RadioGroup
+            value={selectedMode}
+            onValueChange={handleValueChange}
+            className="mt-2 sm:mt-4 mb-2 grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-8"
+          >
+            <LayoutOption
+              title="Just the Output"
+              description="Share only the final result — your input video (face) won't be included."
+              value="output-only"
+              selectedValue={selectedMode}
+              previewImg={previewBlobs.outputOnly}
+              onSelect={handleValueChange}
+            />
 
-          <LayoutOption
-            title="Vertical Stack"
-            description="Stack your input video on top of the output video in a vertical layout."
-            value="vertical"
-            selectedValue={selectedMode}
-            previewImg={previewBlobs.vertical}
-            onSelect={handleValueChange}
-          />
-        </RadioGroup>
+            <LayoutOption
+              title="Vertical Stack"
+              description="Stack your input video on top of the output video in a vertical layout."
+              value="vertical"
+              selectedValue={selectedMode}
+              previewImg={previewBlobs.vertical}
+              onSelect={handleValueChange}
+            />
+          </RadioGroup>
+        </div>
 
-        <Separator className="my-1" />
+        <Separator className="my-1 shrink-0" />
 
-        <div className="w-full">
+        <div className="w-full p-6 sm:p-8">
           <div className="flex gap-2">
             <Button
               onClick={handleCreateClip}
