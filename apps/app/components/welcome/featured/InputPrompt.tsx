@@ -18,7 +18,7 @@ import {
   SlidersHorizontal,
   WandSparkles,
 } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import TextareaAutosize from "react-textarea-autosize";
 import { useDreamshaperStore, useStreamUpdates } from "@/hooks/useDreamshaper";
 import SettingsMenu from "./prompt-settings";
@@ -86,11 +86,27 @@ export const InputPrompt = ({ onPromptSubmit }: InputPromptProps) => {
     inputRef: ref as React.RefObject<HTMLTextAreaElement>,
   });
 
-  useEffect(() => {
+  const restoreLastPrompt = useCallback(() => {
     if (lastSubmittedPrompt) {
       setInputValue(lastSubmittedPrompt);
+      setTimeout(() => {
+        if (ref && typeof ref !== "function" && ref.current) {
+          ref.current.focus();
+
+          if ("setSelectionRange" in ref.current) {
+            const length = lastSubmittedPrompt.length;
+            ref.current.setSelectionRange(length, length);
+          }
+        }
+      }, 0);
     }
-  }, [lastSubmittedPrompt, setInputValue]);
+  }, [lastSubmittedPrompt, ref, setInputValue]);
+
+  useEffect(() => {
+    if (lastSubmittedPrompt) {
+      restoreLastPrompt();
+    }
+  }, [lastSubmittedPrompt, restoreLastPrompt]);
 
   const formatInputWithHighlights = () => {
     if (!inputValue) return null;
@@ -216,6 +232,12 @@ export const InputPrompt = ({ onPromptSubmit }: InputPromptProps) => {
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (commandMenuOpen) {
       handleCommandKeyDown(e);
+      return;
+    }
+
+    if (e.key === "ArrowUp" && !inputValue && lastSubmittedPrompt) {
+      e.preventDefault();
+      restoreLastPrompt();
       return;
     }
 
