@@ -157,7 +157,7 @@ export const LivepeerPlayer = () => {
   }
 
   return (
-    <div className={isMobile ? "w-full h-full" : "aspect-video"}>
+    <div className={isMobile ? "w-full h-full" : "h-full w-full"}>
       <Player.Root
         autoPlay
         aspectRatio={16 / 9}

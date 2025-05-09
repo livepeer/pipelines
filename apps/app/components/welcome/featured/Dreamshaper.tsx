@@ -362,7 +362,7 @@ export default function Dreamshaper({ isGuestMode = false }: DreamshaperProps) {
       <div
         className={cn(
           currentStep !== "main" ? "hidden" : "block",
-          isOverlayOpen && !isMobile && "transition-all duration-200 pr-[25%]",
+          isOverlayOpen && !isMobile && "transition-all duration-200 pr-[38%]",
         )}
       >
         <div className="relative flex flex-col min-h-screen overflow-y-auto">
@@ -389,6 +389,7 @@ export default function Dreamshaper({ isGuestMode = false }: DreamshaperProps) {
                 "w-full max-w-[calc(min(100%,calc((100vh-16rem)*16/9)))] mx-auto md:aspect-video aspect-square bg-sidebar rounded-2xl overflow-hidden relative",
                 isFullscreen && "w-full h-full max-w-none rounded-none",
                 "md:min-w-[596px]",
+                isOverlayOpen && !isMobile && "md:aspect-auto md:h-[70vh]",
               )}
             >
               {hasCapacity ? (
