@@ -4,22 +4,58 @@ import useCloudAnimation from "@/hooks/useCloudAnimation";
 import { Button } from "@repo/design-system/components/ui/button";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Camera, Play } from "lucide-react";
 import { usePrivy } from "@/hooks/usePrivy";
 import { useGuestUserStore } from "@/hooks/useGuestUser";
+import TutorialModal from "./components/TutorialModal";
 
 export default function HomePage() {
   const { containerRef, getCloudTransform } = useCloudAnimation(0);
   const router = useRouter();
   const { authenticated, ready } = usePrivy();
   const { setIsGuestUser } = useGuestUserStore();
+  const [isTutorialModalOpen, setIsTutorialModalOpen] = useState(false);
+  const [animationStarted, setAnimationStarted] = useState(false);
+  const [showContent, setShowContent] = useState(false);
+
+  const redirectAsGuest = () => {
+    setIsGuestUser(true);
+    let b64Prompt = btoa(
+      "((cubism)) tesseract ((flat colors)) --creativity 0.6 --quality 3",
+    );
+    router.push(`/create?inputPrompt=${b64Prompt}`);
+  };
+
+  useEffect(() => {
+    // Check if user has already seen the landing page
+    if (typeof window !== "undefined" && ready && !authenticated) {
+      const hasSeenLanding = localStorage.getItem("hasSeenLandingPage");
+      if (hasSeenLanding) {
+        redirectAsGuest();
+        return;
+      }
+      // Mark that user has seen the landing page
+      localStorage.setItem("hasSeenLandingPage", "true");
+    }
+  }, [ready, authenticated, router]);
 
   useEffect(() => {
     if (ready && authenticated) {
       router.push("/create");
     }
   }, [ready, authenticated, router]);
+
+  useEffect(() => {
+    if (!authenticated && ready) {
+      setAnimationStarted(true);
+      const timer = setTimeout(() => {
+        setShowContent(true);
+      }, 800); // Show content after clouds start appearing
+
+      return () => clearTimeout(timer);
+    }
+  }, [authenticated, ready]);
 
   if (!ready) {
     return <div className="flex items-center justify-center h-screen"></div>;
@@ -30,13 +66,7 @@ export default function HomePage() {
   }
 
   const handleTryCameraClick = () => {
-    setIsGuestUser(true);
-
-    let b64Prompt = btoa(
-      "((cubism)) tesseract ((flat colors)) --creativity 0.6 --quality 3",
-    );
-
-    router.push(`/create?inputPrompt=${b64Prompt}`);
+    redirectAsGuest();
   };
 
   return (
@@ -46,7 +76,9 @@ export default function HomePage() {
         className="w-full h-full flex flex-col items-center justify-center relative"
       >
         {/* Cloud background */}
-        <div className="cloud-container absolute inset-0 z-0">
+        <div
+          className={`cloud-container absolute inset-0 z-0 transition-opacity duration-1000 ease-in-out ${animationStarted ? "opacity-100" : "opacity-0"}`}
+        >
           <div
             className="cloud-layer"
             id="cloud1"
@@ -110,7 +142,9 @@ export default function HomePage() {
           <div className="bg-gradient-to-b from-transparent to-[rgba(0,0,0,0.2)] absolute inset-0 z-[7] opacity-[55%]"></div>
         </div>
 
-        <div className="z-10 p-8 max-w-4xl w-full mx-4 relative rounded-full">
+        <div
+          className={`z-10 p-8 max-w-4xl w-full mx-4 relative rounded-full transition-all duration-1000 ease-in-out ${showContent ? "opacity-100 scale-100" : "opacity-0 scale-[0.98]"}`}
+        >
           <div
             className="absolute -inset-8 blur-lg z-0 rounded-full"
             style={{
@@ -156,7 +190,7 @@ export default function HomePage() {
                 Try it with your camera
               </Button>
               <Button
-                onClick={() => router.push("/explore")}
+                onClick={() => setIsTutorialModalOpen(true)}
                 className="min-w-[200px] px-6 h-12 rounded-md alwaysAnimatedButton text-black flex items-center justify-center gap-2"
               >
                 <Play className="h-4 w-4 stroke-2 fill-none" />
@@ -166,7 +200,9 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="absolute bottom-10 z-10 text-center">
+        <div
+          className={`absolute bottom-10 z-10 text-center transition-all duration-1000 ease-in-out delay-200 ${showContent ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"}`}
+        >
           <Link
             href="/explore"
             className="text-gray-500 font-light text-sm tracking-wide"
@@ -175,6 +211,11 @@ export default function HomePage() {
           </Link>
         </div>
       </div>
+
+      <TutorialModal
+        isOpen={isTutorialModalOpen}
+        onClose={() => setIsTutorialModalOpen(false)}
+      />
     </div>
   );
 }
