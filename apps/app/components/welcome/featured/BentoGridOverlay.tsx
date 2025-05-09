@@ -32,6 +32,7 @@ export const BentoGridOverlay = () => {
     setScrollPosition,
     setOverlayType,
     setSelectedClipId,
+    setIsOverlayOpen,
   } = useOverlayStore();
   const { stream } = useDreamshaperStore();
   const { handleStreamUpdate } = useStreamUpdates();
@@ -46,6 +47,15 @@ export const BentoGridOverlay = () => {
 
   const initialOpenRef = useRef(true);
   const scrollRestoredRef = useRef(false);
+
+  useEffect(() => {
+    if (initialOpenRef.current) {
+      if (isMobile) {
+        setIsOverlayOpen(false);
+      }
+      initialOpenRef.current = false;
+    }
+  }, [isMobile, setIsOverlayOpen]);
 
   const restoreScrollPosition = () => {
     if (
