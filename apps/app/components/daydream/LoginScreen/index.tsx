@@ -12,6 +12,7 @@ import { useAuth } from "./AuthContext";
 import DiscordLoginButton from "./DiscordLoginButton";
 import EmailLoginButton from "./EmailLoginButton";
 import GoogleLoginButton from "./GoogleLoginButton";
+import { useIsMobileInAppBrowser } from "@/hooks/usIsMobileInAppBrowser";
 
 export default function LoginScreen({
   isOAuthSuccessRedirect,
@@ -22,6 +23,7 @@ export default function LoginScreen({
   const { setTheme } = useTheme();
   const { oAuthState } = useAuth();
   const { containerRef, getCloudTransform } = useCloudAnimation(0);
+  const isMobileInAppBrowser = useIsMobileInAppBrowser();
 
   useMount(() => {
     setTheme("light");
@@ -118,8 +120,7 @@ export default function LoginScreen({
             {/* Social login buttons */}
             <div className="flex gap-[12px] w-full">
               {/* Google button */}
-              <GoogleLoginButton />
-
+              {!isMobileInAppBrowser && <GoogleLoginButton />}
               {/* Discord button */}
               <DiscordLoginButton />
             </div>
