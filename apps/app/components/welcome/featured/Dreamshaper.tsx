@@ -35,6 +35,7 @@ import {
   DREAMSHAPER_PARAMS_VERSION_KEY,
 } from "@/hooks/useDreamshaper";
 import { PlayerOverlay } from "./PlayerOverlay";
+import { useOverlayStore } from "@/hooks/useOverlayStore";
 
 interface DreamshaperProps {
   isGuestMode?: boolean;
@@ -62,8 +63,17 @@ export default function Dreamshaper({ isGuestMode = false }: DreamshaperProps) {
     lastPrompt,
   } = useGuestUserStore();
   const { timeRemaining } = useTrialTimer();
+  const { isOverlayOpen } = useOverlayStore();
 
   usePlayerPositionUpdater(playerRef);
+
+  // Trigger repositioning when overlay state changes
+  useEffect(() => {
+    // Slight delay to ensure transition has started
+    setTimeout(() => {
+      window.dispatchEvent(new Event("resize"));
+    }, 50);
+  }, [isOverlayOpen]);
 
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [showSignupModal, setShowSignupModal] = useState(false);
@@ -353,7 +363,12 @@ export default function Dreamshaper({ isGuestMode = false }: DreamshaperProps) {
 
   return (
     <div className="flex-1 flex flex-col pb-6 md:pb-0 h-screen overflow-y-auto">
-      <div className={currentStep !== "main" ? "hidden" : "block"}>
+      <div
+        className={cn(
+          currentStep !== "main" ? "hidden" : "block",
+          isOverlayOpen && "transition-all duration-200 pr-[30%]",
+        )}
+      >
         <div className="relative flex flex-col min-h-screen overflow-y-auto">
           <div
             className={

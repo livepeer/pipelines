@@ -14,7 +14,7 @@ try {
   } else {
     storage = new Storage();
   }
-} catch (error) { 
+} catch (error) {
   console.error("Failed to initialize GCP Storage:", error);
   throw new Error("Failed to initialize GCP Storage", { cause: error });
 }

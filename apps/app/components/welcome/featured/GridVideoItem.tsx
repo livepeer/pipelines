@@ -11,18 +11,18 @@ interface GridVideoItemProps {
 export const GridVideoItem = ({ clip, onTryPrompt }: GridVideoItemProps) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isLoaded, setIsLoaded] = useState(false);
-  
+
   useEffect(() => {
     const videoElement = videoRef.current;
     if (!videoElement) return;
-    
+
     videoElement.play().catch(error => {
       console.log("Browser is preventing autoplay:", error);
     });
   }, []);
-  
+
   return (
-    <div 
+    <div
       className="aspect-square rounded-xl overflow-hidden relative cursor-pointer"
       onClick={() => {
         if (clip.prompt) {
@@ -42,7 +42,7 @@ export const GridVideoItem = ({ clip, onTryPrompt }: GridVideoItemProps) => {
         className={cn(
           "absolute inset-0 w-full h-full object-cover object-top z-20",
           !isLoaded && "opacity-0",
-          "transition-opacity duration-300"
+          "transition-opacity duration-300",
         )}
       />
       <div className="absolute bottom-3 left-3 p-0 z-30 flex gap-2 items-center">
@@ -52,4 +52,4 @@ export const GridVideoItem = ({ clip, onTryPrompt }: GridVideoItemProps) => {
       </div>
     </div>
   );
-}; 
+};
