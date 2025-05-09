@@ -7,8 +7,9 @@ import { usePrivy } from "@/hooks/usePrivy";
 import { useGuestUserStore } from "@/hooks/useGuestUser";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Button } from "@repo/design-system/components/ui/button";
-import { Camera, Play } from "lucide-react";
+import { Camera, Play, ArrowLeft, ArrowUp } from "lucide-react";
 import TutorialModal from "./components/TutorialModal";
+import { GradientAvatar } from "@/components/GradientAvatar";
 
 export default function HomePage() {
   const { containerRef, getCloudTransform } = useCloudAnimation(0);
@@ -60,16 +61,38 @@ export default function HomePage() {
   ];
 
   const [displayedPrompts, setDisplayedPrompts] = useState(initialPrompts);
+  const [promptAvatarSeeds, setPromptAvatarSeeds] = useState<string[]>(
+    initialPrompts.map(
+      (_, i) => `user-${i}-${Math.random().toString(36).substring(2, 8)}`,
+    ),
+  );
+  const [userAvatarSeed] = useState(
+    `user-${Math.random().toString(36).substring(2, 10)}`,
+  );
+  const [userPromptIndices, setUserPromptIndices] = useState<boolean[]>(
+    initialPrompts.map(() => false),
+  );
 
   const addRandomPrompt = useCallback(() => {
     if (!showContent) return;
 
     const randomIndex = Math.floor(Math.random() * otherPeoplePrompts.length);
     const randomPrompt = otherPeoplePrompts[randomIndex];
+    const randomSeed = `user-${Math.random().toString(36).substring(2, 8)}`;
 
     setDisplayedPrompts(prevPrompts => [
       randomPrompt,
       ...prevPrompts.slice(0, prevPrompts.length - 1),
+    ]);
+
+    setPromptAvatarSeeds(prevSeeds => [
+      randomSeed,
+      ...prevSeeds.slice(0, prevSeeds.length - 1),
+    ]);
+
+    setUserPromptIndices(prevIndices => [
+      false,
+      ...prevIndices.slice(0, prevIndices.length - 1),
     ]);
   }, [otherPeoplePrompts, showContent]);
 
@@ -158,7 +181,18 @@ export default function HomePage() {
       ...displayedPrompts.slice(0, displayedPrompts.length - 1),
     ];
     setDisplayedPrompts(newPrompts);
-    setPrompt(""); // Clear the input field
+
+    setPromptAvatarSeeds(prevSeeds => [
+      userAvatarSeed,
+      ...prevSeeds.slice(0, prevSeeds.length - 1),
+    ]);
+
+    setUserPromptIndices(prevIndices => [
+      true,
+      ...prevIndices.slice(0, prevIndices.length - 1),
+    ]);
+
+    setPrompt("");
     setLastPromptTime(now);
 
     // Simulating the interaction only
@@ -309,7 +343,7 @@ export default function HomePage() {
                     placeholder={
                       isThrottled
                         ? `Wait ${throttleTimeLeft}s...`
-                        : "Apply your prompt"
+                        : "Apply your prompt in real time.."
                     }
                     className={`w-full bg-white/50 rounded-lg border-none focus:ring-0 focus:border-none focus:outline-none ${isThrottled ? "opacity-50" : ""}`}
                     value={prompt}
@@ -321,26 +355,60 @@ export default function HomePage() {
 
               <div className="flex-1 max-h-[25vh] md:max-h-none p-4 flex flex-col justify-start overflow-hidden">
                 <div className="space-y-0.5">
-                  {displayedPrompts.map((prevPrompt, index) => (
-                    <div
-                      key={`prompt-${index}-${prevPrompt.substring(0, 10)}`}
-                      className={`p-2 rounded-lg text-sm md:text-base ${index === 0 ? "text-black font-normal flex items-center animate-fadeSlideIn" : "text-gray-500 italic"}`}
-                      style={{
-                        opacity: index === 0 ? 1 : 1 - index * 0.08,
-                        transition: "all 0.3s ease-out",
-                        transform: `translateY(0)`,
-                        animation:
+                  {displayedPrompts.map((prevPrompt, index) => {
+                    const opacityReduction = userPromptIndices[index]
+                      ? 0.04
+                      : 0.08;
+                    const itemOpacity =
+                      index === 0
+                        ? 1
+                        : Math.max(0.4, 1 - index * opacityReduction);
+                    const isUserPrompt = userPromptIndices[index];
+
+                    return (
+                      <div
+                        key={`prompt-${index}-${prevPrompt.substring(0, 10)}`}
+                        className={`p-2 rounded-lg text-sm md:text-base ${
                           index === 0
-                            ? "fadeSlideIn 0.3s ease-out"
-                            : `slideDown 0.3s ease-out`,
-                      }}
-                    >
-                      {index === 0 && (
-                        <Play className="h-3 w-3 mr-2 fill-black stroke-0" />
-                      )}
-                      {prevPrompt}
-                    </div>
-                  ))}
+                            ? "text-black font-normal flex items-center animate-fadeSlideIn"
+                            : `text-gray-500 italic flex items-center ${isUserPrompt ? "font-medium" : ""}`
+                        } ${isUserPrompt && index !== 0 ? "relative overflow-hidden" : ""}`}
+                        style={{
+                          opacity: itemOpacity,
+                          transition: "all 0.3s ease-out",
+                          transform: `translateY(0)`,
+                          animation:
+                            index === 0
+                              ? "fadeSlideIn 0.3s ease-out"
+                              : `slideDown 0.3s ease-out`,
+                        }}
+                      >
+                        {isUserPrompt && index !== 0 && (
+                          <div
+                            className="absolute inset-0 -z-10 bg-black/5 backdrop-blur-[1px] rounded-lg"
+                            style={{ opacity: Math.min(1, itemOpacity + 0.2) }}
+                          ></div>
+                        )}
+                        {index === 0 ? (
+                          <>
+                            <ArrowLeft className="hidden md:inline h-3 w-3 mr-2 stroke-2" />
+                            <ArrowUp className="md:hidden h-3 w-3 mr-2 stroke-2" />
+                          </>
+                        ) : (
+                          <div
+                            className="mr-2"
+                            style={{ opacity: itemOpacity }}
+                          >
+                            <GradientAvatar
+                              seed={promptAvatarSeeds[index]}
+                              size={16}
+                            />
+                          </div>
+                        )}
+                        {prevPrompt}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 
