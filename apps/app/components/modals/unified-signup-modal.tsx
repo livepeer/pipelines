@@ -188,12 +188,13 @@ export function UnifiedSignupModal({
               </Button>
               <Button
                 onClick={() => {
+                  // Set the user as a non-guest user automatically resets the user to sign up page
+                  // Hence we need not set location.href = "/create"
                   setIsGuestUser(false);
                   localStorage.setItem(
                     "daydream_from_guest_experience",
                     "true",
                   );
-                  location.href = "/create";
                 }}
                 className="w-48 px-12 h-12 rounded-md alwaysAnimatedButton text-black"
               >
