@@ -7,7 +7,7 @@ import { usePrivy } from "@/hooks/usePrivy";
 import { useGuestUserStore } from "@/hooks/useGuestUser";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Button } from "@repo/design-system/components/ui/button";
-import { Camera, Play, ArrowLeft, ArrowUp } from "lucide-react";
+import { Camera, Play, ArrowLeft, ArrowUp, Sparkle } from "lucide-react";
 import TutorialModal from "./components/TutorialModal";
 import { GradientAvatar } from "@/components/GradientAvatar";
 
@@ -23,6 +23,7 @@ export default function HomePage() {
   const [lastPromptTime, setLastPromptTime] = useState(0);
   const [isThrottled, setIsThrottled] = useState(false);
   const [throttleTimeLeft, setThrottleTimeLeft] = useState(0);
+  const [isMounted, setIsMounted] = useState(false);
 
   const initialPrompts = [
     "cyberpunk cityscape with neon lights",
@@ -137,6 +138,10 @@ export default function HomePage() {
     }
   }, [authenticated, ready]);
 
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   if (!ready) {
     return <div className="flex items-center justify-center h-screen"></div>;
   }
@@ -200,7 +205,7 @@ export default function HomePage() {
   };
 
   return (
-    <div className="fixed inset-0 z-[1000] flex items-center justify-center">
+    <div className="fixed inset-0 z-[1000] flex items-center justify-center w-screen h-screen overflow-hidden">
       <style jsx global>{`
         @keyframes fadeSlideIn {
           from {
@@ -221,11 +226,44 @@ export default function HomePage() {
             transform: translateY(0);
           }
         }
+
+        @keyframes slideUp {
+          from {
+            transform: translateY(100%);
+          }
+          to {
+            transform: translateY(0);
+          }
+        }
+
+        @media (max-width: 767px) {
+          .mobile-slide-up {
+            animation: slideUp 0.3s ease-out !important;
+          }
+          .mobile-fade-1 {
+            opacity: 0.85 !important;
+          }
+          .mobile-fade-2 {
+            opacity: 0.65 !important;
+          }
+          .mobile-fade-3 {
+            opacity: 0.4 !important;
+          }
+          .mobile-fade-4,
+          .mobile-fade-5,
+          .mobile-fade-6,
+          .mobile-fade-7,
+          .mobile-fade-8,
+          .mobile-fade-9,
+          .mobile-fade-10 {
+            opacity: 0.2 !important;
+          }
+        }
       `}</style>
 
       <div
         ref={containerRef}
-        className="w-full h-full flex flex-col items-center justify-center relative"
+        className="w-full h-full flex flex-col items-center justify-center relative overflow-hidden"
       >
         {/* Cloud background */}
         <div
@@ -295,19 +333,18 @@ export default function HomePage() {
         </div>
 
         <div
-          className={`z-10 w-full max-w-[98%] md:max-w-[90%] mx-auto px-2 md:px-4 flex flex-col gap-4 md:gap-8 transition-all duration-1000 ease-in-out ${
+          className={`z-10 w-full h-screen md:h-[calc(100vh-80px)] md:max-w-[95%] mx-auto p-0 md:px-4 md:py-5 flex flex-col gap-4 md:gap-8 transition-all duration-1000 ease-in-out overflow-hidden md:overflow-visible ${
             showContent ? "opacity-100 scale-100" : "opacity-0 scale-[0.98]"
           }`}
-          style={{ height: "calc(100vh - 80px)", marginTop: "0" }}
         >
           <h1
-            className="text-3xl font-bold tracking-widest italic md:hidden mx-auto"
+            className="text-3xl font-bold tracking-widest italic md:hidden mx-auto absolute top-4 z-30 w-full text-center"
             style={{ color: "rgb(255, 255, 255)" }}
           >
             DAYDREAM
           </h1>
-          <div className="flex-1 flex flex-col md:flex-row gap-2 md:gap-8 h-full overflow-auto">
-            <div className="w-full md:w-[70%] relative rounded-lg overflow-hidden bg-black/10 backdrop-blur-sm shadow-lg aspect-video">
+          <div className="flex-1 flex flex-col md:flex-row gap-0 md:gap-8 h-full w-full overflow-hidden">
+            <div className="w-full md:w-[70%] relative md:rounded-lg overflow-hidden bg-black/10 backdrop-blur-sm shadow-lg md:aspect-video h-full md:h-full md:relative">
               <div className="absolute top-6 left-6 z-20 hidden md:block">
                 <h1
                   className="text-4xl md:text-[120px] font-bold tracking-widest italic mix-blend-difference"
@@ -317,9 +354,24 @@ export default function HomePage() {
                 </h1>
               </div>
 
-              <div className="w-full h-full relative">
+              <div className="w-full h-full relative md:relative">
+                <div className="fixed top-0 left-0 w-screen h-screen md:hidden z-0">
+                  <video
+                    className="absolute inset-0 w-full h-full object-cover"
+                    playsInline
+                    loop
+                    muted
+                    autoPlay
+                    controls={false}
+                  >
+                    <source src="/placeholder.mp4" type="video/mp4" />
+                    Your browser does not support the video tag.
+                  </video>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                </div>
+
                 <video
-                  className="absolute inset-0 w-full h-full object-cover"
+                  className="absolute inset-0 w-full h-full object-cover hidden md:block"
                   playsInline
                   loop
                   muted
@@ -332,10 +384,11 @@ export default function HomePage() {
               </div>
             </div>
 
-            <div className="w-full md:w-[30%] flex flex-col bg-white/10 backdrop-blur-sm rounded-lg overflow-hidden">
+            <div className="w-full md:w-[30%] flex flex-col md:bg-white/10 md:backdrop-blur-sm rounded-lg md:rounded-lg overflow-hidden max-h-[50vh] md:max-h-none fixed bottom-0 left-0 right-0 md:relative">
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent md:hidden pointer-events-none"></div>
               <form
                 onSubmit={handlePromptSubmit}
-                className="p-4 border-b border-gray-200/30"
+                className="p-4 md:border-b border-t md:border-t-0 border-gray-200/30 relative z-10"
               >
                 <div className="relative">
                   <Input
@@ -345,7 +398,7 @@ export default function HomePage() {
                         ? `Wait ${throttleTimeLeft}s...`
                         : "Apply your prompt in real time.."
                     }
-                    className={`w-full bg-white/50 rounded-lg border-none focus:ring-0 focus:border-none focus:outline-none ${isThrottled ? "opacity-50" : ""}`}
+                    className={`w-full md:bg-white/50 bg-white/80 rounded-lg border-none focus:ring-0 focus:border-none focus:outline-none ${isThrottled ? "opacity-50" : ""}`}
                     value={prompt}
                     onChange={e => setPrompt(e.target.value)}
                     disabled={isThrottled}
@@ -353,16 +406,19 @@ export default function HomePage() {
                 </div>
               </form>
 
-              <div className="flex-1 max-h-[25vh] md:max-h-none p-4 flex flex-col justify-start overflow-hidden">
-                <div className="space-y-0.5">
+              <div className="flex-1 max-h-[25vh] md:max-h-none p-4 flex flex-col md:justify-start justify-end overflow-hidden order-first md:order-none relative z-10">
+                <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/30 md:hidden pointer-events-none z-0"></div>
+                <div className="space-y-0.5 flex flex-col-reverse md:flex-col relative z-10">
                   {displayedPrompts.map((prevPrompt, index) => {
                     const opacityReduction = userPromptIndices[index]
                       ? 0.04
                       : 0.08;
-                    const itemOpacity =
+
+                    let itemOpacity =
                       index === 0
                         ? 1
                         : Math.max(0.4, 1 - index * opacityReduction);
+
                     const isUserPrompt = userPromptIndices[index];
 
                     return (
@@ -370,9 +426,9 @@ export default function HomePage() {
                         key={`prompt-${index}-${prevPrompt.substring(0, 10)}`}
                         className={`p-2 rounded-lg text-sm md:text-base ${
                           index === 0
-                            ? "text-black font-normal flex items-center animate-fadeSlideIn"
-                            : `text-gray-500 italic flex items-center ${isUserPrompt ? "font-medium" : ""}`
-                        } ${isUserPrompt && index !== 0 ? "relative overflow-hidden" : ""}`}
+                            ? "text-white md:text-black font-bold md:font-normal flex items-center animate-fadeSlideIn"
+                            : `text-gray-500 italic flex items-center ${isUserPrompt ? "font-medium" : ""} ${index !== 0 ? "mobile-slide-up" : ""}`
+                        } ${isUserPrompt && index !== 0 ? "relative overflow-hidden" : ""} mobile-fade-${index}`}
                         style={{
                           opacity: itemOpacity,
                           transition: "all 0.3s ease-out",
@@ -392,7 +448,7 @@ export default function HomePage() {
                         {index === 0 ? (
                           <>
                             <ArrowLeft className="hidden md:inline h-3 w-3 mr-2 stroke-2" />
-                            <ArrowUp className="md:hidden h-3 w-3 mr-2 stroke-2" />
+                            <Sparkle className="md:hidden h-4 w-4 mr-2 stroke-2" />
                           </>
                         ) : (
                           <div
@@ -412,20 +468,13 @@ export default function HomePage() {
                 </div>
               </div>
 
-              <div className="p-4 border-t border-gray-200/30 flex flex-row gap-3 w-full">
+              <div className="p-4 border-t border-gray-200/30 flex flex-row gap-3 w-full relative z-10">
                 <Button
-                  className="flex-1 px-4 py-2 h-10 rounded-md bg-black text-white hover:bg-gray-800 flex items-center justify-center gap-2"
+                  className="w-full px-4 py-2 h-10 rounded-md md:bg-black md:text-white bg-white text-black hover:bg-gray-100 md:hover:bg-gray-800 flex items-center justify-center gap-2"
                   onClick={handleTryCameraClick}
                 >
-                  <Camera className="hidden md:inline h-4 w-4" />
+                  <Camera className="h-4 w-4" />
                   Try it with your camera
-                </Button>
-                <Button
-                  onClick={() => setIsTutorialModalOpen(true)}
-                  className="w-24 md:flex-1 px-4 py-2 h-10 rounded-md alwaysAnimatedButton text-black flex items-center justify-center gap-2"
-                >
-                  <Play className="hidden md:inline h-4 w-4 stroke-2 fill-none" />
-                  Watch demo
                 </Button>
               </div>
             </div>
