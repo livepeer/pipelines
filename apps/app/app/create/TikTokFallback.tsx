@@ -11,19 +11,13 @@ export default function TikTokFallback() {
   const linkToCopy = "https://daydream.live/";
   const [isCopied, setIsCopied] = useState(false);
 
-  const handleCopyLink = () => {
-    navigator.clipboard
-      .writeText(linkToCopy)
-      .then(() => {
-        setIsCopied(true);
-        setTimeout(() => {
-          setIsCopied(false);
-        }, 3000);
-      })
-      .catch(err => {
-        console.error("Failed to copy link: ", err);
-        alert("Failed to copy link.");
-      });
+  const handleCopyLink = async () => {
+    await navigator.clipboard.writeText(linkToCopy);
+
+    setIsCopied(true);
+    setTimeout(() => {
+      setIsCopied(false);
+    }, 3000);
   };
 
   return (

@@ -54,7 +54,7 @@ export default async function HomePage({
   const { shared, privy_oauth_code, inputPrompt } = searchParams;
   const isGuestAccess = !!inputPrompt; // If there's an inputPrompt, the user is coming from "Try this prompt"
 
-  if (true) {
+  if (isTikTokUserAgent) {
     return <TikTokFallback />;
   }
 
