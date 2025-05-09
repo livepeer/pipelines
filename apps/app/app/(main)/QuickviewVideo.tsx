@@ -94,7 +94,7 @@ export default function QuickviewVideo({
 
   const handleClose = () => {
     setIsPreviewOpen(false);
-    router.push("/", { scroll: false });
+    router.push("/explore", { scroll: false });
   };
 
   const handleTryPrompt = (e: React.MouseEvent) => {

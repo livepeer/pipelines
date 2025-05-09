@@ -5,9 +5,8 @@ import {
   users as usersTable,
 } from "@/lib/db/schema";
 import { and, asc, desc, eq, isNotNull, isNull, sql } from "drizzle-orm";
-import Header from "./Header";
-import MainLayoutClient from "./MainLayoutClient";
-import { headers } from "next/headers";
+import Header from "../(main)/Header";
+import MainLayoutClient from "../(main)/MainLayoutClient";
 
 export const dynamic = "force-dynamic";
 
@@ -175,19 +174,12 @@ async function getInitialClips() {
   }));
 }
 
-export default async function MainLayout({
+export default async function ExploreLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   const initialClips = await getInitialClips();
-  const headersList = headers();
-  const pathname = headersList.get("x-pathname") || "/";
-  const isHomePage = pathname === "/";
-
-  if (isHomePage) {
-    return <>{children}</>;
-  }
 
   return (
     <>

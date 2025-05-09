@@ -1,4 +1,5 @@
 import "@repo/design-system/styles/globals.css";
+import "./cloud-animations.css";
 import { DesignSystemProvider } from "@repo/design-system/providers";
 import type { ReactNode } from "react";
 import type { Viewport } from "next";
