@@ -11,10 +11,12 @@ import { useCapacityCheck } from "@/hooks/useCapacityCheck";
 
 interface MainExperienceProps {
   isGuestMode?: boolean;
+  defaultPrompt?: string | null;
 }
 
 export default function MainExperience({
   isGuestMode = false,
+  defaultPrompt = null,
 }: MainExperienceProps) {
   const { currentStep, cameraPermission, setCameraPermission } = useOnboard();
   const { user } = usePrivy();
@@ -62,7 +64,10 @@ export default function MainExperience({
     >
       <GlobalSidebar>
         <div className="flex h-screen md:h-auto md:min-h-[calc(100vh-2rem)] flex-col px-2 md:px-6">
-          <Dreamshaper isGuestMode={isGuestMode} />
+          <Dreamshaper
+            isGuestMode={isGuestMode}
+            defaultPrompt={defaultPrompt}
+          />
           <ClientSideTracker eventName="home_page_view" />
         </div>
       </GlobalSidebar>
