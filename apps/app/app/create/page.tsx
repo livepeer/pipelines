@@ -3,6 +3,7 @@ import { getSharedParams } from "../api/streams/share-params";
 import { cache } from "react";
 import { headers } from "next/headers";
 import Link from "next/link";
+import TikTokFallback from "./TikTokFallback";
 
 const getCachedSharedParams = cache(async (shareParamsId: string) => {
   const { data: sharedParams } = await getSharedParams(shareParamsId);
@@ -53,25 +54,8 @@ export default async function HomePage({
   const { shared, privy_oauth_code, inputPrompt } = searchParams;
   const isGuestAccess = !!inputPrompt; // If there's an inputPrompt, the user is coming from "Try this prompt"
 
-  if (isTikTokUserAgent) {
-    return (
-      <div className="flex min-h-screen flex-col items-center justify-center p-6 text-center">
-        <h1 className="text-2xl font-bold mb-4">
-          Streaming is limited in the TikTok browser.
-        </h1>
-        <p className="mb-6">
-          For the best experience, please use Safari or Chrome browser.
-        </p>
-        <div className="flex flex-col gap-4">
-          <Link
-            href="/"
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-          >
-            Go to Home
-          </Link>
-        </div>
-      </div>
-    );
+  if (true) {
+    return <TikTokFallback />;
   }
 
   return (
