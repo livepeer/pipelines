@@ -128,17 +128,17 @@ export function BroadcastWithControls({ className }: { className?: string }) {
 
   return (
     <Broadcast.Root
-      onError={error => {
+      onError={(error: any) => {
         return error?.type === "permissions"
           ? toast.error(
               "You must accept permissions to broadcast. Please try again.",
             )
           : null;
       }}
-      forceEnabled={true}
+      forceEnabled
+      silentAudioTrack
       mirrored={false}
-      audio={false}
-      video={true}
+      video
       aspectRatio={16 / 9}
       ingestUrl={ingestUrl}
       {...({
