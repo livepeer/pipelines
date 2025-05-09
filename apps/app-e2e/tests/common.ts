@@ -58,8 +58,15 @@ export async function assertVideoPlaying(
   video: Locator,
   visibleTimeout = VIDEO_VISIBLE_TIMEOUT_MS,
 ) {
+  const startTime = Date.now();
+  let videoVisibleTime: number = 0;
+  let readyStateTime: number = 0;
+  let playingStateTime: number = 0;
+
   await test.step("Wait for video visibility", async () => {
     await video.waitFor({ state: "visible", timeout: visibleTimeout });
+    videoVisibleTime = Date.now();
+    console.log(`Video became visible after ${videoVisibleTime - startTime}ms`);
   });
 
   await test.step("Poll for readyState", async () => {
@@ -74,6 +81,10 @@ export async function assertVideoPlaying(
         },
       )
       .toBeGreaterThanOrEqual(HAVE_ENOUGH_DATA);
+    readyStateTime = Date.now();
+    console.log(
+      `Video reached HAVE_ENOUGH_DATA after ${readyStateTime - startTime}ms`,
+    );
   });
 
   await test.step("Poll for playing state", async () => {
@@ -88,6 +99,10 @@ export async function assertVideoPlaying(
         },
       )
       .toBeFalsy();
+    playingStateTime = Date.now();
+    console.log(
+      `Video started playing after ${playingStateTime - startTime}ms`,
+    );
   });
 
   await test.step("Verify playback progression", async () => {
@@ -111,6 +126,14 @@ export async function assertVideoPlaying(
       isPaused,
       `Video should not be paused after ${PLAYBACK_PROGRESS_CHECK_DELAY_MS}ms check delay`,
     ).toBeFalsy();
+
+    const totalTime = Date.now() - startTime;
+    console.log(`Total time from start to verified playback: ${totalTime}ms`);
+    console.log("Video timing breakdown (ms):");
+    console.log(`- Visibility: ${videoVisibleTime - startTime}`);
+    console.log(`- ReadyState: ${readyStateTime - videoVisibleTime}`);
+    console.log(`- Playing: ${playingStateTime - readyStateTime}`);
+    console.log(`- Verified: ${totalTime - playingStateTime}`);
   });
 }
 
