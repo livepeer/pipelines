@@ -228,7 +228,6 @@ export const InputPrompt = ({ onPromptSubmit }: InputPromptProps) => {
       setLastSubmittedPrompt(inputValue);
       setHasSubmittedPrompt(true);
       setInputValue("");
-      incrementPromptVersion(promptVersion + 1);
     } else {
       console.error("No input value to submit");
     }

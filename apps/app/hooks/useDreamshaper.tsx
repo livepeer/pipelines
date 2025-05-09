@@ -17,6 +17,7 @@ import track from "@/lib/track";
 import { usePrivy } from "@/hooks/usePrivy";
 import { usePromptStore } from "@/hooks/usePromptStore";
 import { useCapacityCheck } from "@/hooks/useCapacityCheck";
+import { usePromptVersionStore } from "./usePromptVersionStore";
 
 export const DEFAULT_PIPELINE_ID = "pip_DRQREDnSei4HQyC8"; // Staging Dreamshaper ID
 export const DUMMY_USER_ID_FOR_NON_AUTHENTICATED_USERS =
@@ -404,6 +405,7 @@ export function useParamsHandling() {
 
 export function useStreamUpdates() {
   const { stream, pipeline, setUpdating } = useDreamshaperStore();
+  const { incrementPromptVersion } = usePromptVersionStore();
 
   const handleStreamUpdate = useCallback(
     async (prompt: string, options?: { silent?: boolean }) => {
@@ -532,6 +534,7 @@ export function useStreamUpdates() {
           if (!options?.silent) {
             toast.success("Stream updated successfully", { id: toastId });
           }
+          incrementPromptVersion();
         } else {
           if (!options?.silent) {
             toast.error("Error updating stream with prompt", { id: toastId });
@@ -698,6 +701,8 @@ export const useShareLink = () => {
       }
 
       const shareUrl = new URL(window.location.href);
+      shareUrl.searchParams.delete("inputPrompt");
+      shareUrl.searchParams.delete("sourceClipId");
       shareUrl.searchParams.set("shared", data.id);
 
       return { error: null, url: shareUrl.toString() };
