@@ -21,7 +21,6 @@ import { Header } from "./Header";
 import { ResponsiveInputPrompt } from "./ResponsiveInputPrompt";
 import { MainContent } from "./MainContent";
 import { ManagedBroadcast } from "./ManagedBroadcast";
-import { usePlayerPositionUpdater } from "./usePlayerPosition";
 import { usePrivy } from "@/hooks/usePrivy";
 import useMount from "@/hooks/useMount";
 import { sendBeaconEvent } from "@/lib/analytics/event-middleware";
@@ -37,6 +36,7 @@ import {
 import { PlayerOverlay } from "./PlayerOverlay";
 import { usePlayerStore } from "./player";
 import { useOverlayStore } from "@/hooks/useOverlayStore";
+import { usePlayerPositionUpdater } from "./usePlayerPosition";
 
 interface DreamshaperProps {
   isGuestMode?: boolean;
@@ -67,16 +67,7 @@ export default function Dreamshaper({ isGuestMode = false }: DreamshaperProps) {
   } = useGuestUserStore();
   const { timeRemaining } = useTrialTimer();
   const { isOverlayOpen } = useOverlayStore();
-
-  usePlayerPositionUpdater(playerRef);
-
-  // Trigger repositioning when overlay state changes
-  useEffect(() => {
-    // Slight delay to ensure transition has started
-    setTimeout(() => {
-      window.dispatchEvent(new Event("resize"));
-    }, 50);
-  }, [isOverlayOpen]);
+  const { isMobile } = useMobileStore();
 
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [showSignupModal, setShowSignupModal] = useState(false);
@@ -352,6 +343,8 @@ export default function Dreamshaper({ isGuestMode = false }: DreamshaperProps) {
     return false;
   };
 
+  usePlayerPositionUpdater(playerRef);
+
   if (showSignupModal) {
     return (
       <div className="flex-1 flex flex-col pb-6 md:pb-0 h-screen overflow-y-auto">
@@ -369,7 +362,7 @@ export default function Dreamshaper({ isGuestMode = false }: DreamshaperProps) {
       <div
         className={cn(
           currentStep !== "main" ? "hidden" : "block",
-          isOverlayOpen && "transition-all duration-200 pr-[30%]",
+          isOverlayOpen && !isMobile && "transition-all duration-200 pr-[25%]",
         )}
       >
         <div className="relative flex flex-col min-h-screen overflow-y-auto">
