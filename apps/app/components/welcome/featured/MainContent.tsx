@@ -101,7 +101,7 @@ export const MainContent = () => {
           <div className="relative w-full h-full">
             <LivepeerPlayer />
           </div>
-          {(!live || showOverlay) && <Overlay statusMessage={statusMessage} />}
+          {/* {(!live || showOverlay) && <Overlay statusMessage={statusMessage} />} */}
         </>
       ) : (
         <div className="w-full h-full flex items-center justify-center text-muted-foreground">
