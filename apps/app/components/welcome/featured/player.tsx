@@ -272,7 +272,6 @@ const useFirstFrameLoaded = ({ __scopeMedia }: Player.MediaScopedProps) => {
 
   // Send event on load
   useEffect(() => {
-    console.log("@@@@@@@@ SEND STREAM REQUEST");
     const sendEvent = async () => {
       await sendKafkaEvent(
         "stream_trace",

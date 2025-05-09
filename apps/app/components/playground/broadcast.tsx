@@ -42,7 +42,6 @@ const StatusMonitor = () => {
     if (state.status === "live" && !liveEventSentRef.current) {
       liveEventSentRef.current = true;
 
-      console.log("@@@@@@@@ START BROADCAST");
       const sendEvent = async () => {
         await sendKafkaEvent(
           "stream_trace",
