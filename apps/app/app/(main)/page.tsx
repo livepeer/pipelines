@@ -7,32 +7,37 @@ import Link from "next/link";
 import { useEffect } from "react";
 import { Camera, Play } from "lucide-react";
 import { usePrivy } from "@/hooks/usePrivy";
+import { useGuestUserStore } from "@/hooks/useGuestUser";
 
 export default function HomePage() {
   const { containerRef, getCloudTransform } = useCloudAnimation(0);
   const router = useRouter();
   const { authenticated, ready } = usePrivy();
+  const { setIsGuestUser } = useGuestUserStore();
 
-  // Redirect if user is logged in
   useEffect(() => {
     if (ready && authenticated) {
       router.push("/create");
     }
   }, [ready, authenticated, router]);
 
-  // Don't show anything while checking auth state
   if (!ready) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900"></div>
-      </div>
-    );
+    return <div className="flex items-center justify-center h-screen"></div>;
   }
 
-  // If authenticated is true, we'll redirect. This prevents a flash of content
   if (authenticated) {
     return null;
   }
+
+  const handleTryCameraClick = () => {
+    setIsGuestUser(true);
+
+    let b64Prompt = btoa(
+      "((cubism)) tesseract ((flat colors)) --creativity 0.6 --quality 3",
+    );
+
+    router.push(`/create?inputPrompt=${b64Prompt}`);
+  };
 
   return (
     <div className="fixed inset-0 z-[1000] flex items-center justify-center">
@@ -145,7 +150,7 @@ export default function HomePage() {
             <div className="mt-6 flex flex-row gap-4 w-full items-center justify-center">
               <Button
                 className="min-w-[200px] px-6 h-12 rounded-md bg-black text-white hover:bg-gray-800 flex items-center justify-center gap-2"
-                onClick={() => router.push("/create")}
+                onClick={handleTryCameraClick}
               >
                 <Camera className="h-4 w-4" />
                 Try it with your camera

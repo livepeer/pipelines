@@ -39,9 +39,13 @@ import { usePlayerPositionUpdater } from "./usePlayerPosition";
 
 interface DreamshaperProps {
   isGuestMode?: boolean;
+  defaultPrompt?: string | null;
 }
 
-export default function Dreamshaper({ isGuestMode = false }: DreamshaperProps) {
+export default function Dreamshaper({
+  isGuestMode = false,
+  defaultPrompt = null,
+}: DreamshaperProps) {
   const { capacityLoading, hasCapacity } = useInitialization();
   useParamsHandling();
   useErrorMonitor();
@@ -61,6 +65,7 @@ export default function Dreamshaper({ isGuestMode = false }: DreamshaperProps) {
     setHasRecordedClip,
     setHasShared,
     lastPrompt,
+    setLastPrompt,
   } = useGuestUserStore();
   const { timeRemaining } = useTrialTimer();
   const { isOverlayOpen } = useOverlayStore();
@@ -290,6 +295,35 @@ export default function Dreamshaper({ isGuestMode = false }: DreamshaperProps) {
       });
     }
   }, [capacityLoading, hasCapacity, authenticated, isGuestMode]);
+
+  useEffect(() => {
+    if (
+      isGuestMode &&
+      defaultPrompt &&
+      status === "ONLINE" &&
+      handleStreamUpdate
+    ) {
+      setTimeout(() => {
+        handleStreamUpdate(defaultPrompt);
+        setLastPrompt(defaultPrompt);
+        setLastSubmittedPrompt(defaultPrompt);
+        setHasSubmittedPrompt(true);
+
+        track("guest_default_prompt_applied", {
+          prompt: defaultPrompt,
+          from_homepage: true,
+        });
+      }, 1500);
+    }
+  }, [
+    isGuestMode,
+    defaultPrompt,
+    status,
+    handleStreamUpdate,
+    setLastPrompt,
+    setLastSubmittedPrompt,
+    setHasSubmittedPrompt,
+  ]);
 
   const handleTutorialComplete = () => {
     setShowTutorial(false);
