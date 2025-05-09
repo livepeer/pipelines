@@ -311,7 +311,7 @@ export default function HomePage() {
               <div className="absolute top-6 left-6 z-20 hidden md:block">
                 <h1
                   className="text-4xl md:text-[120px] font-bold tracking-widest italic mix-blend-difference"
-                  style={{ color: "rgb(255, 255, 255)" }}
+                  style={{ color: "rgba(255, 255, 255, 0.65)" }}
                 >
                   DAYDREAM
                 </h1>
