@@ -4,6 +4,7 @@ import { cache } from "react";
 import { headers } from "next/headers";
 import Link from "next/link";
 import TikTokFallback from "./TikTokFallback";
+import { identifyTikTokInAppBrowser } from "@/lib/userAgentIdentify";
 
 const getCachedSharedParams = cache(async (shareParamsId: string) => {
   const { data: sharedParams } = await getSharedParams(shareParamsId);
@@ -46,15 +47,10 @@ export default async function HomePage({
   const requestHeaders = headers();
   const userAgent = requestHeaders.get("user-agent")?.toLowerCase();
 
-  const isTikTokUserAgent =
-    userAgent?.includes("tiktok") ||
-    userAgent?.includes("musical_ly") ||
-    userAgent?.includes("bytedance");
-
   const { shared, privy_oauth_code, inputPrompt } = searchParams;
   const isGuestAccess = !!inputPrompt; // If there's an inputPrompt, the user is coming from "Try this prompt"
 
-  if (isTikTokUserAgent) {
+  if (userAgent && identifyTikTokInAppBrowser(userAgent)) {
     return <TikTokFallback />;
   }
 
