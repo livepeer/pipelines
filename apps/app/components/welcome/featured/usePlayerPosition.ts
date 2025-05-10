@@ -1,6 +1,7 @@
 import useMobileStore from "@/hooks/useMobileStore";
+import { useOverlayStore } from "@/hooks/useOverlayStore";
 import { debounce } from "@/lib/debounce";
-import { RefObject, useEffect } from "react";
+import { RefObject, useEffect, useRef } from "react";
 import { create } from "zustand";
 
 interface PlayerPosition {
@@ -25,6 +26,8 @@ export function usePlayerPositionUpdater(
 ): void {
   const setPosition = usePlayerPositionStore(state => state.setPosition);
   const { isMobile } = useMobileStore();
+  const { isOverlayOpen } = useOverlayStore();
+  const previousOverlayState = useRef(isOverlayOpen);
 
   useEffect(() => {
     if (!isMobile && outputPlayerRef.current) {
@@ -52,24 +55,17 @@ export function usePlayerPositionUpdater(
         resizeObserver.observe(outputPlayerRef.current);
       }
 
-      const parentElement =
-        outputPlayerRef.current.parentElement || document.body;
-      const bodyObserver = new MutationObserver(debouncedUpdate);
-      bodyObserver.observe(parentElement, {
-        childList: true,
-        subtree: true,
-        attributes: true,
-        attributeFilter: ["class", "style"],
-      });
-
       return () => {
         clearTimeout(initialTimeout);
         debouncedUpdate.cancel();
         window.removeEventListener("resize", debouncedUpdate);
         window.removeEventListener("scroll", debouncedUpdate);
         resizeObserver.disconnect();
-        bodyObserver.disconnect();
       };
     }
   }, [isMobile, outputPlayerRef, setPosition]);
+
+  useEffect(() => {
+    previousOverlayState.current = isOverlayOpen;
+  }, [isOverlayOpen]);
 }

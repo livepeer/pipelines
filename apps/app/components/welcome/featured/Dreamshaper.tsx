@@ -21,7 +21,6 @@ import { Header } from "./Header";
 import { ResponsiveInputPrompt } from "./ResponsiveInputPrompt";
 import { MainContent } from "./MainContent";
 import { ManagedBroadcast } from "./ManagedBroadcast";
-import { usePlayerPositionUpdater } from "./usePlayerPosition";
 import { usePrivy } from "@/hooks/usePrivy";
 import useMount from "@/hooks/useMount";
 import { sendBeaconEvent } from "@/lib/analytics/event-middleware";
@@ -35,12 +34,18 @@ import {
   DREAMSHAPER_PARAMS_VERSION_KEY,
 } from "@/hooks/useDreamshaper";
 import { PlayerOverlay } from "./PlayerOverlay";
+import { useOverlayStore } from "@/hooks/useOverlayStore";
+import { usePlayerPositionUpdater } from "./usePlayerPosition";
 
 interface DreamshaperProps {
   isGuestMode?: boolean;
+  defaultPrompt?: string | null;
 }
 
-export default function Dreamshaper({ isGuestMode = false }: DreamshaperProps) {
+export default function Dreamshaper({
+  isGuestMode = false,
+  defaultPrompt = null,
+}: DreamshaperProps) {
   const { capacityLoading, hasCapacity } = useInitialization();
   useParamsHandling();
   useErrorMonitor();
@@ -61,10 +66,11 @@ export default function Dreamshaper({ isGuestMode = false }: DreamshaperProps) {
     setHasRecordedClip,
     setHasShared,
     lastPrompt,
+    setLastPrompt,
   } = useGuestUserStore();
   const { timeRemaining } = useTrialTimer();
-
-  usePlayerPositionUpdater(playerRef);
+  const { isOverlayOpen } = useOverlayStore();
+  const { isMobile } = useMobileStore();
 
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [showSignupModal, setShowSignupModal] = useState(false);
@@ -291,6 +297,35 @@ export default function Dreamshaper({ isGuestMode = false }: DreamshaperProps) {
     }
   }, [capacityLoading, hasCapacity, authenticated, isGuestMode]);
 
+  useEffect(() => {
+    if (
+      isGuestMode &&
+      defaultPrompt &&
+      status === "ONLINE" &&
+      handleStreamUpdate
+    ) {
+      setTimeout(() => {
+        handleStreamUpdate(defaultPrompt);
+        setLastPrompt(defaultPrompt);
+        setLastSubmittedPrompt(defaultPrompt);
+        setHasSubmittedPrompt(true);
+
+        track("guest_default_prompt_applied", {
+          prompt: defaultPrompt,
+          from_homepage: true,
+        });
+      }, 1500);
+    }
+  }, [
+    isGuestMode,
+    defaultPrompt,
+    status,
+    handleStreamUpdate,
+    setLastPrompt,
+    setLastSubmittedPrompt,
+    setHasSubmittedPrompt,
+  ]);
+
   const handleTutorialComplete = () => {
     setShowTutorial(false);
     localStorage.setItem("has_seen_tutorial", "true");
@@ -340,7 +375,41 @@ export default function Dreamshaper({ isGuestMode = false }: DreamshaperProps) {
     return false;
   };
 
+  usePlayerPositionUpdater(playerRef);
+
+  useEffect(() => {
+    if (authenticated && ready && showSignupModal) {
+      setShowSignupModal(false);
+    }
+  }, [authenticated, ready, showSignupModal]);
+
+  const [confirmedShow, setConfirmedShow] = useState(false);
+
+  useEffect(() => {
+    if (showSignupModal) {
+      const timer = setTimeout(() => {
+        if (!authenticated && ready) {
+          setConfirmedShow(true);
+        } else {
+          setShowSignupModal(false);
+        }
+      }, 500);
+
+      return () => clearTimeout(timer);
+    } else {
+      setConfirmedShow(false);
+    }
+  }, [showSignupModal, authenticated, ready]);
+
   if (showSignupModal) {
+    console.log("showSignupModal", authenticated, ready, showSignupModal);
+    if (authenticated && ready) {
+      setShowSignupModal(false);
+      return null;
+    }
+
+    if (!confirmedShow) return null;
+
     return (
       <div className="flex-1 flex flex-col pb-6 md:pb-0 h-screen overflow-y-auto">
         <UnifiedSignupModal
@@ -354,7 +423,12 @@ export default function Dreamshaper({ isGuestMode = false }: DreamshaperProps) {
 
   return (
     <div className="flex-1 flex flex-col pb-6 md:pb-0 h-screen overflow-y-auto">
-      <div className={currentStep !== "main" ? "hidden" : "block"}>
+      <div
+        className={cn(
+          currentStep !== "main" ? "hidden" : "block",
+          isOverlayOpen && !isMobile && "transition-all duration-200 pr-[38%]",
+        )}
+      >
         <div className="relative flex flex-col min-h-screen overflow-y-auto">
           <div
             className={
@@ -379,6 +453,7 @@ export default function Dreamshaper({ isGuestMode = false }: DreamshaperProps) {
                 "w-full max-w-[calc(min(100%,calc((100vh-16rem)*16/9)))] mx-auto md:aspect-video aspect-square bg-sidebar rounded-2xl overflow-hidden relative",
                 isFullscreen && "w-full h-full max-w-none rounded-none",
                 "md:min-w-[596px]",
+                isOverlayOpen && !isMobile && "md:aspect-auto md:h-[70vh]",
               )}
             >
               {hasCapacity ? (

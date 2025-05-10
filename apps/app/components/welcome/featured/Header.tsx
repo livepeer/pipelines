@@ -50,7 +50,7 @@ export const Header = ({
   const { hasSubmittedPrompt } = usePromptStore();
   const { open, setOpen, openModal } = useShareModal();
   const { setHasRecordedClip, lastPrompt } = useGuestUserStore();
-  const { setIsOverlayOpen, setOverlayType } = useOverlayStore();
+  const { isOverlayOpen, setIsOverlayOpen, setOverlayType } = useOverlayStore();
 
   const [showGuestModal, setShowGuestModal] = useState(false);
   const [guestModalReason, setGuestModalReason] = useState<
@@ -127,7 +127,12 @@ export const Header = ({
       >
         {/* Desktop Beta Badge */}
         {!isMobile && !isFullscreen && (
-          <div className="fixed top-4 left-1/2 -translate-x-1/2 w-full flex justify-center">
+          <div
+            className={cn(
+              "fixed top-4 left-1/2 -translate-x-1/2 w-full flex justify-center",
+              isOverlayOpen && "left-[32.5%]",
+            )}
+          >
             <a
               href="https://livepeer.notion.site/15f0a348568781aab037c863d91b05e2"
               target="_blank"
@@ -157,7 +162,12 @@ export const Header = ({
 
         {!isMobile && !isFullscreen && (
           <>
-            <div className="absolute bottom-3 left-0 flex items-center">
+            <div
+              className={cn(
+                "absolute bottom-3 left-0 flex items-center",
+                isOverlayOpen && "opacity-0 pointer-events-none",
+              )}
+            >
               <TrackedButton
                 trackingEvent="daydream_back_to_explore_clicked"
                 trackingProperties={{
