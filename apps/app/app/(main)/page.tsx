@@ -2,7 +2,7 @@
 
 import useCloudAnimation from "@/hooks/useCloudAnimation";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { usePrivy } from "@/hooks/usePrivy";
 import { useGuestUserStore } from "@/hooks/useGuestUser";
 import { Input } from "@repo/design-system/components/ui/input";
@@ -24,6 +24,19 @@ export default function HomePage() {
   const [isThrottled, setIsThrottled] = useState(false);
   const [throttleTimeLeft, setThrottleTimeLeft] = useState(0);
   const [isMounted, setIsMounted] = useState(false);
+
+  // Queue system state
+  const [promptQueue, setPromptQueue] = useState<
+    {
+      text: string;
+      seed: string;
+      isUser: boolean;
+    }[]
+  >([]);
+  const [highlightedSince, setHighlightedSince] = useState<number>(0);
+  const [isProcessingQueue, setIsProcessingQueue] = useState<boolean>(false);
+  const MAX_QUEUE_SIZE = 5;
+  const HIGHLIGHT_DURATION = 5000; // 5 seconds
 
   const initialPrompts = [
     "cyberpunk cityscape with neon lights",
@@ -74,6 +87,93 @@ export default function HomePage() {
     initialPrompts.map(() => false),
   );
 
+  const processNextPrompt = useCallback(() => {
+    setIsProcessingQueue(true);
+
+    setPromptQueue(prevQueue => {
+      if (prevQueue.length === 0) {
+        setIsProcessingQueue(false);
+        return prevQueue;
+      }
+
+      const nextPrompt = prevQueue[0];
+      const remainingQueue = prevQueue.slice(1);
+
+      setDisplayedPrompts(prevPrompts => [
+        nextPrompt.text,
+        ...prevPrompts.slice(0, prevPrompts.length - 1),
+      ]);
+
+      setPromptAvatarSeeds(prevSeeds => [
+        nextPrompt.seed,
+        ...prevSeeds.slice(0, prevSeeds.length - 1),
+      ]);
+
+      setUserPromptIndices(prevIndices => [
+        nextPrompt.isUser,
+        ...prevIndices.slice(0, prevIndices.length - 1),
+      ]);
+
+      setHighlightedSince(Date.now());
+
+      return remainingQueue;
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!showContent) return;
+
+    const now = Date.now();
+    const timeHighlighted = now - highlightedSince;
+
+    if (
+      (highlightedSince === 0 || timeHighlighted >= HIGHLIGHT_DURATION) &&
+      promptQueue.length > 0 &&
+      !isProcessingQueue
+    ) {
+      processNextPrompt();
+    }
+
+    const timer = setTimeout(() => {
+      if (
+        highlightedSince > 0 &&
+        Date.now() - highlightedSince >= HIGHLIGHT_DURATION &&
+        promptQueue.length > 0
+      ) {
+        processNextPrompt();
+      }
+      setIsProcessingQueue(false);
+    }, HIGHLIGHT_DURATION);
+
+    return () => clearTimeout(timer);
+  }, [
+    highlightedSince,
+    promptQueue,
+    processNextPrompt,
+    showContent,
+    isProcessingQueue,
+    HIGHLIGHT_DURATION,
+  ]);
+
+  const addToPromptQueue = useCallback(
+    (promptText: string, seed: string, isUser: boolean) => {
+      if (!showContent) return;
+
+      setPromptQueue(prevQueue => {
+        if (prevQueue.length >= MAX_QUEUE_SIZE) {
+          return prevQueue;
+        }
+
+        return [...prevQueue, { text: promptText, seed, isUser }];
+      });
+
+      if (highlightedSince === 0) {
+        processNextPrompt();
+      }
+    },
+    [showContent, highlightedSince, processNextPrompt],
+  );
+
   const addRandomPrompt = useCallback(() => {
     if (!showContent) return;
 
@@ -81,21 +181,8 @@ export default function HomePage() {
     const randomPrompt = otherPeoplePrompts[randomIndex];
     const randomSeed = `user-${Math.random().toString(36).substring(2, 8)}`;
 
-    setDisplayedPrompts(prevPrompts => [
-      randomPrompt,
-      ...prevPrompts.slice(0, prevPrompts.length - 1),
-    ]);
-
-    setPromptAvatarSeeds(prevSeeds => [
-      randomSeed,
-      ...prevSeeds.slice(0, prevSeeds.length - 1),
-    ]);
-
-    setUserPromptIndices(prevIndices => [
-      false,
-      ...prevIndices.slice(0, prevIndices.length - 1),
-    ]);
-  }, [otherPeoplePrompts, showContent]);
+    addToPromptQueue(randomPrompt, randomSeed, false);
+  }, [otherPeoplePrompts, showContent, addToPromptQueue]);
 
   useEffect(() => {
     if (!authenticated && ready && showContent) {
@@ -140,6 +227,10 @@ export default function HomePage() {
 
   useEffect(() => {
     setIsMounted(true);
+
+    if (displayedPrompts.length > 0) {
+      setHighlightedSince(Date.now());
+    }
   }, []);
 
   if (!ready) {
@@ -181,21 +272,7 @@ export default function HomePage() {
       return;
     }
 
-    const newPrompts = [
-      prompt,
-      ...displayedPrompts.slice(0, displayedPrompts.length - 1),
-    ];
-    setDisplayedPrompts(newPrompts);
-
-    setPromptAvatarSeeds(prevSeeds => [
-      userAvatarSeed,
-      ...prevSeeds.slice(0, prevSeeds.length - 1),
-    ]);
-
-    setUserPromptIndices(prevIndices => [
-      true,
-      ...prevIndices.slice(0, prevIndices.length - 1),
-    ]);
+    addToPromptQueue(prompt, userAvatarSeed, true);
 
     setPrompt("");
     setLastPromptTime(now);
@@ -409,6 +486,36 @@ export default function HomePage() {
               <div className="flex-1 max-h-[25vh] md:max-h-none p-4 flex flex-col md:justify-start justify-end overflow-hidden order-first md:order-none relative z-10">
                 <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/30 md:hidden pointer-events-none z-0"></div>
                 <div className="space-y-0.5 flex flex-col-reverse md:flex-col relative z-10">
+                  {/* Render queued prompts first in desktop view */}
+                  {promptQueue.length > 0 && (
+                    <div className="hidden md:flex flex-col gap-0.5 mb-1">
+                      {[...promptQueue]
+                        .reverse()
+                        .map((queuedPrompt, qIndex) => (
+                          <div
+                            key={`queue-${qIndex}-${queuedPrompt.text.substring(0, 10)}`}
+                            className={`p-2 rounded-lg text-gray-500 italic flex items-center text-sm md:text-base opacity-60 ${
+                              queuedPrompt.isUser
+                                ? "bg-black/5 backdrop-blur-[1px]"
+                                : ""
+                            }`}
+                            style={{
+                              animation: "slideDown 0.3s ease-out",
+                            }}
+                          >
+                            <div className="mr-2">
+                              <GradientAvatar
+                                seed={queuedPrompt.seed}
+                                size={16}
+                              />
+                            </div>
+                            {queuedPrompt.text}
+                          </div>
+                        ))}
+                    </div>
+                  )}
+
+                  {/* Regular displayed prompts */}
                   {displayedPrompts.map((prevPrompt, index) => {
                     const opacityReduction = userPromptIndices[index]
                       ? 0.04
@@ -426,8 +533,12 @@ export default function HomePage() {
                         key={`prompt-${index}-${prevPrompt.substring(0, 10)}`}
                         className={`p-2 rounded-lg text-sm md:text-base ${
                           index === 0
-                            ? "text-white md:text-black font-bold md:font-normal flex items-center animate-fadeSlideIn"
-                            : `text-gray-500 italic flex items-center ${isUserPrompt ? "font-medium" : ""} ${index !== 0 ? "mobile-slide-up" : ""}`
+                            ? "text-white md:text-black font-bold flex items-center animate-fadeSlideIn md:bg-white/30 md:backdrop-blur-[2px] md:shadow-sm"
+                            : `text-gray-500 italic flex items-center ${
+                                isUserPrompt
+                                  ? "font-medium md:opacity-90 md:bg-black/5 md:backdrop-blur-[1px]"
+                                  : ""
+                              } ${index !== 0 ? "mobile-slide-up" : ""}`
                         } ${isUserPrompt && index !== 0 ? "relative overflow-hidden" : ""} mobile-fade-${index}`}
                         style={{
                           opacity: itemOpacity,
@@ -441,14 +552,14 @@ export default function HomePage() {
                       >
                         {isUserPrompt && index !== 0 && (
                           <div
-                            className="absolute inset-0 -z-10 bg-black/5 backdrop-blur-[1px] rounded-lg"
+                            className="absolute inset-0 -z-10 bg-black/5 backdrop-blur-[1px] rounded-lg md:hidden"
                             style={{ opacity: Math.min(1, itemOpacity + 0.2) }}
                           ></div>
                         )}
                         {index === 0 ? (
                           <>
-                            <ArrowLeft className="hidden md:inline h-3 w-3 mr-2 stroke-2" />
-                            <Sparkle className="md:hidden h-4 w-4 mr-2 stroke-2" />
+                            <ArrowLeft className="hidden md:hidden h-3 w-3 mr-2 stroke-2" />
+                            <Sparkle className="md:inline h-4 w-4 mr-2 stroke-2" />
                           </>
                         ) : (
                           <div
