@@ -39,7 +39,7 @@ jobs:
         run: pnpm --filter app-e2e exec playwright install --with-deps chrome
 
       - name: Capture Vercel Preview URL
-        uses: zentered/vercel-preview-url@v1.1.9
+        uses: zentered/vercel-preview-url@v1.4.0
         id: vercel_preview_url
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
