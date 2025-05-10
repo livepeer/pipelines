@@ -15,7 +15,7 @@ export function useRandomPromptTimer({
 }: RandomPromptTimerOptions) {
   useEffect(() => {
     if (!authenticated && ready && showContent) {
-      const getRandomInterval = () => Math.floor(Math.random() * 2500) + 1500;
+      const getRandomInterval = () => Math.floor(Math.random() * 7500) + 1500;
 
       let timerId: NodeJS.Timeout;
 
