@@ -186,12 +186,13 @@ export default function HomePage() {
 
   useEffect(() => {
     if (!authenticated && ready && showContent) {
-      const getRandomInterval = () => Math.floor(Math.random() * 2000) + 1500;
+      const getRandomInterval = () => Math.floor(Math.random() * 2500) + 1500;
 
       let timerId: NodeJS.Timeout;
 
       timerId = setTimeout(function addPrompt() {
         addRandomPrompt();
+        console.log("adding prompt");
         timerId = setTimeout(addPrompt, getRandomInterval());
       }, getRandomInterval());
 
@@ -422,9 +423,9 @@ export default function HomePage() {
           </h1>
           <div className="flex-1 flex flex-col md:flex-row gap-0 md:gap-8 h-full w-full overflow-hidden">
             <div className="w-full md:w-[70%] relative md:rounded-lg overflow-hidden bg-black/10 backdrop-blur-sm shadow-lg md:aspect-video h-full md:h-full md:relative">
-              <div className="absolute top-6 left-6 z-20 hidden md:block">
+              <div className="absolute top-3 left-3 z-20 hidden md:block">
                 <h1
-                  className="text-4xl md:text-[120px] font-bold tracking-widest italic mix-blend-difference"
+                  className="text-4xl md:text-[36px] font-bold tracking-widest italic mix-blend-difference"
                   style={{ color: "rgba(255, 255, 255, 0.65)" }}
                 >
                   DAYDREAM
@@ -491,40 +492,54 @@ export default function HomePage() {
                     <div className="hidden md:flex flex-col gap-0.5 mb-1">
                       {[...promptQueue]
                         .reverse()
-                        .map((queuedPrompt, qIndex) => (
-                          <div
-                            key={`queue-${qIndex}-${queuedPrompt.text.substring(0, 10)}`}
-                            className={`p-2 rounded-lg text-gray-500 italic flex items-center text-sm md:text-base opacity-60 ${
-                              queuedPrompt.isUser
-                                ? "bg-black/5 backdrop-blur-[1px]"
-                                : ""
-                            }`}
-                            style={{
-                              animation: "slideDown 0.3s ease-out",
-                            }}
-                          >
-                            <div className="mr-2">
-                              <GradientAvatar
-                                seed={queuedPrompt.seed}
-                                size={16}
-                              />
+                        .map((queuedPrompt, qIndex) => {
+                          const queuePosition = promptQueue.length - qIndex - 1;
+                          const queueOpacity = Math.max(
+                            0.4,
+                            1 - queuePosition * 0.15,
+                          );
+                          const queueScale = Math.max(
+                            0.94,
+                            1 - queuePosition * 0.015,
+                          );
+
+                          return (
+                            <div
+                              key={`queue-${qIndex}-${queuedPrompt.text.substring(0, 10)}`}
+                              className={`p-2 rounded-lg text-gray-500 italic flex items-center text-sm md:text-base ${
+                                queuedPrompt.isUser
+                                  ? "bg-black/5 backdrop-blur-[1px]"
+                                  : ""
+                              }`}
+                              style={{
+                                animation: "slideDown 0.3s ease-out",
+                                fontFamily: "'Courier New', Courier, monospace",
+                                opacity: queueOpacity,
+                                transform: `scale(${queueScale})`,
+                                transformOrigin: "left center",
+                              }}
+                            >
+                              <div className="mr-2 flex-shrink-0">
+                                <GradientAvatar
+                                  seed={queuedPrompt.seed}
+                                  size={16}
+                                />
+                              </div>
+                              <span className="truncate">
+                                {queuedPrompt.text}
+                              </span>
                             </div>
-                            {queuedPrompt.text}
-                          </div>
-                        ))}
+                          );
+                        })}
                     </div>
                   )}
 
-                  {/* Regular displayed prompts */}
                   {displayedPrompts.map((prevPrompt, index) => {
-                    const opacityReduction = userPromptIndices[index]
-                      ? 0.04
-                      : 0.08;
-
                     let itemOpacity =
-                      index === 0
-                        ? 1
-                        : Math.max(0.4, 1 - index * opacityReduction);
+                      index === 0 ? 1 : Math.max(0.3, 1 - index * 0.15);
+
+                    const itemScale =
+                      index === 0 ? 1 : Math.max(0.94, 1 - index * 0.015);
 
                     const isUserPrompt = userPromptIndices[index];
 
@@ -536,18 +551,23 @@ export default function HomePage() {
                             ? "text-white md:text-black font-bold flex items-center animate-fadeSlideIn md:bg-white/30 md:backdrop-blur-[2px] md:shadow-sm"
                             : `text-gray-500 italic flex items-center ${
                                 isUserPrompt
-                                  ? "font-medium md:opacity-90 md:bg-black/5 md:backdrop-blur-[1px]"
+                                  ? "font-medium md:bg-black/5 md:backdrop-blur-[1px]"
                                   : ""
                               } ${index !== 0 ? "mobile-slide-up" : ""}`
                         } ${isUserPrompt && index !== 0 ? "relative overflow-hidden" : ""} mobile-fade-${index}`}
                         style={{
                           opacity: itemOpacity,
                           transition: "all 0.3s ease-out",
-                          transform: `translateY(0)`,
+                          transform:
+                            index === 0
+                              ? `translateY(0)`
+                              : `translateY(0) scale(${itemScale})`,
+                          transformOrigin: "left center",
                           animation:
                             index === 0
                               ? "fadeSlideIn 0.3s ease-out"
                               : `slideDown 0.3s ease-out`,
+                          fontFamily: "'Courier New', Courier, monospace",
                         }}
                       >
                         {isUserPrompt && index !== 0 && (
@@ -558,12 +578,12 @@ export default function HomePage() {
                         )}
                         {index === 0 ? (
                           <>
-                            <ArrowLeft className="hidden md:hidden h-3 w-3 mr-2 stroke-2" />
-                            <Sparkle className="md:inline h-4 w-4 mr-2 stroke-2" />
+                            <ArrowLeft className="hidden md:hidden h-3 w-3 mr-2 stroke-2 flex-shrink-0" />
+                            <Sparkle className="md:inline h-4 w-4 mr-2 stroke-2 flex-shrink-0" />
                           </>
                         ) : (
                           <div
-                            className="mr-2"
+                            className="mr-2 flex-shrink-0"
                             style={{ opacity: itemOpacity }}
                           >
                             <GradientAvatar
@@ -572,7 +592,7 @@ export default function HomePage() {
                             />
                           </div>
                         )}
-                        {prevPrompt}
+                        <span className="truncate">{prevPrompt}</span>
                       </div>
                     );
                   })}
