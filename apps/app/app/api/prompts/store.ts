@@ -1,15 +1,14 @@
 import { PromptItem, PromptState } from "./types";
+import {
+  addToPromptQueue as dbAddToPromptQueue,
+  getPromptState as dbGetPromptState,
+  processNextPrompt,
+  initializePromptState,
+  resetProcessingFlag,
+  cleanupOldPrompts,
+} from "../../../lib/db/services/prompt-queue";
 
-// Declare a global namespace to hold our state
-declare global {
-  var promptState: PromptState;
-  var isProcessingQueue: boolean;
-  var processingTimer: NodeJS.Timeout | null;
-  var randomPromptTimer: NodeJS.Timeout | null;
-  var lastInitTime: number;
-}
-
-// Mock data
+// Mock data - used for initializing the database
 const initialPrompts = [
   "cyberpunk cityscape with neon lights --quality 3",
   "underwater scene with ((bioluminescent)) creatures --creativity 0.8",
@@ -43,37 +42,53 @@ const otherPeoplePrompts = [
 const HIGHLIGHT_DURATION = 10000;
 const MAX_QUEUE_SIZE = 100;
 const FRONTEND_DISPLAY_SIZE = 5;
-const TARGET_STREAM_KEY = "stk_W5K2ujsi2s9etRku";
+const TARGET_STREAM_KEY = "stk_SiDx98B9diXxRJks";
 const RANDOM_PROMPT_INTERVAL = 20000;
-const INIT_INTERVAL = 60 * 60 * 1000; // 1 hour
 
-const createInitialState = (): PromptState => ({
-  promptQueue: [],
-  displayedPrompts: initialPrompts,
-  promptAvatarSeeds: initialPrompts.map(
-    (_, i) => `user-${i}-${Math.random().toString(36).substring(2, 8)}`,
-  ),
-  userPromptIndices: initialPrompts.map(() => false),
-  promptSessionIds: initialPrompts.map(() => ""),
-  highlightedSince: Date.now(),
-});
+const initializeDb = async () => {
+  try {
+    await initializePromptState(initialPrompts);
+    console.log(
+      `[${new Date().toISOString()}] Database initialized with initial prompts`,
+    );
+  } catch (error) {
+    console.error("Error initializing database:", error);
+  }
+};
 
-// Initialize the global state if it doesn't exist or if it's too old
-if (
-  !global.promptState ||
-  !global.lastInitTime ||
-  Date.now() - global.lastInitTime > INIT_INTERVAL
-) {
-  global.promptState = createInitialState();
-  global.isProcessingQueue = false;
-  global.processingTimer = null;
-  global.randomPromptTimer = null;
-  global.lastInitTime = Date.now();
+if (typeof window === "undefined") {
+  initializeDb().catch(console.error);
 
-  console.log(`[${new Date().toISOString()}] Initialized global prompt state`);
-} else {
-  console.log(
-    `[${new Date().toISOString()}] Reusing existing global prompt state, age: ${Math.floor((Date.now() - global.lastInitTime) / 1000)}s`,
+  setInterval(
+    async () => {
+      try {
+        const wasReset = await resetProcessingFlag(5);
+        if (wasReset) {
+          console.log(
+            `[${new Date().toISOString()}] Reset stuck processing flag`,
+          );
+        }
+      } catch (error) {
+        console.error("Error resetting processing flag:", error);
+      }
+    },
+    5 * 60 * 1000,
+  );
+
+  setInterval(
+    async () => {
+      try {
+        const deletedCount = await cleanupOldPrompts(24);
+        if (deletedCount > 0) {
+          console.log(
+            `[${new Date().toISOString()}] Cleaned up ${deletedCount} old processed prompts`,
+          );
+        }
+      } catch (error) {
+        console.error("Error cleaning up old prompts:", error);
+      }
+    },
+    60 * 60 * 1000,
   );
 }
 
@@ -95,7 +110,44 @@ const applyPromptToStream = async (promptText: string) => {
     }
 
     const CORRECT_GATEWAY_HOST =
-      "prg-staging-ai-staging-livepeer-ai-gateway-0.livepeer.monster";
+      "mdw-staging-ai-staging-livepeer-ai-gateway-0.livepeer.monster";
+
+    let quality = 3;
+    let creativity = 0.6;
+
+    let cleanedPromptText = promptText;
+
+    const qualityMatch = promptText.match(/--quality\s+(\d+(\.\d+)?)/);
+    if (qualityMatch && qualityMatch[1]) {
+      const parsedQuality = parseFloat(qualityMatch[1]);
+      if (!isNaN(parsedQuality) && parsedQuality > 0) {
+        quality = Math.min(Math.max(parsedQuality, 1), 5); // Clamp between 1-5
+        console.log(
+          `[${new Date().toISOString()}] Using quality parameter:`,
+          quality,
+        );
+      }
+      cleanedPromptText = cleanedPromptText.replace(qualityMatch[0], "").trim();
+    }
+
+    const creativityMatch = promptText.match(/--creativity\s+(\d+(\.\d+)?)/);
+    if (creativityMatch && creativityMatch[1]) {
+      const parsedCreativity = parseFloat(creativityMatch[1]);
+      if (!isNaN(parsedCreativity)) {
+        creativity = Math.min(Math.max(parsedCreativity, 0.1), 1.0); // Clamp between 0.1-1.0
+        console.log(
+          `[${new Date().toISOString()}] Using creativity parameter:`,
+          creativity,
+        );
+      }
+      cleanedPromptText = cleanedPromptText
+        .replace(creativityMatch[0], "")
+        .trim();
+    }
+
+    console.log(
+      `[${new Date().toISOString()}] Applying prompt with quality=${quality}, creativity=${creativity}`,
+    );
 
     const params = {
       prompt: {
@@ -135,7 +187,7 @@ const applyPromptToStream = async (promptText: string) => {
           },
           inputs: {
             clip: ["23", 0],
-            text: promptText,
+            text: cleanedPromptText,
           },
           class_type: "CLIPTextEncode",
         },
@@ -157,7 +209,7 @@ const applyPromptToStream = async (promptText: string) => {
             cfg: 1,
             seed: 785664736216738,
             model: ["24", 0],
-            steps: 3,
+            steps: quality,
             denoise: 1,
             negative: ["9", 1],
             positive: ["9", 0],
@@ -184,7 +236,7 @@ const applyPromptToStream = async (promptText: string) => {
             image: ["2", 0],
             negative: ["6", 0],
             positive: ["5", 0],
-            strength: 0.6,
+            strength: creativity,
             control_net: ["10", 0],
             end_percent: 1,
             start_percent: 0,
@@ -318,187 +370,87 @@ const applyPromptToStream = async (promptText: string) => {
   }
 };
 
-const processNextPrompt = () => {
-  global.isProcessingQueue = true;
+export const checkAndProcessQueue = async (): Promise<void> => {
+  try {
+    console.log(`[${new Date().toISOString()}] Checking prompt queue`);
 
-  if (global.promptState.promptQueue.length === 0) {
-    global.isProcessingQueue = false;
-    return;
-  }
+    const result = await processNextPrompt(HIGHLIGHT_DURATION);
 
-  const nextPrompt = global.promptState.promptQueue[0];
-  const remainingQueue = global.promptState.promptQueue.slice(1);
+    if (result.processed) {
+      console.log(`[${new Date().toISOString()}] Processed next prompt`);
 
-  global.promptState = {
-    ...global.promptState,
-    promptQueue: remainingQueue,
-    displayedPrompts: [
-      nextPrompt.text,
-      ...global.promptState.displayedPrompts.slice(
-        0,
-        global.promptState.displayedPrompts.length - 1,
-      ),
-    ],
-    promptAvatarSeeds: [
-      nextPrompt.seed,
-      ...global.promptState.promptAvatarSeeds.slice(
-        0,
-        global.promptState.promptAvatarSeeds.length - 1,
-      ),
-    ],
-    userPromptIndices: [
-      nextPrompt.isUser,
-      ...global.promptState.userPromptIndices.slice(
-        0,
-        global.promptState.userPromptIndices.length - 1,
-      ),
-    ],
-    promptSessionIds: [
-      nextPrompt.sessionId || "",
-      ...(global.promptState.promptSessionIds
-        ? global.promptState.promptSessionIds.slice(
-            0,
-            global.promptState.promptSessionIds.length - 1,
-          )
-        : []),
-    ],
-    highlightedSince: Date.now(),
-  };
-
-  applyPromptToStream(nextPrompt.text);
-
-  if (global.processingTimer) {
-    clearTimeout(global.processingTimer);
-  }
-
-  if (remainingQueue.length > 0) {
-    global.processingTimer = setTimeout(() => {
-      global.isProcessingQueue = false;
-      checkAndProcessQueue();
-    }, HIGHLIGHT_DURATION);
-  } else {
-    global.isProcessingQueue = false;
+      const currentState = await dbGetPromptState();
+      if (currentState.displayedPrompts.length > 0) {
+        await applyPromptToStream(currentState.displayedPrompts[0]);
+      }
+    } else if (!result.success) {
+      console.error(
+        `[${new Date().toISOString()}] Failed to process next prompt`,
+      );
+    } else {
+      console.log(`[${new Date().toISOString()}] No prompt ready to process`);
+    }
+  } catch (error) {
+    console.error("Error checking and processing queue:", error);
   }
 };
 
-export const checkAndProcessQueue = () => {
-  if (global.isProcessingQueue) {
-    console.log(
-      `[${new Date().toISOString()}] Queue processing already in progress, skipping`,
-    );
-    return;
-  }
+export const getPromptState = async (): Promise<PromptState> => {
+  try {
+    return await dbGetPromptState(FRONTEND_DISPLAY_SIZE);
+  } catch (error) {
+    console.error("Error getting prompt state:", error);
 
-  if (global.promptState.promptQueue.length === 0) {
-    console.log(
-      `[${new Date().toISOString()}] Queue is empty, nothing to process`,
-    );
-    return;
-  }
-
-  const now = Date.now();
-  const timeSinceHighlight = now - global.promptState.highlightedSince;
-
-  console.log(
-    `[${new Date().toISOString()}] Checking queue: ${global.promptState.promptQueue.length} items, time since last highlight: ${Math.floor(timeSinceHighlight / 1000)}s`,
-  );
-
-  if (
-    global.promptState.highlightedSince === 0 ||
-    timeSinceHighlight >= HIGHLIGHT_DURATION
-  ) {
-    console.log(`[${new Date().toISOString()}] Processing next prompt`);
-    processNextPrompt();
-  } else {
-    console.log(
-      `[${new Date().toISOString()}] Waiting for highlight duration to pass, ${Math.floor((HIGHLIGHT_DURATION - timeSinceHighlight) / 1000)}s remaining`,
-    );
+    return {
+      promptQueue: [],
+      displayedPrompts: [],
+      promptAvatarSeeds: [],
+      userPromptIndices: [],
+      promptSessionIds: [],
+      highlightedSince: Date.now(),
+    };
   }
 };
 
-export const getPromptState = (): PromptState => {
-  const limitedQueue = global.promptState.promptQueue.slice(
-    0,
-    FRONTEND_DISPLAY_SIZE,
-  );
-
-  return {
-    ...global.promptState,
-    promptQueue: limitedQueue,
-  };
-};
-
-export const addToPromptQueue = (
+export const addToPromptQueue = async (
   promptText: string,
   seed: string,
   isUser: boolean,
   sessionId?: string,
-): { success: boolean; queuePosition?: number } => {
-  if (global.promptState.promptQueue.length >= MAX_QUEUE_SIZE) {
+): Promise<{ success: boolean; queuePosition?: number }> => {
+  try {
+    const result = await dbAddToPromptQueue(
+      promptText,
+      seed,
+      isUser,
+      sessionId,
+      MAX_QUEUE_SIZE,
+    );
+
+    if (result.success) {
+      console.log(
+        `[${new Date().toISOString()}] Added prompt to queue: ${promptText}`,
+      );
+
+      setTimeout(() => {
+        checkAndProcessQueue().catch(console.error);
+      }, 0);
+    }
+
+    return result;
+  } catch (error) {
+    console.error("Error adding to prompt queue:", error);
     return { success: false };
   }
-
-  const newPrompt: PromptItem = {
-    text: promptText,
-    seed,
-    isUser,
-    timestamp: Date.now(),
-    sessionId,
-  };
-
-  global.promptState = {
-    ...global.promptState,
-    promptQueue: [...global.promptState.promptQueue, newPrompt],
-  };
-
-  const now = Date.now();
-  if (
-    global.promptState.highlightedSince === 0 ||
-    now - global.promptState.highlightedSince >= HIGHLIGHT_DURATION
-  ) {
-    setTimeout(() => {
-      checkAndProcessQueue();
-    }, 0);
-  }
-
-  return {
-    success: true,
-    queuePosition: global.promptState.promptQueue.length - 1,
-  };
 };
 
-export const addRandomPrompt = (): {
+export const addRandomPrompt = async (): Promise<{
   success: boolean;
   queuePosition?: number;
-} => {
+}> => {
   const randomIndex = Math.floor(Math.random() * otherPeoplePrompts.length);
   const randomPrompt = otherPeoplePrompts[randomIndex];
   const randomSeed = `user-${Math.random().toString(36).substring(2, 8)}`;
 
   return addToPromptQueue(randomPrompt, randomSeed, false);
 };
-
-if (typeof window === "undefined") {
-  const initBackgroundTimer = () => {
-    const checkInterval = setInterval(() => {
-      checkAndProcessQueue();
-    }, 1000);
-
-    if (global.randomPromptTimer) {
-      clearInterval(global.randomPromptTimer);
-    }
-
-    // Commenting out random prompt timer as in the original code
-    /*
-    global.randomPromptTimer = setInterval(() => {
-      if (global.promptState.promptQueue.length < MAX_QUEUE_SIZE - 2) {
-        addRandomPrompt();
-      }
-    }, RANDOM_PROMPT_INTERVAL);
-    */
-
-    return checkInterval;
-  };
-
-  initBackgroundTimer();
-}

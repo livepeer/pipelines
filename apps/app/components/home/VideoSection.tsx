@@ -5,7 +5,7 @@ import React, { useState } from "react";
 export function VideoSection() {
   const [isLoading, setIsLoading] = useState(true);
 
-  const PLAYBACK_ID = "3150onhrqxekpmon";
+  const PLAYBACK_ID = "95705ossoplg7uvq";
   const iframeUrl = `https://monster.lvpr.tv/?v=${PLAYBACK_ID}&lowLatency=force&backoffMax=1000&ingestPlayback=true`;
 
   return (
