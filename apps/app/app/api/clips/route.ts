@@ -80,6 +80,7 @@ export async function GET(request: Request) {
       slug: clipSlugsTable.slug,
       priority: clipsTable.priority,
       is_tutorial: clipsTable.is_tutorial,
+      thumbnail_url: clipsTable.thumbnail_url,
     };
 
     const prioritizedClips = (await db
