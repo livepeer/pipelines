@@ -439,11 +439,14 @@ const initBackgroundTimer = () => {
     clearInterval(randomPromptTimer);
   }
 
+  // Commenting out random prompt timer
+  /*
   randomPromptTimer = setInterval(() => {
     if (promptState.promptQueue.length < MAX_QUEUE_SIZE - 2) {
       addRandomPrompt();
     }
   }, RANDOM_PROMPT_INTERVAL);
+  */
 };
 
 initBackgroundTimer();
