@@ -38,7 +38,7 @@ export function PromptPanel({
   };
 
   const handleJoinDiscordClick = () => {
-    window.open("https://discord.gg/livepeer", "_blank");
+    window.open("https://discord.gg/5sZu8xmn6U", "_blank");
   };
 
   return (
