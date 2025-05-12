@@ -174,26 +174,25 @@ export const Header = ({
               )}
             >
               <div className="flex items-center gap-2">
-                {isGuestMode ? (
-                  <ClipButton
-                    trackAnalytics={track}
-                    isAuthenticated={false}
-                    isGuestMode={true}
-                    onRecordAttempt={handleGuestRecordClip}
-                    className="mr-2 rounded-md"
-                  />
-                ) : (
-                  isPlaying &&
+                {isPlaying &&
                   stream?.output_playback_id &&
-                  streamUrl && (
+                  streamUrl &&
+                  (isGuestMode ? (
                     <ClipButton
-                      disabled={!stream?.output_playback_id || !streamUrl}
+                      trackAnalytics={track}
+                      isAuthenticated={false}
+                      isGuestMode={true}
+                      onRecordAttempt={handleGuestRecordClip}
                       className="mr-2 rounded-md"
+                    />
+                  ) : (
+                    <ClipButton
+                      className="mr-2 rounded-md"
+                      disabled={!stream?.output_playback_id || !streamUrl}
                       trackAnalytics={track}
                       isAuthenticated={authenticated}
                     />
-                  )
-                )}
+                  ))}
                 <TrackedButton
                   trackingEvent="daydream_share_button_clicked"
                   trackingProperties={{
@@ -227,19 +226,19 @@ export const Header = ({
           </Button>
 
           <div className="flex gap-2 justify-end max-w-[60%]">
-            {isGuestMode ? (
-              <ClipButton
-                trackAnalytics={track}
-                isAuthenticated={false}
-                isGuestMode={true}
-                onRecordAttempt={handleGuestRecordClip}
-                isMobile={true}
-                className="rounded-md"
-              />
-            ) : (
-              isPlaying &&
+            {isPlaying &&
               stream?.output_playback_id &&
-              streamUrl && (
+              streamUrl &&
+              (isGuestMode ? (
+                <ClipButton
+                  trackAnalytics={track}
+                  isAuthenticated={false}
+                  isGuestMode={true}
+                  onRecordAttempt={handleGuestRecordClip}
+                  isMobile={true}
+                  className="rounded-md"
+                />
+              ) : (
                 <ClipButton
                   disabled={!stream?.output_playback_id || !streamUrl}
                   trackAnalytics={track}
@@ -247,8 +246,7 @@ export const Header = ({
                   isMobile={true}
                   className="rounded-md"
                 />
-              )
-            )}
+              ))}
 
             {hasSubmittedPrompt && (
               <Button

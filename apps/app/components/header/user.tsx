@@ -51,7 +51,7 @@ export default function User({ className }: { className?: string }) {
   return authenticated ? (
     <DropdownMenu>
       <DropdownMenuTrigger className={cn("flex items-start gap-2", className)}>
-        <Avatar className="h-6 w-6 -ml-[3px]">
+        <Avatar className="h-6 w-6 -ml-[0.25rem]">
           <AvatarImage
             src={`https://github.com/${user?.github?.username}.png`}
             alt={name || ""}
