@@ -123,7 +123,11 @@ export const addToPromptQueue = async (
 
 export const processNextPrompt = async (
   highlightDuration: number = 10000,
-): Promise<{ success: boolean; processed: boolean }> => {
+): Promise<{
+  success: boolean;
+  processed: boolean;
+  remainingItems: number;
+}> => {
   return await withDbClient(async dbClient => {
     const currentState = await dbClient
       .select()
@@ -132,11 +136,20 @@ export const processNextPrompt = async (
       .limit(1);
 
     if (currentState.length === 0) {
-      return { success: false, processed: false };
+      return { success: false, processed: false, remainingItems: 0 };
     }
 
     if (currentState[0].isProcessing) {
-      return { success: true, processed: false };
+      const countResult = await dbClient
+        .select({ count: sql<number>`count(*)` })
+        .from(promptQueue)
+        .where(eq(promptQueue.processed, false));
+
+      return {
+        success: true,
+        processed: false,
+        remainingItems: countResult[0].count,
+      };
     }
 
     const highlightedSince = currentState[0].highlightedSince;
@@ -144,7 +157,16 @@ export const processNextPrompt = async (
     const timeSinceHighlight = now.getTime() - highlightedSince.getTime();
 
     if (timeSinceHighlight < highlightDuration) {
-      return { success: true, processed: false };
+      const countResult = await dbClient
+        .select({ count: sql<number>`count(*)` })
+        .from(promptQueue)
+        .where(eq(promptQueue.processed, false));
+
+      return {
+        success: true,
+        processed: false,
+        remainingItems: countResult[0].count,
+      };
     }
 
     const nextPrompt = await dbClient
@@ -155,7 +177,7 @@ export const processNextPrompt = async (
       .limit(1);
 
     if (nextPrompt.length === 0) {
-      return { success: true, processed: false };
+      return { success: true, processed: false, remainingItems: 0 };
     }
 
     await dbClient
@@ -202,7 +224,6 @@ export const processNextPrompt = async (
         ),
       ];
 
-      // Update state
       await dbClient
         .update(promptState)
         .set({
@@ -224,8 +245,18 @@ export const processNextPrompt = async (
         })
         .where(eq(promptQueue.id, promptItem.id));
 
-      return { success: true, processed: true };
+      const countResult = await dbClient
+        .select({ count: sql<number>`count(*)` })
+        .from(promptQueue)
+        .where(eq(promptQueue.processed, false));
+
+      return {
+        success: true,
+        processed: true,
+        remainingItems: countResult[0].count,
+      };
     } catch (error) {
+      // Reset processing flag in case of error
       await dbClient
         .update(promptState)
         .set({
@@ -235,7 +266,7 @@ export const processNextPrompt = async (
         .where(eq(promptState.id, "main"));
 
       console.error("Error processing prompt:", error);
-      return { success: false, processed: false };
+      return { success: false, processed: false, remainingItems: 0 };
     }
   });
 };

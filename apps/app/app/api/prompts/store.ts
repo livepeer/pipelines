@@ -383,12 +383,32 @@ export const checkAndProcessQueue = async (): Promise<void> => {
       if (currentState.displayedPrompts.length > 0) {
         await applyPromptToStream(currentState.displayedPrompts[0]);
       }
+
+      if (result.remainingItems > 0) {
+        console.log(
+          `[${new Date().toISOString()}] ${result.remainingItems} items remaining in queue, scheduling next processing`,
+        );
+        setTimeout(() => {
+          checkAndProcessQueue().catch(console.error);
+        }, HIGHLIGHT_DURATION + 500);
+      }
     } else if (!result.success) {
       console.error(
         `[${new Date().toISOString()}] Failed to process next prompt`,
       );
     } else {
-      console.log(`[${new Date().toISOString()}] No prompt ready to process`);
+      console.log(
+        `[${new Date().toISOString()}] No prompt ready to process (${result.remainingItems} in queue)`,
+      );
+
+      if (result.remainingItems > 0) {
+        console.log(
+          `[${new Date().toISOString()}] Scheduling next check for ${result.remainingItems} remaining items`,
+        );
+        setTimeout(() => {
+          checkAndProcessQueue().catch(console.error);
+        }, HIGHLIGHT_DURATION + 500);
+      }
     }
   } catch (error) {
     console.error("Error checking and processing queue:", error);
