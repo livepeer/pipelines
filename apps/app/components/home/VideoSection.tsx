@@ -11,57 +11,50 @@ export function VideoSection() {
   const [hasAutoTransitioned, setHasAutoTransitioned] = useState(false);
   const animationRef = useRef<number | null>(null);
 
-  const TRANSITION_DURATION = 0.3; // seconds - reduced for faster wipe
-  const DELAY_BEFORE_TRANSITION = 2; // seconds
+  const TRANSITION_DURATION = 0.6;
+  const DELAY_BEFORE_TRANSITION = 2;
 
-  // Swap the playback IDs to reverse the order
   const ORIGINAL_PLAYBACK_ID = "95705ossoplg7uvq";
   const INITIAL_PLAYBACK_ID = "85c28sa2o8wppm58";
   const originalIframeUrl = `https://monster.lvpr.tv/?v=${ORIGINAL_PLAYBACK_ID}&lowLatency=force&backoffMax=1000&ingestPlayback=true`;
   const initialIframeUrl = `https://lvpr.tv/?v=${INITIAL_PLAYBACK_ID}&lowLatency=false&muted=true`;
 
-  // Function to trigger transition in either direction
   const triggerTransition = useCallback(
     (toOriginal: boolean) => {
       if (isTransitioning) return;
 
-      // Cancel any existing animation
       if (animationRef.current !== null) {
         cancelAnimationFrame(animationRef.current);
         animationRef.current = null;
       }
 
       setIsTransitioning(true);
-      const startValue = toOriginal ? 0 : 1.2;
-      const endValue = toOriginal ? 1.2 : 0;
+      const startValue = toOriginal ? 0 : 1;
+      const endValue = toOriginal ? 1 : 0;
 
       setShowOriginal(true);
       setTransitionProgress(startValue);
 
-      // Animate the transition
       const startTime = Date.now();
       const endTime = startTime + TRANSITION_DURATION * 1000;
 
       const animateTransition = () => {
         const now = Date.now();
         if (now < endTime) {
-          // Calculate progress
           const elapsed = (now - startTime) / (TRANSITION_DURATION * 1000);
           const progress = toOriginal ? elapsed : 1 - elapsed;
 
-          // Scale from 0 to 1.2 for complete coverage
-          const scaledProgress = progress * 1.2;
-          setTransitionProgress(scaledProgress);
+          setTransitionProgress(progress);
           animationRef.current = requestAnimationFrame(animateTransition);
         } else {
-          // End transition
           setTransitionProgress(endValue);
           setIsTransitioning(false);
           animationRef.current = null;
 
-          // If we animated back to 0, hide the original completely
           if (endValue === 0) {
-            setShowOriginal(false);
+            setTimeout(() => {
+              setShowOriginal(false);
+            }, 100);
           }
         }
       };
@@ -71,10 +64,8 @@ export function VideoSection() {
     [isTransitioning],
   );
 
-  // Initial automatic transition - only happens once
   useEffect(() => {
     if (!isLoading && !originalLoading && !hasAutoTransitioned) {
-      // Start the transition after delay
       const delayTimer = setTimeout(() => {
         triggerTransition(true);
         setHasAutoTransitioned(true);
@@ -84,7 +75,6 @@ export function VideoSection() {
     }
   }, [isLoading, originalLoading, triggerTransition, hasAutoTransitioned]);
 
-  // Cleanup animation on unmount
   useEffect(() => {
     return () => {
       if (animationRef.current !== null) {
@@ -93,19 +83,7 @@ export function VideoSection() {
     };
   }, []);
 
-  // Calculate the clip path based on transition progress
-  const getClipPath = () => {
-    if (!showOriginal) return "polygon(0% 0%, 0% 0%, 0% 0%)";
-    if (transitionProgress >= 1.2)
-      return "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)";
-
-    // Create a diagonal from top-left to bottom-right
-    const pos = transitionProgress * 150; // Larger value to ensure complete coverage
-    return `polygon(0% 0%, ${pos}% 0%, 0% ${pos}%)`;
-  };
-
-  // Determine which video is currently more visible
-  const isOriginalVisible = showOriginal && transitionProgress >= 0.6;
+  const isOriginalVisible = showOriginal && transitionProgress >= 0.5;
   const bothButtonsReady =
     !isLoading && !originalLoading && hasAutoTransitioned;
 
@@ -127,7 +105,6 @@ export function VideoSection() {
           </div>
         )}
 
-        {/* Initial video (transformed video) */}
         <div className="absolute inset-0 w-full h-full overflow-hidden">
           <iframe
             src={initialIframeUrl}
@@ -140,12 +117,15 @@ export function VideoSection() {
           />
         </div>
 
-        {/* Original video with diagonal wipe effect */}
         <div
           className="absolute inset-0 w-full h-full overflow-hidden z-15"
           style={{
-            clipPath: getClipPath(),
-            WebkitClipPath: getClipPath(), // For Safari support
+            opacity: showOriginal ? transitionProgress : 0,
+            visibility: showOriginal ? "visible" : "hidden",
+            transition: isTransitioning
+              ? "none"
+              : `opacity ${TRANSITION_DURATION}s ease-in-out`,
+            pointerEvents: showOriginal ? "auto" : "none",
           }}
         >
           {originalLoading && (
@@ -163,13 +143,10 @@ export function VideoSection() {
           />
         </div>
 
-        {/* Transparent overlay to prevent interaction with video controls - but not with our buttons */}
         <div className="absolute inset-0 z-20 pointer-events-auto bg-transparent"></div>
 
-        {/* Control buttons - outside the overlay structure for better z-index control */}
         {bothButtonsReady && (
           <>
-            {/* "See original" button - only visible when transformed is showing */}
             {!isOriginalVisible && (
               <button
                 className="absolute bottom-6 right-6 z-50 bg-black/60 text-white px-4 py-2 rounded-full font-medium hover:bg-black/80 transition-colors"
@@ -180,7 +157,6 @@ export function VideoSection() {
               </button>
             )}
 
-            {/* "See transformed" button - only visible when original is showing */}
             {isOriginalVisible && (
               <button
                 className="absolute bottom-6 right-6 z-50 bg-black/60 text-white px-4 py-2 rounded-full font-medium hover:bg-black/80 transition-colors"
