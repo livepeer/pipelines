@@ -135,7 +135,7 @@ export const LivepeerPlayer = () => {
         clipLength={30}
         src={src}
         jwt={null}
-        backoffMax={1000}
+        backoffMax={10000}
         timeout={300000}
         lowLatency="force"
         {...({
