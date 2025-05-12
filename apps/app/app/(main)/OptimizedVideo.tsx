@@ -160,9 +160,7 @@ export default function OptimizedVideo({
         resetDreamshaperStore();
         resetPromptStore();
 
-        router.push(
-          `/create?inputPrompt=${btoa(prompt)}&sourceClipId=${btoa(clipId)}`,
-        );
+        window.location.href = `/create?inputPrompt=${btoa(prompt)}&sourceClipId=${btoa(clipId)}`;
       }
     } else {
       if (!isOverlayMode) {
