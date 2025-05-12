@@ -33,6 +33,8 @@
   "packageManager": "pnpm@9.12.3",
   "dependencies": {
     "@headlessui/react": "^2.2.0",
-    "mixpanel-browser": "^2.56.0"
+    "mixpanel-browser": "^2.56.0",
+    "posthog-js": "^1.239.1",
+    "posthog-node": "^4.17.1"
   }
 }
