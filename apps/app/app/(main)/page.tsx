@@ -139,6 +139,7 @@ export default function HomePage() {
               onSubmit={handlePromptSubmit}
               promptValue={prompt}
               onPromptChange={handlePromptChange}
+              setPromptValue={setPrompt}
               isThrottled={isThrottled}
               throttleTimeLeft={throttleTimeLeft}
               onTryCameraClick={handleTryCameraClick}
