@@ -161,7 +161,7 @@ export const BentoGridOverlay = () => {
         source: "overlay_bento",
       });
 
-      closeOverlay();
+      // closeOverlay();
     }
   };
 
@@ -169,11 +169,9 @@ export const BentoGridOverlay = () => {
     e.stopPropagation();
 
     if (overlayType === "clip") {
-      // If in clip view, go back to bento grid
       setOverlayType("bento");
       setSelectedClipId(null);
     } else {
-      // Otherwise close the overlay completely
       closeOverlay();
     }
   };
@@ -182,7 +180,7 @@ export const BentoGridOverlay = () => {
     return (
       <div
         ref={overlayRef}
-        className="fixed right-0 w-1/2 inset-y-0 z-[100] overflow-y-auto overscroll-contain bg-white dark:bg-black border-l border-gray-200 dark:border-gray-800 shadow-lg opacity-0 pointer-events-none"
+        className="fixed right-0 w-[28%] inset-y-0 z-[100] overflow-y-auto overscroll-contain bg-white dark:bg-black border-l border-gray-200 dark:border-gray-800 shadow-lg opacity-0 pointer-events-none"
         style={{ visibility: "hidden" }}
       />
     );
@@ -192,7 +190,7 @@ export const BentoGridOverlay = () => {
     <div
       ref={overlayRef}
       className={cn(
-        "fixed right-0 w-1/2 inset-y-0 z-[100] overflow-y-auto overscroll-contain bg-white dark:bg-black border-l border-gray-200 dark:border-gray-800 shadow-lg",
+        "fixed right-0 w-[28%] inset-y-0 z-[100] overflow-y-auto overscroll-contain bg-white dark:bg-black border-l border-gray-200 dark:border-gray-800 shadow-lg",
         "transition-opacity duration-150",
         isOverlayOpen ? "opacity-100" : "opacity-0 pointer-events-none",
       )}
@@ -259,9 +257,9 @@ export const BentoGridOverlay = () => {
               </div>
             ) : initialClips.length > 0 ? (
               <div className="max-w-7xl mx-auto px-4 lg:px-8">
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {initialClips.map((clip) => (
-                    <GridVideoItem 
+                <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                  {initialClips.map(clip => (
+                    <GridVideoItem
                       key={clip.id}
                       clip={clip}
                       onTryPrompt={handleTryPrompt}
@@ -276,7 +274,7 @@ export const BentoGridOverlay = () => {
         )}
 
         {overlayType === "clip" && selectedClip && (
-          <div 
+          <div
             className="h-screen flex justify-center items-center p-4"
             onClick={e => {
               if (e.target === e.currentTarget) {
