@@ -3,7 +3,7 @@
 import { TrackedButton } from "@/components/analytics/TrackedButton";
 import useFullscreenStore from "@/hooks/useFullscreenStore";
 import useMobileStore from "@/hooks/useMobileStore";
-import { useStreamStatus } from "@/hooks/useStreamStatus";
+import { usePrivy } from "@/hooks/usePrivy";
 import { useTrialTimer } from "@/hooks/useTrialTimer";
 import {
   Tooltip,
@@ -12,9 +12,8 @@ import {
 } from "@repo/design-system/components/ui/tooltip";
 import { Loader2, Maximize, Minimize } from "lucide-react";
 import { useDreamshaperStore } from "../../../hooks/useDreamshaper";
-import { LivepeerPlayer, usePlayerStore } from "./player";
-import { usePrivy } from "@/hooks/usePrivy";
 import Overlay from "./Overlay";
+import { LivepeerPlayer, usePlayerStore } from "./player";
 
 export const MainContent = () => {
   const { stream, loading } = useDreamshaperStore();

@@ -6,18 +6,19 @@ import {
 } from "@/app/api/streams/share-params";
 import { updateParams } from "@/app/api/streams/update-params";
 import { Stream, upsertStream } from "@/app/api/streams/upsert";
+import { useCapacityCheck } from "@/hooks/useCapacityCheck";
 import { useGatewayHost } from "@/hooks/useGatewayHost";
+import { usePrivy } from "@/hooks/usePrivy";
+import { usePromptStore } from "@/hooks/usePromptStore";
 import { getAppConfig } from "@/lib/env";
+import track from "@/lib/track";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { create } from "zustand";
-import { useStreamStatus } from "./useStreamStatus";
-import track from "@/lib/track";
-import { usePrivy } from "@/hooks/usePrivy";
-import { usePromptStore } from "@/hooks/usePromptStore";
-import { useCapacityCheck } from "@/hooks/useCapacityCheck";
 import { usePromptVersionStore } from "./usePromptVersionStore";
+import { useStreamStatus } from "./useStreamStatus";
+import { usePlayerStore } from "@/components/welcome/featured/player";
 
 export const DEFAULT_PIPELINE_ID = "pip_DRQREDnSei4HQyC8"; // Staging Dreamshaper ID
 export const DUMMY_USER_ID_FOR_NON_AUTHENTICATED_USERS =
@@ -728,24 +729,25 @@ const MAX_STREAM_TIMEOUT_MS = 300000; // 5 minutes
 export const useErrorMonitor = () => {
   const { authenticated } = usePrivy();
   const { stream, setErrorState } = useDreamshaperStore();
-  const { live, capacityReached } = useStreamStatus(stream?.id, false);
+  const { capacityReached } = useStreamStatus(stream?.id, false);
+  const { isPlaying } = usePlayerStore();
 
   const [timeoutReached, setTimeoutReached] = useState(false);
   const errorDetectedRef = useRef(false);
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (!live) {
+      if (!isPlaying) {
         setTimeoutReached(true);
       }
     }, MAX_STREAM_TIMEOUT_MS);
 
     return () => clearTimeout(timer);
-  }, [live]);
+  }, [isPlaying]);
 
   useEffect(() => {
     if (
-      (capacityReached || (timeoutReached && !live)) &&
+      (capacityReached || (timeoutReached && !isPlaying)) &&
       !errorDetectedRef.current
     ) {
       const reason = capacityReached
@@ -755,7 +757,7 @@ export const useErrorMonitor = () => {
       console.error("Capacity reached, reason:", reason, {
         capacityReached,
         timeoutReached,
-        live,
+        isPlaying,
       });
 
       track("daydream_error_overlay_shown", {
@@ -770,7 +772,7 @@ export const useErrorMonitor = () => {
   }, [
     capacityReached,
     timeoutReached,
-    live,
+    isPlaying,
     stream,
     authenticated,
     setErrorState,
