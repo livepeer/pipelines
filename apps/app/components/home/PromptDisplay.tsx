@@ -1,12 +1,7 @@
 import React from "react";
 import { ArrowLeft, Sparkle } from "lucide-react";
 import { GradientAvatar } from "@/components/GradientAvatar";
-
-interface PromptItem {
-  text: string;
-  seed: string;
-  isUser: boolean;
-}
+import { PromptItem } from "@/app/api/prompts/types";
 
 interface PromptDisplayProps {
   promptQueue: PromptItem[];

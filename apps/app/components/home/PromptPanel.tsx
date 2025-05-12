@@ -3,9 +3,10 @@ import { Camera } from "lucide-react";
 import { PromptForm } from "./PromptForm";
 import { PromptDisplay } from "./PromptDisplay";
 import { ActionButton } from "./ActionButton";
+import { PromptItem } from "@/app/api/prompts/types";
 
 interface PromptPanelProps {
-  promptQueue: any[];
+  promptQueue: PromptItem[];
   displayedPrompts: string[];
   promptAvatarSeeds: string[];
   userPromptIndices: boolean[];
