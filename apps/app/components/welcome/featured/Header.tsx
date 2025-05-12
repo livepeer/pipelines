@@ -217,7 +217,7 @@ export const Header = ({
 
       {isMobile && (
         <div className="z-50 flex justify-between w-full px-4 mt-6">
-          <div className="flex-1"></div> 
+          <div className="flex-1"></div>
           <div className="flex gap-2 justify-end max-w-[60%]">
             {isPlaying &&
               stream?.output_playback_id &&

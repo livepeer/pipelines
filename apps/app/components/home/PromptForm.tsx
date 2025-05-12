@@ -29,7 +29,7 @@ export function PromptForm({
           placeholder={
             isThrottled
               ? `Wait ${throttleTimeLeft}s...`
-              : "Add your prompt to the queue.."
+              : "Add your prompt to the queue..."
           }
           className={`w-full md:bg-white/50 bg-white/80 rounded-lg border-none focus:ring-0 focus:border-none focus:outline-none ${isThrottled ? "opacity-50" : ""}`}
           value={value}
