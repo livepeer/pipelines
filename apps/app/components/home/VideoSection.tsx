@@ -1,6 +1,13 @@
-import React from "react";
+"use client";
+
+import React, { useState } from "react";
 
 export function VideoSection() {
+  const [isLoading, setIsLoading] = useState(true);
+
+  const PLAYBACK_ID = "3150onhrqxekpmon";
+  const iframeUrl = `https://monster.lvpr.tv/?v=${PLAYBACK_ID}&lowLatency=force&backoffMax=1000&ingestPlayback=true`;
+
   return (
     <div className="w-full md:w-[70%] relative md:rounded-lg overflow-hidden bg-black/10 backdrop-blur-sm shadow-lg md:aspect-video h-full md:h-full md:relative">
       <div className="absolute top-3 left-3 z-20 hidden md:block">
@@ -13,32 +20,19 @@ export function VideoSection() {
       </div>
 
       <div className="w-full h-full relative md:relative">
-        <div className="fixed top-0 left-0 w-screen h-screen md:hidden z-0">
-          <video
-            className="absolute inset-0 w-full h-full object-cover"
-            playsInline
-            loop
-            muted
-            autoPlay
-            controls={false}
-          >
-            <source src="/placeholder.mp4" type="video/mp4" />
-            Your browser does not support the video tag.
-          </video>
-          <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
-        </div>
+        {isLoading && (
+          <div className="absolute inset-0 flex items-center justify-center bg-black z-10">
+            <div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+          </div>
+        )}
 
-        <video
-          className="absolute inset-0 w-full h-full object-cover hidden md:block"
-          playsInline
-          loop
-          muted
-          autoPlay
-          controls={false}
-        >
-          <source src="/placeholder.mp4" type="video/mp4" />
-          Your browser does not support the video tag.
-        </video>
+        <iframe
+          src={iframeUrl}
+          className="absolute inset-0 w-full h-full"
+          allow="autoplay; fullscreen"
+          allowFullScreen
+          onLoad={() => setIsLoading(false)}
+        />
       </div>
     </div>
   );

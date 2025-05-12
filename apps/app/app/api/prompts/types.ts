@@ -5,6 +5,7 @@ export type PromptItem = {
   seed: string;
   isUser: boolean;
   timestamp: number;
+  sessionId?: string;
 };
 
 export type PromptState = {
@@ -12,6 +13,7 @@ export type PromptState = {
   displayedPrompts: string[];
   promptAvatarSeeds: string[];
   userPromptIndices: boolean[];
+  promptSessionIds?: string[];
   highlightedSince: number;
 };
 
@@ -19,6 +21,7 @@ export const AddPromptSchema = z.object({
   text: z.string(),
   seed: z.string(),
   isUser: z.boolean(),
+  sessionId: z.string().optional(),
 });
 
 export type AddPromptRequest = z.infer<typeof AddPromptSchema>;

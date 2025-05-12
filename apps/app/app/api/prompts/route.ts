@@ -27,8 +27,8 @@ export async function POST(request: Request) {
       );
     }
 
-    const { text, seed, isUser } = body;
-    const response = addToPromptQueue(text, seed, isUser);
+    const { text, seed, isUser, sessionId } = body;
+    const response = addToPromptQueue(text, seed, isUser, sessionId);
 
     return NextResponse.json(response);
   } catch (error) {

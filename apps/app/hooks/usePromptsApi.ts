@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { PromptState, AddPromptRequest } from "@/app/api/prompts/types";
 
 const POLLING_INTERVAL = 3000; // Poll every second
+const SESSION_ID_KEY = "prompt_session_id";
 
 export function usePromptsApi() {
   const [promptState, setPromptState] = useState<PromptState | null>(null);
@@ -10,6 +11,18 @@ export function usePromptsApi() {
   const [userAvatarSeed] = useState(
     `user-${Math.random().toString(36).substring(2, 10)}`,
   );
+  const [sessionId] = useState(() => {
+    if (typeof window !== "undefined") {
+      const existingSessionId = sessionStorage.getItem(SESSION_ID_KEY);
+      if (existingSessionId) {
+        return existingSessionId;
+      }
+      const newSessionId = `session-${Math.random().toString(36).substring(2, 15)}`;
+      sessionStorage.setItem(SESSION_ID_KEY, newSessionId);
+      return newSessionId;
+    }
+    return "";
+  });
 
   const fetchPromptState = useCallback(async () => {
     try {
@@ -18,6 +31,19 @@ export function usePromptsApi() {
         throw new Error(`Error fetching prompts: ${response.statusText}`);
       }
       const data = await response.json();
+
+      if (data && sessionId) {
+        data.userPromptIndices = data.userPromptIndices.map(
+          (isUser: boolean, index: number) => {
+            return (
+              isUser &&
+              data.promptSessionIds &&
+              data.promptSessionIds[index] === sessionId
+            );
+          },
+        );
+      }
+
       setPromptState(data);
       setError(null);
     } catch (err) {
@@ -26,7 +52,7 @@ export function usePromptsApi() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [sessionId]);
 
   const addToPromptQueue = useCallback(
     async (promptText: string, seed: string, isUser: boolean) => {
@@ -35,6 +61,7 @@ export function usePromptsApi() {
           text: promptText,
           seed,
           isUser,
+          sessionId, // Send the session ID with the prompt
         };
 
         const response = await fetch("/api/prompts", {
@@ -57,7 +84,7 @@ export function usePromptsApi() {
         return false;
       }
     },
-    [fetchPromptState],
+    [fetchPromptState, sessionId],
   );
 
   const addRandomPrompt = useCallback(async () => {
