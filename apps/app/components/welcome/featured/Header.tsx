@@ -2,34 +2,26 @@
 
 import { TrackedButton } from "@/components/analytics/TrackedButton";
 import { ClipButton } from "@/components/daydream/Clipping/ClipButton";
+import { GuestSignupModal } from "@/components/guest/GuestSignupModal";
 import useFullscreenStore from "@/hooks/useFullscreenStore";
+import { useGuestUserStore } from "@/hooks/useGuestUser";
 import useMobileStore from "@/hooks/useMobileStore";
+import { useOverlayStore } from "@/hooks/useOverlayStore";
+import { usePrivy } from "@/hooks/usePrivy";
 import { usePromptStore } from "@/hooks/usePromptStore";
-import { useStreamStatus } from "@/hooks/useStreamStatus";
 import track from "@/lib/track";
+import { DiscordLogoIcon } from "@radix-ui/react-icons";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Dialog } from "@repo/design-system/components/ui/dialog";
-import { Separator } from "@repo/design-system/components/ui/separator";
 import { SidebarTrigger } from "@repo/design-system/components/ui/sidebar";
 import { cn } from "@repo/design-system/lib/utils";
-import {
-  ChevronLeft,
-  Scissors,
-  Search,
-  Share,
-  Share2,
-  Users2,
-} from "lucide-react";
+import { ChevronLeft, Share, Share2 } from "lucide-react";
 import { Inter } from "next/font/google";
 import Link from "next/link";
-import { useDreamshaperStore } from "../../../hooks/useDreamshaper";
-import { ShareModalContent, useShareModal } from "./ShareModal";
-import { usePrivy } from "@/hooks/usePrivy";
 import { useState } from "react";
-import { GuestSignupModal } from "@/components/guest/GuestSignupModal";
-import { useGuestUserStore } from "@/hooks/useGuestUser";
-import { useOverlayStore } from "@/hooks/useOverlayStore";
-import { DiscordLogoIcon } from "@radix-ui/react-icons";
+import { useDreamshaperStore } from "../../../hooks/useDreamshaper";
+import { usePlayerStore } from "./player";
+import { ShareModalContent, useShareModal } from "./ShareModal";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -46,7 +38,7 @@ export const Header = ({
   const { isFullscreen } = useFullscreenStore();
   const { isMobile, isMinHeightScreen } = useMobileStore();
   const { stream, streamUrl } = useDreamshaperStore();
-  const { live } = useStreamStatus(stream?.id);
+  const { isPlaying } = usePlayerStore();
   const { hasSubmittedPrompt } = usePromptStore();
   const { open, setOpen, openModal } = useShareModal();
   const { setHasRecordedClip, lastPrompt } = useGuestUserStore();
@@ -182,7 +174,7 @@ export const Header = ({
               )}
             >
               <div className="flex items-center gap-2">
-                {live &&
+                {isPlaying &&
                   stream?.output_playback_id &&
                   streamUrl &&
                   (isGuestMode ? (
@@ -234,7 +226,7 @@ export const Header = ({
           </Button>
 
           <div className="flex gap-2 justify-end max-w-[60%]">
-            {live &&
+            {isPlaying &&
               stream?.output_playback_id &&
               streamUrl &&
               (isGuestMode ? (

@@ -22,6 +22,8 @@ import {
 import { CapacityNotificationModal } from "@/components/modals/capacity-notification-modal";
 import track from "@/lib/track";
 import { useIsTikTokBrowser } from "@/hooks/useIsTikTokBrowser";
+import { usePromptStore } from "@/hooks/usePromptStore";
+import { useDreamshaperStore } from "@/hooks/useDreamshaper";
 
 interface OptimizedVideoProps {
   src: string;
@@ -66,6 +68,8 @@ export default function OptimizedVideo({
   const router = useRouter();
   const [isCapacityModalOpen, setIsCapacityModalOpen] = useState(false);
   const isTikTokUserAgent = useIsTikTokBrowser();
+  const { reset: resetDreamshaperStore } = useDreamshaperStore();
+  const { reset: resetPromptStore } = usePromptStore();
 
   const shortSrc = src.replace(/\.mp4$/, "-short.mp4");
   const [effectiveSrc, setEffectiveSrc] = useState(shortSrc);
@@ -153,9 +157,10 @@ export default function OptimizedVideo({
         onTryPrompt(prompt);
         await setSourceClipIdToCookies(clipId);
       } else {
-        router.push(
-          `/create?inputPrompt=${btoa(prompt)}&sourceClipId=${btoa(clipId)}`,
-        );
+        resetDreamshaperStore();
+        resetPromptStore();
+
+        window.location.href = `/create?inputPrompt=${btoa(prompt)}&sourceClipId=${btoa(clipId)}`;
       }
     } else {
       if (!isOverlayMode) {

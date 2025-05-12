@@ -47,7 +47,7 @@ export default async function EmbedPage({
           autoPlay
           loop
           playsInline
-          className="w-full h-full object-contain"
+          className="w-full h-full object-cover"
         />
       </div>
     </div>
