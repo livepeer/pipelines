@@ -7,6 +7,7 @@ import { Metadata } from "next";
 import { MixpanelProvider } from "@/components/analytics/MixpanelProvider";
 import { Inter, Playfair, Open_Sans } from "next/font/google";
 import { ThirdPartyAnalytics } from "@/scripts/analytics";
+import { PostHogProvider } from "@/components/analytics/PostHogProvider";
 
 const playfair = Playfair({
   variable: "--font-playfair",
@@ -113,13 +114,15 @@ const RootLayout = ({ children }: RootLayoutProperties) => (
     <body
       className={`${inter.variable} ${playfair.variable} ${openSans.variable} bg-sidebar font-sans`}
     >
-      <MixpanelProvider>
-        <DesignSystemProvider defaultTheme="light" enableSystem={false}>
-          {children}
-          <Intercom />
-          {/* TODO: REENABLE WHEN SHIH-YU IS READY FOR IT <Intercom /> */}
-        </DesignSystemProvider>
-      </MixpanelProvider>
+      <PostHogProvider>
+        <MixpanelProvider>
+          <DesignSystemProvider defaultTheme="light" enableSystem={false}>
+            {children}
+            <Intercom />
+            {/* TODO: REENABLE WHEN SHIH-YU IS READY FOR IT <Intercom /> */}
+          </DesignSystemProvider>
+        </MixpanelProvider>
+      </PostHogProvider>
       <ThirdPartyAnalytics />
     </body>
   </html>
