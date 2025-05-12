@@ -5,6 +5,8 @@ interface PromptStore {
   setLastSubmittedPrompt: (prompt: string | null) => void;
   hasSubmittedPrompt: boolean;
   setHasSubmittedPrompt: (value: boolean) => void;
+
+  reset: () => void;
 }
 
 export const usePromptStore = create<PromptStore>(set => ({
@@ -12,4 +14,6 @@ export const usePromptStore = create<PromptStore>(set => ({
   setLastSubmittedPrompt: prompt => set({ lastSubmittedPrompt: prompt }),
   hasSubmittedPrompt: false,
   setHasSubmittedPrompt: value => set({ hasSubmittedPrompt: value }),
+
+  reset: () => set({ lastSubmittedPrompt: null, hasSubmittedPrompt: false }),
 }));
