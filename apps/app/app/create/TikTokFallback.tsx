@@ -6,6 +6,7 @@ import LivepeerLogo from "../../components/daydream/LivepeerLogo";
 import { Logo } from "@/components/sidebar";
 import Link from "next/link";
 import { useState } from "react";
+import { TrackedButton } from "@/components/analytics/TrackedButton";
 
 export default function TikTokFallback() {
   const linkToCopy = "https://daydream.live/";
@@ -41,13 +42,14 @@ export default function TikTokFallback() {
             className="focus:outline-none bg-inherit"
             readOnly
           />
-          <Button
+          <TrackedButton
             className="rounded-full"
             onClick={handleCopyLink}
             disabled={isCopied}
+            trackingEvent="tiktok_browser_fallback_link_copy"
           >
             {isCopied ? "Copied!" : "Copy link"}
-          </Button>
+          </TrackedButton>
         </div>
       </div>
     </div>
