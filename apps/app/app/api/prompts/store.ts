@@ -1,5 +1,14 @@
 import { PromptItem, PromptState } from "./types";
 
+// Declare a global namespace to hold our state
+declare global {
+  var promptState: PromptState;
+  var isProcessingQueue: boolean;
+  var processingTimer: NodeJS.Timeout | null;
+  var randomPromptTimer: NodeJS.Timeout | null;
+  var lastInitTime: number;
+}
+
 // Mock data
 const initialPrompts = [
   "cyberpunk cityscape with neon lights --quality 3",
@@ -36,6 +45,7 @@ const MAX_QUEUE_SIZE = 100;
 const FRONTEND_DISPLAY_SIZE = 5;
 const TARGET_STREAM_KEY = "stk_W5K2ujsi2s9etRku";
 const RANDOM_PROMPT_INTERVAL = 20000;
+const INIT_INTERVAL = 60 * 60 * 1000; // 1 hour
 
 const createInitialState = (): PromptState => ({
   promptQueue: [],
@@ -48,10 +58,24 @@ const createInitialState = (): PromptState => ({
   highlightedSince: Date.now(),
 });
 
-let promptState = createInitialState();
-let isProcessingQueue = false;
-let processingTimer: NodeJS.Timeout | null = null;
-let randomPromptTimer: NodeJS.Timeout | null = null;
+// Initialize the global state if it doesn't exist or if it's too old
+if (
+  !global.promptState ||
+  !global.lastInitTime ||
+  Date.now() - global.lastInitTime > INIT_INTERVAL
+) {
+  global.promptState = createInitialState();
+  global.isProcessingQueue = false;
+  global.processingTimer = null;
+  global.randomPromptTimer = null;
+  global.lastInitTime = Date.now();
+
+  console.log(`[${new Date().toISOString()}] Initialized global prompt state`);
+} else {
+  console.log(
+    `[${new Date().toISOString()}] Reusing existing global prompt state, age: ${Math.floor((Date.now() - global.lastInitTime) / 1000)}s`,
+  );
+}
 
 const applyPromptToStream = async (promptText: string) => {
   if (typeof window !== "undefined") {
@@ -295,46 +319,46 @@ const applyPromptToStream = async (promptText: string) => {
 };
 
 const processNextPrompt = () => {
-  isProcessingQueue = true;
+  global.isProcessingQueue = true;
 
-  if (promptState.promptQueue.length === 0) {
-    isProcessingQueue = false;
+  if (global.promptState.promptQueue.length === 0) {
+    global.isProcessingQueue = false;
     return;
   }
 
-  const nextPrompt = promptState.promptQueue[0];
-  const remainingQueue = promptState.promptQueue.slice(1);
+  const nextPrompt = global.promptState.promptQueue[0];
+  const remainingQueue = global.promptState.promptQueue.slice(1);
 
-  promptState = {
-    ...promptState,
+  global.promptState = {
+    ...global.promptState,
     promptQueue: remainingQueue,
     displayedPrompts: [
       nextPrompt.text,
-      ...promptState.displayedPrompts.slice(
+      ...global.promptState.displayedPrompts.slice(
         0,
-        promptState.displayedPrompts.length - 1,
+        global.promptState.displayedPrompts.length - 1,
       ),
     ],
     promptAvatarSeeds: [
       nextPrompt.seed,
-      ...promptState.promptAvatarSeeds.slice(
+      ...global.promptState.promptAvatarSeeds.slice(
         0,
-        promptState.promptAvatarSeeds.length - 1,
+        global.promptState.promptAvatarSeeds.length - 1,
       ),
     ],
     userPromptIndices: [
       nextPrompt.isUser,
-      ...promptState.userPromptIndices.slice(
+      ...global.promptState.userPromptIndices.slice(
         0,
-        promptState.userPromptIndices.length - 1,
+        global.promptState.userPromptIndices.length - 1,
       ),
     ],
     promptSessionIds: [
       nextPrompt.sessionId || "",
-      ...(promptState.promptSessionIds
-        ? promptState.promptSessionIds.slice(
+      ...(global.promptState.promptSessionIds
+        ? global.promptState.promptSessionIds.slice(
             0,
-            promptState.promptSessionIds.length - 1,
+            global.promptState.promptSessionIds.length - 1,
           )
         : []),
     ],
@@ -343,39 +367,63 @@ const processNextPrompt = () => {
 
   applyPromptToStream(nextPrompt.text);
 
-  if (processingTimer) {
-    clearTimeout(processingTimer);
+  if (global.processingTimer) {
+    clearTimeout(global.processingTimer);
   }
 
   if (remainingQueue.length > 0) {
-    processingTimer = setTimeout(() => {
-      isProcessingQueue = false;
+    global.processingTimer = setTimeout(() => {
+      global.isProcessingQueue = false;
       checkAndProcessQueue();
     }, HIGHLIGHT_DURATION);
   } else {
-    isProcessingQueue = false;
+    global.isProcessingQueue = false;
   }
 };
 
-const checkAndProcessQueue = () => {
-  if (isProcessingQueue || promptState.promptQueue.length === 0) {
+export const checkAndProcessQueue = () => {
+  if (global.isProcessingQueue) {
+    console.log(
+      `[${new Date().toISOString()}] Queue processing already in progress, skipping`,
+    );
+    return;
+  }
+
+  if (global.promptState.promptQueue.length === 0) {
+    console.log(
+      `[${new Date().toISOString()}] Queue is empty, nothing to process`,
+    );
     return;
   }
 
   const now = Date.now();
+  const timeSinceHighlight = now - global.promptState.highlightedSince;
+
+  console.log(
+    `[${new Date().toISOString()}] Checking queue: ${global.promptState.promptQueue.length} items, time since last highlight: ${Math.floor(timeSinceHighlight / 1000)}s`,
+  );
+
   if (
-    promptState.highlightedSince === 0 ||
-    now - promptState.highlightedSince >= HIGHLIGHT_DURATION
+    global.promptState.highlightedSince === 0 ||
+    timeSinceHighlight >= HIGHLIGHT_DURATION
   ) {
+    console.log(`[${new Date().toISOString()}] Processing next prompt`);
     processNextPrompt();
+  } else {
+    console.log(
+      `[${new Date().toISOString()}] Waiting for highlight duration to pass, ${Math.floor((HIGHLIGHT_DURATION - timeSinceHighlight) / 1000)}s remaining`,
+    );
   }
 };
 
 export const getPromptState = (): PromptState => {
-  const limitedQueue = promptState.promptQueue.slice(0, FRONTEND_DISPLAY_SIZE);
+  const limitedQueue = global.promptState.promptQueue.slice(
+    0,
+    FRONTEND_DISPLAY_SIZE,
+  );
 
   return {
-    ...promptState,
+    ...global.promptState,
     promptQueue: limitedQueue,
   };
 };
@@ -386,7 +434,7 @@ export const addToPromptQueue = (
   isUser: boolean,
   sessionId?: string,
 ): { success: boolean; queuePosition?: number } => {
-  if (promptState.promptQueue.length >= MAX_QUEUE_SIZE) {
+  if (global.promptState.promptQueue.length >= MAX_QUEUE_SIZE) {
     return { success: false };
   }
 
@@ -398,15 +446,15 @@ export const addToPromptQueue = (
     sessionId,
   };
 
-  promptState = {
-    ...promptState,
-    promptQueue: [...promptState.promptQueue, newPrompt],
+  global.promptState = {
+    ...global.promptState,
+    promptQueue: [...global.promptState.promptQueue, newPrompt],
   };
 
   const now = Date.now();
   if (
-    promptState.highlightedSince === 0 ||
-    now - promptState.highlightedSince >= HIGHLIGHT_DURATION
+    global.promptState.highlightedSince === 0 ||
+    now - global.promptState.highlightedSince >= HIGHLIGHT_DURATION
   ) {
     setTimeout(() => {
       checkAndProcessQueue();
@@ -415,7 +463,7 @@ export const addToPromptQueue = (
 
   return {
     success: true,
-    queuePosition: promptState.promptQueue.length - 1,
+    queuePosition: global.promptState.promptQueue.length - 1,
   };
 };
 
@@ -430,23 +478,27 @@ export const addRandomPrompt = (): {
   return addToPromptQueue(randomPrompt, randomSeed, false);
 };
 
-const initBackgroundTimer = () => {
-  setInterval(() => {
-    checkAndProcessQueue();
-  }, 1000);
+if (typeof window === "undefined") {
+  const initBackgroundTimer = () => {
+    const checkInterval = setInterval(() => {
+      checkAndProcessQueue();
+    }, 1000);
 
-  if (randomPromptTimer) {
-    clearInterval(randomPromptTimer);
-  }
-
-  // Commenting out random prompt timer
-  /*
-  randomPromptTimer = setInterval(() => {
-    if (promptState.promptQueue.length < MAX_QUEUE_SIZE - 2) {
-      addRandomPrompt();
+    if (global.randomPromptTimer) {
+      clearInterval(global.randomPromptTimer);
     }
-  }, RANDOM_PROMPT_INTERVAL);
-  */
-};
 
-initBackgroundTimer();
+    // Commenting out random prompt timer as in the original code
+    /*
+    global.randomPromptTimer = setInterval(() => {
+      if (global.promptState.promptQueue.length < MAX_QUEUE_SIZE - 2) {
+        addRandomPrompt();
+      }
+    }, RANDOM_PROMPT_INTERVAL);
+    */
+
+    return checkInterval;
+  };
+
+  initBackgroundTimer();
+}
