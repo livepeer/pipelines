@@ -177,9 +177,11 @@ interface DreamshaperStore {
   setSharedParamsApplied: (applied: boolean) => void;
   setSharedPrompt: (prompt: string | null) => void;
   setErrorState: (error: boolean) => void;
+
+  reset: () => void;
 }
 
-export const useDreamshaperStore = create<DreamshaperStore>(set => ({
+const initialState = {
   loading: true,
   updating: false,
   stream: null,
@@ -188,6 +190,10 @@ export const useDreamshaperStore = create<DreamshaperStore>(set => ({
   sharedParamsApplied: false,
   sharedPrompt: null,
   errorState: false,
+};
+
+export const useDreamshaperStore = create<DreamshaperStore>(set => ({
+  ...initialState,
 
   setLoading: loading => set({ loading }),
   setUpdating: updating => set({ updating }),
@@ -197,6 +203,8 @@ export const useDreamshaperStore = create<DreamshaperStore>(set => ({
   setSharedParamsApplied: applied => set({ sharedParamsApplied: applied }),
   setSharedPrompt: prompt => set({ sharedPrompt: prompt }),
   setErrorState: error => set({ errorState: error }),
+
+  reset: () => set(initialState),
 }));
 
 export function useInputPromptHandling() {
