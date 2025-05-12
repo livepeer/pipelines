@@ -14,6 +14,8 @@ export function useRandomPromptTimer({
   addRandomPrompt,
 }: RandomPromptTimerOptions) {
   useEffect(() => {
+    // Commented out random prompt functionality
+    /*
     if (!authenticated && ready && showContent) {
       const getRandomInterval = () => Math.floor(Math.random() * 7500) + 1500;
 
@@ -26,5 +28,6 @@ export function useRandomPromptTimer({
 
       return () => clearTimeout(timerId);
     }
+    */
   }, [authenticated, ready, showContent, addRandomPrompt]);
 }

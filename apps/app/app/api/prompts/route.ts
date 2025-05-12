@@ -42,8 +42,15 @@ export async function POST(request: Request) {
 
 export async function PATCH() {
   try {
-    const response = addRandomPrompt();
-    return NextResponse.json(response);
+    // Commented out random prompt functionality
+    // const response = addRandomPrompt();
+    // return NextResponse.json(response);
+
+    // Return an empty response instead
+    return NextResponse.json({
+      success: false,
+      message: "Random prompts disabled",
+    });
   } catch (error) {
     console.error("Error adding random prompt:", error);
     return NextResponse.json(
