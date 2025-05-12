@@ -50,8 +50,10 @@ export default function HomePage() {
     addRandomPrompt,
   });
 
-  const redirectAsGuest = () => {
-    setIsGuestUser(true);
+  const redirectToCreate = () => {
+    if (!authenticated) {
+      setIsGuestUser(true);
+    }
     let b64Prompt = btoa(
       prompt ||
         "((cubism)) tesseract ((flat colors)) --creativity 0.6 --quality 3",
@@ -60,13 +62,7 @@ export default function HomePage() {
   };
 
   useEffect(() => {
-    if (ready && authenticated) {
-      router.push("/create");
-    }
-  }, [ready, authenticated, router]);
-
-  useEffect(() => {
-    if (!authenticated && ready) {
+    if (ready) {
       setAnimationStarted(true);
       const timer = setTimeout(() => {
         setShowContent(true);
@@ -74,7 +70,7 @@ export default function HomePage() {
 
       return () => clearTimeout(timer);
     }
-  }, [authenticated, ready]);
+  }, [ready]);
 
   useEffect(() => {
     setIsMounted(true);
@@ -84,16 +80,12 @@ export default function HomePage() {
     await addToPromptQueue(value, userAvatarSeed, true);
   });
 
-  const handleTryCameraClick = () => {
-    redirectAsGuest();
+  const handleButtonClick = () => {
+    redirectToCreate();
   };
 
   if (!ready || loading) {
     return <div className="flex items-center justify-center h-screen"></div>;
-  }
-
-  if (authenticated) {
-    return null;
   }
 
   if (!promptState) {
@@ -142,7 +134,9 @@ export default function HomePage() {
               setPromptValue={setPrompt}
               isThrottled={isThrottled}
               throttleTimeLeft={throttleTimeLeft}
-              onTryCameraClick={handleTryCameraClick}
+              onTryCameraClick={handleButtonClick}
+              buttonText={authenticated ? "Create" : "Try it with your camera"}
+              isAuthenticated={authenticated}
             />
           </div>
         </div>

@@ -18,6 +18,8 @@ interface PromptPanelProps {
   isThrottled: boolean;
   throttleTimeLeft: number;
   onTryCameraClick: () => void;
+  buttonText?: string;
+  isAuthenticated?: boolean;
 }
 
 export function PromptPanel({
@@ -32,6 +34,8 @@ export function PromptPanel({
   isThrottled,
   throttleTimeLeft,
   onTryCameraClick,
+  buttonText = "Try it with your camera",
+  isAuthenticated = false,
 }: PromptPanelProps) {
   const handlePastPromptClick = (prompt: string) => {
     setPromptValue(prompt);
@@ -50,7 +54,7 @@ export function PromptPanel({
           onClick={onTryCameraClick}
           icon={<Camera className="h-4 w-4" />}
         >
-          Try it with your camera
+          {buttonText}
         </ActionButton>
 
         <div className="hidden md:flex p-4 pl-1 border-t border-gray-200/30 flex-row gap-3 w-full relative z-10">

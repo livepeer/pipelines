@@ -266,21 +266,11 @@ export const BentoGridOverlay = () => {
                 <div className="max-w-7xl mx-auto px-4 lg:px-8">
                   <div className="flex justify-between items-center mb-4">
                     <div>
-                      <h2 className="font-medium text-lg">
-                        Other popular prompts
-                      </h2>
+                      <h2 className="font-medium text-lg">Trending styles</h2>
                       <p className="text-gray-500 text-sm">
                         Select the filter to apply it instantly
                       </p>
                     </div>
-                    <a
-                      href="/"
-                      className="text-primary text-sm bg-[#EDEDED] px-3 py-1.5 rounded-md"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      View all
-                    </a>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     {initialClips.map(clip => (
@@ -290,16 +280,6 @@ export const BentoGridOverlay = () => {
                         onTryPrompt={handleTryPrompt}
                       />
                     ))}
-                  </div>
-                  <div className="flex justify-center mt-6 mb-4">
-                    <a
-                      href="/"
-                      className="text-primary text-sm bg-[#EDEDED] px-3 py-1.5 rounded-md"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      View all
-                    </a>
                   </div>
                 </div>
               ) : (

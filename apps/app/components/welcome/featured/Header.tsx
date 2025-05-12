@@ -71,18 +71,14 @@ export const Header = ({
     return false;
   };
 
-  const handleExploreClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-
+  const handleOpenOverlay = () => {
     // First set type, then open overlay for smoother transition
-    // Only set overlayType if it's not already set
     setOverlayType("bento");
     setIsOverlayOpen(true);
 
-    track("daydream_back_to_explore_clicked", {
+    track("daydream_sidebar_trigger_clicked", {
       is_authenticated: authenticated,
       is_guest_mode: isGuestMode,
-      via_overlay: true,
     });
   };
 
@@ -105,6 +101,25 @@ export const Header = ({
               <DiscordLogoIcon className="h-4 w-4" /> Join Discord
             </TrackedButton>
           </Link>
+        </div>
+      )}
+
+      {/* Floating Sidebar Trigger */}
+      {!isMobile && !isFullscreen && (
+        <div
+          className={cn(
+            "fixed right-4 top-1/2 -translate-y-1/2 z-50",
+            isOverlayOpen && "opacity-0 pointer-events-none",
+          )}
+        >
+          <Button
+            variant="outline"
+            size="icon"
+            className="h-10 w-10 rounded-full shadow-md bg-white/80 backdrop-blur-sm hover:bg-white/90 transition-colors"
+            onClick={handleOpenOverlay}
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </Button>
         </div>
       )}
 
@@ -156,29 +171,6 @@ export const Header = ({
           <>
             <div
               className={cn(
-                "absolute bottom-3 left-0 flex items-center",
-                isOverlayOpen && "opacity-0 pointer-events-none",
-              )}
-            >
-              <TrackedButton
-                trackingEvent="daydream_back_to_explore_clicked"
-                trackingProperties={{
-                  is_authenticated: authenticated,
-                  is_guest_mode: isGuestMode,
-                  via_overlay: true,
-                }}
-                variant="ghost"
-                size="sm"
-                className="h-8 gap-2 rounded-md"
-                onClick={handleExploreClick}
-              >
-                <ChevronLeft className="h-4 w-4" />
-                <span>Explore more prompts</span>
-              </TrackedButton>
-            </div>
-
-            <div
-              className={cn(
                 "absolute bottom-3 right-0 flex gap-2 items-center",
                 isMinHeightScreen && "relative",
               )}
@@ -225,16 +217,7 @@ export const Header = ({
 
       {isMobile && (
         <div className="z-50 flex justify-between w-full px-4 mt-6">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="font-normal p-0 m-0 bg-transparent border-none hover:bg-transparent focus:outline-none rounded-md"
-            onClick={handleExploreClick}
-          >
-            <ChevronLeft />
-            <span>More prompts</span>
-          </Button>
-
+          <div className="flex-1"></div> 
           <div className="flex gap-2 justify-end max-w-[60%]">
             {isPlaying &&
               stream?.output_playback_id &&
