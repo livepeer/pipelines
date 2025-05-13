@@ -4,7 +4,7 @@
   "scripts": {
     "dev": "next dev -p 3000",
     "dev:mock": "NEXT_PUBLIC_USE_PRIVY_MOCK=true pnpm dev",
-    "build": "drizzle-kit push && next build",
+    "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "analyze": "ANALYZE=true pnpm build",
