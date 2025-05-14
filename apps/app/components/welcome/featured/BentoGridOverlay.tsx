@@ -19,6 +19,8 @@ import { OverlayClipViewer } from "./OverlayClipViewer";
 import { setSourceClipIdToCookies } from "@/components/daydream/Clipping/actions";
 import { GridVideoItem } from "./GridVideoItem";
 import useMobileStore from "@/hooks/useMobileStore";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@repo/design-system/components/ui/tabs";
+
 
 export const BentoGridOverlay = () => {
   const {
@@ -38,10 +40,12 @@ export const BentoGridOverlay = () => {
   const { handleStreamUpdate } = useStreamUpdates();
   const { setLastSubmittedPrompt, setHasSubmittedPrompt } = usePromptStore();
   const { setLastPrompt, incrementPromptCount } = useGuestUserStore();
-  const { authenticated } = usePrivy();
+  const { authenticated, user } = usePrivy();
   const [initialClips, setInitialClips] = useState<any[]>([]);
+  const [myClips, setMyClips] = useState<any[]>([]);
   const [selectedClip, setSelectedClip] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingMyClips, setIsLoadingMyClips] = useState(false);
   const overlayRef = useRef<HTMLDivElement>(null);
   const { isMobile } = useMobileStore();
 
@@ -93,13 +97,27 @@ export const BentoGridOverlay = () => {
             setIsLoading(false);
           });
       }
+
+      if (authenticated && user) {
+        setIsLoadingMyClips(true);
+        fetch(`/api/clips/user?userId=${user.id}`)
+          .then(res => res.json())
+          .then(data => {
+            setMyClips(data.clips);
+            setIsLoadingMyClips(false);
+          })
+          .catch(error => {
+            console.error("Error fetching user clips:", error);
+            setIsLoadingMyClips(false);
+          });
+      }
     }
 
     if (!isOverlayOpen) {
       initialOpenRef.current = true;
       scrollRestoredRef.current = false;
     }
-  }, [isOverlayOpen, overlayType, cachedClips, setCachedClips]);
+  }, [isOverlayOpen, overlayType, cachedClips, setCachedClips, authenticated]);
 
   useEffect(() => {
     if (isOverlayOpen && overlayType === "bento" && overlayRef.current) {
@@ -258,35 +276,83 @@ export const BentoGridOverlay = () => {
         <div className="relative z-10 h-full">
           {overlayType === "bento" && (
             <div className="p-4">
-              {isLoading ? (
-                <div className="flex justify-center py-8">
-                  <div className="w-8 h-8 border-4 border-t-primary rounded-full animate-spin"></div>
-                </div>
-              ) : initialClips.length > 0 ? (
-                <div className="max-w-7xl mx-auto px-4 lg:px-8">
-                  <div className="flex justify-between items-center mb-4">
-                    <div>
-                      <h2 className="font-medium text-lg">Trending styles</h2>
-                      <p className="text-gray-500 text-sm">
-                        Select the filter to apply it instantly
-                      </p>
+              <Tabs defaultValue="trending" className="w-full">
+                <TabsList className="w-full justify-start mb-4">
+                  <TabsTrigger value="trending">Trending Styles</TabsTrigger>
+                  <TabsTrigger value="my-clips">My Clips</TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="trending">
+                  {isLoading ? (
+                    <div className="flex justify-center py-8">
+                      <div className="w-8 h-8 border-4 border-t-primary rounded-full animate-spin"></div>
                     </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    {initialClips.map(clip => (
-                      <GridVideoItem
-                        key={clip.id}
-                        clip={clip}
-                        onTryPrompt={handleTryPrompt}
-                      />
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <div className="flex justify-center py-8">
-                  No clips available
-                </div>
-              )}
+                  ) : initialClips.length > 0 ? (
+                    <div className="max-w-7xl mx-auto px-4 lg:px-8">
+                      <div className="flex justify-between items-center mb-4">
+                        <div>
+                          <h2 className="font-medium text-lg">Trending styles</h2>
+                          <p className="text-gray-500 text-sm">
+                            Select the filter to apply it instantly
+                          </p>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        {initialClips.map(clip => (
+                          <GridVideoItem
+                            key={clip.id}
+                            clip={clip}
+                            onTryPrompt={handleTryPrompt}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex justify-center py-8">
+                      No clips available
+                    </div>
+                  )}
+                </TabsContent>
+
+                <TabsContent value="my-clips">
+                  {!authenticated ? (
+                    <div className="flex flex-col items-center justify-center py-8">
+                      <h3 className="text-lg font-medium mb-2">Sign in to save clips</h3>
+                      <p className="text-sm text-gray-500 mb-4">
+                        Create an account to save and manage your clips
+                      </p>
+                      <Button onClick={() => window.location.href = "/login"}>
+                        Sign in
+                      </Button>
+                    </div>
+                  ) : isLoadingMyClips ? (
+                    <div className="flex justify-center py-8">
+                      <div className="w-8 h-8 border-4 border-t-primary rounded-full animate-spin"></div>
+                    </div>
+                  ) : myClips.length > 0 ? (
+                    <div className="max-w-7xl mx-auto px-4 lg:px-8">
+                      <div className="grid grid-cols-2 gap-4">
+                        {myClips.map(clip => (
+                          <GridVideoItem
+                            key={clip.id}
+                            clip={clip}
+                            onTryPrompt={handleTryPrompt}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex justify-center py-8">
+                      <div className="text-center">
+                        <h3 className="text-lg font-medium mb-2">No clips yet</h3>
+                        <p className="text-sm text-gray-500">
+                          Create your first clip to see it here
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </TabsContent>
+              </Tabs>
             </div>
           )}
 
