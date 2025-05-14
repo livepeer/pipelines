@@ -25,12 +25,27 @@ export function PromptForm({
 }: PromptFormProps) {
   const { profanity, exceedsMaxLength } = useValidateInput(value);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
 
-  // Prevent submit if invalid
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (profanity || exceedsMaxLength) return;
     onSubmit(e);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      if (
+        !isThrottled &&
+        !disabled &&
+        value.trim() &&
+        !profanity &&
+        !exceedsMaxLength
+      ) {
+        formRef.current?.requestSubmit();
+      }
+    }
   };
 
   const errorMsg = useMemo(() => {
@@ -56,6 +71,7 @@ export function PromptForm({
 
   return (
     <form
+      ref={formRef}
       onSubmit={handleSubmit}
       className="pt-0 px-4 pb-4 md:border-b border-t md:border-t-0 border-gray-200/30 relative z-10"
     >
@@ -70,11 +86,12 @@ export function PromptForm({
           className={`w-full md:bg-white/50 bg-white/80 rounded-[24px] border border-solid border-[#DFDEDE] focus:ring-0 focus:border-[#DFDEDE] focus:outline-none pl-[25px] py-5 pr-16 ${isThrottled ? "opacity-50" : ""} shadow-[8px_12px_24px_0px_#0D131E26] resize-none overflow-hidden ${profanity || exceedsMaxLength ? "border-red-500" : ""}`}
           value={value}
           onChange={onChange}
+          onKeyDown={handleKeyDown}
           disabled={isThrottled || disabled}
           rows={1}
           style={{ minHeight: "56px" }}
         />
-        <div className="absolute right-4 bottom-0 top-0 my-auto flex items-center justify-center h-10">
+        <div className="absolute right-4 bottom-3 flex items-center justify-center">
           <button
             type="submit"
             className="bg-black text-white rounded-full w-10 h-10 flex items-center justify-center"

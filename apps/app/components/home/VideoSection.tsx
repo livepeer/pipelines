@@ -11,7 +11,7 @@ export function VideoSection() {
 
   const TRANSFORMED_PLAYBACK_ID = "95705ossoplg7uvq";
   const ORIGINAL_PLAYBACK_ID = "85c28sa2o8wppm58";
-  const transformedIframeUrl = `https://monster.lvpr.tv/?v=${TRANSFORMED_PLAYBACK_ID}&lowLatency=force&backoffMax=1000&ingestPlayback=true`;
+  const transformedIframeUrl = `https://monster.lvpr.tv/?v=${TRANSFORMED_PLAYBACK_ID}&lowLatency=true&backoffMax=1000&ingestPlayback=true`;
   const originalIframeUrl = `https://lvpr.tv/?v=${ORIGINAL_PLAYBACK_ID}&lowLatency=false&backoffMax=1000&ingestPlayback=true&muted=true`;
 
   useEffect(() => {

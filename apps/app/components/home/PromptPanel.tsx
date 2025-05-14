@@ -36,15 +36,11 @@ export function PromptPanel({
   isThrottled,
   throttleTimeLeft,
   onTryCameraClick,
-  buttonText = "Try it with your camera",
+  buttonText = "Pick your own video",
   isAuthenticated = false,
 }: PromptPanelProps) {
   const handlePastPromptClick = (prompt: string) => {
     setPromptValue(prompt);
-  };
-
-  const handleJoinDiscordClick = () => {
-    window.open("https://discord.gg/livepeer", "_blank");
   };
 
   return (
@@ -98,25 +94,13 @@ export function PromptPanel({
                 }
               >
                 <span className="text-[9px] xs:text-[10px] sm:text-xs md:text-sm whitespace-nowrap overflow-hidden">
-                  {buttonText === "Try it with your camera" ? (
+                  {buttonText === "Pick your own video" ? (
                     <span className="inline xs:hidden">Try camera</span>
                   ) : (
                     buttonText
                   )}
                 </span>
               </ActionButton>
-            </div>
-
-            <div className="hidden md:flex p-4 pl-6 border-t border-gray-200/30 flex-row gap-3 w-full relative z-10">
-              <TrackedButton
-                className="w-full px-4 py-2 h-10 rounded-md bg-white text-black hover:bg-gray-100 flex items-center justify-center gap-2"
-                onClick={handleJoinDiscordClick}
-                trackingEvent="explore_header_community_clicked"
-                trackingProperties={{ location: "explore_header" }}
-              >
-                <DiscordLogoIcon className="h-4 w-4" />
-                Join Discord
-              </TrackedButton>
             </div>
 
             <div className="flex-1 flex flex-col justify-end overflow-hidden relative">
