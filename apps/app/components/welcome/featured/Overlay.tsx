@@ -1,10 +1,6 @@
 import { Logo } from "@/components/sidebar";
 import { useEffect, useState } from "react";
 
-interface OverlayProps {
-  statusMessage: string;
-}
-
 const loadingMessages = [
   "Spinning up dream machines...",
   "Unlocking creative dimensions...",
@@ -19,7 +15,7 @@ const loadingMessages = [
   "Stirring the pixel potion...",
 ];
 
-export default function Overlay({ statusMessage }: OverlayProps) {
+export default function Overlay() {
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
   const [usedIndices, setUsedIndices] = useState<number[]>([]);
 

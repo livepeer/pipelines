@@ -279,8 +279,6 @@ export function ClipOptionsModal({
           </DialogDescription>
         </DialogHeader>
 
-        <Separator className="my-1" />
-
         <RadioGroup
           value={selectedMode}
           onValueChange={handleValueChange}
@@ -304,8 +302,6 @@ export function ClipOptionsModal({
             onSelect={handleValueChange}
           />
         </RadioGroup>
-
-        <Separator className="my-1" />
 
         <div className="w-full">
           <div className="flex gap-2">

@@ -2,7 +2,7 @@ import { create } from "zustand";
 
 interface PromptVersionStore {
   promptVersion: number;
-  incrementPromptVersion: (value: number) => void;
+  incrementPromptVersion: () => void;
 }
 
 export const usePromptVersionStore = create<PromptVersionStore>(set => ({

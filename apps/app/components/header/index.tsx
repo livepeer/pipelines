@@ -24,7 +24,7 @@ export default function Header() {
     {
       label: "Community",
       external: true,
-      href: "https://discord.gg/DwBPjfhmUt",
+      href: "https://discord.gg/5sZu8xmn6U",
     },
   ];
 

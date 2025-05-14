@@ -226,7 +226,6 @@ export const MobileInputPrompt = ({
       setLastSubmittedPrompt(inputValue);
       setHasSubmittedPrompt(true);
       setInputValue("");
-      incrementPromptVersion(promptVersion + 1);
     } else {
       console.error("No input value to submit");
     }

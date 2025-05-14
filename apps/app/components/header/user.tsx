@@ -19,11 +19,13 @@ import {
 import { cn } from "@repo/design-system/lib/utils";
 import { LogOut, UserIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useGuestUserStore } from "@/hooks/useGuestUser";
 
 export default function User({ className }: { className?: string }) {
   const { ready, authenticated, user, login, logout } = usePrivy();
   const { isMobile } = useMobileStore();
   const router = useRouter();
+  const { setIsGuestUser } = useGuestUserStore();
 
   const name =
     user?.discord?.username || user?.google?.name || user?.email?.address;
@@ -39,7 +41,8 @@ export default function User({ className }: { className?: string }) {
     track("login_clicked", undefined, user || undefined);
 
     if (!authenticated) {
-      router.push("/create");
+      localStorage.setItem("daydream_from_guest_experience", "true");
+      setIsGuestUser(false);
     } else {
       login();
     }
@@ -48,7 +51,7 @@ export default function User({ className }: { className?: string }) {
   return authenticated ? (
     <DropdownMenu>
       <DropdownMenuTrigger className={cn("flex items-start gap-2", className)}>
-        <Avatar className="h-6 w-6 -ml-[3px]">
+        <Avatar className="h-6 w-6 -ml-[0.25rem]">
           <AvatarImage
             src={`https://github.com/${user?.github?.username}.png`}
             alt={name || ""}

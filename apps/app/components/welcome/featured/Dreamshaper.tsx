@@ -29,12 +29,13 @@ import { useGuestUserStore } from "@/hooks/useGuestUser";
 import { BentoGridOverlay } from "./BentoGridOverlay";
 import { useTrialTimer } from "@/hooks/useTrialTimer";
 import { UnifiedSignupModal } from "@/components/modals/unified-signup-modal";
-import { TutorialVideo } from "./TutorialVideo";
+import { TutorialVideo, useTutorialVideoStore } from "./TutorialVideo";
 import {
   DREAMSHAPER_PARAMS_STORAGE_KEY,
   DREAMSHAPER_PARAMS_VERSION_KEY,
 } from "@/hooks/useDreamshaper";
 import { PlayerOverlay } from "./PlayerOverlay";
+import { usePlayerStore } from "./player";
 
 interface DreamshaperProps {
   isGuestMode?: boolean;
@@ -45,9 +46,11 @@ export default function Dreamshaper({ isGuestMode = false }: DreamshaperProps) {
   useParamsHandling();
   useErrorMonitor();
 
+  const { isVisible } = useTutorialVideoStore();
   const { handleStreamUpdate } = useStreamUpdates();
   const { stream, pipeline, sharedPrompt, errorState } = useDreamshaperStore();
-  const { status, live } = useStreamStatus(stream?.id, false);
+  const { status } = useStreamStatus(stream?.id, false);
+  const { isPlaying } = usePlayerStore();
   const { currentStep, selectedPrompt, setSelectedPrompt } = useOnboard();
   const { lastSubmittedPrompt, setLastSubmittedPrompt, setHasSubmittedPrompt } =
     usePromptStore();
@@ -93,7 +96,7 @@ export default function Dreamshaper({ isGuestMode = false }: DreamshaperProps) {
   });
 
   useEffect(() => {
-    if (live) {
+    if (isPlaying) {
       track("daydream_stream_started", {
         is_authenticated: authenticated,
         playback_id: stream?.output_playback_id,
@@ -101,7 +104,7 @@ export default function Dreamshaper({ isGuestMode = false }: DreamshaperProps) {
         is_guest_mode: isGuestMode,
       });
     }
-  }, [stream, live, isGuestMode]);
+  }, [stream, isPlaying, isGuestMode]);
 
   useEffect(() => {
     // Track page unload events
@@ -265,12 +268,12 @@ export default function Dreamshaper({ isGuestMode = false }: DreamshaperProps) {
         console.error("Error decoding input prompt:", error);
       }
     }
-  }, [live, showTutorial, setLastSubmittedPrompt, setHasSubmittedPrompt]);
+  }, [isPlaying, showTutorial, setLastSubmittedPrompt, setHasSubmittedPrompt]);
 
   useEffect(() => {
     const searchParams = new URL(window.location.href).searchParams;
     const inputPromptB64 = searchParams.get("inputPrompt");
-    if (inputPromptB64 && live) {
+    if (inputPromptB64 && isPlaying) {
       try {
         const decodedPrompt = atob(inputPromptB64);
         setLastSubmittedPrompt(decodedPrompt);
@@ -279,7 +282,7 @@ export default function Dreamshaper({ isGuestMode = false }: DreamshaperProps) {
         console.error("Error decoding input prompt:", error);
       }
     }
-  }, [live]);
+  }, [isPlaying]);
 
   useEffect(() => {
     if (!capacityLoading && !hasCapacity) {
@@ -382,7 +385,7 @@ export default function Dreamshaper({ isGuestMode = false }: DreamshaperProps) {
             >
               {hasCapacity ? (
                 <>
-                  <MainContent />
+                  {(!showTutorial || !isVisible) && <MainContent />}
                   {showTutorial && (
                     <TutorialVideo onComplete={handleTutorialComplete} />
                   )}

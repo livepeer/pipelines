@@ -1,3 +1,5 @@
+"use client";
+
 import { GradientAvatar } from "@/components/GradientAvatar";
 import { usePreviewStore } from "@/hooks/usePreviewStore";
 import { useOverlayStore } from "@/hooks/useOverlayStore";
@@ -19,6 +21,9 @@ import {
 } from "@repo/design-system/components/ui/tooltip";
 import { CapacityNotificationModal } from "@/components/modals/capacity-notification-modal";
 import track from "@/lib/track";
+import { useIsTikTokBrowser } from "@/hooks/useIsTikTokBrowser";
+import { usePromptStore } from "@/hooks/usePromptStore";
+import { useDreamshaperStore } from "@/hooks/useDreamshaper";
 
 interface OptimizedVideoProps {
   src: string;
@@ -61,8 +66,10 @@ export default function OptimizedVideo({
   const { setIsGuestUser, setLastPrompt } = useGuestUserStore();
   const { authenticated, ready } = usePrivy();
   const router = useRouter();
-  const { isOverlayOpen } = useOverlayStore();
   const [isCapacityModalOpen, setIsCapacityModalOpen] = useState(false);
+  const isTikTokUserAgent = useIsTikTokBrowser();
+  const { reset: resetDreamshaperStore } = useDreamshaperStore();
+  const { reset: resetPromptStore } = usePromptStore();
 
   const shortSrc = src.replace(/\.mp4$/, "-short.mp4");
   const [effectiveSrc, setEffectiveSrc] = useState(shortSrc);
@@ -110,6 +117,8 @@ export default function OptimizedVideo({
 
     const playbackObserver = new IntersectionObserver(
       entries => {
+        if (isTikTokUserAgent) return;
+
         if (entries[0].isIntersecting) {
           videoElement.play().catch(error => {
             console.log("Browser is preventing autoplay:", error);
@@ -124,7 +133,7 @@ export default function OptimizedVideo({
     playbackObserver.observe(containerRef.current);
 
     return () => playbackObserver.disconnect();
-  }, [isNearViewport, isPreviewOpen]);
+  }, [isNearViewport, isPreviewOpen, isTikTokUserAgent]);
 
   const handleTryPrompt = async (e: React.MouseEvent) => {
     // Ensure we prevent any link behavior
@@ -148,9 +157,10 @@ export default function OptimizedVideo({
         onTryPrompt(prompt);
         await setSourceClipIdToCookies(clipId);
       } else {
-        router.push(
-          `/create?inputPrompt=${btoa(prompt)}&sourceClipId=${btoa(clipId)}`,
-        );
+        resetDreamshaperStore();
+        resetPromptStore();
+
+        window.location.href = `/create?inputPrompt=${btoa(prompt)}&sourceClipId=${btoa(clipId)}`;
       }
     } else {
       if (!isOverlayMode) {
@@ -191,8 +201,10 @@ export default function OptimizedVideo({
                 muted
                 loop
                 playsInline
+                webkit-playsinline="true"
                 onLoadedData={() => setIsLoaded(true)}
                 onError={handleVideoError}
+                autoPlay={false}
                 className={cn(
                   "absolute inset-0 size-full object-cover object-top bg-transparent",
                   !isLoaded && "opacity-0",

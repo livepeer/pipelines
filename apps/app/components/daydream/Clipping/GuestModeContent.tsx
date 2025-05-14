@@ -11,6 +11,7 @@ import { storeClip } from "@/lib/clipStorage";
 import { cn } from "@repo/design-system/lib/utils";
 import { Separator } from "@repo/design-system/components/ui/separator";
 import { Button } from "@repo/design-system/components/ui/button";
+import { useGuestUserStore } from "@/hooks/useGuestUser";
 
 interface GuestModeContentProps {
   clipData: ClipData;
@@ -19,9 +20,11 @@ interface GuestModeContentProps {
 
 export function GuestModeContent({ clipData, onClose }: GuestModeContentProps) {
   const router = useRouter();
+  const { setIsGuestUser } = useGuestUserStore();
 
   const handleJoinDaydream = async () => {
     track("guest_join_from_clip_modal", {});
+
     localStorage.setItem("daydream_from_guest_experience", "true");
 
     if (clipData.lastSubmittedPrompt) {
@@ -67,7 +70,8 @@ export function GuestModeContent({ clipData, onClose }: GuestModeContentProps) {
     }
 
     onClose();
-    router.push("/create");
+
+    setIsGuestUser(false);
   };
 
   return (

@@ -1,12 +1,13 @@
-import "@repo/design-system/styles/globals.css";
-import { DesignSystemProvider } from "@repo/design-system/providers";
-import type { ReactNode } from "react";
-import type { Viewport } from "next";
-import Intercom from "@/components/intercom";
-import { Metadata } from "next";
+import { ServiceWorker } from "@/app/ServiceWorker";
 import { MixpanelProvider } from "@/components/analytics/MixpanelProvider";
-import { Inter, Playfair, Open_Sans } from "next/font/google";
+import Intercom from "@/components/intercom";
 import { ThirdPartyAnalytics } from "@/scripts/analytics";
+import { DesignSystemProvider } from "@repo/design-system/providers";
+import "@repo/design-system/styles/globals.css";
+import type { Viewport } from "next";
+import { Metadata } from "next";
+import { Inter, Open_Sans, Playfair } from "next/font/google";
+import type { ReactNode } from "react";
 
 const playfair = Playfair({
   variable: "--font-playfair",
@@ -118,6 +119,7 @@ const RootLayout = ({ children }: RootLayoutProperties) => (
           {children}
           <Intercom />
           {/* TODO: REENABLE WHEN SHIH-YU IS READY FOR IT <Intercom /> */}
+          <ServiceWorker />
         </DesignSystemProvider>
       </MixpanelProvider>
       <ThirdPartyAnalytics />

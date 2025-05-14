@@ -24,6 +24,8 @@ import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
 import * as React from "react";
 import { useEffect, useRef, useState } from "react";
+import { create } from "zustand";
+import { usePlaybackUrlStore } from "@/hooks/usePlaybackUrlStore";
 
 const VideoJSPlayer = dynamic(() => import("./videojs-player"), {
   ssr: false,
@@ -37,17 +39,56 @@ const VideoJSPlayer = dynamic(() => import("./videojs-player"), {
   ),
 });
 
+interface PlayerState {
+  isPlaying: boolean;
+  setIsPlaying: (value: boolean) => void;
+}
+
+export const usePlayerStore = create<PlayerState>(set => ({
+  isPlaying: false,
+  setIsPlaying: (value: boolean) => set({ isPlaying: value }),
+}));
+
+const initialDelay = 3000;
+const linearPhaseDelay = 100;
+const linearPhaseEndCount = 50;
+
+const calculateDelay = (count: number): number => {
+  const baseExponentialDelay = 200;
+  const maxExponentialDelay = 60 * 1000;
+  const exponentFactor = 2;
+
+  if (count === 0) {
+    return initialDelay;
+  }
+
+  if (count > 0 && count <= linearPhaseEndCount) {
+    return linearPhaseDelay;
+  }
+
+  const exponentialAttemptNumber = count - linearPhaseEndCount;
+
+  const delay =
+    baseExponentialDelay *
+    Math.pow(exponentFactor, exponentialAttemptNumber - 1);
+
+  return Math.min(delay, maxExponentialDelay);
+};
+
 export const LivepeerPlayer = () => {
   const { stream, pipeline } = useDreamshaperStore();
   const { isMobile } = useMobileStore();
   const { isFullscreen } = useFullscreenStore();
-  const appConfig = useAppConfig();
+  const { setIsPlaying } = usePlayerStore();
   const [playbackInfo, setPlaybackInfo] = useState<PlaybackInfo | null>(null);
+  const { playbackUrl } = usePlaybackUrlStore();
 
   const { useFallbackPlayer: useFallbackVideoJSPlayer, handleError } =
     useFallbackDetection(stream?.output_playback_id!);
 
-  const playerUrl = `${appConfig.whipUrl}${appConfig?.whipUrl?.endsWith("/") ? "" : "/"}${stream?.stream_key}-out/whep`;
+  useEffect(() => {
+    setIsPlaying(false);
+  }, []);
 
   const searchParams = useSearchParams();
   const useMediamtx =
@@ -75,6 +116,10 @@ export const LivepeerPlayer = () => {
     stream?.output_playback_id,
   ]);
 
+  if (!playbackUrl) {
+    return <PlayerLoading />;
+  }
+
   if (iframePlayerFallback) {
     return (
       <LPPLayer
@@ -88,7 +133,7 @@ export const LivepeerPlayer = () => {
   if (useVideoJS && pipeline) {
     return (
       <VideoJSPlayer
-        src={playerUrl}
+        src={playbackUrl}
         isMobile={isMobile}
         playbackId={stream?.output_playback_id!}
         streamId={stream?.id!}
@@ -98,7 +143,7 @@ export const LivepeerPlayer = () => {
     );
   }
 
-  const src = getSrc(useMediamtx ? playerUrl : playbackInfo);
+  const src = getSrc(useMediamtx ? playbackUrl : playbackInfo);
 
   if (!src) {
     return (
@@ -119,7 +164,7 @@ export const LivepeerPlayer = () => {
         clipLength={30}
         src={src}
         jwt={null}
-        backoffMax={1000}
+        calculateDelay={calculateDelay}
         timeout={300000}
         lowLatency="force"
         {...({
@@ -142,6 +187,9 @@ export const LivepeerPlayer = () => {
           title="Live stream"
           data-testid="playback-video"
           className={`h-full w-full transition-all object-contain relative z-0 ${!isMobile ? "-scale-x-100" : ""} bg-[#fefefe]`}
+          onLoadedMetadata={() => {
+            setIsPlaying(true);
+          }}
         />
 
         <Player.LoadingIndicator className="w-full relative h-full bg-black/50 backdrop-blur data-[visible=true]:animate-in data-[visible=false]:animate-out data-[visible=false]:fade-out-0 data-[visible=true]:fade-in-0 z-[6]">

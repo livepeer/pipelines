@@ -85,6 +85,13 @@ export default function QuickviewVideo({
     }
   }, [pathname]);
 
+  // On unmount, set the preview to false to reset back /explore elements
+  useEffect(() => {
+    return () => {
+      setIsPreviewOpen(false);
+    };
+  }, []);
+
   const handleClose = () => {
     setIsPreviewOpen(false);
     router.push("/", { scroll: false });

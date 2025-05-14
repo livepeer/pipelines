@@ -1,6 +1,10 @@
 import Daydream from "@/components/daydream";
 import { getSharedParams } from "../api/streams/share-params";
 import { cache } from "react";
+import { headers } from "next/headers";
+import Link from "next/link";
+import TikTokFallback from "./TikTokFallback";
+import { identifyTikTokInAppBrowser } from "@/lib/userAgentIdentify";
 
 const getCachedSharedParams = cache(async (shareParamsId: string) => {
   const { data: sharedParams } = await getSharedParams(shareParamsId);
@@ -30,7 +34,7 @@ export const generateMetadata = async ({
   return { ...metaData, openGraph: metaData };
 };
 
-export default function HomePage({
+export default async function HomePage({
   searchParams,
 }: {
   searchParams: {
@@ -40,8 +44,15 @@ export default function HomePage({
     sourceClipId: string;
   };
 }) {
+  const requestHeaders = headers();
+  const userAgent = requestHeaders.get("user-agent")?.toLowerCase();
+
   const { shared, privy_oauth_code, inputPrompt } = searchParams;
   const isGuestAccess = !!inputPrompt; // If there's an inputPrompt, the user is coming from "Try this prompt"
+
+  if (userAgent && identifyTikTokInAppBrowser(userAgent)) {
+    return <TikTokFallback />;
+  }
 
   return (
     <Daydream

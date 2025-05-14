@@ -1,9 +1,6 @@
 "use client";
 
-import {
-  updateUserAdditionalDetails,
-  updateUserNameAndDetails,
-} from "@/app/actions/user";
+import { updateUserNameAndDetails } from "@/app/actions/user";
 import { usePrivy } from "@/hooks/usePrivy";
 import track from "@/lib/track";
 import { Separator } from "@repo/design-system/components/ui/separator";
