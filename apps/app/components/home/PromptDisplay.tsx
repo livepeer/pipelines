@@ -1,7 +1,14 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { ArrowLeft, Sparkle } from "lucide-react";
 import { GradientAvatar } from "@/components/GradientAvatar";
 import { PromptItem } from "@/app/api/prompts/types";
+import {
+  uniqueNamesGenerator,
+  Config,
+  colors,
+  animals,
+  NumberDictionary,
+} from "unique-names-generator";
 
 interface PromptDisplayProps {
   promptQueue: PromptItem[];
@@ -10,6 +17,51 @@ interface PromptDisplayProps {
   userPromptIndices: boolean[];
   onPastPromptClick?: (prompt: string) => void;
 }
+
+const numberDictionary = NumberDictionary.generate({ min: 10, max: 68 });
+const nameConfig: Config = {
+  dictionaries: [animals],
+  separator: "",
+  length: 1,
+  style: "capital",
+};
+
+const usernameCache = new Map<string, string>();
+const colorCache = new Map<string, string>();
+
+const generateUsername = (seed: string): string => {
+  if (usernameCache.has(seed)) {
+    return usernameCache.get(seed)!;
+  }
+
+  const config = { ...nameConfig, seed };
+  const username = uniqueNamesGenerator(config);
+  usernameCache.set(seed, username);
+  return username;
+};
+
+const getColorFromSeed = (seed: string): string => {
+  if (colorCache.has(seed)) {
+    return colorCache.get(seed)!;
+  }
+
+  let hash = 0;
+  for (let i = 0; i < seed.length; i++) {
+    hash = seed.charCodeAt(i) + ((hash << 5) - hash);
+  }
+
+  const hue = Math.abs(hash % 360);
+
+  const saturation = 85 + Math.abs((hash >> 8) % 15); // 85-100%
+  const lightness = 25 + Math.abs((hash >> 16) % 20); // 25-45%
+
+  const adjustedLightness =
+    hue >= 60 && hue <= 150 ? Math.max(15, lightness - 15) : lightness;
+
+  const color = `hsl(${hue}, ${saturation}%, ${adjustedLightness}%)`;
+  colorCache.set(seed, color);
+  return color;
+};
 
 export function PromptDisplay({
   promptQueue,
@@ -39,53 +91,62 @@ export function PromptDisplay({
   const filledQueue = getFilledQueue();
   const nonHighlightedPrompts = displayedPrompts.slice(1);
   const highlightedPrompt = displayedPrompts[0];
+  const nonEmptyQueueItems = filledQueue.filter(item => item.text !== "");
+
+  useMemo(() => {
+    promptAvatarSeeds.forEach(seed => {
+      if (seed && !usernameCache.has(seed)) {
+        const username = generateUsername(seed);
+        getColorFromSeed(username);
+      }
+    });
+
+    filledQueue.forEach(item => {
+      if (item.seed && !usernameCache.has(item.seed)) {
+        const username = generateUsername(item.seed);
+        getColorFromSeed(username);
+      }
+    });
+  }, []);
 
   return (
-    <div className="flex-1 max-h-[25vh] md:max-h-none p-4 flex flex-col md:justify-end justify-end overflow-hidden order-first md:order-none relative z-10 mt-auto">
+    <div className="w-full flex flex-col justify-end p-4 pb-0 overflow-hidden relative">
       <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/30 md:hidden pointer-events-none z-0"></div>
-      <div className="space-y-0.5 flex flex-col relative z-10">
+      <div className="flex flex-col gap-2 relative z-10 w-full mb-4">
         {nonHighlightedPrompts.length > 0 && (
-          <div className="flex flex-col gap-0.5 mb-1">
+          <div className="flex flex-col gap-2 w-full">
             {[...nonHighlightedPrompts].reverse().map((prevPrompt, rIndex) => {
               const index = nonHighlightedPrompts.length - rIndex;
-              const itemOpacity = Math.max(0.3, 1 - index * 0.15);
-              const itemScale = Math.max(0.94, 1 - index * 0.015);
               const isUserPrompt = userPromptIndices[index];
+              const seed = promptAvatarSeeds[index];
+              const username = seed ? generateUsername(seed) : "User";
+              const color = getColorFromSeed(username);
 
               return (
                 <div
                   key={`prompt-past-${index}-${prevPrompt.substring(0, 10)}`}
-                  className={`p-2 text-sm md:text-base text-gray-500 italic flex items-center ${
-                    isUserPrompt
-                      ? "font-medium md:bg-black/5 md:backdrop-blur-[1px]"
-                      : ""
-                  } ${index !== 0 ? "mobile-slide-up" : ""} ${
-                    isUserPrompt ? "relative overflow-hidden" : ""
-                  } mobile-fade-${index} ${onPastPromptClick ? "cursor-pointer hover:bg-black/5 hover:backdrop-blur-[1px]" : ""}`}
+                  className={`p-2 px-3 text-sm md:text-base text-gray-500 italic flex items-center rounded-xl w-full ${
+                    isUserPrompt ? "font-medium" : ""
+                  } ${onPastPromptClick ? "cursor-pointer hover:bg-black/5 hover:backdrop-blur-[1px]" : ""}`}
                   style={{
-                    opacity: itemOpacity,
                     transition: "all 0.3s ease-out",
-                    transform: `translateY(0) scale(${itemScale})`,
-                    transformOrigin: "left center",
-                    animation: "slideDown 0.3s ease-out",
+                    borderRadius: "12px",
                   }}
                   onClick={() =>
                     onPastPromptClick && onPastPromptClick(prevPrompt)
                   }
                 >
-                  {isUserPrompt && (
-                    <div
-                      className="absolute inset-0 -z-10 bg-black/5 backdrop-blur-[1px] rounded-lg md:hidden"
-                      style={{ opacity: Math.min(1, itemOpacity + 0.2) }}
-                    ></div>
-                  )}
                   <div
-                    className="mr-2 flex-shrink-0"
-                    style={{ opacity: itemOpacity }}
+                    className="mr-4 flex-shrink-0 font-bold text-xs"
+                    style={{
+                      color: color,
+                    }}
                   >
-                    <GradientAvatar seed={promptAvatarSeeds[index]} size={16} />
+                    {username.substring(0, 6)}
                   </div>
-                  <span className="truncate">{prevPrompt}</span>
+                  <div className="min-w-0 flex-1">
+                    <span className="truncate block w-full">{prevPrompt}</span>
+                  </div>
                 </div>
               );
             })}
@@ -95,68 +156,65 @@ export function PromptDisplay({
         {highlightedPrompt && (
           <div
             key={`prompt-highlighted-${highlightedPrompt.substring(0, 10)}`}
-            className={`p-2 text-sm md:text-base text-white md:text-black font-bold flex items-center animate-fadeSlideIn relative ${onPastPromptClick ? "cursor-pointer hover:bg-black/5" : ""}`}
+            className={`p-3 px-4 text-sm md:text-base text-white md:text-black font-bold flex items-center animate-fadeSlideIn relative alwaysAnimatedButton bg-white/90 rounded-xl w-full ${onPastPromptClick ? "cursor-pointer hover:bg-white" : ""}`}
             style={{
-              opacity: 1,
               transition: "all 0.3s ease-out",
-              transform: "translateY(0)",
-              transformOrigin: "left center",
-              animation: "fadeSlideIn 0.3s ease-out",
+              borderRadius: "12px",
             }}
             onClick={() =>
               onPastPromptClick && onPastPromptClick(highlightedPrompt)
             }
           >
-            <div className="absolute -inset-0.5 border-2 border-black rounded-lg"></div>
-            <div
-              className="absolute left-0 top-1/2 -ml-3 -mt-2 w-0 h-0 
-              border-t-[8px] border-t-transparent 
-              border-r-[10px] border-r-black 
-              border-b-[8px] border-b-transparent"
-            ></div>
-            <ArrowLeft className="hidden md:hidden h-3 w-3 mr-2 stroke-2 flex-shrink-0" />
-            <Sparkle className="md:inline h-4 w-4 mr-2 stroke-2 flex-shrink-0" />
-            <span className="truncate">{highlightedPrompt}</span>
+            <div className="min-w-0 flex-1">
+              <span className="truncate block w-full">{highlightedPrompt}</span>
+            </div>
           </div>
         )}
 
-        {filledQueue.length > 0 && (
-          <div className="hidden md:flex flex-col gap-0.5 mt-1">
-            {[...filledQueue].reverse().map((queuedPrompt, qIndex) => {
-              const queuePosition = filledQueue.length - qIndex - 1;
-              const queueOpacity = Math.max(0.4, 1 - queuePosition * 0.15);
-              const queueScale = Math.max(0.94, 1 - queuePosition * 0.015);
-              const isEmpty = queuedPrompt.text === "";
+        {nonEmptyQueueItems.length > 0 && (
+          <div className="hidden md:flex flex-col gap-2 w-full">
+            {nonEmptyQueueItems.map((queuedPrompt, qIndex) => {
+              const username = queuedPrompt.seed
+                ? generateUsername(queuedPrompt.seed)
+                : "User";
+              const color = getColorFromSeed(username);
 
               return (
                 <div
-                  key={`queue-${qIndex}-${isEmpty ? "empty" : queuedPrompt.text.substring(0, 10)}`}
-                  className={`rounded-lg text-gray-500 italic flex items-center text-sm md:text-base ${
-                    queuedPrompt.isUser ? "bg-black/5 backdrop-blur-[1px]" : ""
+                  key={`queue-${qIndex}-${queuedPrompt.text.substring(0, 10)}`}
+                  className={`rounded-xl text-gray-500 italic flex items-center text-sm md:text-base w-full ${
+                    queuedPrompt.isUser ? "font-medium" : ""
                   }`}
                   style={{
-                    animation: "slideDown 0.3s ease-out",
-                    opacity: isEmpty ? 0 : queueOpacity,
-                    transform: `scale(${queueScale})`,
-                    transformOrigin: "left center",
-                    height: isEmpty ? 0 : "auto",
-                    padding: isEmpty ? 0 : "0.5rem",
-                    margin: isEmpty ? 0 : undefined,
-                    overflow: "hidden",
+                    padding: "0.5rem 0.75rem",
+                    borderRadius: "12px",
                   }}
                 >
-                  <div className="mr-2 flex-shrink-0">
-                    <GradientAvatar seed={queuedPrompt.seed} size={16} />
+                  <div
+                    className="mr-4 flex-shrink-0 font-bold text-xs"
+                    style={{ color: color }}
+                  >
+                    {username.substring(0, 6)}
                   </div>
-                  <span className="truncate">
-                    {isEmpty ? "Waiting for prompt..." : queuedPrompt.text}
-                  </span>
+                  <div className="min-w-0 flex-1">
+                    <span className="truncate block w-full">
+                      {queuedPrompt.text}
+                    </span>
+                  </div>
                 </div>
               );
             })}
           </div>
         )}
       </div>
+      <style jsx global>{`
+        .alwaysAnimatedButton {
+          border-radius: 12px !important;
+        }
+        .alwaysAnimatedButton::before {
+          border-radius: 12px !important;
+        }
+      `}</style>
     </div>
   );
 }

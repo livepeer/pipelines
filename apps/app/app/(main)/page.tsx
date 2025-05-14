@@ -11,7 +11,6 @@ import { useRandomPromptApiTimer } from "@/hooks/useRandomPromptApiTimer";
 import { CloudBackground } from "@/components/home/CloudBackground";
 import { VideoSection } from "@/components/home/VideoSection";
 import { PromptPanel } from "@/components/home/PromptPanel";
-import { HomePageStyles } from "@/components/home/HomePageStyles";
 import TutorialModal from "./components/TutorialModal";
 
 export default function HomePage() {
@@ -24,7 +23,6 @@ export default function HomePage() {
   const [isTutorialModalOpen, setIsTutorialModalOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
 
-  // Using our custom hooks
   const {
     value: prompt,
     setValue: setPrompt,
@@ -98,8 +96,6 @@ export default function HomePage() {
 
   return (
     <div className="fixed inset-0 z-[1000] flex items-center justify-center w-screen h-screen overflow-hidden">
-      <HomePageStyles />
-
       <div
         ref={containerRef}
         className="w-full h-full flex flex-col items-center justify-center relative overflow-hidden"

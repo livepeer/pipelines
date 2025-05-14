@@ -46,43 +46,47 @@ export function PromptPanel({
   };
 
   return (
-    <div className="w-full md:w-[30%] flex flex-col md:bg-white/10 md:backdrop-blur-sm rounded-lg md:rounded-lg overflow-hidden max-h-[50vh] md:max-h-none fixed bottom-0 left-0 right-0 md:relative">
+    <div className="w-full md:w-[30%] flex flex-col md:bg-sidebar rounded-lg md:rounded-lg overflow-hidden max-h-[50vh] md:max-h-none fixed bottom-0 left-0 right-0 md:relative">
       <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent md:hidden pointer-events-none"></div>
 
-      <div className="flex space-x-0">
-        <ActionButton
-          onClick={onTryCameraClick}
-          icon={<Camera className="h-4 w-4" />}
-        >
-          {buttonText}
-        </ActionButton>
-
-        <div className="hidden md:flex p-4 pl-1 border-t border-gray-200/30 flex-row gap-3 w-full relative z-10">
-          <Button
-            className="w-full px-4 py-2 h-10 rounded-md bg-white text-black hover:bg-gray-100 flex items-center justify-center gap-2"
-            onClick={handleJoinDiscordClick}
+      <div className="flex flex-col h-full justify-between">
+        <div className="flex space-x-0">
+          <ActionButton
+            onClick={onTryCameraClick}
+            icon={<Camera className="h-4 w-4" />}
           >
-            <MessageSquare className="h-4 w-4" />
-            Join Discord
-          </Button>
+            {buttonText}
+          </ActionButton>
+
+          <div className="hidden md:flex p-4 pl-1 border-t border-gray-200/30 flex-row gap-3 w-full relative z-10">
+            <Button
+              className="w-full px-4 py-2 h-10 rounded-md bg-white text-black hover:bg-gray-100 flex items-center justify-center gap-2"
+              onClick={handleJoinDiscordClick}
+            >
+              <MessageSquare className="h-4 w-4" />
+              Join Discord
+            </Button>
+          </div>
         </div>
+
+        <div className="flex-1 flex flex-col justify-end overflow-hidden">
+          <PromptDisplay
+            promptQueue={promptQueue}
+            displayedPrompts={displayedPrompts}
+            promptAvatarSeeds={promptAvatarSeeds}
+            userPromptIndices={userPromptIndices}
+            onPastPromptClick={handlePastPromptClick}
+          />
+        </div>
+
+        <PromptForm
+          onSubmit={onSubmit}
+          value={promptValue}
+          onChange={onPromptChange}
+          isThrottled={isThrottled}
+          throttleTimeLeft={throttleTimeLeft}
+        />
       </div>
-
-      <PromptDisplay
-        promptQueue={promptQueue}
-        displayedPrompts={displayedPrompts}
-        promptAvatarSeeds={promptAvatarSeeds}
-        userPromptIndices={userPromptIndices}
-        onPastPromptClick={handlePastPromptClick}
-      />
-
-      <PromptForm
-        onSubmit={onSubmit}
-        value={promptValue}
-        onChange={onPromptChange}
-        isThrottled={isThrottled}
-        throttleTimeLeft={throttleTimeLeft}
-      />
     </div>
   );
 }
