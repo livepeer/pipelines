@@ -25,6 +25,7 @@ import { useSearchParams } from "next/navigation";
 import * as React from "react";
 import { useEffect, useRef, useState } from "react";
 import { create } from "zustand";
+import { usePlaybackUrlStore } from "@/hooks/usePlaybackUrlStore";
 
 const VideoJSPlayer = dynamic(() => import("./videojs-player"), {
   ssr: false,
@@ -53,8 +54,8 @@ export const LivepeerPlayer = () => {
   const { isMobile } = useMobileStore();
   const { isFullscreen } = useFullscreenStore();
   const { setIsPlaying } = usePlayerStore();
-  const appConfig = useAppConfig();
   const [playbackInfo, setPlaybackInfo] = useState<PlaybackInfo | null>(null);
+  const { playbackUrl } = usePlaybackUrlStore();
 
   const { useFallbackPlayer: useFallbackVideoJSPlayer, handleError } =
     useFallbackDetection(stream?.output_playback_id!);
@@ -62,8 +63,6 @@ export const LivepeerPlayer = () => {
   useEffect(() => {
     setIsPlaying(false);
   }, []);
-
-  const playerUrl = `${appConfig.whipUrl}${appConfig?.whipUrl?.endsWith("/") ? "" : "/"}${stream?.stream_key}-out/whep`;
 
   const searchParams = useSearchParams();
   const useMediamtx =
@@ -91,6 +90,10 @@ export const LivepeerPlayer = () => {
     stream?.output_playback_id,
   ]);
 
+  if (!playbackUrl) {
+    return <PlayerLoading />;
+  }
+
   if (iframePlayerFallback) {
     return (
       <LPPLayer
@@ -104,7 +107,7 @@ export const LivepeerPlayer = () => {
   if (useVideoJS && pipeline) {
     return (
       <VideoJSPlayer
-        src={playerUrl}
+        src={playbackUrl}
         isMobile={isMobile}
         playbackId={stream?.output_playback_id!}
         streamId={stream?.id!}
@@ -114,7 +117,7 @@ export const LivepeerPlayer = () => {
     );
   }
 
-  const src = getSrc(useMediamtx ? playerUrl : playbackInfo);
+  const src = getSrc(useMediamtx ? playbackUrl : playbackInfo);
 
   if (!src) {
     return (
