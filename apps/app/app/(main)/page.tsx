@@ -114,7 +114,7 @@ export default function HomePage() {
         />
 
         <div
-          className={`z-10 w-full h-screen md:h-[calc(100vh-80px)] md:max-w-[95%] mx-auto p-0 md:px-4 md:py-5 flex flex-col gap-4 md:gap-8 transition-all duration-1000 ease-in-out overflow-hidden md:overflow-visible ${
+          className={`z-10 w-full h-screen md:h-[calc(100vh-40px)] md:max-w-[95%] mx-auto p-0 md:px-4 md:py-2 flex flex-col gap-2 md:gap-4 transition-all duration-1000 ease-in-out overflow-hidden md:overflow-visible ${
             showContent ? "opacity-100 scale-100" : "opacity-0 scale-[0.98]"
           }`}
         >

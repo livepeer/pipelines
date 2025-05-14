@@ -2,7 +2,7 @@ import { ServiceWorker } from "@/app/ServiceWorker";
 import "@repo/design-system/styles/globals.css";
 import "./cloud-animations.css";
 import { MixpanelProvider } from "@/components/analytics/MixpanelProvider";
-import Intercom from "@/components/intercom";
+import ConditionalIntercom from "@/components/ConditionalIntercom";
 import { ThirdPartyAnalytics } from "@/scripts/analytics";
 import { DesignSystemProvider } from "@repo/design-system/providers";
 import "@repo/design-system/styles/globals.css";
@@ -119,8 +119,7 @@ const RootLayout = ({ children }: RootLayoutProperties) => (
       <MixpanelProvider>
         <DesignSystemProvider defaultTheme="light" enableSystem={false}>
           {children}
-          <Intercom />
-          {/* TODO: REENABLE WHEN SHIH-YU IS READY FOR IT <Intercom /> */}
+          <ConditionalIntercom />
           <ServiceWorker />
         </DesignSystemProvider>
       </MixpanelProvider>

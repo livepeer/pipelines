@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { LivepeerPlayer } from "./LivepeerPlayer";
-import { MessageSquare } from "lucide-react";
+import { DiscordLogoIcon } from "@radix-ui/react-icons";
 import { Button } from "@repo/design-system/components/ui/button";
 
 export function VideoSection() {
@@ -44,7 +44,7 @@ export function VideoSection() {
           className="px-4 py-2 h-10 rounded-md bg-white text-black hover:bg-gray-100 flex items-center justify-center gap-2"
           onClick={handleJoinDiscordClick}
         >
-          <MessageSquare className="h-4 w-4" />
+          <DiscordLogoIcon className="h-4 w-4" />
           Join Discord
         </Button>
       </div>
