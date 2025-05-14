@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from "react";
 import { LivepeerPlayer } from "./LivepeerPlayer";
-import { DiscordLogoIcon } from "@radix-ui/react-icons";
 import { Button } from "@repo/design-system/components/ui/button";
 
 export function VideoSection() {
@@ -27,10 +26,6 @@ export function VideoSection() {
     return () => clearTimeout(timer);
   }, []);
 
-  const handleJoinDiscordClick = () => {
-    window.open("https://discord.gg/5sZu8xmn6U", "_blank");
-  };
-
   return (
     <div className="flex flex-col w-full md:w-[70%]">
       <div className="w-full py-3 px-4 hidden md:flex items-center justify-between">
@@ -40,16 +35,9 @@ export function VideoSection() {
         >
           DAYDREAM
         </h1>
-        <Button
-          className="px-4 py-2 h-10 rounded-md bg-white text-black hover:bg-gray-100 flex items-center justify-center gap-2"
-          onClick={handleJoinDiscordClick}
-        >
-          <DiscordLogoIcon className="h-4 w-4" />
-          Join Discord
-        </Button>
       </div>
 
-      <div className="w-full relative md:rounded-lg overflow-hidden bg-black/10 backdrop-blur-sm shadow-lg md:aspect-video h-[calc(100%-65px)]">
+      <div className="w-full relative md:rounded-xl overflow-hidden bg-black/10 backdrop-blur-sm shadow-lg md:aspect-video h-[calc(100%-65px)]">
         <div className="absolute top-3 left-3 z-20 md:hidden">
           <h1
             className="text-4xl md:text-[36px] font-bold tracking-widest italic mix-blend-difference"
@@ -90,7 +78,7 @@ export function VideoSection() {
             )}
           </div>
 
-          <div className="absolute bottom-4 left-4 w-[25%] aspect-video z-30 rounded-lg overflow-hidden border-2 border-white/30 shadow-lg hidden md:block">
+          <div className="absolute bottom-4 left-4 w-[25%] aspect-video z-30 rounded-xl overflow-hidden border-2 border-white/30 shadow-lg hidden md:block">
             {useLivepeerPlayer ? (
               <LivepeerPlayer
                 playbackId={ORIGINAL_PLAYBACK_ID}

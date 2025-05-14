@@ -43,20 +43,30 @@ export function PromptPanel({
     setPromptValue(prompt);
   };
 
+  const handleJoinDiscordClick = () => {
+    window.open("https://discord.gg/5sZu8xmn6U", "_blank");
+  };
+
   return (
     <div className="flex flex-col w-full md:w-[30%]">
-      <div className="w-full py-3 px-4 hidden md:flex items-center justify-end">
+      <div className="w-full py-3 px-2 hidden md:flex items-center justify-end gap-4">
         <TrackedButton
-          className="px-4 py-2 h-10 rounded-md bg-black text-white hover:bg-gray-800 flex items-center justify-center gap-2"
+          className="px-4 py-2 h-10 rounded-lg bg-white text-black hover:bg-gray-100 flex items-center justify-center gap-2"
+          onClick={handleJoinDiscordClick}
+          trackingEvent="explore_header_join_discord_clicked"
+          trackingProperties={{ location: "explore_header" }}
+        >
+          <DiscordLogoIcon className="h-4 w-4" />
+          Join Discord
+        </TrackedButton>
+
+        <TrackedButton
+          className="px-4 py-2 h-10 rounded-lg bg-black text-white hover:bg-gray-800 flex items-center justify-center gap-2"
           onClick={onTryCameraClick}
           trackingEvent="explore_header_start_creating_clicked"
           trackingProperties={{ location: "explore_header" }}
         >
-          {buttonText === "Join Discord" ? (
-            <DiscordLogoIcon className="h-4 w-4" />
-          ) : (
-            <Camera className="h-4 w-4" />
-          )}
+          <Camera className="h-4 w-4" />
           {buttonText}
         </TrackedButton>
       </div>
@@ -74,7 +84,7 @@ export function PromptPanel({
           className="w-full h-full flex flex-col"
           style={{
             backgroundColor: "#FBFBFB",
-            borderRadius: "11px",
+            borderRadius: "12px",
           }}
         >
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent md:hidden pointer-events-none"></div>
@@ -82,16 +92,21 @@ export function PromptPanel({
           <div className="flex flex-col h-full justify-between">
             <div className="flex justify-end items-center p-3 border-b border-gray-100 md:hidden">
               <ActionButton
+                trackingEvent="explore_header_join_discord_clicked"
+                trackingProperties={{ location: "explore_mobile_header" }}
+                onClick={handleJoinDiscordClick}
+                icon={<DiscordLogoIcon className="h-4 w-4" />}
+              >
+                <span className="text-[9px] xs:text-[10px] sm:text-xs md:text-sm whitespace-nowrap overflow-hidden">
+                  Join Discord
+                </span>
+              </ActionButton>
+              <div className="mx-2"></div>
+              <ActionButton
                 trackingEvent="explore_header_start_creating_clicked"
                 trackingProperties={{ location: "explore_header" }}
                 onClick={onTryCameraClick}
-                icon={
-                  buttonText === "Join Discord" ? (
-                    <DiscordLogoIcon className="h-4 w-4" />
-                  ) : (
-                    <Camera className="h-4 w-4" />
-                  )
-                }
+                icon={<Camera className="h-4 w-4" />}
               >
                 <span className="text-[9px] xs:text-[10px] sm:text-xs md:text-sm whitespace-nowrap overflow-hidden">
                   {buttonText === "Pick your own video" ? (
