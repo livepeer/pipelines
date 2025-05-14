@@ -1,26 +1,19 @@
 const TARGET_HEADER_NAME = "livepeer-playback-url";
 
 self.addEventListener("install", event => {
-  console.log("Service Worker: Installing...");
   event.waitUntil(self.skipWaiting());
 
   self.skipWaiting();
 });
 
 self.addEventListener("activate", event => {
-  console.log("Service Worker: Activating...");
   event.waitUntil(self.clients.claim());
 });
 
 self.addEventListener("fetch", event => {
   const { request } = event;
 
-  if (request.url.endsWith("/whip")) {
-    console.log(
-      "%%%%%% Service Worker: Intercepting fetch request to:",
-      request.url,
-    );
-
+  if (request.url.endsWith("/whip") && request.method === "POST") {
     event.respondWith(
       fetch(request)
         .then(response => {

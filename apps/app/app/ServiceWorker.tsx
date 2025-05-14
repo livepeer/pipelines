@@ -50,7 +50,7 @@ export const ServiceWorker = () => {
 
       const handleMessage = (event: MessageEvent) => {
         if (event.data && event.data.type === "HEADER_FOUND") {
-          console.log(
+          console.debug(
             "[Service Worker Client]: Message received:",
             event.data.payload,
           );
