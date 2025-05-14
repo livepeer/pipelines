@@ -1,4 +1,6 @@
 import { ServiceWorker } from "@/app/ServiceWorker";
+import "@repo/design-system/styles/globals.css";
+import "./cloud-animations.css";
 import { MixpanelProvider } from "@/components/analytics/MixpanelProvider";
 import Intercom from "@/components/intercom";
 import { ThirdPartyAnalytics } from "@/scripts/analytics";
