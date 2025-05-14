@@ -117,16 +117,7 @@ export const LivepeerPlayer = () => {
     );
   }
 
-  // const src = getSrc(useMediamtx ? playbackUrl : playbackInfo);
-  const src = [
-    {
-      height: null,
-      mime: "video/h264",
-      src: playbackUrl,
-      type: "webrtc",
-      width: null,
-    },
-  ];
+  const src = getSrc(useMediamtx ? playbackUrl : playbackInfo);
 
   if (!src) {
     return (

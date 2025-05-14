@@ -13,22 +13,6 @@ self.addEventListener("activate", event => {
 self.addEventListener("fetch", event => {
   const { request } = event;
 
-  if (request.url.includes("/whip") && request.method === "HEAD") {
-    event.respondWith(
-      new Response(null, {
-        status: 405,
-        statusText: "Method Not Allowed",
-        headers: {
-          "Content-Type": "application/json",
-          "access-control-allow-headers": "Content-Type",
-          "access-control-allow-origin": "*",
-          date: new Date().toUTCString(),
-          "strict-transport-security": "max-age=31536000; includeSubDomains",
-        },
-      }),
-    );
-  }
-
   if (request.url.endsWith("/whip") && request.method === "POST") {
     event.respondWith(
       fetch(request)

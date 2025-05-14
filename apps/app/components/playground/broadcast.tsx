@@ -39,36 +39,6 @@ const StatusMonitor = () => {
   const state = Broadcast.useStore(context.store, state => state);
 
   useEffect(() => {
-    if (!stream?.id || !pipeline?.id) return;
-
-    // Create a MutationObserver to monitor network requests
-    const observer = new MutationObserver(mutations => {
-      // Check if any network request to /whip endpoint has completed
-      const requests = performance.getEntriesByType("resource");
-      const whipResponses = requests.filter(
-        req =>
-          req.name.includes("/whip") &&
-          !req.name.includes("/whep") &&
-          req instanceof PerformanceResourceTiming,
-      );
-
-      if (whipResponses.length > 0) {
-        if (state.status === "live") {
-          sessionStorage.setItem("whip-connection-established", "true");
-        }
-      }
-    });
-
-    observer.observe(document, {
-      subtree: true,
-      childList: true,
-      attributes: true,
-    });
-
-    return () => observer.disconnect();
-  }, [stream?.id, pipeline?.id, state.status]);
-
-  useEffect(() => {
     if (!stream?.id || !pipeline?.id || !pipeline?.type) return;
 
     if (state.status === "live" && !liveEventSentRef.current) {
