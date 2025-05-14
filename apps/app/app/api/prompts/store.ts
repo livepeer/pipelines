@@ -7,6 +7,9 @@ import {
   resetProcessingFlag,
   cleanupOldPrompts,
 } from "../../../lib/db/services/prompt-queue";
+import { db } from "../../../lib/db";
+import { streams } from "../../../lib/db/schema";
+import { eq } from "drizzle-orm";
 
 // Mock data - used for initializing the database
 const initialPrompts = [
@@ -22,6 +25,17 @@ const initialPrompts = [
   "digital realm with data visualized as (((geometric structures))) --quality 2.5",
   "northern lights over snow-covered mountains --creativity 0.7",
   "microscopic view of exotic (((alien cells))) --quality 3",
+  "ancient temple in a jungle with mystical fog --quality 2.8",
+  "futuristic city with hovering vehicles and holographic ads --creativity 0.9",
+  "magical underwater kingdom with merfolk architecture --quality 3",
+  "cosmic gateway with swirling energy patterns --creativity 0.85",
+  "crystal forest with rainbow light refractions --quality 2.7",
+  "surreal dreamscape with floating islands and impossible physics --creativity 0.95",
+  "ancient mechanical clockwork city --quality 3",
+  "bioluminescent deep sea creatures in the abyss --creativity 0.8",
+  "floating islands with waterfalls cascading into the void --quality 2.9",
+  "enchanted forest with magical creatures and fairy lights --creativity 0.75",
+  "cybernetic dragon with glowing circuit patterns --quality 3",
 ];
 
 const otherPeoplePrompts = [
@@ -37,11 +51,22 @@ const otherPeoplePrompts = [
   "psychedelic dreamscape with fractals and impossible colors --quality 2.5",
   "biomechanical fusion of nature and ((advanced technology)) --creativity 0.8",
   "crystal palace with rainbow light refractions --quality 3",
+  "ancient temple in a jungle with mystical fog --quality 2.8",
+  "futuristic city with hovering vehicles and holographic ads --creativity 0.9",
+  "magical underwater kingdom with merfolk architecture --quality 3",
+  "cosmic gateway with swirling energy patterns --creativity 0.85",
+  "crystal forest with rainbow light refractions --quality 2.7",
+  "surreal dreamscape with floating islands and impossible physics --creativity 0.95",
+  "ancient mechanical clockwork city --quality 3",
+  "bioluminescent deep sea creatures in the abyss --creativity 0.8",
+  "floating islands with waterfalls cascading into the void --quality 2.9",
+  "enchanted forest with magical creatures and fairy lights --creativity 0.75",
+  "cybernetic dragon with glowing circuit patterns --quality 3",
 ];
 
 const HIGHLIGHT_DURATION = 10000;
 const MAX_QUEUE_SIZE = 100;
-const FRONTEND_DISPLAY_SIZE = 5;
+const FRONTEND_DISPLAY_SIZE = 20;
 const TARGET_STREAM_KEY = "stk_SiDx98B9diXxRJks";
 const RANDOM_PROMPT_INTERVAL = 20000;
 
@@ -109,8 +134,21 @@ const applyPromptToStream = async (promptText: string) => {
       return;
     }
 
-    const CORRECT_GATEWAY_HOST =
-      "mdw-staging-ai-staging-livepeer-ai-gateway-0.livepeer.monster";
+    const stream = await db
+      .select({ gatewayHost: streams.gatewayHost })
+      .from(streams)
+      .where(eq(streams.streamKey, TARGET_STREAM_KEY))
+      .limit(1);
+
+    if (!stream || stream.length === 0 || !stream[0].gatewayHost) {
+      console.error(
+        `Stream not found or missing gateway host for key: ${TARGET_STREAM_KEY}`,
+      );
+      return;
+    }
+
+    const gatewayHost = stream[0].gatewayHost;
+    console.log(`Using gateway host from database: ${gatewayHost}`);
 
     let quality = 3;
     let creativity = 0.6;
@@ -341,9 +379,9 @@ const applyPromptToStream = async (promptText: string) => {
     ).toString("base64");
 
     console.log("Applying prompt to stream:", TARGET_STREAM_KEY);
-    console.log("Using correct gateway host:", CORRECT_GATEWAY_HOST);
+    console.log("Using gateway host from database:", gatewayHost);
 
-    const apiUrl = `https://${CORRECT_GATEWAY_HOST}/live/video-to-video/${TARGET_STREAM_KEY}/update`;
+    const apiUrl = `https://${gatewayHost}/live/video-to-video/${TARGET_STREAM_KEY}/update`;
     console.log("Making request to:", apiUrl);
 
     const response = await fetch(apiUrl, {
@@ -417,7 +455,8 @@ export const checkAndProcessQueue = async (): Promise<void> => {
 
 export const getPromptState = async (): Promise<PromptState> => {
   try {
-    return await dbGetPromptState(FRONTEND_DISPLAY_SIZE);
+    const state = await dbGetPromptState(FRONTEND_DISPLAY_SIZE);
+    return state;
   } catch (error) {
     console.error("Error getting prompt state:", error);
 

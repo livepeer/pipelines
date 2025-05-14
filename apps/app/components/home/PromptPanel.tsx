@@ -1,9 +1,8 @@
 import React from "react";
-import { Camera, MessageSquare } from "lucide-react";
+import { Camera } from "lucide-react";
 import { PromptForm } from "./PromptForm";
 import { PromptDisplay } from "./PromptDisplay";
 import { ActionButton } from "./ActionButton";
-import { Button } from "@repo/design-system/components/ui/button";
 import { PromptItem } from "@/app/api/prompts/types";
 import { TrackedButton } from "@/components/analytics/TrackedButton";
 import { DiscordLogoIcon } from "@radix-ui/react-icons";
@@ -44,7 +43,19 @@ export function PromptPanel({
   };
 
   const handleJoinDiscordClick = () => {
-    window.open("https://discord.gg/5sZu8xmn6U", "_blank");
+    window.open("https://discord.gg/livepeer", "_blank");
+  };
+
+  const getResponsiveButtonText = () => {
+    if (buttonText === "Try it with your camera") {
+      return (
+        <>
+          <span className="hidden md:inline">Try it with your camera</span>
+          <span className="inline md:hidden">Try camera</span>
+        </>
+      );
+    }
+    return buttonText;
   };
 
   return (
@@ -52,30 +63,73 @@ export function PromptPanel({
       <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent md:hidden pointer-events-none"></div>
 
       <div className="flex flex-col h-full justify-between">
-        <div className="flex space-x-0">
-          <ActionButton
-            trackingEvent="explore_header_start_creating_clicked"
-            trackingProperties={{ location: "explore_header" }}
-            onClick={onTryCameraClick}
-            icon={<Camera className="h-4 w-4" />}
-          >
-            {buttonText}
-          </ActionButton>
-
-          <div className="hidden md:flex p-4 pl-1 border-t border-gray-200/30 flex-row gap-3 w-full relative z-10">
-            <TrackedButton
-              className="w-full px-4 py-2 h-10 rounded-md bg-white text-black hover:bg-gray-100 flex items-center justify-center gap-2"
-              onClick={handleJoinDiscordClick}
-              trackingEvent="explore_header_community_clicked"
+        <div className="flex space-x-0 justify-between items-center">
+          <div className="p-4 pl-6 flex-1">
+            <h2 className="text-xl font-semibold text-gray-800">
+              Prompt history
+            </h2>
+          </div>
+          <div className="w-1/2 -mt-1">
+            <ActionButton
+              trackingEvent="explore_header_start_creating_clicked"
               trackingProperties={{ location: "explore_header" }}
+              onClick={onTryCameraClick}
+              icon={<Camera className="h-4 w-4" />}
             >
-              <DiscordLogoIcon className="h-4 w-4" />
-              Join Discord
-            </TrackedButton>
+              <span className="text-[9px] xs:text-[10px] sm:text-xs md:text-sm whitespace-nowrap overflow-hidden">
+                {buttonText === "Try it with your camera" ? (
+                  <>
+                    <span className="hidden xs:inline">
+                      Try it with your camera
+                    </span>
+                    <span className="inline xs:hidden">Use your camera</span>
+                  </>
+                ) : (
+                  buttonText
+                )}
+              </span>
+            </ActionButton>
           </div>
         </div>
 
-        <div className="flex-1 flex flex-col justify-end overflow-hidden">
+        <div className="hidden md:flex p-4 pl-6 border-t border-gray-200/30 flex-row gap-3 w-full relative z-10">
+          <TrackedButton
+            className="w-full px-4 py-2 h-10 rounded-md bg-white text-black hover:bg-gray-100 flex items-center justify-center gap-2"
+            onClick={handleJoinDiscordClick}
+            trackingEvent="explore_header_community_clicked"
+            trackingProperties={{ location: "explore_header" }}
+          >
+            <DiscordLogoIcon className="h-4 w-4" />
+            Join Discord
+          </TrackedButton>
+        </div>
+
+        <div className="flex-1 flex flex-col justify-end overflow-hidden relative">
+          <div
+            className="absolute top-0 left-0 right-0 h-[60%] pointer-events-none z-30"
+            style={{
+              background:
+                "linear-gradient(rgb(237, 237, 237) 0%, rgb(237, 237, 237) 3%, rgba(237, 237, 237, 0.9) 5%, rgba(237, 237, 237, 0.6) 38%, transparent 80%)",
+            }}
+          ></div>
+          <div
+            className="absolute top-0 left-0 right-0 h-[50%] pointer-events-none z-20"
+            style={{
+              background:
+                "linear-gradient(to bottom, var(--background, rgb(249, 250, 251)) 0%, var(--background, rgb(249, 250, 251)) 40%, var(--background, rgb(249, 250, 251)) 60%, rgba(249, 250, 251, 0.2) 80%, rgba(249, 250, 251, 0.05) 90%, rgba(249, 250, 251, 0) 100%)",
+            }}
+          ></div>
+          <div
+            className="absolute top-0 left-0 right-0 h-[50%] pointer-events-none z-20"
+            style={{
+              backdropFilter: "blur(2px)",
+              WebkitBackdropFilter: "blur(2px)",
+              maskImage:
+                "linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 40%, rgba(0,0,0,0.8) 60%, rgba(0,0,0,0.4) 80%, rgba(0,0,0,0.05) 90%, rgba(0,0,0,0) 100%)",
+              WebkitMaskImage:
+                "linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 40%, rgba(0,0,0,0.8) 60%, rgba(0,0,0,0.4) 80%, rgba(0,0,0,0.05) 90%, rgba(0,0,0,0) 100%)",
+            }}
+          ></div>
           <PromptDisplay
             promptQueue={promptQueue}
             displayedPrompts={displayedPrompts}
