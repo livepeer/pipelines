@@ -84,26 +84,6 @@ export const Header = ({
 
   return (
     <>
-      {!isMobile && (
-        <div className="fixed top-4 right-4 z-50">
-          <Link target="_blank" href="https://discord.gg/5sZu8xmn6U">
-            <TrackedButton
-              trackingEvent="daydream_join_community_clicked"
-              trackingProperties={{
-                is_authenticated: authenticated,
-                is_guest_mode: isGuestMode,
-                location: "welcome_header",
-              }}
-              variant="outline"
-              className="alwaysAnimatedButton rounded-md"
-              size="sm"
-            >
-              <DiscordLogoIcon className="h-4 w-4" /> Join Discord
-            </TrackedButton>
-          </Link>
-        </div>
-      )}
-
       {/* Floating Sidebar Trigger */}
       {!isMobile && !isFullscreen && (
         <div
@@ -125,21 +105,16 @@ export const Header = ({
 
       <div
         className={cn(
-          "flex items-start w-full max-w-[calc(min(100%,calc((100vh-16rem)*16/9)))] mx-auto relative",
+          "flex w-full max-w-[calc(min(100%,calc((100vh-16rem)*16/9)))] mx-auto relative items-center",
           isFullscreen && "hidden",
-          isMobile ? "justify-center px-3 py-3" : "justify-between py-3 mt-20",
+          isMobile ? "justify-center px-3 py-3" : "justify-between py-3",
           isMinHeightScreen && "flex-col gap-6",
           "md:min-w-[596px]",
         )}
       >
         {/* Desktop Beta Badge */}
         {!isMobile && !isFullscreen && (
-          <div
-            className={cn(
-              "fixed top-4 left-1/2 -translate-x-1/2 w-full flex justify-center",
-              isOverlayOpen && "left-[32.5%]",
-            )}
-          >
+          <div className={cn("flex justify-center")}>
             <a
               href="https://livepeer.notion.site/15f0a348568781aab037c863d91b05e2"
               target="_blank"
@@ -171,7 +146,7 @@ export const Header = ({
           <>
             <div
               className={cn(
-                "absolute bottom-3 right-0 flex gap-2 items-center",
+                "flex gap-2 items-center",
                 isMinHeightScreen && "relative",
               )}
             >
@@ -209,6 +184,21 @@ export const Header = ({
                   <Share className="h-4 w-4" />
                   <span>Share</span>
                 </TrackedButton>
+                <Link target="_blank" href="https://discord.gg/5sZu8xmn6U">
+                  <TrackedButton
+                    trackingEvent="daydream_join_community_clicked"
+                    trackingProperties={{
+                      is_authenticated: authenticated,
+                      is_guest_mode: isGuestMode,
+                      location: "welcome_header",
+                    }}
+                    variant="outline"
+                    className="alwaysAnimatedButton rounded-md"
+                    size="sm"
+                  >
+                    <DiscordLogoIcon className="h-4 w-4" /> Join Discord
+                  </TrackedButton>
+                </Link>
               </div>
             </div>
           </>

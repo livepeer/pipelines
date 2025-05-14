@@ -433,9 +433,11 @@ export default function Dreamshaper({
       >
         <div className="relative flex flex-col min-h-screen overflow-y-auto">
           <div
-            className={
-              !hasCapacity ? "opacity-0 pointer-events-none" : "opacity-100"
-            }
+            className={cn(
+              "pt-1",
+              !isMobile && "px-4 mb-3",
+              !hasCapacity ? "opacity-0 pointer-events-none" : "opacity-100",
+            )}
           >
             <Header
               isGuestMode={isGuestMode}
