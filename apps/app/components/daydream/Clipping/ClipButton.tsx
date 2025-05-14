@@ -3,7 +3,7 @@ import { ClipRecordingMode, useVideoClip } from "@/hooks/useVideoClip";
 import { cn } from "@repo/design-system/lib/utils";
 import { ClipModal } from "./ClipModal";
 import { ClipOptionsModal } from "./ClipOptionsModal";
-import { Scissors, Square } from "lucide-react";
+import { Clapperboard, Scissors, Square } from "lucide-react";
 import { usePromptStore } from "@/hooks/usePromptStore";
 
 interface ClipButtonProps {
@@ -121,7 +121,7 @@ export const ClipButton = ({
           )}
 
           <div className="z-20 relative flex items-center gap-2">
-            {isRecording ? <Square size={16} /> : <Scissors size={16} />}
+            {isRecording ? <Square size={16} /> : <Clapperboard size={16} />}
             <span>{isRecording ? "Stop Recording" : "Create Clip"}</span>
           </div>
         </Button>

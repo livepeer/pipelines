@@ -1,5 +1,5 @@
 import { db } from "@/lib/db";
-import { clipsTable, usersTable, clipSlugsTable } from "@/lib/db/schema";
+import { clips, users, clipSlugs } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 
@@ -13,23 +13,23 @@ export async function GET(request: Request) {
 
   const result = await db
     .select({
-      id: clipsTable.id,
-      video_url: clipsTable.video_url,
-      video_title: clipsTable.video_title,
-      created_at: clipsTable.created_at,
-      prompt: clipsTable.prompt,
-      thumbnail_url: clipsTable.thumbnail_url,
-      remix_count: clipsTable.remix_count,
-      author_name: usersTable.name,
-      author_details: usersTable.additionalDetails,
-      slug: clipSlugsTable.slug,
-      is_tutorial: clipsTable.is_tutorial,
+      id: clips.id,
+      video_url: clips.video_url,
+      video_title: clips.video_title,
+      created_at: clips.created_at,
+      prompt: clips.prompt,
+      thumbnail_url: clips.thumbnail_url,
+      remix_count: clips.remix_count,
+      author_name: users.name,
+      author_details: users.additionalDetails,
+      slug: clipSlugs.slug,
+      is_tutorial: clips.is_tutorial,
     })
-    .from(clipsTable)
-    .innerJoin(usersTable, eq(clipsTable.author_user_id, usersTable.id))
-    .innerJoin(clipSlugsTable, eq(clipsTable.id, clipSlugsTable.clip_id))
-    .where(eq(clipsTable.author_user_id, userId))
-    .orderBy(clipsTable.created_at);
+    .from(clips)
+    .innerJoin(users, eq(clips.author_user_id, users.id))
+    .innerJoin(clipSlugs, eq(clips.id, clipSlugs.clip_id))
+    .where(eq(clips.author_user_id, userId))
+    .orderBy(clips.created_at);
 
   return NextResponse.json({ clips: result });
 }

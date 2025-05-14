@@ -7,6 +7,9 @@ import {
   ChevronRight,
   ChevronDown,
   ChevronUp,
+  CopyIcon,
+  Lightbulb,
+  Check,
 } from "lucide-react";
 import { Button } from "@repo/design-system/components/ui/button";
 import { useDreamshaperStore, useStreamUpdates } from "@/hooks/useDreamshaper";
@@ -52,6 +55,7 @@ export const BentoGridOverlay = () => {
   const [isLoadingMyClips, setIsLoadingMyClips] = useState(false);
   const overlayRef = useRef<HTMLDivElement>(null);
   const { isMobile } = useMobileStore();
+  const [copiedClipId, setCopiedClipId] = useState<string | null>(null);
 
   const initialOpenRef = useRef(true);
   const scrollRestoredRef = useRef(false);
@@ -104,7 +108,7 @@ export const BentoGridOverlay = () => {
 
       if (authenticated && user) {
         setIsLoadingMyClips(true);
-        fetch(`/api/clips/user?userId=${user.id}`)
+        fetch(`/api/clips/user?userId=${user.id}&page=0&limit=48`)
           .then(res => res.json())
           .then(data => {
             setMyClips(data.clips);
@@ -280,28 +284,48 @@ export const BentoGridOverlay = () => {
         <div className="relative z-10 h-full">
           {overlayType === "bento" && (
             <div className="p-4">
-              <Tabs defaultValue="trending" className="w-full">
-                <TabsList className="w-full justify-start mb-4">
-                  <TabsTrigger value="trending">Trending Styles</TabsTrigger>
-                  <TabsTrigger value="my-clips">My Clips</TabsTrigger>
+              <Tabs defaultValue="trending" className="w-full mb-6">
+                <TabsList className="w-full bg-transparent flex justify-evenly px-8">
+                  <TabsTrigger 
+                    value="trending"
+                    className="flex-1 data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none"
+                  >
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <h2 className="font-medium text-lg">
+                          Trending styles
+                        </h2>
+                        
+                      </div>
+                    </div>
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="my-clips"
+                    className="flex-1 data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none"
+                  >
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <h2 className="font-medium text-lg">
+                          My Clips
+                        </h2>
+                        
+                      </div>
+                    </div>
+                  </TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="trending">
+                <TabsContent value="trending" className="py-4">
                   {isLoading ? (
                     <div className="flex justify-center py-8">
                       <div className="w-8 h-8 border-4 border-t-primary rounded-full animate-spin"></div>
                     </div>
                   ) : initialClips.length > 0 ? (
                     <div className="max-w-7xl mx-auto px-4 lg:px-8">
-                      <div className="flex justify-between items-center mb-4">
-                        <div>
-                          <h2 className="font-medium text-lg">
-                            Trending styles
-                          </h2>
-                          <p className="text-gray-500 text-sm">
-                            Select the filter to apply it instantly
-                          </p>
-                        </div>
+                      <div className="flex items-center gap-2 bg-gray-50 dark:bg-gray-900/40 border border-gray-200 dark:border-gray-800 rounded-md px-4 py-2 mb-4 w-full max-w-xl mx-auto">
+                        <Lightbulb className="w-4 h-4 text-yellow-500 flex-shrink-0" />
+                        <span className="text-gray-700 dark:text-gray-200 text-sm">
+                          Click a filter to apply it instantly
+                        </span>
                       </div>
                       <div className="grid grid-cols-2 gap-4">
                         {initialClips.map(clip => (
@@ -320,7 +344,7 @@ export const BentoGridOverlay = () => {
                   )}
                 </TabsContent>
 
-                <TabsContent value="my-clips">
+                <TabsContent value="my-clips" className="py-4">
                   {!authenticated ? (
                     <div className="flex flex-col items-center justify-center py-8">
                       <h3 className="text-lg font-medium mb-2">
@@ -339,13 +363,42 @@ export const BentoGridOverlay = () => {
                     </div>
                   ) : myClips.length > 0 ? (
                     <div className="max-w-7xl mx-auto px-4 lg:px-8">
+                       <div className="flex items-center gap-2 bg-gray-50 dark:bg-gray-900/40 border border-gray-200 dark:border-gray-800 rounded-md px-4 py-2 mb-4 w-full max-w-xl mx-auto">
+                        <Lightbulb className="w-4 h-4 text-yellow-500 flex-shrink-0" />
+                        <span className="text-gray-700 dark:text-gray-200 text-sm">
+                          Click on a clip to apply its style
+                        </span>
+                      </div>
                       <div className="grid grid-cols-2 gap-4">
                         {myClips.map(clip => (
-                          <GridVideoItem
-                            key={clip.id}
-                            clip={clip}
-                            onTryPrompt={handleTryPrompt}
-                          />
+                          <div key={clip.id} className="relative group">
+                            <GridVideoItem
+                              clip={clip}
+                              onTryPrompt={handleTryPrompt}
+                            />
+                            <div className="absolute top-3 right-3 p-0 z-30">
+                              <Button
+                                size="sm"
+                                className={cn(
+                                  "text-white text-[0.64rem] bg-black/50 backdrop-blur-sm px-2 py-1 rounded-lg whitespace-nowrap overflow-hidden text-ellipsis max-w-full"
+                                )}
+                                onClick={e => {
+                                  e.stopPropagation();
+                                  const link = `https://daydream.live/clips/${clip.id}`;
+                                  navigator.clipboard.writeText(link);
+                                  setCopiedClipId(clip.id);
+                                  setTimeout(() => setCopiedClipId(null), 3000);
+                                }}
+                              >
+                                Copy Link
+                                {copiedClipId === clip.id ? (
+                                  <Check className="w-4 h-4 ml-1 text-green-400" />
+                                ) : (
+                                  <CopyIcon className="w-4 h-4 ml-1" />
+                                )}
+                              </Button>
+                            </div>
+                          </div>
                         ))}
                       </div>
                     </div>
