@@ -91,7 +91,8 @@ export function PromptForm({
           rows={1}
           style={{ minHeight: "56px" }}
         />
-        <div className="absolute right-4 bottom-3 flex items-center justify-center">
+
+        <div className="absolute right-4 bottom-3 flex items-center justify-center -mb-[2px]">
           <button
             type="submit"
             className="bg-black text-white rounded-full w-10 h-10 flex items-center justify-center"
