@@ -2,8 +2,12 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useOverlayStore } from "@/hooks/useOverlayStore";
-import { BentoGrids } from "@/app/(main)/BentoGrids";
-import { ChevronLeft } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
 import { Button } from "@repo/design-system/components/ui/button";
 import { useDreamshaperStore, useStreamUpdates } from "@/hooks/useDreamshaper";
 import { usePromptStore } from "@/hooks/usePromptStore";
@@ -13,6 +17,8 @@ import track from "@/lib/track";
 import { cn } from "@repo/design-system/lib/utils";
 import { OverlayClipViewer } from "./OverlayClipViewer";
 import { setSourceClipIdToCookies } from "@/components/daydream/Clipping/actions";
+import { GridVideoItem } from "./GridVideoItem";
+import useMobileStore from "@/hooks/useMobileStore";
 
 export const BentoGridOverlay = () => {
   const {
@@ -26,6 +32,7 @@ export const BentoGridOverlay = () => {
     setScrollPosition,
     setOverlayType,
     setSelectedClipId,
+    setIsOverlayOpen,
   } = useOverlayStore();
   const { stream } = useDreamshaperStore();
   const { handleStreamUpdate } = useStreamUpdates();
@@ -34,16 +41,21 @@ export const BentoGridOverlay = () => {
   const { authenticated } = usePrivy();
   const [initialClips, setInitialClips] = useState<any[]>([]);
   const [selectedClip, setSelectedClip] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const overlayRef = useRef<HTMLDivElement>(null);
+  const { isMobile } = useMobileStore();
 
   const initialOpenRef = useRef(true);
   const scrollRestoredRef = useRef(false);
 
-  const handleReportClips = (loadedClips: any[]) => {
-    if (loadedClips.length > cachedClips.length) {
-      setCachedClips(loadedClips);
+  useEffect(() => {
+    if (initialOpenRef.current) {
+      if (isMobile) {
+        setIsOverlayOpen(false);
+      }
+      initialOpenRef.current = false;
     }
-  };
+  }, [isMobile, setIsOverlayOpen]);
 
   const restoreScrollPosition = () => {
     if (
@@ -67,15 +79,18 @@ export const BentoGridOverlay = () => {
         scrollRestoredRef.current = false;
         restoreScrollPosition();
       } else {
-        fetch("/api/clips?page=0&limit=96")
+        setIsLoading(true);
+        fetch("/api/clips?page=0&limit=48")
           .then(res => res.json())
           .then(data => {
             const clips = data.clips || [];
             setInitialClips(clips);
             setCachedClips(clips);
+            setIsLoading(false);
           })
           .catch(error => {
             console.error("Error fetching clips:", error);
+            setIsLoading(false);
           });
       }
     }
@@ -163,7 +178,7 @@ export const BentoGridOverlay = () => {
         source: "overlay_bento",
       });
 
-      closeOverlay();
+      // closeOverlay();
     }
   };
 
@@ -171,11 +186,9 @@ export const BentoGridOverlay = () => {
     e.stopPropagation();
 
     if (overlayType === "clip") {
-      // If in clip view, go back to bento grid
       setOverlayType("bento");
       setSelectedClipId(null);
     } else {
-      // Otherwise close the overlay completely
       closeOverlay();
     }
   };
@@ -184,119 +197,133 @@ export const BentoGridOverlay = () => {
     return (
       <div
         ref={overlayRef}
-        className="fixed inset-0 z-[100] overflow-y-auto overscroll-contain bg-white dark:bg-black opacity-0 pointer-events-none"
+        className={cn(
+          isMobile
+            ? "fixed bottom-0 left-0 right-0 h-0 z-[100] overflow-y-auto overflow-x-visible overscroll-contain bg-white dark:bg-black border-t border-gray-200 dark:border-gray-800 shadow-lg opacity-0 pointer-events-none"
+            : "fixed right-0 w-[35%] inset-y-0 z-[100] overflow-y-auto overflow-x-visible overscroll-contain bg-white dark:bg-black border-l border-gray-200 dark:border-gray-800 shadow-lg opacity-0 pointer-events-none",
+        )}
         style={{ visibility: "hidden" }}
       />
     );
   }
 
   return (
-    <div
-      ref={overlayRef}
-      className={cn(
-        "fixed inset-0 z-[100] overflow-y-auto overscroll-contain bg-white dark:bg-black",
-        "transition-opacity duration-150",
-        isOverlayOpen ? "opacity-100" : "opacity-0 pointer-events-none",
-      )}
-      onClick={e => {
-        e.stopPropagation();
-      }}
-      onScroll={() => {
-        scrollRestoredRef.current = true;
-      }}
-    >
-      <div className="absolute inset-0 bg-transparent pointer-events-none"></div>
-
+    <>
       <div
-        aria-hidden="true"
-        className="absolute inset-x-0 -top-40 transform-gpu overflow-hidden sm:-top-60 z-0 pointer-events-none"
-      >
-        <div
-          style={{
-            backgroundImage: "url(/background.png)",
-            maskImage:
-              "linear-gradient(to bottom, black 60%, transparent 100%)",
-            WebkitMaskImage:
-              "linear-gradient(to bottom, black 60%, transparent 100%)",
-          }}
-          className="w-full h-[70vh] mx-auto bg-cover bg-center opacity-50"
-        />
-      </div>
-
-      <div
-        className="absolute inset-0 backdrop-blur z-0 pointer-events-none"
-        style={{ background: "transparent!important" }}
-      ></div>
-
-      <header
         className={cn(
-          "sticky top-0 z-[51] transition-colors duration-300 ease-in-out w-full",
-          overlayType === "clip"
-            ? "bg-transparent"
-            : "bg-transparent backdrop-filter backdrop-blur-xl",
+          "fixed z-[201]",
+          isMobile
+            ? "bottom-[40vh] left-1/2 transform -translate-x-1/2 translate-y-[20px]"
+            : "left-[65%] top-1/2 transform -translate-x-1/2 -translate-y-1/2",
         )}
-        onClick={e => e.stopPropagation()}
-        style={{ background: "transparent!important" }}
+        style={{
+          filter:
+            "drop-shadow(0 4px 3px rgb(0 0 0 / 0.07)) drop-shadow(0 2px 2px rgb(0 0 0 / 0.06))",
+        }}
+        onClick={e => {
+          e.stopPropagation();
+          closeOverlay();
+        }}
       >
-        <div className="w-full flex items-center justify-start py-4 px-6 lg:px-8">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleBackButton}
-            className="h-8 gap-2 rounded-md"
-            aria-label={overlayType === "clip" ? "Back" : "Continue creating"}
-          >
-            <ChevronLeft className="h-4 w-4" />
-            <span>{overlayType === "clip" ? "Back" : "Continue creating"}</span>
-          </Button>
-        </div>
-      </header>
-
-      <div className="relative z-10 h-full">
-        {overlayType === "bento" && (
-          <div className="p-4">
-            {initialClips.length > 0 ? (
-              <BentoGrids
-                initialClips={initialClips}
-                isOverlayMode={true}
-                onTryPrompt={handleTryPrompt}
-                onClipsLoaded={handleReportClips}
-              />
-            ) : (
-              <div className="flex justify-center py-8"></div>
-            )}
-          </div>
-        )}
-
-        {overlayType === "clip" && selectedClipId && (
-          <div
-            className="h-screen flex justify-center items-center p-4"
-            onClick={e => {
-              if (e.target === e.currentTarget) {
-                setOverlayType("bento");
-                setSelectedClipId(null);
-              }
-            }}
-          >
-            {selectedClip ? (
-              <OverlayClipViewer
-                clip={{
-                  id: selectedClipId,
-                  url: selectedClip.url,
-                  prompt: selectedClip.prompt,
-                  title: selectedClip.title || "",
-                  authorName: selectedClip.authorName || "Livepeer",
-                  authorDetails: selectedClip.authorDetails,
-                  createdAt: selectedClip.createdAt,
-                }}
-                onTryPrompt={handleTryPrompt}
-              />
-            ) : (
-              <div className="flex items-center justify-center"></div>
-            )}
-          </div>
-        )}
+        <button
+          className="flex items-center justify-center w-10 h-10 rounded-full bg-white dark:bg-gray-800 shadow-md border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+          aria-label="Close sidebar"
+        >
+          {isMobile ? (
+            <ChevronDown className="h-5 w-5 text-gray-700 dark:text-gray-300" />
+          ) : (
+            <ChevronRight className="h-5 w-5 text-gray-700 dark:text-gray-300" />
+          )}
+        </button>
       </div>
-    </div>
+
+      <div
+        ref={overlayRef}
+        className={cn(
+          "fixed z-[100] overflow-y-auto overflow-x-visible overscroll-contain bg-white dark:bg-black transition-all duration-150",
+          isMobile
+            ? "inset-x-0 bottom-0 h-[40vh] border-[8px] border-solid border-[#ededed] dark:border-[#ededed] border-b-0 rounded-t-[30px] shadow-[0_-12px_25px_-5px_rgba(0,0,0,0.25)]"
+            : "right-0 w-[35%] inset-y-0 border-l border-gray-200 dark:border-gray-800 shadow-lg",
+          isOverlayOpen ? "opacity-100" : "opacity-0 pointer-events-none",
+        )}
+        onClick={e => {
+          e.stopPropagation();
+        }}
+        onScroll={() => {
+          scrollRestoredRef.current = true;
+        }}
+      >
+        <div className="absolute inset-0 bg-white dark:bg-black pointer-events-none"></div>
+
+        <div className="relative z-10 h-full pt-6">
+          {overlayType === "bento" && (
+            <div className="p-4">
+              {isLoading ? (
+                <div className="flex justify-center py-8">
+                  <div className="w-8 h-8 border-4 border-t-primary rounded-full animate-spin"></div>
+                </div>
+              ) : initialClips.length > 0 ? (
+                <div className="max-w-7xl mx-auto px-4 lg:px-8">
+                  <div className="flex justify-between items-center mb-4">
+                    <div>
+                      <h2 className="font-medium text-lg">Trending styles</h2>
+                      <p className="text-gray-500 text-sm">
+                        Select the filter to apply it instantly
+                      </p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    {initialClips.map(clip => (
+                      <GridVideoItem
+                        key={clip.id}
+                        clip={clip}
+                        onTryPrompt={handleTryPrompt}
+                      />
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="flex justify-center py-8">
+                  No clips available
+                </div>
+              )}
+            </div>
+          )}
+
+          {overlayType === "clip" && selectedClip && (
+            <div
+              className="h-screen flex justify-center items-center p-4"
+              onClick={e => {
+                if (e.target === e.currentTarget) {
+                  setOverlayType("bento");
+                  setSelectedClipId(null);
+                }
+              }}
+            >
+              <div className="absolute top-4 left-4 z-50">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setOverlayType("bento");
+                    setSelectedClipId(null);
+                  }}
+                  className="h-8 gap-2 rounded-md"
+                  aria-label="Back to clips"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  <span>Back to clips</span>
+                </Button>
+              </div>
+
+              <OverlayClipViewer
+                clip={selectedClip}
+                onTryPrompt={handleTryPrompt}
+              />
+            </div>
+          )}
+        </div>
+      </div>
+    </>
   );
 };

@@ -32,10 +32,38 @@ export default function Daydream({
   allowGuestAccess = false,
 }: DaydreamProps) {
   const { user, ready, authenticated } = usePrivy();
-  const { isGuestUser, setIsGuestUser } = useGuestUserStore();
+  const { isGuestUser, setIsGuestUser, setLastPrompt } = useGuestUserStore();
   const searchParams = useSearchParams();
   const inputPrompt = searchParams.get("inputPrompt");
   const sourceClipId = searchParams.get("sourceClipId");
+  const [isHomepageGuestMode, setIsHomepageGuestMode] = useState(false);
+  const [defaultPrompt, setDefaultPrompt] = useState<string | null>(null);
+
+  // Check for homepage guest mode on initial render
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const homepageGuestMode =
+        localStorage.getItem("daydream_homepage_guest_mode") === "true";
+      const savedDefaultPrompt = localStorage.getItem(
+        "daydream_default_prompt",
+      );
+
+      if (homepageGuestMode) {
+        setIsHomepageGuestMode(true);
+        if (savedDefaultPrompt) {
+          setDefaultPrompt(savedDefaultPrompt);
+          setLastPrompt(savedDefaultPrompt);
+        }
+      }
+    }
+  }, []);
+
+  // Clear the homepage guest mode flag after it's been used
+  useEffect(() => {
+    if (isHomepageGuestMode && !authenticated && ready) {
+      localStorage.removeItem("daydream_homepage_guest_mode");
+    }
+  }, [isHomepageGuestMode, authenticated, ready]);
 
   // Used to track the source clip id for remix count
   useEffect(() => {
@@ -54,10 +82,19 @@ export default function Daydream({
 
   // If guest access is allowed and input prompt exists, enable guest mode
   useEffect(() => {
-    if (allowGuestAccess && inputPrompt && !user && ready) {
-      setIsGuestUser(true);
+    if ((allowGuestAccess && inputPrompt) || isHomepageGuestMode) {
+      if (!user && ready) {
+        setIsGuestUser(true);
+      }
     }
-  }, [allowGuestAccess, inputPrompt, user, setIsGuestUser]);
+  }, [
+    allowGuestAccess,
+    inputPrompt,
+    user,
+    setIsGuestUser,
+    isHomepageGuestMode,
+    ready,
+  ]);
 
   // If the user is not ready, show a loading screen
   if (!ready) {
@@ -70,11 +107,18 @@ export default function Daydream({
     );
   }
 
-  // If in guest mode and coming from "Try this prompt" or "Create CTA", allow access to create page
-  if (isGuestUser && ready) {
+  // If in guest mode and coming from "Try this prompt" or homepage, allow access to create page
+  if (isGuestUser && (inputPrompt || isHomepageGuestMode) && ready) {
     return (
-      <OnboardProvider hasSharedPrompt={hasSharedPrompt || !!inputPrompt}>
-        <DaydreamRenderer isGuestMode={true} />
+      <OnboardProvider
+        hasSharedPrompt={
+          hasSharedPrompt || !!inputPrompt || isHomepageGuestMode
+        }
+      >
+        <DaydreamRenderer
+          isGuestMode={true}
+          defaultPrompt={defaultPrompt || undefined}
+        />
       </OnboardProvider>
     );
   }
@@ -98,7 +142,13 @@ export default function Daydream({
   );
 }
 
-function DaydreamRenderer({ isGuestMode = false }: { isGuestMode?: boolean }) {
+function DaydreamRenderer({
+  isGuestMode = false,
+  defaultPrompt,
+}: {
+  isGuestMode?: boolean;
+  defaultPrompt?: string | null;
+}) {
   const {
     isInitializing,
     setIsInitializing,
@@ -109,6 +159,8 @@ function DaydreamRenderer({ isGuestMode = false }: { isGuestMode?: boolean }) {
     setCustomPersona,
   } = useOnboard();
   const { user } = usePrivy();
+  const searchParams = useSearchParams();
+  const inputPrompt = searchParams.get("inputPrompt");
   const [isFromGuestExperience, setIsFromGuestExperience] = useState(false);
   const [pendingClipUrl, setPendingClipUrl] = useState<string | null>(null);
   const [pendingClipFilename, setPendingClipFilename] = useState<string | null>(
@@ -131,6 +183,7 @@ function DaydreamRenderer({ isGuestMode = false }: { isGuestMode?: boolean }) {
       setIsInitializing(false);
       track("guest_mode_started", {
         is_authenticated: false,
+        from_homepage: !!defaultPrompt,
       });
       return;
     }
@@ -268,12 +321,19 @@ function DaydreamRenderer({ isGuestMode = false }: { isGuestMode?: boolean }) {
     );
   }
 
+  // Handle WelcomeScreen and MainExperience components
+  let content = null;
+  if (isInitializing || currentStep !== "main") {
+    content = <WelcomeScreen />;
+  } else {
+    content = (
+      <MainExperience isGuestMode={isGuestMode} defaultPrompt={defaultPrompt} />
+    );
+  }
+
   return (
     <>
-      <WelcomeScreen simplified={isFromGuestExperience} />
-      {["main", "prompt"].includes(currentStep) && (
-        <MainExperience isGuestMode={isGuestMode} />
-      )}
+      {content}
       {showPendingClipModal && (
         <ClipModal
           isOpen={showPendingClipModal}

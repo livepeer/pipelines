@@ -16,6 +16,7 @@ export default function MainLayoutClient({
   const { hasCapacity } = useCapacityCheck();
   const pathname = usePathname();
   const { resetToastState } = useCapacityToastStore();
+  const isHomePage = pathname === "/";
 
   useEffect(() => {
     if (pathname === "/") {
@@ -23,11 +24,17 @@ export default function MainLayoutClient({
     }
   }, [pathname, resetToastState]);
 
+  if (isHomePage) {
+    return <>{children}</>;
+  }
+
   return (
     <>
       <PageViewTracker eventName="explore_page_viewed" />
       <CapacityToast path="/" hasCapacity={hasCapacity} />
-      <BentoGrids initialClips={initialClips} hasCapacity={hasCapacity} />
+      {pathname !== "/" && (
+        <BentoGrids initialClips={initialClips} hasCapacity={hasCapacity} />
+      )}
       {children}
     </>
   );

@@ -118,6 +118,15 @@ function AdminSidebar({ email }: { email: string | null | undefined }) {
             </Link>
           </li>
           <li>
+            <Link
+              href="/explore"
+              className="group flex items-center px-4 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+            >
+              <ExternalLinkIcon className="mr-3 h-4 w-4 text-gray-400 group-hover:text-gray-500" />
+              Explore
+            </Link>
+          </li>
+          <li>
             <button
               onClick={() => logout()}
               className="group w-full flex items-center px-4 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900"
