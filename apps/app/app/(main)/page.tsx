@@ -106,7 +106,7 @@ export default function HomePage() {
     <div className="fixed inset-0 z-[1000] flex items-center justify-center w-screen h-screen overflow-hidden">
       <div
         ref={containerRef}
-        className="w-full h-full flex flex-col items-center justify-center relative overflow-hidden"
+        className="w-full h-full flex flex-col items-center justify-start pt-4 relative overflow-hidden"
       >
         <CloudBackground
           animationStarted={animationStarted}
@@ -114,7 +114,7 @@ export default function HomePage() {
         />
 
         <div
-          className={`z-10 w-full h-screen md:h-[calc(100vh-80px)] md:max-w-[95%] mx-auto p-0 md:px-4 md:py-5 flex flex-col gap-4 md:gap-8 transition-all duration-1000 ease-in-out overflow-hidden md:overflow-visible ${
+          className={`z-10 w-full h-screen md:h-[calc(100vh-80px)] md:max-w-[95%] mx-auto p-0 md:px-4 md:pt-0 pb-12 md:pb-4 flex flex-col gap-2 md:gap-4 transition-all duration-1000 ease-in-out overflow-hidden md:overflow-visible ${
             showContent ? "opacity-100 scale-100" : "opacity-0 scale-[0.98]"
           }`}
         >
@@ -139,7 +139,7 @@ export default function HomePage() {
               isThrottled={isThrottled}
               throttleTimeLeft={throttleTimeLeft}
               onTryCameraClick={handleButtonClick}
-              buttonText={authenticated ? "Create" : "Try it with your camera"}
+              buttonText={authenticated ? "Create" : "Pick your own video"}
               isAuthenticated={authenticated}
             />
           </div>

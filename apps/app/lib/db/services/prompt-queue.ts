@@ -194,34 +194,22 @@ export const processNextPrompt = async (
 
       const displayedPrompts = [
         promptItem.text,
-        ...(stateData.displayedPrompts as string[]).slice(
-          0,
-          (stateData.displayedPrompts as string[]).length - 1,
-        ),
+        ...(stateData.displayedPrompts as string[]),
       ];
 
       const promptAvatarSeeds = [
         promptItem.seed,
-        ...(stateData.promptAvatarSeeds as string[]).slice(
-          0,
-          (stateData.promptAvatarSeeds as string[]).length - 1,
-        ),
+        ...(stateData.promptAvatarSeeds as string[]),
       ];
 
       const userPromptIndices = [
         promptItem.isUser,
-        ...(stateData.userPromptIndices as boolean[]).slice(
-          0,
-          (stateData.userPromptIndices as boolean[]).length - 1,
-        ),
+        ...(stateData.userPromptIndices as boolean[]),
       ];
 
       const promptSessionIds = [
         promptItem.sessionId || "",
-        ...(stateData.promptSessionIds as string[]).slice(
-          0,
-          (stateData.promptSessionIds as string[]).length - 1,
-        ),
+        ...(stateData.promptSessionIds as string[]),
       ];
 
       await dbClient

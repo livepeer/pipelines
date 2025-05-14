@@ -22,7 +22,7 @@ export function CloudBackground({
           id={`cloud${index + 1}`}
           style={{
             transform: getCloudTransform(index),
-            opacity: 0.5,
+            opacity: 0.05,
           }}
         ></div>
       ))}

@@ -52,8 +52,8 @@ const getColorFromSeed = (seed: string): string => {
 
   const hue = Math.abs(hash % 360);
 
-  const saturation = 85 + Math.abs((hash >> 8) % 15); // 85-100%
-  const lightness = 25 + Math.abs((hash >> 16) % 20); // 25-45%
+  const saturation = 85 + Math.abs((hash >> 8) % 15);
+  const lightness = 25 + Math.abs((hash >> 16) % 20);
 
   const adjustedLightness =
     hue >= 60 && hue <= 150 ? Math.max(15, lightness - 15) : lightness;
@@ -137,7 +137,7 @@ export function PromptDisplay({
                   }
                 >
                   <div
-                    className="mr-4 flex-shrink-0 font-bold text-xs"
+                    className="hidden"
                     style={{
                       color: color,
                     }}
@@ -190,10 +190,7 @@ export function PromptDisplay({
                     borderRadius: "12px",
                   }}
                 >
-                  <div
-                    className="mr-4 flex-shrink-0 font-bold text-xs"
-                    style={{ color: color }}
-                  >
+                  <div className="hidden" style={{ color: color }}>
                     {username.substring(0, 6)}
                   </div>
                   <div className="min-w-0 flex-1">
