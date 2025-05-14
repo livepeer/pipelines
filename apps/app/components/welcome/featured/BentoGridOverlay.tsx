@@ -19,8 +19,12 @@ import { OverlayClipViewer } from "./OverlayClipViewer";
 import { setSourceClipIdToCookies } from "@/components/daydream/Clipping/actions";
 import { GridVideoItem } from "./GridVideoItem";
 import useMobileStore from "@/hooks/useMobileStore";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@repo/design-system/components/ui/tabs";
-
+import {
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
+} from "@repo/design-system/components/ui/tabs";
 
 export const BentoGridOverlay = () => {
   const {
@@ -291,7 +295,9 @@ export const BentoGridOverlay = () => {
                     <div className="max-w-7xl mx-auto px-4 lg:px-8">
                       <div className="flex justify-between items-center mb-4">
                         <div>
-                          <h2 className="font-medium text-lg">Trending styles</h2>
+                          <h2 className="font-medium text-lg">
+                            Trending styles
+                          </h2>
                           <p className="text-gray-500 text-sm">
                             Select the filter to apply it instantly
                           </p>
@@ -317,11 +323,13 @@ export const BentoGridOverlay = () => {
                 <TabsContent value="my-clips">
                   {!authenticated ? (
                     <div className="flex flex-col items-center justify-center py-8">
-                      <h3 className="text-lg font-medium mb-2">Sign in to save clips</h3>
+                      <h3 className="text-lg font-medium mb-2">
+                        Sign in to save clips
+                      </h3>
                       <p className="text-sm text-gray-500 mb-4">
                         Create an account to save and manage your clips
                       </p>
-                      <Button onClick={() => window.location.href = "/login"}>
+                      <Button onClick={() => (window.location.href = "/login")}>
                         Sign in
                       </Button>
                     </div>
@@ -344,7 +352,9 @@ export const BentoGridOverlay = () => {
                   ) : (
                     <div className="flex justify-center py-8">
                       <div className="text-center">
-                        <h3 className="text-lg font-medium mb-2">No clips yet</h3>
+                        <h3 className="text-lg font-medium mb-2">
+                          No clips yet
+                        </h3>
                         <p className="text-sm text-gray-500">
                           Create your first clip to see it here
                         </p>

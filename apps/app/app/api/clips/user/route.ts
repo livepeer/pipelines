@@ -32,4 +32,4 @@ export async function GET(request: Request) {
     .orderBy(clipsTable.created_at);
 
   return NextResponse.json({ clips: result });
-} 
+}
