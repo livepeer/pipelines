@@ -49,6 +49,32 @@ export const usePlayerStore = create<PlayerState>(set => ({
   setIsPlaying: (value: boolean) => set({ isPlaying: value }),
 }));
 
+const initialDelay = 4000;
+const linearPhaseDelay = 100;
+const linearPhaseEndCount = 40;
+
+const calculateDelay = (count: number): number => {
+  const baseExponentialDelay = 200;
+  const maxExponentialDelay = 60 * 1000;
+  const exponentFactor = 2;
+
+  if (count === 0) {
+    return initialDelay;
+  }
+
+  if (count > 0 && count <= linearPhaseEndCount) {
+    return linearPhaseDelay;
+  }
+
+  const exponentialAttemptNumber = count - linearPhaseEndCount;
+
+  const delay =
+    baseExponentialDelay *
+    Math.pow(exponentFactor, exponentialAttemptNumber - 1);
+
+  return Math.min(delay, maxExponentialDelay);
+};
+
 export const LivepeerPlayer = () => {
   const { stream, pipeline } = useDreamshaperStore();
   const { isMobile } = useMobileStore();
@@ -138,8 +164,7 @@ export const LivepeerPlayer = () => {
         clipLength={30}
         src={src}
         jwt={null}
-        backoff={100}
-        backoffMax={1000}
+        calculateDelay={calculateDelay}
         timeout={300000}
         lowLatency="force"
         {...({
