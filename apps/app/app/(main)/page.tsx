@@ -12,6 +12,8 @@ import { CloudBackground } from "@/components/home/CloudBackground";
 import { VideoSection } from "@/components/home/VideoSection";
 import { PromptPanel } from "@/components/home/PromptPanel";
 import TutorialModal from "./components/TutorialModal";
+import { TrackedButton } from "@/components/analytics/TrackedButton";
+import { SquareDashedBottomCode, Workflow } from "lucide-react";
 
 export default function HomePage() {
   const { containerRef, getCloudTransform } = useCloudAnimation(0);
@@ -138,6 +140,33 @@ export default function HomePage() {
         </div>
       </div>
 
+      {/*footer*/}
+      <div className="hidden md:fixed md:bottom-0 md:left-0 md:w-full md:z-[1100] md:bg-white/20 md:backdrop-blur-md md:flex md:justify-center">
+        <div className="flex flex-col items-center gap-2 md:flex-row md:gap-6 py-2">
+          <TrackedButton
+            trackingEvent="footer_request_api_access_clicked"
+            trackingProperties={{ location: "footer" }}
+            variant="ghost"
+            className="text-gray-600 rounded-xl hover:text-gray-500 transition-colors duration-200 text-medium font-medium"
+            onClick={() => window.open("https://share.hsforms.com/2c2Uw6JsHTtiiAyAH0-4itA3o1go", "_blank", "noopener,noreferrer")}
+          >
+            Request API Access
+            <SquareDashedBottomCode className="w-4 h-4" />
+          </TrackedButton>
+          <div className="hidden md:block w-px h-6 bg-gray-300 mx-3" />
+          <div className="block md:hidden w-16 h-px bg-gray-300 my-2" />
+          <TrackedButton
+            trackingEvent="footer_build_with_comfystream_clicked"
+            trackingProperties={{ location: "footer" }}
+            variant="ghost"
+            className="text-gray-600 rounded-xl hover:text-gray-500 transition-colors duration-200 text-medium font-medium"
+            onClick={() => window.open("https://comfystream.org/", "_blank", "noopener,noreferrer")}
+          >
+            Build with ComfyStream
+            <Workflow className="w-4 h-4" />
+          </TrackedButton>
+        </div>
+      </div>
       <TutorialModal
         isOpen={isTutorialModalOpen}
         onClose={() => setIsTutorialModalOpen(false)}
