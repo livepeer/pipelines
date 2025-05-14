@@ -148,7 +148,13 @@ export default function HomePage() {
             trackingProperties={{ location: "footer" }}
             variant="ghost"
             className="text-gray-600 rounded-xl hover:text-gray-500 transition-colors duration-200 text-medium font-medium"
-            onClick={() => window.open("https://share.hsforms.com/2c2Uw6JsHTtiiAyAH0-4itA3o1go", "_blank", "noopener,noreferrer")}
+            onClick={() =>
+              window.open(
+                "https://share.hsforms.com/2c2Uw6JsHTtiiAyAH0-4itA3o1go",
+                "_blank",
+                "noopener,noreferrer",
+              )
+            }
           >
             Request API Access
             <SquareDashedBottomCode className="w-4 h-4" />
@@ -160,7 +166,13 @@ export default function HomePage() {
             trackingProperties={{ location: "footer" }}
             variant="ghost"
             className="text-gray-600 rounded-xl hover:text-gray-500 transition-colors duration-200 text-medium font-medium"
-            onClick={() => window.open("https://comfystream.org/", "_blank", "noopener,noreferrer")}
+            onClick={() =>
+              window.open(
+                "https://comfystream.org/",
+                "_blank",
+                "noopener,noreferrer",
+              )
+            }
           >
             Build with ComfyStream
             <Workflow className="w-4 h-4" />
