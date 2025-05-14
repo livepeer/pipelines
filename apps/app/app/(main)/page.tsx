@@ -82,7 +82,6 @@ export default function HomePage() {
       is_authenticated: authenticated,
       prompt: value,
     });
-
   });
 
   const handleButtonClick = () => {
