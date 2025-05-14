@@ -342,12 +342,16 @@ export const BentoGridOverlay = () => {
                   {!authenticated ? (
                     <div className="flex flex-col items-center justify-center py-8">
                       <h3 className="text-lg font-medium mb-2">
-                        Sign in to save clips
+                        No clips here!
                       </h3>
                       <p className="text-sm text-gray-500 mb-4">
                         Create an account to save and manage your clips
                       </p>
-                      <Button onClick={() => (window.location.href = "/login")}>
+                      <Button variant="outline"
+                    className={cn(
+                      "alwaysAnimatedButton",
+                      "px-4",
+                    )} onClick={() => (window.location.href = "/login")}>
                         Sign in
                       </Button>
                     </div>
