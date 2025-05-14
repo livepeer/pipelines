@@ -12,6 +12,7 @@ import { CloudBackground } from "@/components/home/CloudBackground";
 import { VideoSection } from "@/components/home/VideoSection";
 import { PromptPanel } from "@/components/home/PromptPanel";
 import TutorialModal from "./components/TutorialModal";
+import track from "@/lib/track";
 import { TrackedButton } from "@/components/analytics/TrackedButton";
 import { SquareDashedBottomCode, Workflow } from "lucide-react";
 
@@ -78,6 +79,11 @@ export default function HomePage() {
 
   const handlePromptSubmit = getHandleSubmit(async value => {
     await addToPromptQueue(value, userAvatarSeed, true);
+
+    track("daydream_landing_page_prompt_submitted", {
+      is_authenticated: authenticated,
+      prompt: value,
+    });
   });
 
   const handleButtonClick = () => {
