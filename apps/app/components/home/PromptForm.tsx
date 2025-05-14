@@ -1,7 +1,10 @@
 import React, { useMemo } from "react";
 import { Input } from "@repo/design-system/components/ui/input";
 import { ArrowRight } from "lucide-react";
-import { useValidateInput, MAX_PROMPT_LENGTH } from "@/components/welcome/featured/useValidateInput";
+import {
+  useValidateInput,
+  MAX_PROMPT_LENGTH,
+} from "@/components/welcome/featured/useValidateInput";
 
 interface PromptFormProps {
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
@@ -31,10 +34,10 @@ export function PromptForm({
 
   const errorMsg = useMemo(() => {
     if (exceedsMaxLength) {
-      return `Your promptxceeds the maximum length of ${MAX_PROMPT_LENGTH} characters`;
+      return `Your prompt exceeds the maximum length of ${MAX_PROMPT_LENGTH} characters`;
     }
     if (profanity) {
-      return "Please fix your prompt as it may contain harmful words";
+      return "Please remove harmful words from your prompt";
     }
     return null;
   }, [profanity, exceedsMaxLength]);
@@ -52,7 +55,7 @@ export function PromptForm({
               ? `Wait ${throttleTimeLeft}s...`
               : "Add your prompt to the queue..."
           }
-          className={`w-full md:bg-white/50 bg-white/80 rounded-[24px] border border-solid border-[#DFDEDE] focus:ring-0 focus:border-[#DFDEDE] focus:outline-none pl-[25px] py-8 pr-16 ${isThrottled ? "opacity-50" : ""} shadow-[8px_12px_24px_0px_#0D131E26] ${profanity || exceedsMaxLength ? 'border-red-500' : ''}`}
+          className={`w-full md:bg-white/50 bg-white/80 rounded-[24px] border border-solid border-[#DFDEDE] focus:ring-0 focus:border-[#DFDEDE] focus:outline-none pl-[25px] py-8 pr-16 ${isThrottled ? "opacity-50" : ""} shadow-[8px_12px_24px_0px_#0D131E26] ${profanity || exceedsMaxLength ? "border-red-500" : ""}`}
           value={value}
           onChange={onChange}
           disabled={isThrottled || disabled}
@@ -60,7 +63,13 @@ export function PromptForm({
         <button
           type="submit"
           className="absolute right-4 top-1/2 -translate-y-1/2 bg-black text-white rounded-full w-10 h-10 flex items-center justify-center"
-          disabled={isThrottled || disabled || !value.trim() || profanity || exceedsMaxLength}
+          disabled={
+            isThrottled ||
+            disabled ||
+            !value.trim() ||
+            profanity ||
+            exceedsMaxLength
+          }
         >
           <ArrowRight className="h-5 w-5" />
         </button>
