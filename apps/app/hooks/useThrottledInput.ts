@@ -12,9 +12,12 @@ export function useThrottledInput({
   const [isThrottled, setIsThrottled] = useState(false);
   const [throttleTimeLeft, setThrottleTimeLeft] = useState(0);
 
-  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setValue(e.target.value);
-  }, []);
+  const handleChange = useCallback(
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+      setValue(e.target.value);
+    },
+    [],
+  );
 
   const handleSubmit = useCallback(
     (callback: (value: string) => void) => {

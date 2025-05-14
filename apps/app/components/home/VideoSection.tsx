@@ -9,10 +9,10 @@ export function VideoSection() {
   const [isLoading, setIsLoading] = useState(true);
   const [useLivepeerPlayer, setUseLivepeerPlayer] = useState(false);
 
-  const ORIGINAL_PLAYBACK_ID = "95705ossoplg7uvq";
-  const TRANSFORMED_PLAYBACK_ID = "85c28sa2o8wppm58";
-  const originalIframeUrl = `https://monster.lvpr.tv/?v=${ORIGINAL_PLAYBACK_ID}&lowLatency=force&backoffMax=1000&ingestPlayback=true`;
-  const transformedIframeUrl = `https://lvpr.tv/?v=${TRANSFORMED_PLAYBACK_ID}&lowLatency=true&backoffMax=1000&ingestPlayback=true`;
+  const TRANSFORMED_PLAYBACK_ID = "95705ossoplg7uvq";
+  const ORIGINAL_PLAYBACK_ID = "85c28sa2o8wppm58";
+  const transformedIframeUrl = `https://monster.lvpr.tv/?v=${TRANSFORMED_PLAYBACK_ID}&lowLatency=force&backoffMax=1000&ingestPlayback=true`;
+  const originalIframeUrl = `https://lvpr.tv/?v=${ORIGINAL_PLAYBACK_ID}&lowLatency=false&backoffMax=1000&ingestPlayback=true&muted=true`;
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -69,7 +69,7 @@ export function VideoSection() {
           <div className="absolute inset-0 w-full h-full overflow-hidden">
             {useLivepeerPlayer ? (
               <LivepeerPlayer
-                playbackId={ORIGINAL_PLAYBACK_ID}
+                playbackId={TRANSFORMED_PLAYBACK_ID}
                 autoPlay={true}
                 muted={false}
                 className="w-[120%] h-[120%] absolute left-[-10%] top-[-10%]"
@@ -79,7 +79,7 @@ export function VideoSection() {
               />
             ) : (
               <iframe
-                src={originalIframeUrl}
+                src={transformedIframeUrl}
                 className="absolute w-[120%] h-[120%] left-[-10%] top-[-10%] md:w-[120%] md:h-[120%] md:left-[-10%] md:top-[-10%]"
                 style={{ overflow: "hidden" }}
                 allow="autoplay; fullscreen"
@@ -93,7 +93,7 @@ export function VideoSection() {
           <div className="absolute bottom-4 left-4 w-[25%] aspect-video z-30 rounded-lg overflow-hidden border-2 border-white/30 shadow-lg hidden md:block">
             {useLivepeerPlayer ? (
               <LivepeerPlayer
-                playbackId={TRANSFORMED_PLAYBACK_ID}
+                playbackId={ORIGINAL_PLAYBACK_ID}
                 autoPlay={true}
                 muted={true}
                 className="w-full h-full"
@@ -102,7 +102,7 @@ export function VideoSection() {
               />
             ) : (
               <iframe
-                src={transformedIframeUrl}
+                src={originalIframeUrl}
                 className="w-full h-full"
                 style={{ overflow: "hidden" }}
                 allow="autoplay; fullscreen"
