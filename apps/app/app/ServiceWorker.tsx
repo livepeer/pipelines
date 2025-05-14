@@ -1,6 +1,7 @@
 "use client";
 
 import { usePlaybackUrlStore } from "@/hooks/usePlaybackUrlStore";
+import { getSrc } from "@livepeer/react/external";
 import { useEffect } from "react";
 
 export const ServiceWorker = () => {
