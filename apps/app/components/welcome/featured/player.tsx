@@ -54,7 +54,6 @@ export const LivepeerPlayer = () => {
   const { isMobile } = useMobileStore();
   const { isFullscreen } = useFullscreenStore();
   const { setIsPlaying } = usePlayerStore();
-  const appConfig = useAppConfig();
   const [playbackInfo, setPlaybackInfo] = useState<PlaybackInfo | null>(null);
   const { playbackUrl } = usePlaybackUrlStore();
 
