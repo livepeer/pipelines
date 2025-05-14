@@ -286,29 +286,23 @@ export const BentoGridOverlay = () => {
             <div className="p-4">
               <Tabs defaultValue="trending" className="w-full mb-6">
                 <TabsList className="w-full bg-transparent flex justify-evenly px-8">
-                  <TabsTrigger 
+                  <TabsTrigger
                     value="trending"
                     className="flex-1 data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none"
                   >
                     <div className="flex justify-between items-center">
                       <div>
-                        <h2 className="font-medium text-lg">
-                          Trending styles
-                        </h2>
-                        
+                        <h2 className="font-medium text-lg">Trending styles</h2>
                       </div>
                     </div>
                   </TabsTrigger>
-                  <TabsTrigger 
+                  <TabsTrigger
                     value="my-clips"
                     className="flex-1 data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none"
                   >
                     <div className="flex justify-between items-center">
                       <div>
-                        <h2 className="font-medium text-lg">
-                          My Clips
-                        </h2>
-                        
+                        <h2 className="font-medium text-lg">My Clips</h2>
                       </div>
                     </div>
                   </TabsTrigger>
@@ -363,7 +357,7 @@ export const BentoGridOverlay = () => {
                     </div>
                   ) : myClips.length > 0 ? (
                     <div className="max-w-7xl mx-auto px-4 lg:px-8">
-                       <div className="flex items-center gap-2 bg-gray-50 dark:bg-gray-900/40 border border-gray-200 dark:border-gray-800 rounded-md px-4 py-2 mb-4 w-full max-w-xl mx-auto">
+                      <div className="flex items-center gap-2 bg-gray-50 dark:bg-gray-900/40 border border-gray-200 dark:border-gray-800 rounded-md px-4 py-2 mb-4 w-full max-w-xl mx-auto">
                         <Lightbulb className="w-4 h-4 text-yellow-500 flex-shrink-0" />
                         <span className="text-gray-700 dark:text-gray-200 text-sm">
                           Click on a clip to apply its style
@@ -380,7 +374,7 @@ export const BentoGridOverlay = () => {
                               <Button
                                 size="sm"
                                 className={cn(
-                                  "text-white text-[0.64rem] bg-black/50 backdrop-blur-sm px-2 py-1 rounded-lg whitespace-nowrap overflow-hidden text-ellipsis max-w-full"
+                                  "text-white text-[0.64rem] bg-black/50 backdrop-blur-sm px-2 py-1 rounded-lg whitespace-nowrap overflow-hidden text-ellipsis max-w-full",
                                 )}
                                 onClick={e => {
                                   e.stopPropagation();
