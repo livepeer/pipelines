@@ -12,7 +12,7 @@ import { CloudBackground } from "@/components/home/CloudBackground";
 import { VideoSection } from "@/components/home/VideoSection";
 import { PromptPanel } from "@/components/home/PromptPanel";
 import TutorialModal from "./components/TutorialModal";
-import { track } from "mixpanel-browser";
+import { track } from "@/lib/track";
 
 export default function HomePage() {
   const { containerRef, getCloudTransform } = useCloudAnimation(0);
