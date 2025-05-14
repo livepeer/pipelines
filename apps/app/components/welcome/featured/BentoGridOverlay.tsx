@@ -255,7 +255,7 @@ export const BentoGridOverlay = () => {
       >
         <div className="absolute inset-0 bg-white dark:bg-black pointer-events-none"></div>
 
-        <div className="relative z-10 h-full pt-6">
+        <div className="relative z-10 h-full">
           {overlayType === "bento" && (
             <div className="p-4">
               {isLoading ? (
