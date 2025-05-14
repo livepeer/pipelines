@@ -39,7 +39,7 @@ export function TrialExpiredModal({
               location: "trial_expired_modal",
             }}
             onClick={() =>
-              window.open("https://discord.gg/DwBPjfhmUt", "_blank")
+              window.open("https://discord.gg/5sZu8xmn6U", "_blank")
             }
             size="lg"
             className="rounded-full h-12 flex-1 bg-black text-white hover:bg-black/90"

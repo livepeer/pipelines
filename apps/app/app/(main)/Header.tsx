@@ -1,17 +1,18 @@
 "use client";
+import { usePrivy } from "@privy-io/react-auth";
 
+import { useEffect, useState } from "react";
+import { DiscordLogoIcon } from "@radix-ui/react-icons";
+import { useRouter } from "next/navigation";
 import { Logo } from "@/components/sidebar";
 import { TrackedButton } from "@/components/analytics/TrackedButton";
 import { usePreviewStore } from "@/hooks/usePreviewStore";
 import { cn } from "@repo/design-system/lib/utils";
-import { useEffect, useState } from "react";
-import { DiscordLogoIcon } from "@radix-ui/react-icons";
 import VideoAISparkles from "components/daydream/CustomIcons/VideoAISparkles";
 import { useCapacityCheck } from "@/hooks/useCapacityCheck";
+import { useGuestUserStore } from "@/hooks/useGuestUser";
 import { CapacityNotificationModal } from "@/components/modals/capacity-notification-modal";
-import { useRouter } from "next/navigation";
 import track from "@/lib/track";
-import Link from "next/link";
 
 export default function Header() {
   const { isPreviewOpen } = usePreviewStore();
@@ -19,6 +20,8 @@ export default function Header() {
   const { hasCapacity } = useCapacityCheck();
   const [isCapacityModalOpen, setIsCapacityModalOpen] = useState(false);
   const router = useRouter();
+  const { authenticated, ready } = usePrivy();
+  const { setIsGuestUser } = useGuestUserStore();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -33,6 +36,10 @@ export default function Header() {
 
   const handleCreateClick = (e: React.MouseEvent) => {
     e.preventDefault();
+
+    if (!authenticated && ready) {
+      setIsGuestUser(true);
+    }
 
     if (!hasCapacity) {
       track("capacity_create_blocked", { location: "header" });
@@ -103,7 +110,7 @@ export default function Header() {
               className="text-sm rounded-md sm:px-4 aspect-square sm:aspect-auto"
               onClick={() => {
                 window.open(
-                  "https://discord.gg/DwBPjfhmUt",
+                  "https://discord.gg/5sZu8xmn6U",
                   "_blank",
                   "noopener noreferrer",
                 );

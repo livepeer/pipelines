@@ -6,17 +6,19 @@ import {
 } from "@/app/api/streams/share-params";
 import { updateParams } from "@/app/api/streams/update-params";
 import { Stream, upsertStream } from "@/app/api/streams/upsert";
+import { useCapacityCheck } from "@/hooks/useCapacityCheck";
 import { useGatewayHost } from "@/hooks/useGatewayHost";
+import { usePrivy } from "@/hooks/usePrivy";
+import { usePromptStore } from "@/hooks/usePromptStore";
 import { getAppConfig } from "@/lib/env";
+import track from "@/lib/track";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { create } from "zustand";
+import { usePromptVersionStore } from "./usePromptVersionStore";
 import { useStreamStatus } from "./useStreamStatus";
-import track from "@/lib/track";
-import { usePrivy } from "@/hooks/usePrivy";
-import { usePromptStore } from "@/hooks/usePromptStore";
-import { useCapacityCheck } from "@/hooks/useCapacityCheck";
+import { usePlayerStore } from "@/components/welcome/featured/player";
 
 export const DEFAULT_PIPELINE_ID = "pip_DRQREDnSei4HQyC8"; // Staging Dreamshaper ID
 export const DUMMY_USER_ID_FOR_NON_AUTHENTICATED_USERS =
@@ -176,9 +178,11 @@ interface DreamshaperStore {
   setSharedParamsApplied: (applied: boolean) => void;
   setSharedPrompt: (prompt: string | null) => void;
   setErrorState: (error: boolean) => void;
+
+  reset: () => void;
 }
 
-export const useDreamshaperStore = create<DreamshaperStore>(set => ({
+const initialState = {
   loading: true,
   updating: false,
   stream: null,
@@ -187,6 +191,10 @@ export const useDreamshaperStore = create<DreamshaperStore>(set => ({
   sharedParamsApplied: false,
   sharedPrompt: null,
   errorState: false,
+};
+
+export const useDreamshaperStore = create<DreamshaperStore>(set => ({
+  ...initialState,
 
   setLoading: loading => set({ loading }),
   setUpdating: updating => set({ updating }),
@@ -196,6 +204,8 @@ export const useDreamshaperStore = create<DreamshaperStore>(set => ({
   setSharedParamsApplied: applied => set({ sharedParamsApplied: applied }),
   setSharedPrompt: prompt => set({ sharedPrompt: prompt }),
   setErrorState: error => set({ errorState: error }),
+
+  reset: () => set(initialState),
 }));
 
 export function useInputPromptHandling() {
@@ -404,6 +414,7 @@ export function useParamsHandling() {
 
 export function useStreamUpdates() {
   const { stream, pipeline, setUpdating } = useDreamshaperStore();
+  const { incrementPromptVersion } = usePromptVersionStore();
 
   const handleStreamUpdate = useCallback(
     async (prompt: string, options?: { silent?: boolean }) => {
@@ -532,6 +543,7 @@ export function useStreamUpdates() {
           if (!options?.silent) {
             toast.success("Stream updated successfully", { id: toastId });
           }
+          incrementPromptVersion();
         } else {
           if (!options?.silent) {
             toast.error("Error updating stream with prompt", { id: toastId });
@@ -698,6 +710,8 @@ export const useShareLink = () => {
       }
 
       const shareUrl = new URL(window.location.href);
+      shareUrl.searchParams.delete("inputPrompt");
+      shareUrl.searchParams.delete("sourceClipId");
       shareUrl.searchParams.set("shared", data.id);
 
       return { error: null, url: shareUrl.toString() };
@@ -715,24 +729,25 @@ const MAX_STREAM_TIMEOUT_MS = 300000; // 5 minutes
 export const useErrorMonitor = () => {
   const { authenticated } = usePrivy();
   const { stream, setErrorState } = useDreamshaperStore();
-  const { live, capacityReached } = useStreamStatus(stream?.id, false);
+  const { capacityReached } = useStreamStatus(stream?.id, false);
+  const { isPlaying } = usePlayerStore();
 
   const [timeoutReached, setTimeoutReached] = useState(false);
   const errorDetectedRef = useRef(false);
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (!live) {
+      if (!isPlaying) {
         setTimeoutReached(true);
       }
     }, MAX_STREAM_TIMEOUT_MS);
 
     return () => clearTimeout(timer);
-  }, [live]);
+  }, [isPlaying]);
 
   useEffect(() => {
     if (
-      (capacityReached || (timeoutReached && !live)) &&
+      (capacityReached || (timeoutReached && !isPlaying)) &&
       !errorDetectedRef.current
     ) {
       const reason = capacityReached
@@ -742,7 +757,7 @@ export const useErrorMonitor = () => {
       console.error("Capacity reached, reason:", reason, {
         capacityReached,
         timeoutReached,
-        live,
+        isPlaying,
       });
 
       track("daydream_error_overlay_shown", {
@@ -757,7 +772,7 @@ export const useErrorMonitor = () => {
   }, [
     capacityReached,
     timeoutReached,
-    live,
+    isPlaying,
     stream,
     authenticated,
     setErrorState,

@@ -70,8 +70,8 @@ export default function Daydream({
     );
   }
 
-  // If in guest mode and coming from "Try this prompt", allow access to create page
-  if (isGuestUser && inputPrompt && ready) {
+  // If in guest mode and coming from "Try this prompt" or "Create CTA", allow access to create page
+  if (isGuestUser && ready) {
     return (
       <OnboardProvider hasSharedPrompt={hasSharedPrompt || !!inputPrompt}>
         <DaydreamRenderer isGuestMode={true} />
@@ -157,7 +157,6 @@ function DaydreamRenderer({ isGuestMode = false }: { isGuestMode?: boolean }) {
 
         await Promise.all([
           identifyUser(user.id, distinctId || "", user),
-
           isNewUser ? submitToHubspot(user) : Promise.resolve(),
         ]);
 
@@ -174,14 +173,9 @@ function DaydreamRenderer({ isGuestMode = false }: { isGuestMode?: boolean }) {
         });
 
         if (fromGuestExperience) {
-          setCurrentStep("persona");
-          setIsInitializing(false);
-
           track("user_from_guest_experience", {
             user_id: user.id,
           });
-
-          return;
         }
 
         const initialStep =

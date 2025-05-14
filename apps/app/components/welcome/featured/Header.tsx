@@ -2,34 +2,26 @@
 
 import { TrackedButton } from "@/components/analytics/TrackedButton";
 import { ClipButton } from "@/components/daydream/Clipping/ClipButton";
+import { GuestSignupModal } from "@/components/guest/GuestSignupModal";
 import useFullscreenStore from "@/hooks/useFullscreenStore";
+import { useGuestUserStore } from "@/hooks/useGuestUser";
 import useMobileStore from "@/hooks/useMobileStore";
+import { useOverlayStore } from "@/hooks/useOverlayStore";
+import { usePrivy } from "@/hooks/usePrivy";
 import { usePromptStore } from "@/hooks/usePromptStore";
-import { useStreamStatus } from "@/hooks/useStreamStatus";
 import track from "@/lib/track";
+import { DiscordLogoIcon } from "@radix-ui/react-icons";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Dialog } from "@repo/design-system/components/ui/dialog";
-import { Separator } from "@repo/design-system/components/ui/separator";
 import { SidebarTrigger } from "@repo/design-system/components/ui/sidebar";
 import { cn } from "@repo/design-system/lib/utils";
-import {
-  ChevronLeft,
-  Scissors,
-  Search,
-  Share,
-  Share2,
-  Users2,
-} from "lucide-react";
+import { ChevronLeft, Share, Share2 } from "lucide-react";
 import { Inter } from "next/font/google";
 import Link from "next/link";
-import { useDreamshaperStore } from "../../../hooks/useDreamshaper";
-import { ShareModalContent, useShareModal } from "./ShareModal";
-import { usePrivy } from "@/hooks/usePrivy";
 import { useState } from "react";
-import { GuestSignupModal } from "@/components/guest/GuestSignupModal";
-import { useGuestUserStore } from "@/hooks/useGuestUser";
-import { useOverlayStore } from "@/hooks/useOverlayStore";
-import { DiscordLogoIcon } from "@radix-ui/react-icons";
+import { useDreamshaperStore } from "../../../hooks/useDreamshaper";
+import { usePlayerStore } from "./player";
+import { ShareModalContent, useShareModal } from "./ShareModal";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -46,7 +38,7 @@ export const Header = ({
   const { isFullscreen } = useFullscreenStore();
   const { isMobile, isMinHeightScreen } = useMobileStore();
   const { stream, streamUrl } = useDreamshaperStore();
-  const { live } = useStreamStatus(stream?.id);
+  const { isPlaying } = usePlayerStore();
   const { hasSubmittedPrompt } = usePromptStore();
   const { open, setOpen, openModal } = useShareModal();
   const { setHasRecordedClip, lastPrompt } = useGuestUserStore();
@@ -98,7 +90,7 @@ export const Header = ({
     <>
       {!isMobile && (
         <div className="fixed top-4 right-4 z-50">
-          <Link target="_blank" href="https://discord.gg/DwBPjfhmUt">
+          <Link target="_blank" href="https://discord.gg/5sZu8xmn6U">
             <TrackedButton
               trackingEvent="daydream_join_community_clicked"
               trackingProperties={{
@@ -182,26 +174,25 @@ export const Header = ({
               )}
             >
               <div className="flex items-center gap-2">
-                {isGuestMode ? (
-                  <ClipButton
-                    trackAnalytics={track}
-                    isAuthenticated={false}
-                    isGuestMode={true}
-                    onRecordAttempt={handleGuestRecordClip}
-                    className="mr-2 rounded-md"
-                  />
-                ) : (
-                  live &&
+                {isPlaying &&
                   stream?.output_playback_id &&
-                  streamUrl && (
+                  streamUrl &&
+                  (isGuestMode ? (
                     <ClipButton
-                      disabled={!stream?.output_playback_id || !streamUrl}
+                      trackAnalytics={track}
+                      isAuthenticated={false}
+                      isGuestMode={true}
+                      onRecordAttempt={handleGuestRecordClip}
                       className="mr-2 rounded-md"
+                    />
+                  ) : (
+                    <ClipButton
+                      className="mr-2 rounded-md"
+                      disabled={!stream?.output_playback_id || !streamUrl}
                       trackAnalytics={track}
                       isAuthenticated={authenticated}
                     />
-                  )
-                )}
+                  ))}
                 <TrackedButton
                   trackingEvent="daydream_share_button_clicked"
                   trackingProperties={{
@@ -235,19 +226,19 @@ export const Header = ({
           </Button>
 
           <div className="flex gap-2 justify-end max-w-[60%]">
-            {isGuestMode ? (
-              <ClipButton
-                trackAnalytics={track}
-                isAuthenticated={false}
-                isGuestMode={true}
-                onRecordAttempt={handleGuestRecordClip}
-                isMobile={true}
-                className="rounded-md"
-              />
-            ) : (
-              live &&
+            {isPlaying &&
               stream?.output_playback_id &&
-              streamUrl && (
+              streamUrl &&
+              (isGuestMode ? (
+                <ClipButton
+                  trackAnalytics={track}
+                  isAuthenticated={false}
+                  isGuestMode={true}
+                  onRecordAttempt={handleGuestRecordClip}
+                  isMobile={true}
+                  className="rounded-md"
+                />
+              ) : (
                 <ClipButton
                   disabled={!stream?.output_playback_id || !streamUrl}
                   trackAnalytics={track}
@@ -255,8 +246,7 @@ export const Header = ({
                   isMobile={true}
                   className="rounded-md"
                 />
-              )
-            )}
+              ))}
 
             {hasSubmittedPrompt && (
               <Button
@@ -269,7 +259,7 @@ export const Header = ({
               </Button>
             )}
 
-            <Link target="_blank" href="https://discord.gg/DwBPjfhmUt">
+            <Link target="_blank" href="https://discord.gg/5sZu8xmn6U">
               <Button
                 variant="ghost"
                 size="icon"

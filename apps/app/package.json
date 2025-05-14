@@ -20,7 +20,7 @@
     "@google-cloud/storage": "^7.16.0",
     "@headlessui/react": "^2.2.0",
     "@intercom/messenger-js-sdk": "^0.0.14",
-    "@livepeer/react": "^4.3.1",
+    "@livepeer/react": "4.3.3",
     "@livepeer/webrtmp-sdk": "^0.2.5",
     "@millicast/videojs-whep-plugin": "0.0.1-beta.1",
     "@privy-io/react-auth": "^1.93.0",

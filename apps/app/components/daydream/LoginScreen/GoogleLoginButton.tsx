@@ -35,7 +35,7 @@ export default function GoogleLoginButton() {
 
   return (
     <button
-      className="flex items-center justify-center h-9 gap-2 py-2.5 px-4 w-1/2 border border-[#E4E4E7] rounded-[6px] bg-white hover:bg-[#F5F5F5] transition-colors duration-200"
+      className="flex items-center justify-center h-9 gap-2 py-2.5 px-4 w-full border border-[#E4E4E7] rounded-[6px] bg-white hover:bg-[#F5F5F5] transition-colors duration-200"
       onClick={handleLogin}
       disabled={oAuthState.status === "loading"}
     >
