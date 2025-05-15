@@ -111,8 +111,8 @@ test.describe("Daydream Page Tests", () => {
         "playback",
         NUM_SCREENSHOTS,
         SCREENSHOT_INTERVAL_MS,
-        4000,
-        5,
+        3000,
+        3,
       );
     } catch (error) {
       page.screenshot({ path: `./screenshots/error.png` });
