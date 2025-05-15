@@ -1,4 +1,4 @@
-import React from "react";
+import React, { RefObject } from "react";
 import { Camera } from "lucide-react";
 import { DiscordLogoIcon } from "@radix-ui/react-icons";
 import { PromptForm } from "./PromptForm";
@@ -22,6 +22,7 @@ interface PromptPanelProps {
   onTryCameraClick: () => void;
   buttonText?: string;
   isAuthenticated?: boolean;
+  promptFormRef?: RefObject<HTMLFormElement>;
 }
 
 export function PromptPanel({
@@ -38,6 +39,7 @@ export function PromptPanel({
   onTryCameraClick,
   buttonText = "Pick your own video",
   isAuthenticated = false,
+  promptFormRef,
 }: PromptPanelProps) {
   const handlePastPromptClick = (prompt: string) => {
     setPromptValue(prompt);
@@ -154,6 +156,7 @@ export function PromptPanel({
             </div>
 
             <PromptForm
+              ref={promptFormRef}
               onSubmit={onSubmit}
               value={promptValue}
               onChange={onPromptChange}
