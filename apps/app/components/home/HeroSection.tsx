@@ -13,7 +13,12 @@ interface HeroSectionProps {
   submitPromptForm: () => void;
 }
 
-export const HeroSection = ({ handlePromptSubmit, promptValue, setPromptValue, submitPromptForm }: HeroSectionProps) => {
+export const HeroSection = ({
+  handlePromptSubmit,
+  promptValue,
+  setPromptValue,
+  submitPromptForm,
+}: HeroSectionProps) => {
   const router = useRouter();
   const [localPrompt, setLocalPrompt] = useState("");
 
@@ -23,15 +28,15 @@ export const HeroSection = ({ handlePromptSubmit, promptValue, setPromptValue, s
       setTimeout(() => {
         submitPromptForm();
       }, 0);
-      document.getElementById('main-content')?.scrollIntoView({ 
-        behavior: 'smooth',
-        block: 'start'
+      document.getElementById("main-content")?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
       });
     }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       e.preventDefault();
       handleSubmit();
     }
@@ -41,17 +46,16 @@ export const HeroSection = ({ handlePromptSubmit, promptValue, setPromptValue, s
     <section className="relative w-full h-screen flex flex-col">
       {/* Header */}
       <header className="relative z-10 w-full px-6 py-4 flex justify-center sm:justify-between items-center">
-        <h1 className="text-2xl font-bold tracking-widest italic text-gray-800 text-center w-full sm:w-auto">DAYDREAM</h1>
+        <h1 className="text-2xl font-bold tracking-widest italic text-gray-800 text-center w-full sm:w-auto">
+          DAYDREAM
+        </h1>
         <div className="hidden sm:block ml-4">
           <TrackedButton
             onClick={() => router.push("/create")}
             trackingEvent="explore_header_start_creating_clicked"
             trackingProperties={{ location: "explore_header" }}
             variant="outline"
-            className={cn(
-              "alwaysAnimatedButton",
-              "px-4",
-            )}
+            className={cn("alwaysAnimatedButton", "px-4")}
           >
             Sign in
           </TrackedButton>
@@ -69,7 +73,7 @@ export const HeroSection = ({ handlePromptSubmit, promptValue, setPromptValue, s
           >
             Transform any livestream with a prompt
           </motion.h1>
-          
+
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -79,7 +83,7 @@ export const HeroSection = ({ handlePromptSubmit, promptValue, setPromptValue, s
             <input
               type="text"
               value={localPrompt}
-              onChange={(e) => setLocalPrompt(e.target.value)}
+              onChange={e => setLocalPrompt(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder="Type any idea you have"
               className="w-full px-6 py-4 text-lg bg-white/10 backdrop-blur-md rounded-full shadow-lg text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-sky-500"
@@ -100,9 +104,9 @@ export const HeroSection = ({ handlePromptSubmit, promptValue, setPromptValue, s
         <motion.button
           type="button"
           onClick={() => {
-            document.getElementById('main-content')?.scrollIntoView({
-              behavior: 'smooth',
-              block: 'start',
+            document.getElementById("main-content")?.scrollIntoView({
+              behavior: "smooth",
+              block: "start",
             });
           }}
           animate={{
@@ -121,4 +125,4 @@ export const HeroSection = ({ handlePromptSubmit, promptValue, setPromptValue, s
       </footer>
     </section>
   );
-}; 
+};

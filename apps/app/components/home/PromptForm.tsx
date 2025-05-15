@@ -1,4 +1,10 @@
-import React, { useRef, useEffect, useMemo, forwardRef, useImperativeHandle } from "react";
+import React, {
+  useRef,
+  useEffect,
+  useMemo,
+  forwardRef,
+  useImperativeHandle,
+} from "react";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
 import { ArrowRight } from "lucide-react";
 import {
@@ -16,14 +22,17 @@ interface PromptFormProps {
 }
 
 export const PromptForm = forwardRef<HTMLFormElement, PromptFormProps>(
-  function PromptForm({
-    onSubmit,
-    value,
-    onChange,
-    isThrottled,
-    throttleTimeLeft,
-    disabled = false,
-  }, ref) {
+  function PromptForm(
+    {
+      onSubmit,
+      value,
+      onChange,
+      isThrottled,
+      throttleTimeLeft,
+      disabled = false,
+    },
+    ref,
+  ) {
     const { profanity, exceedsMaxLength } = useValidateInput(value);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const formRef = useRef<HTMLFormElement>(null);
@@ -67,7 +76,10 @@ export const PromptForm = forwardRef<HTMLFormElement, PromptFormProps>(
         const scrollHeight = textareaRef.current.scrollHeight;
         const minHeight = 56;
         const maxHeight = 150;
-        const newHeight = Math.min(Math.max(scrollHeight, minHeight), maxHeight);
+        const newHeight = Math.min(
+          Math.max(scrollHeight, minHeight),
+          maxHeight,
+        );
         textareaRef.current.style.height = `${newHeight}px`;
       }
     }, [value]);
@@ -112,9 +124,11 @@ export const PromptForm = forwardRef<HTMLFormElement, PromptFormProps>(
           </div>
         </div>
         {errorMsg && (
-          <div className="text-xs text-red-600 mt-2 text-center">{errorMsg}</div>
+          <div className="text-xs text-red-600 mt-2 text-center">
+            {errorMsg}
+          </div>
         )}
       </form>
     );
-  }
+  },
 );

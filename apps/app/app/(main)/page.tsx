@@ -85,7 +85,7 @@ export default function HomePage() {
 
   useEffect(() => {
     const handleScroll = () => {
-      const mainContent = document.getElementById('main-content');
+      const mainContent = document.getElementById("main-content");
       if (mainContent) {
         const rect = mainContent.getBoundingClientRect();
         setShowFooter(rect.top <= 56);
@@ -94,8 +94,8 @@ export default function HomePage() {
 
     const container = containerRef.current;
     if (container) {
-      container.addEventListener('scroll', handleScroll);
-      return () => container.removeEventListener('scroll', handleScroll);
+      container.addEventListener("scroll", handleScroll);
+      return () => container.removeEventListener("scroll", handleScroll);
     }
   }, [containerRef]);
 
@@ -154,13 +154,17 @@ export default function HomePage() {
             showContent ? "opacity-100 scale-100" : "opacity-0 scale-[0.98]"
           }`}
         >
-          <HeroSection 
+          <HeroSection
             handlePromptSubmit={handlePromptSubmit}
             promptValue={prompt}
             setPromptValue={setPrompt}
             submitPromptForm={submitPromptForm}
           />
-          <div id="main-content" className="flex flex-col md:flex-row gap-0 md:gap-8 w-full overflow-hidden pb-14" style={{height: 'calc(100vh - 56px)'}}>
+          <div
+            id="main-content"
+            className="flex flex-col md:flex-row gap-0 md:gap-8 w-full overflow-hidden pb-14"
+            style={{ height: "calc(100vh - 56px)" }}
+          >
             <VideoSection />
 
             <PromptPanel

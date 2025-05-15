@@ -7,9 +7,9 @@ interface FooterProps {
 
 export const Footer = ({ showFooter }: FooterProps) => {
   return (
-    <div 
+    <div
       className={`fixed bottom-0 left-0 w-full z-[1100] bg-white/20 backdrop-blur-md flex justify-center transition-opacity duration-300 ${
-        showFooter ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        showFooter ? "opacity-100" : "opacity-0 pointer-events-none"
       }`}
     >
       <div className="flex flex-col items-center gap-2 md:flex-row md:gap-6 py-4 px-4">
@@ -50,4 +50,4 @@ export const Footer = ({ showFooter }: FooterProps) => {
       </div>
     </div>
   );
-}; 
+};
