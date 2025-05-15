@@ -46,7 +46,8 @@ export const BentoGridOverlay = () => {
   const { stream } = useDreamshaperStore();
   const { handleStreamUpdate } = useStreamUpdates();
   const { setLastSubmittedPrompt, setHasSubmittedPrompt } = usePromptStore();
-  const { setLastPrompt, incrementPromptCount } = useGuestUserStore();
+  const { setIsGuestUser, setLastPrompt, incrementPromptCount } =
+    useGuestUserStore();
   const { authenticated, user } = usePrivy();
   const [initialClips, setInitialClips] = useState<any[]>([]);
   const [myClips, setMyClips] = useState<any[]>([]);
@@ -354,7 +355,10 @@ export const BentoGridOverlay = () => {
                       <Button
                         variant="outline"
                         className={cn("alwaysAnimatedButton", "px-4")}
-                        onClick={() => (window.location.href = "/login")}
+                        onClick={() => {
+                          // Reset guest user state to ensure they can sign in
+                          setIsGuestUser(false);
+                        }}
                       >
                         Sign in
                       </Button>
@@ -386,7 +390,7 @@ export const BentoGridOverlay = () => {
                                 )}
                                 onClick={e => {
                                   e.stopPropagation();
-                                  const link = `https://daydream.live/clips/${clip.id}`;
+                                  const link = `${window.location.origin}/clips/${clip.slug}`;
                                   navigator.clipboard.writeText(link);
                                   setCopiedClipId(clip.id);
                                   setTimeout(() => setCopiedClipId(null), 3000);
