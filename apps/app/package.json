@@ -31,7 +31,7 @@
     "@repo/design-system": "workspace:*",
     "@repo/next-config": "workspace:*",
     "@repo/tailwind-config": "workspace:*",
-    "@sentry/nextjs": "^8.42.0",
+    "@sentry/nextjs": "^9.19.0",
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.46.1",
     "@types/video.js": "^7.3.58",
