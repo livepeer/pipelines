@@ -51,7 +51,7 @@ export const usePlayerStore = create<PlayerState>(set => ({
 
 const initialDelay = 1500;
 const linearPhaseDelay = 100;
-const linearPhaseEndCount = 50;
+const linearPhaseEndCount = 20;
 
 const calculateDelay = (count: number): number => {
   const baseExponentialDelay = 200;
