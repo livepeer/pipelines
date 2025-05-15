@@ -121,7 +121,7 @@ if (typeof window === "undefined") {
     },
     60 * 60 * 1000,
   );
-
+  /* disable reapply prompt worker
   setInterval(async () => {
     try {
       const now = Date.now();
@@ -146,7 +146,7 @@ if (typeof window === "undefined") {
     } catch (error) {
       console.error("Error in reapply prompt worker:", error);
     }
-  }, REAPPLY_INTERVAL);
+  }, REAPPLY_INTERVAL); */
 }
 
 const applyPromptToStream = async (promptText: string) => {
