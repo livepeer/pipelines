@@ -1,5 +1,4 @@
 import { expect, Locator, test } from "@playwright/test";
-import pixelmatch from "pixelmatch";
 import sharp from "sharp";
 import {
   ENVIRONMENT,
@@ -242,6 +241,8 @@ export async function assertVideoContentChanging(
   });
 
   await test.step("Verify inter-frame differences (content changing)", async () => {
+    const pixelmatch = (await import("pixelmatch")).default;
+
     for (let i = 0; i < processedFrames.length - 1; i++) {
       const buffer1 = processedFrames[i].buffer;
       const buffer2 = processedFrames[i + 1].buffer;
