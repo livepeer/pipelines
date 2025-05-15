@@ -8,7 +8,7 @@ interface PlaybackUrlStore {
 }
 
 export const usePlaybackUrlStore = create<PlaybackUrlStore>(set => ({
-  loading: false,
+  loading: true,
   playbackUrl: null,
   setPlaybackUrl: url => set({ playbackUrl: url }),
   setLoading: (loading: boolean) => set({ loading }),
