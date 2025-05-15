@@ -54,9 +54,10 @@ export function PromptPanel({
   // Calculate the height of the input container on mobile (approximately 76px)
   // 44px input height + 2 * 16px padding (p-4) = 76px
   const inputBoxHeight = 76;
-  const bottomPosition = 56; // Footer height
+  const footerHeight = 56; // Footer height
   const marginBottom = 15; // Margin between prompt panel and input box
-  const promptPanelBottom = bottomPosition + inputBoxHeight + marginBottom;
+  const safeAreaBottom = 20; // Extra padding for browser home bars
+  const promptPanelBottom = footerHeight + inputBoxHeight + marginBottom;
 
   return (
     <div
@@ -110,12 +111,13 @@ export function PromptPanel({
         className={`
           ${
             isMobile
-              ? "w-full flex flex-col overflow-hidden fixed bottom-[56px] left-0 right-0"
+              ? "w-full flex flex-col overflow-hidden fixed z-40 left-0 right-0"
               : "w-full flex flex-col overflow-hidden h-full md:h-[calc(100%-49px)] fixed bottom-0 left-0 right-0 md:relative"
           }
         `}
         style={{
           position: isMobile ? "fixed" : "relative",
+          bottom: isMobile ? `${footerHeight}px` : undefined,
           background: isMobile
             ? "transparent"
             : "linear-gradient(180deg, #FFFFFF 0%, #B9D1DD 100%)",
@@ -213,9 +215,7 @@ export function PromptPanel({
               </div>
             )}
 
-            <div
-              className={`${isMobile ? "fixed bottom-[56px] left-0 right-0 p-4 z-40 bg-black" : ""}`}
-            >
+            <div className={`${isMobile ? "p-4 bg-black pb-4" : ""}`}>
               <PromptForm
                 ref={promptFormRef}
                 onSubmit={onSubmit}

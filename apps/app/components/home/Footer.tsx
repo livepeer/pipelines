@@ -9,7 +9,12 @@ interface FooterProps {
 export const Footer = ({ showFooter, isMobile = false }: FooterProps) => {
   return (
     <div
-      style={{ width: isMobile ? "100%" : "calc(100vw - 15px)" }}
+      style={{
+        width: isMobile ? "100%" : "calc(100vw - 15px)",
+        paddingBottom: isMobile
+          ? "env(safe-area-inset-bottom, 16px)"
+          : undefined,
+      }}
       className={`fixed bottom-0 left-0 z-30 ${isMobile ? "bg-white" : "bg-white/20 backdrop-blur-md"} flex justify-center transition-opacity duration-300 ${
         showFooter ? "opacity-100" : "opacity-0 pointer-events-none"
       }`}
