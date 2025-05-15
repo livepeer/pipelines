@@ -150,7 +150,7 @@ export default function HomePage() {
         />
 
         <div
-          className={`z-10 w-full p-0 md:px-4 md:pt-0 pb-6 md:pb-0 flex flex-col gap-2 md:gap-0 transition-all duration-1000 ease-in-out ${
+          className={`z-10 w-full p-0 md:px-4 md:pt-0 flex flex-col transition-all duration-1000 ease-in-out ${
             showContent ? "opacity-100 scale-100" : "opacity-0 scale-[0.98]"
           }`}
         >

@@ -1,10 +1,11 @@
 import { motion } from "framer-motion";
 import { WandSparkles, ChevronDown } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { TrackedButton } from "../analytics/TrackedButton";
 import VideoAISparkles from "../daydream/CustomIcons/VideoAISparkles";
 import { cn } from "@repo/design-system/lib/utils";
+import { TRANSFORMED_PLAYBACK_ID } from "./VideoSection";
 
 interface HeroSectionProps {
   handlePromptSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
@@ -23,6 +24,44 @@ export const HeroSection = ({
 }: HeroSectionProps) => {
   const router = useRouter();
   const [localPrompt, setLocalPrompt] = useState("");
+  const [placeholderIndex, setPlaceholderIndex] = useState(0);
+  const [displayText, setDisplayText] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [typingSpeed, setTypingSpeed] = useState(100);
+
+  const placeholders = [
+    "an art style",
+    "a famous character",
+    "a fantasy world",
+  ];
+
+  useEffect(() => {
+    const currentPlaceholder = placeholders[placeholderIndex];
+
+    if (!isDeleting && displayText === currentPlaceholder) {
+      // Pause before starting to delete
+      setTimeout(() => {
+        setIsDeleting(true);
+        setTypingSpeed(50);
+      }, 2000);
+      return;
+    }
+    if (isDeleting && displayText === "") {
+      // Move to next placeholder after deletion
+      setPlaceholderIndex(current => (current + 1) % placeholders.length);
+      setIsDeleting(false);
+      setTypingSpeed(100);
+      return;
+    }
+    const timer = setTimeout(() => {
+      if (isDeleting) {
+        setDisplayText(prev => prev.slice(0, -1));
+      } else {
+        setDisplayText(currentPlaceholder.slice(0, displayText.length + 1));
+      }
+    }, typingSpeed);
+    return () => clearTimeout(timer);
+  }, [displayText, isDeleting, placeholderIndex, placeholders]);
 
   const handleSubmit = () => {
     if (localPrompt.trim()) {
@@ -45,7 +84,10 @@ export const HeroSection = ({
   };
 
   return (
-    <section className="relative w-full h-screen flex flex-col">
+    <section
+      className="relative w-full flex flex-col"
+      style={{ height: "100vh" }}
+    >
       {/* Header */}
       <header className="relative z-10 w-full px-6 py-4 flex justify-center sm:justify-between items-center">
         <h1 className="text-2xl font-bold tracking-widest italic text-gray-800 text-center w-full sm:w-auto">
@@ -56,8 +98,8 @@ export const HeroSection = ({
             onClick={() => router.push("/create")}
             trackingEvent="explore_header_start_creating_clicked"
             trackingProperties={{ location: "explore_header" }}
-            variant="outline"
-            className={cn("alwaysAnimatedButton", "px-8 py-2 h-10 rounded-lg")}
+            variant="default"
+            className={cn("px-8 py-2 h-10 rounded-lg")}
           >
             {isAuthenticated ? "Create" : "Sign in"}
           </TrackedButton>
@@ -82,27 +124,57 @@ export const HeroSection = ({
             transition={{ duration: 0.8, delay: 0.4 }}
             className="relative max-w-2xl mx-auto mt-8"
           >
-            <input
-              type="text"
-              value={localPrompt}
-              onChange={e => setLocalPrompt(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="Type any idea you have"
-              className="w-full px-6 py-4 text-lg bg-white/10 backdrop-blur-md rounded-full shadow-lg text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-sky-500"
-            />
-            <button
-              onClick={handleSubmit}
-              className="absolute right-2 top-1/2 -translate-y-1/2 px-6 py-2 bg-sky-500 text-white rounded-full shadow-lg hover:bg-sky-600 transition-colors flex items-center gap-2"
-            >
-              <span className="hidden sm:inline">See it in action</span>
-              <WandSparkles className="w-5 h-5" />
-            </button>
+            <div className="relative">
+              <input
+                type="text"
+                value={localPrompt}
+                onChange={e => setLocalPrompt(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder={`Describe ${displayText}`}
+                className="w-full px-6 pr-24 py-4 text-lg bg-white/10 backdrop-blur-md rounded-full shadow-lg text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-sky-500"
+              />
+              {localPrompt === "" && (
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 pointer-events-none">
+                  <span className="text-gray-400 text-lg px-6 flex items-center">
+                    Describe {displayText}
+                    <span className="inline-block w-[2px] h-5 bg-gray-400 ml-[1px] animate-blink mt-[2px]"></span>
+                  </span>
+                </div>
+              )}
+              <button
+                onClick={handleSubmit}
+                className={cn(
+                  "absolute right-4 top-1/2 -translate-y-1/2 px-6 py-2 bg-gray-800 text-white rounded-full shadow-lg hover:bg-gray-600 transition-colors flex items-center gap-2",
+                )}
+              >
+                <span className="hidden sm:inline">See transformation</span>
+                <WandSparkles className="w-5 h-5" />
+              </button>
+            </div>
           </motion.div>
         </div>
       </main>
 
       {/* Footer with bouncing arrow */}
-      <footer className="relative w-full flex justify-center z-[1201] mb-24">
+      <footer className="relative w-full flex flex-col items-center z-[1201] mb-24">
+        <div
+          className="w-[180px] aspect-video rounded-lg overflow-hidden shadow-lg mb-8 cursor-pointer hover:shadow-xl transition-shadow relative"
+          onClick={() => {
+            document.getElementById("main-content")?.scrollIntoView({
+              behavior: "smooth",
+              block: "start",
+            });
+          }}
+        >
+          <iframe
+            src={`https://monster.lvpr.tv/?v=${TRANSFORMED_PLAYBACK_ID}&lowLatency=true&backoffMax=1000&ingestPlayback=true&controls=false`}
+            className="w-full h-full"
+            allow="autoplay; fullscreen"
+            allowFullScreen
+            scrolling="no"
+          />
+          <div className="absolute inset-0 bg-transparent" />
+        </div>
         <motion.button
           type="button"
           onClick={() => {

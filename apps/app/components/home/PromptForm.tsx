@@ -133,6 +133,9 @@ export const PromptForm = forwardRef<HTMLFormElement, PromptFormProps>(
             {errorMsg}
           </div>
         )}
+        <p className="text-sm italic text-gray-500 mt-4 text-center">
+          Each prompt is applied for 5 seconds
+        </p>
       </form>
     );
   },
