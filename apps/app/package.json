@@ -48,7 +48,7 @@
     "humps": "^2.0.1",
     "kafkajs": "^2.2.4",
     "livepeer": "^3.5.0",
-    "lucide-react": "^0.469.0",
+    "lucide-react": "^0.510.0",
     "mime-types": "^3.0.1",
     "mixpanel": "^0.18.0",
     "nanoid": "^5.0.8",
