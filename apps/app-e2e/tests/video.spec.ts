@@ -90,8 +90,47 @@ test.describe("Daydream Page Tests", () => {
       const broadcast = page.getByTestId(BROADCAST_VIDEO_TEST_ID);
       const playback = page.getByTestId(PLAYBACK_VIDEO_TEST_ID);
 
+      await page.locator('[title="Copy system info"]').click();
+      await page.waitForTimeout(10);
+      const clipboardText = await page.evaluate(async () => {
+        return await navigator.clipboard.readText();
+      });
+
+      console.log("Clipboard contains:", clipboardText);
+
       await assertVideoPlaying(broadcast);
       await assertVideoPlaying(playback);
+
+      //     const streamInfo = await playback.evaluate((video: HTMLVideoElement) => {
+      //       const stream = video.srcObject;
+      //       const audioCtx = new AudioContext();
+      //       if (!(stream instanceof MediaStream)) {
+      //         console.log("No stream found");
+      //         return;
+      //       }
+      // const source = audioCtx.createMediaStreamSource(stream);
+      // const analyser = audioCtx.createAnalyser();
+
+      // analyser.fftSize = 2048;
+      // const bufferLength = analyser.fftSize;
+      // const dataArray = new Uint8Array(bufferLength);
+
+      // source.connect(analyser);
+
+      // function logWaveform() {
+      //   analyser.getByteTimeDomainData(dataArray);
+
+      //   // Print a basic snapshot of the waveform (min/max)
+      //   const min = Math.min(...dataArray);
+      //   const max = Math.max(...dataArray);
+      //   console.log(`Waveform: min=${min}, max=${max}, mid=${dataArray[Math.floor(bufferLength / 2)]}`);
+
+      //   // Repeat every 500ms
+      //   setTimeout(logWaveform, 500);
+      // }
+
+      // logWaveform();
+      //     });
 
       await assertVideoContentChanging(
         broadcast,

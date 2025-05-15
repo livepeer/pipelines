@@ -48,13 +48,17 @@ export default defineConfig({
       name: "monitor",
       testIgnore: "*dev*",
       use: {
+        contextOptions: {
+          permissions: ["clipboard-read", "clipboard-write"],
+        },
         ...devices["Desktop Chrome"],
         channel: "chrome",
-        headless: true,
+        headless: false,
         launchOptions: {
           args: [
             "--disable-web-security",
             "--use-fake-device-for-media-stream",
+            "--use-file-for-fake-audio-capture=test-audio.wav",
           ],
         },
       },
