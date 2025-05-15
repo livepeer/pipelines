@@ -26,6 +26,7 @@ export function PromptForm({
   const { profanity, exceedsMaxLength } = useValidateInput(value);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
+  const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -36,10 +37,37 @@ export function PromptForm({
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
+      e.stopPropagation();
       if (
         !isThrottled &&
         !disabled &&
         value.trim() &&
+        !profanity &&
+        !exceedsMaxLength
+      ) {
+        formRef.current?.requestSubmit();
+      }
+      return false;
+    }
+  };
+
+  const handleInput = (e: React.FormEvent<HTMLTextAreaElement>) => {
+    const input = e.currentTarget;
+    if (input.value.endsWith("\n")) {
+      e.preventDefault();
+      const cleanValue = input.value.slice(0, -1);
+      if (typeof onChange === "function") {
+        const fakeEvent = {
+          target: { value: cleanValue },
+          currentTarget: { value: cleanValue },
+        } as React.ChangeEvent<HTMLTextAreaElement>;
+        onChange(fakeEvent);
+      }
+
+      if (
+        !isThrottled &&
+        !disabled &&
+        cleanValue.trim() &&
         !profanity &&
         !exceedsMaxLength
       ) {
@@ -87,15 +115,16 @@ export function PromptForm({
           value={value}
           onChange={onChange}
           onKeyDown={handleKeyDown}
+          onInput={handleInput}
           disabled={isThrottled || disabled}
           rows={1}
           style={{ minHeight: "56px" }}
         />
 
-        <div className="absolute right-4 bottom-3 flex items-center justify-center -mb-[2px]">
+        <div className="absolute right-4 bottom-3 flex items-center justify-center -mb-[2px] z-20">
           <button
             type="submit"
-            className="bg-black text-white rounded-full w-10 h-10 flex items-center justify-center"
+            className="bg-black text-white rounded-full w-10 h-10 flex items-center justify-center shadow-md"
             disabled={
               isThrottled ||
               disabled ||

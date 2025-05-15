@@ -71,6 +71,10 @@ export function PromptDisplay({
   onPastPromptClick,
 }: PromptDisplayProps) {
   const MAX_QUEUE_SIZE = 5;
+  const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
+
+  // Only show max 5 prompts on mobile with fading effect
+  const MAX_MOBILE_PROMPTS = 5;
 
   const getFilledQueue = () => {
     const filledQueue = [...promptQueue];
@@ -93,6 +97,11 @@ export function PromptDisplay({
   const highlightedPrompt = displayedPrompts[0];
   const nonEmptyQueueItems = filledQueue.filter(item => item.text !== "");
 
+  // For mobile, only show the most recent prompts with fade effect
+  const visiblePrompts = isMobile
+    ? nonHighlightedPrompts.slice(0, MAX_MOBILE_PROMPTS - 1)
+    : nonHighlightedPrompts;
+
   useMemo(() => {
     promptAvatarSeeds.forEach(seed => {
       if (seed && !usernameCache.has(seed)) {
@@ -110,27 +119,33 @@ export function PromptDisplay({
   }, []);
 
   return (
-    <div className="w-full flex flex-col justify-end p-4 pb-0 overflow-hidden relative">
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/30 md:hidden pointer-events-none z-0"></div>
-      <div className="flex flex-col gap-2 relative z-10 w-full mb-4">
-        {nonHighlightedPrompts.length > 0 && (
-          <div className="flex flex-col gap-2 w-full">
-            {[...nonHighlightedPrompts].reverse().map((prevPrompt, rIndex) => {
-              const index = nonHighlightedPrompts.length - rIndex;
+    <div className="w-full flex flex-col justify-end p-0 md:p-4 pb-0 overflow-hidden relative">
+      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent md:hidden pointer-events-none z-0"></div>
+
+      <div className="flex flex-col gap-2 relative z-10 w-full mb-4 pb-0 md:pb-4">
+        {visiblePrompts.length > 0 && (
+          <div className="flex flex-col gap-2 w-full px-4 md:px-0">
+            {[...visiblePrompts].reverse().map((prevPrompt, rIndex) => {
+              const index = visiblePrompts.length - rIndex;
               const isUserPrompt = userPromptIndices[index];
               const seed = promptAvatarSeeds[index];
               const username = seed ? generateUsername(seed) : "User";
               const color = getColorFromSeed(username);
 
+              const opacity = isMobile
+                ? Math.max(0, 1 - rIndex / (MAX_MOBILE_PROMPTS - 1))
+                : 1;
+
               return (
                 <div
                   key={`prompt-past-${index}-${prevPrompt.substring(0, 10)}`}
-                  className={`p-2 px-3 text-sm md:text-base text-gray-500 italic flex items-center rounded-xl w-full ${
+                  className={`p-2 px-3 text-sm md:text-base md:text-gray-500 text-white italic flex items-center rounded-xl w-full ${
                     isUserPrompt ? "font-medium" : ""
                   } ${onPastPromptClick ? "cursor-pointer hover:bg-black/5 hover:backdrop-blur-[1px]" : ""}`}
                   style={{
                     transition: "all 0.3s ease-out",
                     borderRadius: "12px",
+                    opacity: opacity,
                   }}
                   onClick={() =>
                     onPastPromptClick && onPastPromptClick(prevPrompt)
@@ -156,10 +171,11 @@ export function PromptDisplay({
         {highlightedPrompt && (
           <div
             key={`prompt-highlighted-${highlightedPrompt.substring(0, 10)}`}
-            className={`p-3 px-4 text-sm md:text-base text-white md:text-black font-bold flex items-center animate-fadeSlideIn relative alwaysAnimatedButton bg-white/90 rounded-xl w-full ${onPastPromptClick ? "cursor-pointer hover:bg-white" : ""}`}
+            className={`p-3 px-4 mx-4 md:mx-0 text-sm md:text-base text-white md:text-black font-bold flex items-center animate-fadeSlideIn relative alwaysAnimatedButton backdrop-blur-sm rounded-xl w-[calc(100%-2rem)] md:w-full ${onPastPromptClick ? "cursor-pointer md:hover:bg-white/10 hover:bg-black/10" : ""}`}
             style={{
               transition: "all 0.3s ease-out",
               borderRadius: "12px",
+              backgroundColor: "transparent !important",
             }}
             onClick={() =>
               onPastPromptClick && onPastPromptClick(highlightedPrompt)
@@ -207,6 +223,7 @@ export function PromptDisplay({
       <style jsx global>{`
         .alwaysAnimatedButton {
           border-radius: 12px !important;
+          background-color: transparent !important;
         }
         .alwaysAnimatedButton::before {
           border-radius: 12px !important;
