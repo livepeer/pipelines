@@ -13,3 +13,11 @@ export const isLivepeerEmail = (user: User | null | undefined): boolean => {
 
   return email.endsWith("@livepeer.org");
 };
+
+export const MULTIPLAYER_FALLBACK_STREAMS = [
+  {
+    streamKey: "stk_1MAZq3UNNMRRWVvA",
+    originalPlaybackId: "85c28sa2o8wppm58",
+    transformedPlaybackId: "95705ossoplg7uvq",
+  },
+];

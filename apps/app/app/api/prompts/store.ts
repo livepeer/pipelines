@@ -10,6 +10,7 @@ import {
 import { db } from "../../../lib/db";
 import { streams } from "../../../lib/db/schema";
 import { eq } from "drizzle-orm";
+import { getMultiplayerStream } from "../streams/multiplayer/actions";
 
 // Mock data - used for initializing the database
 const initialPrompts = [
@@ -67,7 +68,6 @@ const otherPeoplePrompts = [
 const HIGHLIGHT_DURATION = 10000;
 const MAX_QUEUE_SIZE = 100;
 const FRONTEND_DISPLAY_SIZE = 20;
-const TARGET_STREAM_KEY = "stk_SiDx98B9diXxRJks";
 const RANDOM_PROMPT_INTERVAL = 20000;
 const REAPPLY_INTERVAL = 60000; // 1 minute
 
@@ -169,15 +169,19 @@ const applyPromptToStream = async (promptText: string) => {
         return false;
       }
 
+      const {
+        data: { streamKey: targetStreamKey },
+      } = await getMultiplayerStream();
+
       const stream = await db
         .select({ gatewayHost: streams.gatewayHost })
         .from(streams)
-        .where(eq(streams.streamKey, TARGET_STREAM_KEY))
+        .where(eq(streams.streamKey, targetStreamKey))
         .limit(1);
 
       if (!stream || stream.length === 0 || !stream[0].gatewayHost) {
         console.error(
-          `Stream not found or missing gateway host for key: ${TARGET_STREAM_KEY}`,
+          `Stream not found or missing gateway host for key: ${targetStreamKey}`,
         );
         return false;
       }
@@ -415,10 +419,10 @@ const applyPromptToStream = async (promptText: string) => {
         `${process.env.STREAM_STATUS_ENDPOINT_USER}:${process.env.STREAM_STATUS_ENDPOINT_PASSWORD}`,
       ).toString("base64");
 
-      console.log("Applying prompt to stream:", TARGET_STREAM_KEY);
+      console.log("Applying prompt to stream:", targetStreamKey);
       console.log("Using gateway host from database:", gatewayHost);
 
-      const apiUrl = `https://${gatewayHost}/live/video-to-video/${TARGET_STREAM_KEY}/update`;
+      const apiUrl = `https://${gatewayHost}/live/video-to-video/${targetStreamKey}/update`;
       console.log("Making request to:", apiUrl);
 
       const response = await fetch(apiUrl, {
