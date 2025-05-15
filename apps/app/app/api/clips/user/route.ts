@@ -1,14 +1,14 @@
+import { getPrivyUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { clips, users, clipSlugs } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 
-export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const userId = searchParams.get("userId");
+export async function GET() {
+  const user = await getPrivyUser();
 
-  if (!userId) {
-    return NextResponse.json({ error: "User ID is required" }, { status: 400 });
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const result = await db
@@ -28,7 +28,7 @@ export async function GET(request: Request) {
     .from(clips)
     .innerJoin(users, eq(clips.author_user_id, users.id))
     .innerJoin(clipSlugs, eq(clips.id, clipSlugs.clip_id))
-    .where(eq(clips.author_user_id, userId))
+    .where(eq(clips.author_user_id, user.userId))
     .orderBy(clips.created_at);
 
   return NextResponse.json({ clips: result });
