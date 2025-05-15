@@ -167,7 +167,7 @@ export const HeroSection = ({
           }}
         >
           <iframe
-            src={`https://monster.lvpr.tv/?v=${TRANSFORMED_PLAYBACK_ID}&lowLatency=true&backoffMax=1000&ingestPlayback=true&controls=true`}
+            src={`https://lvpr.tv/?v=${TRANSFORMED_PLAYBACK_ID}&lowLatency=true&backoffMax=1000&ingestPlayback=true&controls=true`}
             className="w-full h-full absolute inset-0"
             allow="autoplay; fullscreen"
             allowFullScreen
