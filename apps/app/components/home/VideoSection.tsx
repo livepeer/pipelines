@@ -2,17 +2,18 @@
 
 import React, { useState, useEffect } from "react";
 import { LivepeerPlayer } from "./LivepeerPlayer";
-import { Button } from "@repo/design-system/components/ui/button";
 
-export const TRANSFORMED_PLAYBACK_ID = "dfdb4lwnbb5ckbls";
-const ORIGINAL_PLAYBACK_ID = "85c28sa2o8wppm58";
+export const TRANSFORMED_PLAYBACK_ID =
+  process.env.NEXT_PUBLIC_TRANSFORMED_PLAYBACK_ID ?? "";
+const ORIGINAL_PLAYBACK_ID = process.env.NEXT_PUBLIC_ORIGINAL_PLAYBACK_ID ?? "";
+
+const env = process.env.NODE_ENV;
 
 export function VideoSection() {
   const [isLoading, setIsLoading] = useState(true);
   const [useLivepeerPlayer, setUseLivepeerPlayer] = useState(false);
-
-  const transformedIframeUrl = `https://lvpr.tv/?v=${TRANSFORMED_PLAYBACK_ID}&lowLatency=true&backoffMax=1000&ingestPlayback=true`;
-  const originalIframeUrl = `https://lvpr.tv/?v=${ORIGINAL_PLAYBACK_ID}&lowLatency=false&backoffMax=1000&ingestPlayback=true&muted=true`;
+  const transformedIframeUrl = `https://${env === "production" ? "lvpr.tv" : "monster.lvpr.tv"}?v=${TRANSFORMED_PLAYBACK_ID}&lowLatency=true&backoffMax=1000&ingestPlayback=true`;
+  const originalIframeUrl = `https://${env === "production" ? "lvpr.tv" : "lvpr.tv"}?v=${ORIGINAL_PLAYBACK_ID}&lowLatency=false&backoffMax=1000&ingestPlayback=true&muted=true`;
 
   useEffect(() => {
     if (typeof window !== "undefined") {

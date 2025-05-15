@@ -67,7 +67,8 @@ const otherPeoplePrompts = [
 const HIGHLIGHT_DURATION = 10000;
 const MAX_QUEUE_SIZE = 100;
 const FRONTEND_DISPLAY_SIZE = 20;
-const TARGET_STREAM_KEY = "stk_SiDx98B9diXxRJks";
+const TARGET_STREAM_KEY = process.env
+  .NEXT_PUBLIC_MULTIPLAYER_STREAM_KEY as string;
 const RANDOM_PROMPT_INTERVAL = 20000;
 const REAPPLY_INTERVAL = 60000; // 1 minute
 
