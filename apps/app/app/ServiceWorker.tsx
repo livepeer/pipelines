@@ -5,7 +5,7 @@ import { getSrc } from "@livepeer/react/external";
 import { useEffect } from "react";
 
 export const ServiceWorker = () => {
-  const { setPlaybackUrl } = usePlaybackUrlStore();
+  const { setPlaybackUrl, setLoading } = usePlaybackUrlStore();
 
   useEffect(() => {
     if (typeof window !== "undefined" && "serviceWorker" in navigator) {
@@ -56,6 +56,16 @@ export const ServiceWorker = () => {
             event.data.payload,
           );
           setPlaybackUrl(event.data.payload.headerValue);
+          setLoading(false);
+        }
+
+        if (event.data && event.data.type === "HEADER_NOT_FOUND") {
+          console.debug(
+            "[Service Worker Client]: Message received:",
+            event.data.payload,
+          );
+          setPlaybackUrl(null);
+          setLoading(false);
         }
       };
 

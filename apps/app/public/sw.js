@@ -59,6 +59,16 @@ self.addEventListener("fetch", event => {
                   });
                 }
               });
+          } else {
+            self.clients
+              .matchAll({ type: "window", includeUncontrolled: true })
+              .then(clients => {
+                if (clients && clients.length) {
+                  clients.forEach(client => {
+                    client.postMessage({ type: "HEADER_NOT_FOUND" });
+                  });
+                }
+              });
           }
           return response;
         })
