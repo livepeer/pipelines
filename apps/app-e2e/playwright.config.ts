@@ -8,7 +8,13 @@ dotenv.config();
  * https://github.com/motdotla/dotenv
  */
 
-const APP_URL = process.env.TEST_APP_URL;
+process.env.EXTRA_QP = "";
+// temporarily use a previous commit with silent audio
+let APP_URL = process.env.TEST_APP_URL;
+if (APP_URL?.includes("monster")) {
+  APP_URL = "https://pipelines-app-git-mh-audio-livepeer.vercel.app/";
+  process.env.EXTRA_QP = "orchestrator=lvpr.io&";
+}
 
 if (!APP_URL) {
   console.error(
@@ -49,6 +55,9 @@ export default defineConfig({
       name: "monitor",
       testIgnore: "*dev*",
       use: {
+        contextOptions: {
+          permissions: ["clipboard-read", "clipboard-write"],
+        },
         ...devices["Desktop Chrome"],
         channel: "chrome",
         headless: true,

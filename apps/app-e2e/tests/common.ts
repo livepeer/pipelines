@@ -42,15 +42,14 @@ export function selectWhipServer(path: string): string {
   if (REGIONS.length > 0 && Math.random() > 0.49) {
     const region = REGIONS[Math.floor(Math.random() * REGIONS.length)];
     console.log("selected whip region", region);
-    const whipServerParam = `whipServer=https://${region}/live/video-to-video/`;
-    if (retPath.includes("?")) {
-      retPath = `${retPath}&${whipServerParam}`;
-    } else {
-      retPath = `${retPath}?${whipServerParam}`;
-    }
+    retPath = regionalPath(region, path);
   }
   console.log("generated path for request (with WHIP request)", retPath);
   return retPath;
+}
+
+export function regionalPath(region: string, path: string): string {
+  return `${path}?${process.env.EXTRA_QP}whipServer=https://${region}/live/video-to-video/`;
 }
 
 /**
@@ -183,7 +182,7 @@ export async function assertVideoContentChanging(
     for (let i = 0; i < numFrames; i++) {
       const screenshot = await video.screenshot({
         type: EXTENSION,
-        path: `screenshots/${videoTitle}/${i}.${EXTENSION}`,
+        path: `screenshots/${testName}/${videoTitle}/${i}.${EXTENSION}`,
       });
       frameBuffers.push(screenshot);
       if (i < numFrames - 1) {
