@@ -12,7 +12,7 @@ export const Footer = ({ showFooter }: FooterProps) => {
         showFooter ? "opacity-100" : "opacity-0 pointer-events-none"
       }`}
     >
-      <div className="flex flex-col items-center gap-2 md:flex-row md:gap-6 py-4 px-4">
+      <div className="flex flex-col items-center gap-2 md:flex-row md:gap-6 py-2 px-4">
         <TrackedButton
           trackingEvent="footer_request_api_access_clicked"
           trackingProperties={{ location: "footer" }}
