@@ -109,7 +109,7 @@ export default function HomePage() {
       sessionId,
     };
     setOptimisticPrompts(prev => [...prev, optimisticPrompt]);
-    await addToPromptQueue(value, userAvatarSeed, true, sessionId);
+    await addToPromptQueue(value, userAvatarSeed, true);
     setOptimisticPrompts(prev => prev.filter(p => p.sessionId !== sessionId));
 
     track("daydream_landing_page_prompt_submitted", {
