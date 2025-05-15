@@ -31,6 +31,7 @@ export default function HomePage() {
   const [showFooter, setShowFooter] = useState(false);
   const promptFormRef = useRef<HTMLFormElement>(null);
   const [optimisticPrompts, setOptimisticPrompts] = useState<PromptItem[]>([]);
+  const [isMobile, setIsMobile] = useState(false);
 
   const {
     value: prompt,
@@ -81,6 +82,16 @@ export default function HomePage() {
 
   useEffect(() => {
     setIsMounted(true);
+
+    // Check if device is mobile
+    const checkIsMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkIsMobile();
+    window.addEventListener("resize", checkIsMobile);
+
+    return () => window.removeEventListener("resize", checkIsMobile);
   }, []);
 
   useEffect(() => {
@@ -163,10 +174,14 @@ export default function HomePage() {
           />
           <div
             id="main-content"
-            className="flex flex-col md:flex-row gap-0 md:gap-8 w-full overflow-hidden pb-14 px-8"
-            style={{ height: "100vh" }}
+            className={`relative flex flex-col md:flex-row gap-0 md:gap-8 w-full overflow-hidden pb-14 md:px-8 ${isMobile ? "h-[100vh] bg-black" : ""}`}
+            style={{ height: isMobile ? "100vh" : "100vh" }}
           >
-            <VideoSection />
+            <VideoSection
+              isMobile={isMobile}
+              onTryCameraClick={handleButtonClick}
+              buttonText={authenticated ? "Create" : "Use your camera"}
+            />
 
             <PromptPanel
               promptQueue={[...optimisticPrompts, ...promptState.promptQueue]}
@@ -180,9 +195,10 @@ export default function HomePage() {
               isThrottled={isThrottled}
               throttleTimeLeft={throttleTimeLeft}
               onTryCameraClick={handleButtonClick}
-              buttonText={authenticated ? "Create" : "Pick your own video"}
+              buttonText={authenticated ? "Create" : "Use your camera"}
               isAuthenticated={authenticated}
               promptFormRef={promptFormRef}
+              isMobile={isMobile}
             />
           </div>
         </div>
@@ -194,6 +210,11 @@ export default function HomePage() {
       >
         <Footer showFooter={true} />
       </div>
+
+      <div className="md:hidden fixed bottom-0 left-0 w-full z-20">
+        <Footer showFooter={true} isMobile={true} />
+      </div>
+
       <TutorialModal
         isOpen={isTutorialModalOpen}
         onClose={() => setIsTutorialModalOpen(false)}

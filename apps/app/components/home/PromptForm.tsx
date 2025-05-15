@@ -19,6 +19,7 @@ interface PromptFormProps {
   isThrottled: boolean;
   throttleTimeLeft: number;
   disabled?: boolean;
+  isMobile?: boolean;
 }
 
 export const PromptForm = forwardRef<HTMLFormElement, PromptFormProps>(
@@ -30,6 +31,7 @@ export const PromptForm = forwardRef<HTMLFormElement, PromptFormProps>(
       isThrottled,
       throttleTimeLeft,
       disabled = false,
+      isMobile = false,
     },
     ref,
   ) {
@@ -78,6 +80,12 @@ export const PromptForm = forwardRef<HTMLFormElement, PromptFormProps>(
     useEffect(() => {
       if (textareaRef.current) {
         textareaRef.current.style.height = "auto";
+
+        if (isMobile) {
+          textareaRef.current.style.height = "44px";
+          return;
+        }
+
         const scrollHeight = textareaRef.current.scrollHeight;
         const minHeight = 56;
         const maxHeight = 150;
@@ -87,13 +95,13 @@ export const PromptForm = forwardRef<HTMLFormElement, PromptFormProps>(
         );
         textareaRef.current.style.height = `${newHeight}px`;
       }
-    }, [value]);
+    }, [value, isMobile]);
 
     return (
       <form
         ref={formRef}
         onSubmit={handleSubmit}
-        className="pt-0 px-4 pb-4 md:border-b border-t md:border-t-0 border-gray-200/30 relative z-10"
+        className={`pt-0 ${isMobile ? "px-0" : "px-4"} pb-4 ${isMobile ? "" : "md:border-b border-t md:border-t-0 border-gray-200/30"} relative z-10`}
       >
         <div className="relative">
           <Textarea
@@ -103,19 +111,36 @@ export const PromptForm = forwardRef<HTMLFormElement, PromptFormProps>(
                 ? `Wait ${throttleTimeLeft}s...`
                 : "Add your prompt to the queue..."
             }
-            className={`w-full md:bg-white/50 bg-white/80 rounded-[24px] border border-solid border-[#DFDEDE] focus:ring-0 focus:border-[#DFDEDE] focus:outline-none pl-[25px] py-5 pr-16 ${isThrottled ? "opacity-50" : ""} shadow-[8px_12px_24px_0px_#0D131E26] resize-none overflow-hidden ${profanity || exceedsMaxLength ? "border-red-500" : ""}`}
+            className={`w-full ${
+              isMobile
+                ? "bg-white text-black border-0 py-3 rounded-[18px] text-sm flex items-center"
+                : "md:bg-white/50 bg-white/80 border border-solid border-[#DFDEDE] py-5 rounded-[24px]"
+            } focus:ring-0 focus:border-[#DFDEDE] focus:outline-none pl-[25px] pr-16 ${
+              isThrottled ? "opacity-50" : ""
+            } ${
+              isMobile ? "" : "shadow-[8px_12px_24px_0px_#0D131E26]"
+            } resize-none overflow-hidden ${
+              profanity || exceedsMaxLength ? "border-red-500" : ""
+            }`}
             value={value}
             onChange={onChange}
             onKeyDown={handleKeyDown}
             disabled={isThrottled || disabled}
             rows={1}
-            style={{ minHeight: "56px" }}
+            style={{
+              height: isMobile ? "44px" : undefined,
+              minHeight: isMobile ? "44px" : "56px",
+              lineHeight: isMobile ? "1" : undefined,
+              paddingTop: isMobile && !value ? "14px" : undefined,
+            }}
           />
 
-          <div className="absolute right-4 bottom-3 flex items-center justify-center -mb-[2px]">
+          <div
+            className={`absolute right-4 ${isMobile ? "bottom-2" : "bottom-3"} flex items-center justify-center -mb-[2px]`}
+          >
             <button
               type="submit"
-              className="bg-black text-white rounded-full w-10 h-10 flex items-center justify-center"
+              className={`bg-black text-white rounded-full ${isMobile ? "w-8 h-8" : "w-10 h-10"} flex items-center justify-center`}
               disabled={
                 isThrottled ||
                 disabled ||
@@ -124,18 +149,22 @@ export const PromptForm = forwardRef<HTMLFormElement, PromptFormProps>(
                 exceedsMaxLength
               }
             >
-              <ArrowRight className="h-5 w-5" />
+              <ArrowRight className={`${isMobile ? "h-4 w-4" : "h-5 w-5"}`} />
             </button>
           </div>
         </div>
         {errorMsg && (
-          <div className="text-xs text-red-600 mt-2 text-center">
+          <div
+            className={`text-xs ${isMobile ? "text-red-400" : "text-red-600"} mt-2 text-center`}
+          >
             {errorMsg}
           </div>
         )}
-        <p className="text-sm italic text-gray-500 mt-4 text-center">
-          Each prompt is applied for 5 seconds
-        </p>
+        {!isMobile && (
+          <p className="text-sm italic text-gray-500 mt-4 text-center">
+            Each prompt is applied for 5 seconds
+          </p>
+        )}
       </form>
     );
   },

@@ -16,7 +16,32 @@ interface PromptDisplayProps {
   promptAvatarSeeds: string[];
   userPromptIndices: boolean[];
   onPastPromptClick?: (prompt: string) => void;
+  isMobile?: boolean;
 }
+
+// Types for the combined items in mobile view
+type HighlightedItem = {
+  text: string;
+  isHighlighted: true;
+  isPast?: undefined;
+  seed?: undefined;
+  isUser?: undefined;
+};
+
+type PastItem = {
+  text: string;
+  isPast: true;
+  isHighlighted?: undefined;
+  seed?: undefined;
+  isUser?: undefined;
+};
+
+type QueueItem = PromptItem & {
+  isPast?: undefined;
+  isHighlighted?: undefined;
+};
+
+type CombinedItem = HighlightedItem | PastItem | QueueItem;
 
 const numberDictionary = NumberDictionary.generate({ min: 10, max: 68 });
 const nameConfig: Config = {
@@ -69,8 +94,10 @@ export function PromptDisplay({
   promptAvatarSeeds,
   userPromptIndices,
   onPastPromptClick,
+  isMobile = false,
 }: PromptDisplayProps) {
   const MAX_QUEUE_SIZE = 5;
+  const MAX_MOBILE_PROMPTS = 4;
 
   const getFilledQueue = () => {
     const filledQueue = [...promptQueue];
@@ -108,6 +135,96 @@ export function PromptDisplay({
       }
     });
   }, []);
+
+  if (isMobile) {
+    let itemsToShow = [];
+    let itemCount = 0;
+    const maxItems = MAX_MOBILE_PROMPTS;
+
+    if (nonHighlightedPrompts.length > 0) {
+      const reversedPastPrompts = [...nonHighlightedPrompts].reverse();
+      const pastPromptsToShow = reversedPastPrompts.slice(0, maxItems - 1);
+
+      pastPromptsToShow.forEach(prompt => {
+        const index =
+          nonHighlightedPrompts.length - reversedPastPrompts.indexOf(prompt);
+        const isUserPrompt = userPromptIndices[index];
+        const seed = promptAvatarSeeds[index];
+
+        itemsToShow.push({
+          type: "past",
+          text: prompt,
+          isUser: isUserPrompt,
+          seed: seed,
+        });
+
+        itemCount++;
+      });
+    }
+
+    if (itemCount < maxItems && highlightedPrompt) {
+      itemsToShow.push({
+        type: "highlighted",
+        text: highlightedPrompt,
+        isUser: userPromptIndices[0],
+        seed: promptAvatarSeeds[0],
+      });
+
+      itemCount++;
+    }
+
+    if (itemCount < maxItems && nonEmptyQueueItems.length > 0) {
+      const queueItemsToShow = nonEmptyQueueItems.slice(
+        0,
+        maxItems - itemCount,
+      );
+
+      queueItemsToShow.forEach(item => {
+        itemsToShow.push({
+          type: "queue",
+          text: item.text,
+          isUser: item.isUser,
+          seed: item.seed,
+        });
+      });
+    }
+
+    return (
+      <div className="w-full flex flex-col justify-end p-4 overflow-y-auto overflow-x-hidden">
+        <div className="flex flex-col gap-2 w-full justify-end">
+          {itemsToShow.map((item, index) => {
+            const username = item.seed ? generateUsername(item.seed) : "User";
+            const color = getColorFromSeed(username);
+
+            return (
+              <div
+                key={`mobile-item-${index}-${item.text.substring(0, 10)}`}
+                className={`p-2 px-3 text-sm rounded-xl w-full 
+                  ${
+                    item.type === "highlighted"
+                      ? "text-white font-bold border border-white/90 backdrop-blur-sm"
+                      : "text-white/80 italic"
+                  }
+                  ${item.isUser ? "font-medium" : ""}
+                  ${onPastPromptClick ? "cursor-pointer" : ""}`}
+                style={{
+                  transition: "all 0.3s ease-out",
+                  borderRadius: "12px",
+                }}
+                onClick={() =>
+                  onPastPromptClick && onPastPromptClick(item.text)
+                }
+              >
+                <div className="min-w-0 flex-1">
+                  <span className="truncate block w-full">{item.text}</span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full flex flex-col justify-end p-4 pb-0 overflow-hidden relative">
