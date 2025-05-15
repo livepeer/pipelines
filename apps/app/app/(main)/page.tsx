@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { usePrivy } from "@/hooks/usePrivy";
 import { useGuestUserStore } from "@/hooks/useGuestUser";
 import useCloudAnimation from "@/hooks/useCloudAnimation";
@@ -11,10 +11,13 @@ import { useRandomPromptApiTimer } from "@/hooks/useRandomPromptApiTimer";
 import { CloudBackground } from "@/components/home/CloudBackground";
 import { VideoSection } from "@/components/home/VideoSection";
 import { PromptPanel } from "@/components/home/PromptPanel";
+import { HeroSection } from "@/components/home/HeroSection";
+import { Footer } from "@/components/home/Footer";
 import TutorialModal from "./components/TutorialModal";
 import track from "@/lib/track";
 import { TrackedButton } from "@/components/analytics/TrackedButton";
 import { SquareDashedBottomCode, Workflow } from "lucide-react";
+import { PromptItem } from "@/app/api/prompts/types";
 
 export default function HomePage() {
   const { containerRef, getCloudTransform } = useCloudAnimation(0);
@@ -25,6 +28,9 @@ export default function HomePage() {
   const [showContent, setShowContent] = useState(false);
   const [isTutorialModalOpen, setIsTutorialModalOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+  const [showFooter, setShowFooter] = useState(false);
+  const promptFormRef = useRef<HTMLFormElement>(null);
+  const [optimisticPrompts, setOptimisticPrompts] = useState<PromptItem[]>([]);
 
   const {
     value: prompt,
@@ -77,8 +83,34 @@ export default function HomePage() {
     setIsMounted(true);
   }, []);
 
+  useEffect(() => {
+    const handleScroll = () => {
+      const mainContent = document.getElementById("main-content");
+      if (mainContent) {
+        const rect = mainContent.getBoundingClientRect();
+        setShowFooter(rect.top <= 56);
+      }
+    };
+
+    const container = containerRef.current;
+    if (container) {
+      container.addEventListener("scroll", handleScroll);
+      return () => container.removeEventListener("scroll", handleScroll);
+    }
+  }, [containerRef]);
+
   const handlePromptSubmit = getHandleSubmit(async value => {
+    const sessionId = "optimistic-" + Date.now();
+    const optimisticPrompt: PromptItem = {
+      text: value,
+      seed: userAvatarSeed || "optimistic",
+      isUser: true,
+      timestamp: Date.now(),
+      sessionId,
+    };
+    setOptimisticPrompts(prev => [...prev, optimisticPrompt]);
     await addToPromptQueue(value, userAvatarSeed, true);
+    setOptimisticPrompts(prev => prev.filter(p => p.sessionId !== sessionId));
 
     track("daydream_landing_page_prompt_submitted", {
       is_authenticated: authenticated,
@@ -88,6 +120,10 @@ export default function HomePage() {
 
   const handleButtonClick = () => {
     redirectToCreate();
+  };
+
+  const submitPromptForm = () => {
+    promptFormRef.current?.requestSubmit();
   };
 
   if (!ready || loading) {
@@ -103,10 +139,10 @@ export default function HomePage() {
   }
 
   return (
-    <div className="fixed inset-0 z-[1000] flex items-center justify-center w-screen h-screen overflow-hidden">
+    <div className="fixed inset-0 z-[1000] w-screen h-screen overflow-hidden">
       <div
         ref={containerRef}
-        className="w-full h-full flex flex-col items-center justify-start pt-4 relative overflow-hidden"
+        className="w-full h-full flex flex-col justify-start relative overflow-y-auto scrollbar-gutter-stable"
       >
         <CloudBackground
           animationStarted={animationStarted}
@@ -114,21 +150,26 @@ export default function HomePage() {
         />
 
         <div
-          className={`z-10 w-full h-screen md:h-[calc(100vh-80px)] md:max-w-[95%] mx-auto p-0 md:px-4 md:pt-0 pb-12 md:pb-4 flex flex-col gap-2 md:gap-4 transition-all duration-1000 ease-in-out overflow-hidden md:overflow-visible ${
+          className={`z-10 w-full p-0 md:px-4 md:pt-0 flex flex-col transition-all duration-1000 ease-in-out ${
             showContent ? "opacity-100 scale-100" : "opacity-0 scale-[0.98]"
           }`}
         >
-          <h1
-            className="text-3xl font-bold tracking-widest italic md:hidden mx-auto absolute top-4 z-30 w-full text-center"
-            style={{ color: "rgb(255, 255, 255)" }}
+          <HeroSection
+            handlePromptSubmit={handlePromptSubmit}
+            promptValue={prompt}
+            setPromptValue={setPrompt}
+            submitPromptForm={submitPromptForm}
+            isAuthenticated={authenticated}
+          />
+          <div
+            id="main-content"
+            className="flex flex-col md:flex-row gap-0 md:gap-8 w-full overflow-hidden pb-14 px-8"
+            style={{ height: "100vh" }}
           >
-            DAYDREAM
-          </h1>
-          <div className="flex-1 flex flex-col md:flex-row gap-0 md:gap-8 h-full w-full overflow-hidden">
             <VideoSection />
 
             <PromptPanel
-              promptQueue={promptState.promptQueue}
+              promptQueue={[...optimisticPrompts, ...promptState.promptQueue]}
               displayedPrompts={promptState.displayedPrompts}
               promptAvatarSeeds={promptState.promptAvatarSeeds}
               userPromptIndices={promptState.userPromptIndices}
@@ -141,49 +182,17 @@ export default function HomePage() {
               onTryCameraClick={handleButtonClick}
               buttonText={authenticated ? "Create" : "Pick your own video"}
               isAuthenticated={authenticated}
+              promptFormRef={promptFormRef}
             />
           </div>
         </div>
       </div>
 
-      {/*footer*/}
-      <div className="hidden md:fixed md:bottom-0 md:left-0 md:w-full md:z-[1100] md:bg-white/20 md:backdrop-blur-md md:flex md:justify-center">
-        <div className="flex flex-col items-center gap-2 md:flex-row md:gap-6 py-2">
-          <TrackedButton
-            trackingEvent="footer_request_api_access_clicked"
-            trackingProperties={{ location: "footer" }}
-            variant="ghost"
-            className="text-gray-600 rounded-xl hover:text-gray-500 transition-colors duration-200 text-medium font-medium"
-            onClick={() =>
-              window.open(
-                "https://share.hsforms.com/2c2Uw6JsHTtiiAyAH0-4itA3o1go",
-                "_blank",
-                "noopener,noreferrer",
-              )
-            }
-          >
-            Request API Access
-            <SquareDashedBottomCode className="w-4 h-4" />
-          </TrackedButton>
-          <div className="hidden md:block w-px h-6 bg-gray-300 mx-3" />
-          <div className="block md:hidden w-16 h-px bg-gray-300 my-2" />
-          <TrackedButton
-            trackingEvent="footer_build_with_comfystream_clicked"
-            trackingProperties={{ location: "footer" }}
-            variant="ghost"
-            className="text-gray-600 rounded-xl hover:text-gray-500 transition-colors duration-200 text-medium font-medium"
-            onClick={() =>
-              window.open(
-                "https://comfystream.org/",
-                "_blank",
-                "noopener,noreferrer",
-              )
-            }
-          >
-            Build with ComfyStream
-            <Workflow className="w-4 h-4" />
-          </TrackedButton>
-        </div>
+      <div
+        style={{ width: "calc(100vw - 15px)" }}
+        className="hidden md:block fixed bottom-0 left-0 z-20"
+      >
+        <Footer showFooter={true} />
       </div>
       <TutorialModal
         isOpen={isTutorialModalOpen}

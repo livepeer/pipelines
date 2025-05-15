@@ -4,12 +4,13 @@ import React, { useState, useEffect } from "react";
 import { LivepeerPlayer } from "./LivepeerPlayer";
 import { Button } from "@repo/design-system/components/ui/button";
 
+export const TRANSFORMED_PLAYBACK_ID = "95705ossoplg7uvq";
+const ORIGINAL_PLAYBACK_ID = "85c28sa2o8wppm58";
+
 export function VideoSection() {
   const [isLoading, setIsLoading] = useState(true);
   const [useLivepeerPlayer, setUseLivepeerPlayer] = useState(false);
 
-  const TRANSFORMED_PLAYBACK_ID = "95705ossoplg7uvq";
-  const ORIGINAL_PLAYBACK_ID = "85c28sa2o8wppm58";
   const transformedIframeUrl = `https://monster.lvpr.tv/?v=${TRANSFORMED_PLAYBACK_ID}&lowLatency=true&backoffMax=1000&ingestPlayback=true`;
   const originalIframeUrl = `https://lvpr.tv/?v=${ORIGINAL_PLAYBACK_ID}&lowLatency=false&backoffMax=1000&ingestPlayback=true&muted=true`;
 
