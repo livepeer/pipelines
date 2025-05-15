@@ -292,7 +292,9 @@ export const BentoGridOverlay = () => {
                   >
                     <div className="flex justify-between items-center">
                       <div>
-                        <h2 className="font-medium text-lg">Trending styles</h2>
+                        <h2 className="font-medium text-sm sm:text-base md:text-lg">
+                          Trending styles
+                        </h2>
                       </div>
                     </div>
                   </TabsTrigger>
@@ -302,7 +304,9 @@ export const BentoGridOverlay = () => {
                   >
                     <div className="flex justify-between items-center">
                       <div>
-                        <h2 className="font-medium text-lg">My Clips</h2>
+                        <h2 className="font-medium text-sm sm:text-base md:text-lg">
+                          My Clips
+                        </h2>
                       </div>
                     </div>
                   </TabsTrigger>
