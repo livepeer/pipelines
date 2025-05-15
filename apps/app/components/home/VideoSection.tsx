@@ -7,6 +7,7 @@ import { Button } from "@repo/design-system/components/ui/button";
 export function VideoSection() {
   const [isLoading, setIsLoading] = useState(true);
   const [useLivepeerPlayer, setUseLivepeerPlayer] = useState(false);
+  const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
 
   const TRANSFORMED_PLAYBACK_ID = "95705ossoplg7uvq";
   const ORIGINAL_PLAYBACK_ID = "85c28sa2o8wppm58";
@@ -26,8 +27,18 @@ export function VideoSection() {
     return () => clearTimeout(timer);
   }, []);
 
+  useEffect(() => {
+    const handleResize = () => {
+      setIsLoading(true);
+      setTimeout(() => setIsLoading(false), 100);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   return (
-    <div className="flex flex-col w-full md:w-[70%]">
+    <div className="flex flex-col w-full md:w-[70%] h-full">
       <div className="w-full py-3 px-4 hidden md:flex items-center justify-between">
         <h1
           className="text-4xl md:text-[36px] font-bold tracking-widest italic"
@@ -37,8 +48,8 @@ export function VideoSection() {
         </h1>
       </div>
 
-      <div className="w-full relative md:rounded-xl overflow-hidden bg-black/10 backdrop-blur-sm shadow-lg md:aspect-video h-[calc(100%-65px)]">
-        <div className="absolute top-3 left-3 z-20 md:hidden">
+      <div className="w-full relative md:rounded-xl overflow-hidden bg-black/10 backdrop-blur-sm shadow-lg md:aspect-video h-full md:h-[calc(100%-65px)]">
+        <div className="absolute top-3 left-3 z-20 hidden">
           <h1
             className="text-4xl md:text-[36px] font-bold tracking-widest italic mix-blend-difference"
             style={{ color: "rgba(255, 255, 255, 0.65)" }}
@@ -60,7 +71,7 @@ export function VideoSection() {
                 playbackId={TRANSFORMED_PLAYBACK_ID}
                 autoPlay={true}
                 muted={false}
-                className="w-[120%] h-[120%] absolute left-[-10%] top-[-10%]"
+                className="w-full h-full md:w-[120%] md:h-[120%] md:absolute md:left-[-10%] md:top-[-10%]"
                 objectFit="cover"
                 env="monster"
                 lowLatency="force"
@@ -68,8 +79,8 @@ export function VideoSection() {
             ) : (
               <iframe
                 src={transformedIframeUrl}
-                className="absolute w-[120%] h-[120%] left-[-10%] top-[-10%] md:w-[120%] md:h-[120%] md:left-[-10%] md:top-[-10%]"
-                style={{ overflow: "hidden" }}
+                className="absolute w-full h-full left-0 top-0 md:w-[120%] md:h-[120%] md:left-[-10%] md:top-[-10%]"
+                style={{ overflow: "hidden", objectFit: "cover" }}
                 allow="autoplay; fullscreen"
                 allowFullScreen
                 onLoad={() => setIsLoading(false)}
@@ -78,7 +89,7 @@ export function VideoSection() {
             )}
           </div>
 
-          <div className="absolute bottom-4 left-4 w-[25%] aspect-video z-30 rounded-xl overflow-hidden border-2 border-white/30 shadow-lg hidden md:block">
+          <div className="!hidden md:!block absolute bottom-4 left-4 w-[25%] aspect-video z-30 rounded-xl overflow-hidden border-2 border-white/30 shadow-lg">
             {useLivepeerPlayer ? (
               <LivepeerPlayer
                 playbackId={ORIGINAL_PLAYBACK_ID}

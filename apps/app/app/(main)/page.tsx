@@ -14,7 +14,7 @@ import { PromptPanel } from "@/components/home/PromptPanel";
 import TutorialModal from "./components/TutorialModal";
 import track from "@/lib/track";
 import { TrackedButton } from "@/components/analytics/TrackedButton";
-import { SquareDashedBottomCode, Workflow } from "lucide-react";
+import { SquareDashedBottomCode, Workflow, Camera } from "lucide-react";
 
 export default function HomePage() {
   const { containerRef, getCloudTransform } = useCloudAnimation(0);
@@ -106,47 +106,128 @@ export default function HomePage() {
     <div className="fixed inset-0 z-[1000] flex items-center justify-center w-screen h-screen overflow-hidden">
       <div
         ref={containerRef}
-        className="w-full h-full flex flex-col items-center justify-start pt-4 relative overflow-hidden"
+        className="w-full h-full flex flex-col items-center justify-start pt-0 md:pt-4 relative overflow-hidden"
       >
-        <CloudBackground
-          animationStarted={animationStarted}
-          getCloudTransform={getCloudTransform}
-        />
+        {/* Only show cloud background on desktop */}
+        <div className="hidden md:block">
+          <CloudBackground
+            animationStarted={animationStarted}
+            getCloudTransform={getCloudTransform}
+          />
+        </div>
 
         <div
-          className={`z-10 w-full h-screen md:h-[calc(100vh-80px)] md:max-w-[95%] mx-auto p-0 md:px-4 md:pt-0 pb-12 md:pb-4 flex flex-col gap-2 md:gap-4 transition-all duration-1000 ease-in-out overflow-hidden md:overflow-visible ${
+          className={`z-10 w-full h-screen md:h-[calc(100vh-80px)] md:max-w-[95%] mx-auto p-0 md:px-4 md:pt-0 pb-0 md:pb-4 flex flex-col gap-2 md:gap-4 transition-all duration-1000 ease-in-out overflow-hidden md:overflow-visible ${
             showContent ? "opacity-100 scale-100" : "opacity-0 scale-[0.98]"
           }`}
         >
+          {/* Remove DAYDREAM text for mobile view */}
           <h1
-            className="text-3xl font-bold tracking-widest italic md:hidden mx-auto absolute top-4 z-30 w-full text-center"
+            className="text-3xl font-bold tracking-widest italic hidden md:block mx-auto absolute top-4 z-30 w-full text-center"
             style={{ color: "rgb(255, 255, 255)" }}
           >
             DAYDREAM
           </h1>
           <div className="flex-1 flex flex-col md:flex-row gap-0 md:gap-8 h-full w-full overflow-hidden">
-            <VideoSection />
+            <div className="md:hidden fixed inset-0 w-full h-full z-10">
+              <div className="w-full h-full object-cover overflow-hidden">
+                <VideoSection />
+              </div>
 
-            <PromptPanel
-              promptQueue={promptState.promptQueue}
-              displayedPrompts={promptState.displayedPrompts}
-              promptAvatarSeeds={promptState.promptAvatarSeeds}
-              userPromptIndices={promptState.userPromptIndices}
-              onSubmit={handlePromptSubmit}
-              promptValue={prompt}
-              onPromptChange={handlePromptChange}
-              setPromptValue={setPrompt}
-              isThrottled={isThrottled}
-              throttleTimeLeft={throttleTimeLeft}
-              onTryCameraClick={handleButtonClick}
-              buttonText={authenticated ? "Create" : "Pick your own video"}
-              isAuthenticated={authenticated}
-            />
+              <div className="absolute inset-0 z-20 flex flex-col justify-between pointer-events-none">
+                <div className="flex-none"></div>
+
+                <div
+                  className="pointer-events-auto bg-transparent"
+                  style={{ paddingBottom: "120px" }}
+                >
+                  <div className="w-full bg-transparent">
+                    <div className="px-0">
+                      {promptState && (
+                        <div className="bg-transparent text-white">
+                          <PromptPanel
+                            promptQueue={promptState.promptQueue}
+                            displayedPrompts={promptState.displayedPrompts}
+                            promptAvatarSeeds={promptState.promptAvatarSeeds}
+                            userPromptIndices={promptState.userPromptIndices}
+                            onSubmit={handlePromptSubmit}
+                            promptValue={prompt}
+                            onPromptChange={handlePromptChange}
+                            setPromptValue={setPrompt}
+                            isThrottled={isThrottled}
+                            throttleTimeLeft={throttleTimeLeft}
+                            onTryCameraClick={handleButtonClick}
+                            buttonText={
+                              authenticated ? "Create" : "Pick your own video"
+                            }
+                            isAuthenticated={authenticated}
+                            isMobileView={true}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="w-full bg-black backdrop-blur-sm pointer-events-auto px-4 pb-8 pt-4 z-50 fixed bottom-0 left-0 right-0">
+                  <div className="absolute inset-x-0 top-0 h-6 bg-gradient-to-b from-transparent to-black pointer-events-none transform -translate-y-full"></div>
+
+                  <div className="w-full flex flex-col gap-3">
+                    <textarea
+                      value={prompt}
+                      onChange={handlePromptChange}
+                      placeholder="Type a prompt..."
+                      className="w-full px-4 py-2 rounded-full bg-white/90 text-black text-sm resize-none focus:outline-none"
+                      rows={1}
+                      maxLength={280}
+                      onKeyDown={e => {
+                        if (e.key === "Enter" && !e.shiftKey) {
+                          e.preventDefault();
+                          if (prompt.trim()) {
+                            handlePromptSubmit(e as any);
+                          }
+                          return false;
+                        }
+                      }}
+                    />
+                    <TrackedButton
+                      trackingEvent="mobile_create_button_clicked"
+                      trackingProperties={{ location: "mobile_footer" }}
+                      className="w-full py-3 rounded-full bg-white text-black flex items-center justify-center gap-2 font-medium"
+                      onClick={handleButtonClick}
+                    >
+                      <Camera className="h-4 w-4" />
+                      {authenticated ? "Create" : "Try with your camera"}
+                    </TrackedButton>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="hidden md:flex md:flex-1 md:flex-row md:gap-8 md:h-full md:w-full md:overflow-hidden">
+              <VideoSection />
+
+              <PromptPanel
+                promptQueue={promptState.promptQueue}
+                displayedPrompts={promptState.displayedPrompts}
+                promptAvatarSeeds={promptState.promptAvatarSeeds}
+                userPromptIndices={promptState.userPromptIndices}
+                onSubmit={handlePromptSubmit}
+                promptValue={prompt}
+                onPromptChange={handlePromptChange}
+                setPromptValue={setPrompt}
+                isThrottled={isThrottled}
+                throttleTimeLeft={throttleTimeLeft}
+                onTryCameraClick={handleButtonClick}
+                buttonText={authenticated ? "Create" : "Pick your own video"}
+                isAuthenticated={authenticated}
+                isMobileView={false}
+              />
+            </div>
           </div>
         </div>
       </div>
 
-      {/*footer*/}
       <div className="hidden md:fixed md:bottom-0 md:left-0 md:w-full md:z-[1100] md:bg-white/20 md:backdrop-blur-md md:flex md:justify-center">
         <div className="flex flex-col items-center gap-2 md:flex-row md:gap-6 py-2">
           <TrackedButton
