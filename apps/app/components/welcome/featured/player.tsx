@@ -78,16 +78,24 @@ const calculateDelay = (count: number): number => {
 export const LivepeerPlayer = () => {
   const { stream, pipeline } = useDreamshaperStore();
   const { isMobile } = useMobileStore();
+  const appConfig = useAppConfig();
   const { isFullscreen } = useFullscreenStore();
   const { setIsPlaying } = usePlayerStore();
   const [playbackInfo, setPlaybackInfo] = useState<PlaybackInfo | null>(null);
-  const { playbackUrl } = usePlaybackUrlStore();
+  const { playbackUrl, setPlaybackUrl, setLoading, loading } =
+    usePlaybackUrlStore();
 
   const { useFallbackPlayer: useFallbackVideoJSPlayer, handleError } =
     useFallbackDetection(stream?.output_playback_id!);
 
   useEffect(() => {
     setIsPlaying(false);
+    setLoading(true);
+
+    return () => {
+      setPlaybackUrl(null);
+      setLoading(false);
+    };
   }, []);
 
   const searchParams = useSearchParams();
@@ -116,9 +124,13 @@ export const LivepeerPlayer = () => {
     stream?.output_playback_id,
   ]);
 
-  if (!playbackUrl) {
+  if (loading) {
     return <PlayerLoading />;
   }
+
+  const playbackUrlWithFallback =
+    playbackUrl ||
+    `${appConfig.whipUrl}${appConfig?.whipUrl?.endsWith("/") ? "" : "/"}${stream?.stream_key}-out/whep`;
 
   if (iframePlayerFallback) {
     return (
@@ -133,7 +145,7 @@ export const LivepeerPlayer = () => {
   if (useVideoJS && pipeline) {
     return (
       <VideoJSPlayer
-        src={playbackUrl}
+        src={playbackUrlWithFallback}
         isMobile={isMobile}
         playbackId={stream?.output_playback_id!}
         streamId={stream?.id!}
@@ -143,7 +155,7 @@ export const LivepeerPlayer = () => {
     );
   }
 
-  const src = getSrc(useMediamtx ? playbackUrl : playbackInfo);
+  const src = getSrc(useMediamtx ? playbackUrlWithFallback : playbackInfo);
 
   if (!src) {
     return (
