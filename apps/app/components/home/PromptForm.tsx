@@ -37,7 +37,12 @@ export const PromptForm = forwardRef<HTMLFormElement, PromptFormProps>(
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const formRef = useRef<HTMLFormElement>(null);
 
-    useImperativeHandle(ref, () => formRef.current as HTMLFormElement | null);
+    useImperativeHandle(ref, () => {
+      if (!formRef.current) {
+        throw new Error("Form ref is not available");
+      }
+      return formRef.current;
+    });
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
