@@ -383,7 +383,9 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
   }, [src, isWHEP, playbackId, firstFrameTime]);
 
   return (
-    <div className={isMobile ? "w-full h-full" : "aspect-video"}>
+    <div
+      className={`h-full w-full transition-all object-contain relative z-0 ${!isMobile ? "-scale-x-100" : ""} bg-[#fefefe]`}
+    >
       <VideoJSStyles />
       <div
         ref={videoRef}
