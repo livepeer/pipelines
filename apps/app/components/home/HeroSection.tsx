@@ -158,7 +158,7 @@ export const HeroSection = ({
       {/* Footer with bouncing arrow */}
       <footer className="relative w-full flex flex-col items-center z-[1201] mb-24">
         <div
-          className="w-[180px] aspect-video rounded-lg overflow-hidden shadow-lg mb-8 cursor-pointer hover:shadow-xl transition-shadow relative"
+          className="w-[190px] aspect-video rounded-lg overflow-hidden shadow-lg mb-8 cursor-pointer hover:shadow-xl transition-shadow relative"
           onClick={() => {
             document.getElementById("main-content")?.scrollIntoView({
               behavior: "smooth",
