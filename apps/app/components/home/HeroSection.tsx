@@ -158,7 +158,7 @@ export const HeroSection = ({
       {/* Footer with bouncing arrow */}
       <footer className="relative w-full flex flex-col items-center z-[1201] mb-24">
         <div
-          className="w-[180px] aspect-video rounded-lg overflow-hidden shadow-lg mb-8 cursor-pointer hover:shadow-xl transition-shadow relative"
+          className="w-[360px] aspect-video rounded-lg overflow-hidden shadow-lg mb-8 cursor-pointer hover:shadow-xl transition-shadow relative"
           onClick={() => {
             document.getElementById("main-content")?.scrollIntoView({
               behavior: "smooth",
@@ -167,13 +167,13 @@ export const HeroSection = ({
           }}
         >
           <iframe
-            src={`https://monster.lvpr.tv/?v=${TRANSFORMED_PLAYBACK_ID}&lowLatency=true&backoffMax=1000&ingestPlayback=true&controls=false`}
-            className="w-full h-full"
+            src={`https://monster.lvpr.tv/?v=${TRANSFORMED_PLAYBACK_ID}&lowLatency=true&backoffMax=1000&ingestPlayback=true&controls=true`}
+            className="w-full h-full absolute inset-0"
             allow="autoplay; fullscreen"
             allowFullScreen
             scrolling="no"
           />
-          <div className="absolute inset-0 bg-transparent" />
+          <div className="absolute inset-0 z-10 bg-transparent" />
         </div>
         <motion.button
           type="button"
