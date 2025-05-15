@@ -4,6 +4,7 @@ import { cache } from "react";
 import { headers } from "next/headers";
 import Link from "next/link";
 import TikTokFallback from "./TikTokFallback";
+import track from "@/lib/track";
 import { identifyTikTokInAppBrowser } from "@/lib/userAgentIdentify";
 
 const getCachedSharedParams = cache(async (shareParamsId: string) => {
@@ -51,6 +52,7 @@ export default async function HomePage({
   const isGuestAccess = !!inputPrompt; // If there's an inputPrompt, the user is coming from "Try this prompt"
 
   if (userAgent && identifyTikTokInAppBrowser(userAgent)) {
+    track("tiktok_browser_fallback_shown");
     return <TikTokFallback />;
   }
 
