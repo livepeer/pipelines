@@ -11,6 +11,7 @@ interface HeroSectionProps {
   promptValue: string;
   setPromptValue: (value: string) => void;
   submitPromptForm: () => void;
+  isAuthenticated?: boolean;
 }
 
 export const HeroSection = ({
@@ -18,6 +19,7 @@ export const HeroSection = ({
   promptValue,
   setPromptValue,
   submitPromptForm,
+  isAuthenticated = false,
 }: HeroSectionProps) => {
   const router = useRouter();
   const [localPrompt, setLocalPrompt] = useState("");
@@ -55,9 +57,9 @@ export const HeroSection = ({
             trackingEvent="explore_header_start_creating_clicked"
             trackingProperties={{ location: "explore_header" }}
             variant="outline"
-            className={cn("alwaysAnimatedButton", "px-4")}
+            className={cn("alwaysAnimatedButton", "px-8 py-2 h-10 rounded-lg")}
           >
-            Sign in
+            {isAuthenticated ? "Create" : "Sign in"}
           </TrackedButton>
         </div>
       </header>

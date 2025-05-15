@@ -8,7 +8,8 @@ interface FooterProps {
 export const Footer = ({ showFooter }: FooterProps) => {
   return (
     <div
-      className={`fixed bottom-0 left-0 w-full z-[1100] bg-white/20 backdrop-blur-md flex justify-center transition-opacity duration-300 ${
+      style={{ width: "calc(100vw - 15px)" }}
+      className={`fixed bottom-0 left-0 z-[1100] bg-white/20 backdrop-blur-md flex justify-center transition-opacity duration-300 ${
         showFooter ? "opacity-100" : "opacity-0 pointer-events-none"
       }`}
     >

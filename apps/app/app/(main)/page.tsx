@@ -142,7 +142,7 @@ export default function HomePage() {
     <div className="fixed inset-0 z-[1000] w-screen h-screen overflow-hidden">
       <div
         ref={containerRef}
-        className="w-full h-full flex flex-col justify-start pt-4 relative overflow-y-auto"
+        className="w-full h-full flex flex-col justify-start relative overflow-y-auto scrollbar-gutter-stable"
       >
         <CloudBackground
           animationStarted={animationStarted}
@@ -150,7 +150,7 @@ export default function HomePage() {
         />
 
         <div
-          className={`z-10 w-full p-0 md:px-4 md:pt-0 pb-12 md:pb-4 flex flex-col gap-2 md:gap-4 transition-all duration-1000 ease-in-out ${
+          className={`z-10 w-full p-0 md:px-4 md:pt-0 pb-6 md:pb-0 flex flex-col gap-2 md:gap-0 transition-all duration-1000 ease-in-out ${
             showContent ? "opacity-100 scale-100" : "opacity-0 scale-[0.98]"
           }`}
         >
@@ -159,11 +159,12 @@ export default function HomePage() {
             promptValue={prompt}
             setPromptValue={setPrompt}
             submitPromptForm={submitPromptForm}
+            isAuthenticated={authenticated}
           />
           <div
             id="main-content"
             className="flex flex-col md:flex-row gap-0 md:gap-8 w-full overflow-hidden pb-14 px-8"
-            style={{ height: "calc(100vh - 56px)" }}
+            style={{ height: "100vh" }}
           >
             <VideoSection />
 
@@ -187,7 +188,10 @@ export default function HomePage() {
         </div>
       </div>
 
-      <div className="hidden md:block w-full">
+      <div
+        style={{ width: "calc(100vw - 15px)" }}
+        className="hidden md:block fixed bottom-0 left-0 z-20"
+      >
         <Footer showFooter={true} />
       </div>
       <TutorialModal
