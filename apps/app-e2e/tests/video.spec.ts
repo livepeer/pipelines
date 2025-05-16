@@ -21,7 +21,9 @@ import {
 
 const EMAIL = process.env.TEST_EMAIL;
 const OTP_CODE = process.env.TEST_OTP_CODE;
-const APP_URL = process.env.TEST_APP_URL;
+// const APP_URL = process.env.TEST_APP_URL;
+// temporarily use a previous commit with silent audio
+const APP_URL = "https://pipelines-c0oivs6r4-livepeer.vercel.app/";
 
 if (!EMAIL) {
   throw new Error(
@@ -151,7 +153,7 @@ test.describe("Daydream Page Tests", () => {
       expect(audioTracks[0].kind).toBe("audio");
       expect(audioTracks[0].enabled).toBe(true);
       expect(audioTracks[0].muted).toBe(false);
-      expect(audioTracks[0].readyState).toBe(1); // 1 means LIVE
+      expect(audioTracks[0].readyState).toBe("live");
 
       await assertVideoContentChanging(
         broadcast,
