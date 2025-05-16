@@ -4,12 +4,10 @@ import React, { useState, useEffect } from "react";
 import { LivepeerPlayer } from "./LivepeerPlayer";
 import { Camera } from "lucide-react";
 import { TrackedButton } from "@/components/analytics/TrackedButton";
+import { useMultiplayerStore } from "@/hooks/useMultiplayerStore";
+import { useUpdateMultiplayerStream } from "@/hooks/useUpdateMultiplayerStream";
 
-export const TRANSFORMED_PLAYBACK_ID =
-  process.env.NEXT_PUBLIC_TRANSFORMED_PLAYBACK_ID ?? "";
-const ORIGINAL_PLAYBACK_ID = process.env.NEXT_PUBLIC_ORIGINAL_PLAYBACK_ID ?? "";
-
-const env = process.env.NODE_ENV;
+export const env = process.env.NODE_ENV;
 
 interface VideoSectionProps {
   isMobile?: boolean;
@@ -24,8 +22,12 @@ export function VideoSection({
 }: VideoSectionProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [useLivepeerPlayer, setUseLivepeerPlayer] = useState(false);
-  const transformedIframeUrl = `https://${env === "production" ? "lvpr.tv" : "monster.lvpr.tv"}?v=${TRANSFORMED_PLAYBACK_ID}&lowLatency=true&backoffMax=1000&ingestPlayback=true`;
-  const originalIframeUrl = `https://${env === "production" ? "lvpr.tv" : "lvpr.tv"}?v=${ORIGINAL_PLAYBACK_ID}&lowLatency=false&backoffMax=1000&ingestPlayback=true&muted=true`;
+  const { originalPlaybackId, transformedPlaybackId } = useMultiplayerStore();
+
+  const transformedIframeUrl = `https://${env === "production" ? "lvpr.tv" : "monster.lvpr.tv"}?v=${transformedPlaybackId}&lowLatency=true&backoffMax=1000&ingestPlayback=true`;
+  const originalIframeUrl = `https://${env === "production" ? "lvpr.tv" : "lvpr.tv"}?v=${originalPlaybackId}&lowLatency=false&backoffMax=1000&ingestPlayback=true&muted=true`;
+
+  useUpdateMultiplayerStream();
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -84,7 +86,7 @@ export function VideoSection({
           <div className="absolute inset-0 w-full h-full overflow-hidden">
             {useLivepeerPlayer ? (
               <LivepeerPlayer
-                playbackId={TRANSFORMED_PLAYBACK_ID}
+                playbackId={transformedPlaybackId}
                 autoPlay={true}
                 muted={false}
                 className="w-[120%] h-[120%] absolute left-[-10%] top-[-10%]"
@@ -109,7 +111,7 @@ export function VideoSection({
             <div className="absolute bottom-4 left-4 w-[25%] aspect-video z-30 rounded-xl overflow-hidden border-2 border-white/30 shadow-lg hidden md:block">
               {useLivepeerPlayer ? (
                 <LivepeerPlayer
-                  playbackId={ORIGINAL_PLAYBACK_ID}
+                  playbackId={originalPlaybackId}
                   autoPlay={true}
                   muted={true}
                   className="w-full h-full"

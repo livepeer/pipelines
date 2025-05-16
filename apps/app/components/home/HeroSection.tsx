@@ -3,9 +3,9 @@ import { WandSparkles, ChevronDown } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { TrackedButton } from "../analytics/TrackedButton";
-import VideoAISparkles from "../daydream/CustomIcons/VideoAISparkles";
 import { cn } from "@repo/design-system/lib/utils";
-import { TRANSFORMED_PLAYBACK_ID } from "./VideoSection";
+import { env } from "./VideoSection";
+import { useMultiplayerStore } from "@/hooks/useMultiplayerStore";
 
 interface HeroSectionProps {
   handlePromptSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
@@ -28,6 +28,7 @@ export const HeroSection = ({
   const [displayText, setDisplayText] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
   const [typingSpeed, setTypingSpeed] = useState(100);
+  const { transformedPlaybackId } = useMultiplayerStore();
 
   const placeholders = [
     "an art style",
@@ -167,7 +168,7 @@ export const HeroSection = ({
           }}
         >
           <iframe
-            src={`https://lvpr.tv/?v=${TRANSFORMED_PLAYBACK_ID}&lowLatency=true&backoffMax=1000&ingestPlayback=true&controls=true`}
+            src={`https://${env === "production" ? "lvpr.tv" : "monster.lvpr.tv"}?v=${transformedPlaybackId}&lowLatency=true&backoffMax=1000&ingestPlayback=true&controls=true`}
             className="w-full h-full absolute inset-0"
             allow="autoplay; fullscreen"
             allowFullScreen
