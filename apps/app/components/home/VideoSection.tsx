@@ -2,32 +2,34 @@
 
 import React, { useState, useEffect } from "react";
 import { LivepeerPlayer } from "./LivepeerPlayer";
+import { Camera } from "lucide-react";
+import { TrackedButton } from "@/components/analytics/TrackedButton";
 import { useMultiplayerStore } from "@/hooks/useMultiplayerStore";
 import { useUpdateMultiplayerStream } from "@/hooks/useUpdateMultiplayerStream";
 
-// 1. Ask Thom for playback ids
-// 2. For each streamKey -> we have original and transformed
-// [
-//   {
-//     streamKey: 'abc',
-//     originalPlaybackId: 'abc',
-//     transformedPlaybackId: 'abc',
-//   },
-//   {
-//     streamKey: 'abc',
-//     originalPlaybackId: 'abc',
-//     transformedPlaybackId: 'abc',
-//   }
-// ]
+export const TRANSFORMED_PLAYBACK_ID =
+  process.env.NEXT_PUBLIC_TRANSFORMED_PLAYBACK_ID ?? "";
+const ORIGINAL_PLAYBACK_ID = process.env.NEXT_PUBLIC_ORIGINAL_PLAYBACK_ID ?? "";
 
-export function VideoSection() {
+const env = process.env.NODE_ENV;
+
+interface VideoSectionProps {
+  isMobile?: boolean;
+  onTryCameraClick?: () => void;
+  buttonText?: string;
+}
+
+export function VideoSection({
+  isMobile = false,
+  onTryCameraClick,
+  buttonText = "Create",
+}: VideoSectionProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [useLivepeerPlayer, setUseLivepeerPlayer] = useState(false);
   const { originalPlaybackId, transformedPlaybackId } = useMultiplayerStore();
   useUpdateMultiplayerStream();
-
-  const transformedIframeUrl = `https://monster.lvpr.tv/?v=${transformedPlaybackId}&lowLatency=true&backoffMax=1000&ingestPlayback=true`;
-  const originalIframeUrl = `https://lvpr.tv/?v=${originalPlaybackId}&lowLatency=false&backoffMax=1000&ingestPlayback=true&muted=true`;
+  const transformedIframeUrl = `https://${env === "production" ? "lvpr.tv" : "monster.lvpr.tv"}?v=${transformedPlaybackId}&lowLatency=true&backoffMax=1000&ingestPlayback=true`;
+  const originalIframeUrl = `https://${env === "production" ? "lvpr.tv" : "lvpr.tv"}?v=${originalPlaybackId}&lowLatency=false&backoffMax=1000&ingestPlayback=true&muted=true`;
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -43,7 +45,9 @@ export function VideoSection() {
   }, []);
 
   return (
-    <div className="flex flex-col w-full md:w-[70%]">
+    <div
+      className={`flex flex-col w-full ${isMobile ? "h-full mt-[3%]" : "md:w-[70%]"}`}
+    >
       <div className="w-full py-3 px-4 hidden md:flex items-center justify-between">
         <h1
           className="text-4xl md:text-[36px] font-bold tracking-widest italic"
@@ -53,16 +57,27 @@ export function VideoSection() {
         </h1>
       </div>
 
-      <div className="w-full relative md:rounded-xl overflow-hidden bg-black/10 backdrop-blur-sm shadow-lg md:aspect-video h-[calc(100%-65px)]">
-        <div className="absolute top-3 left-3 z-20 md:hidden">
-          <h1
-            className="text-4xl md:text-[36px] font-bold tracking-widest italic mix-blend-difference"
-            style={{ color: "rgba(255, 255, 255, 0.65)" }}
+      {isMobile && onTryCameraClick && (
+        <div className="flex justify-center w-full mb-4 px-4">
+          <TrackedButton
+            className="px-5 py-2 rounded-lg bg-white/85 text-black hover:bg-white flex items-center justify-center gap-2 backdrop-blur-sm w-full mx-4"
+            onClick={onTryCameraClick}
+            trackingEvent="mobile_top_center_camera_clicked"
+            trackingProperties={{ location: "mobile_top_center" }}
           >
-            DAYDREAM
-          </h1>
+            <Camera className="h-4 w-4" />
+            {buttonText}
+          </TrackedButton>
         </div>
+      )}
 
+      <div
+        className={`w-full relative ${
+          isMobile
+            ? "aspect-square rounded-none"
+            : "md:rounded-xl md:aspect-video h-[calc(100%-65px)]"
+        } overflow-hidden bg-black/10 backdrop-blur-sm shadow-lg`}
+      >
         <div className="w-full h-full relative overflow-hidden">
           {isLoading && (
             <div className="absolute inset-0 flex items-center justify-center bg-black z-10">
@@ -94,27 +109,29 @@ export function VideoSection() {
             )}
           </div>
 
-          <div className="absolute bottom-4 left-4 w-[25%] aspect-video z-30 rounded-xl overflow-hidden border-2 border-white/30 shadow-lg hidden md:block">
-            {useLivepeerPlayer ? (
-              <LivepeerPlayer
-                playbackId={originalPlaybackId}
-                autoPlay={true}
-                muted={true}
-                className="w-full h-full"
-                env="studio"
-                lowLatency="force"
-              />
-            ) : (
-              <iframe
-                src={originalIframeUrl}
-                className="w-full h-full"
-                style={{ overflow: "hidden" }}
-                allow="autoplay; fullscreen"
-                allowFullScreen
-                scrolling="no"
-              />
-            )}
-          </div>
+          {!isMobile && (
+            <div className="absolute bottom-4 left-4 w-[25%] aspect-video z-30 rounded-xl overflow-hidden border-2 border-white/30 shadow-lg hidden md:block">
+              {useLivepeerPlayer ? (
+                <LivepeerPlayer
+                  playbackId={originalPlaybackId}
+                  autoPlay={true}
+                  muted={true}
+                  className="w-full h-full"
+                  env="studio"
+                  lowLatency="force"
+                />
+              ) : (
+                <iframe
+                  src={originalIframeUrl}
+                  className="w-full h-full"
+                  style={{ overflow: "hidden" }}
+                  allow="autoplay; fullscreen"
+                  allowFullScreen
+                  scrolling="no"
+                />
+              )}
+            </div>
+          )}
 
           <div className="absolute inset-0 z-20 pointer-events-auto bg-transparent"></div>
         </div>

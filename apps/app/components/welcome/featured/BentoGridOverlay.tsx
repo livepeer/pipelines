@@ -7,6 +7,9 @@ import {
   ChevronRight,
   ChevronDown,
   ChevronUp,
+  CopyIcon,
+  Lightbulb,
+  Check,
 } from "lucide-react";
 import { Button } from "@repo/design-system/components/ui/button";
 import { useDreamshaperStore, useStreamUpdates } from "@/hooks/useDreamshaper";
@@ -19,6 +22,12 @@ import { OverlayClipViewer } from "./OverlayClipViewer";
 import { setSourceClipIdToCookies } from "@/components/daydream/Clipping/actions";
 import { GridVideoItem } from "./GridVideoItem";
 import useMobileStore from "@/hooks/useMobileStore";
+import {
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
+} from "@repo/design-system/components/ui/tabs";
 
 export const BentoGridOverlay = () => {
   const {
@@ -37,13 +46,17 @@ export const BentoGridOverlay = () => {
   const { stream } = useDreamshaperStore();
   const { handleStreamUpdate } = useStreamUpdates();
   const { setLastSubmittedPrompt, setHasSubmittedPrompt } = usePromptStore();
-  const { setLastPrompt, incrementPromptCount } = useGuestUserStore();
-  const { authenticated } = usePrivy();
+  const { setIsGuestUser, setLastPrompt, incrementPromptCount } =
+    useGuestUserStore();
+  const { authenticated, user } = usePrivy();
   const [initialClips, setInitialClips] = useState<any[]>([]);
+  const [myClips, setMyClips] = useState<any[]>([]);
   const [selectedClip, setSelectedClip] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingMyClips, setIsLoadingMyClips] = useState(false);
   const overlayRef = useRef<HTMLDivElement>(null);
   const { isMobile } = useMobileStore();
+  const [copiedClipId, setCopiedClipId] = useState<string | null>(null);
 
   const initialOpenRef = useRef(true);
   const scrollRestoredRef = useRef(false);
@@ -93,13 +106,27 @@ export const BentoGridOverlay = () => {
             setIsLoading(false);
           });
       }
+
+      if (authenticated && user) {
+        setIsLoadingMyClips(true);
+        fetch(`/api/clips/user?page=0&limit=48`)
+          .then(res => res.json())
+          .then(data => {
+            setMyClips(data.clips);
+            setIsLoadingMyClips(false);
+          })
+          .catch(error => {
+            console.error("Error fetching user clips:", error);
+            setIsLoadingMyClips(false);
+          });
+      }
     }
 
     if (!isOverlayOpen) {
       initialOpenRef.current = true;
       scrollRestoredRef.current = false;
     }
-  }, [isOverlayOpen, overlayType, cachedClips, setCachedClips]);
+  }, [isOverlayOpen, overlayType, cachedClips, setCachedClips, authenticated]);
 
   useEffect(() => {
     if (isOverlayOpen && overlayType === "bento" && overlayRef.current) {
@@ -258,35 +285,143 @@ export const BentoGridOverlay = () => {
         <div className="relative z-10 h-full">
           {overlayType === "bento" && (
             <div className="p-4">
-              {isLoading ? (
-                <div className="flex justify-center py-8">
-                  <div className="w-8 h-8 border-4 border-t-primary rounded-full animate-spin"></div>
-                </div>
-              ) : initialClips.length > 0 ? (
-                <div className="max-w-7xl mx-auto px-4 lg:px-8">
-                  <div className="flex justify-between items-center mb-4">
-                    <div>
-                      <h2 className="font-medium text-lg">Trending styles</h2>
-                      <p className="text-gray-500 text-sm">
-                        Select the filter to apply it instantly
-                      </p>
+              <Tabs defaultValue="trending" className="w-full mb-6">
+                <TabsList className="w-full bg-transparent flex justify-evenly px-8">
+                  <TabsTrigger
+                    value="trending"
+                    className="flex-1 data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none"
+                  >
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <h2 className="font-medium text-sm sm:text-base md:text-lg">
+                          Trending styles
+                        </h2>
+                      </div>
                     </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    {initialClips.map(clip => (
-                      <GridVideoItem
-                        key={clip.id}
-                        clip={clip}
-                        onTryPrompt={handleTryPrompt}
-                      />
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <div className="flex justify-center py-8">
-                  No clips available
-                </div>
-              )}
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="my-clips"
+                    className="flex-1 data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none"
+                  >
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <h2 className="font-medium text-sm sm:text-base md:text-lg">
+                          My Clips
+                        </h2>
+                      </div>
+                    </div>
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="trending" className="py-4">
+                  {isLoading ? (
+                    <div className="flex justify-center py-8">
+                      <div className="w-8 h-8 border-4 border-t-primary rounded-full animate-spin"></div>
+                    </div>
+                  ) : initialClips.length > 0 ? (
+                    <div className="max-w-7xl mx-auto px-4 lg:px-8">
+                      <div className="flex items-center gap-2 bg-gray-50 dark:bg-gray-900/40 border border-gray-200 dark:border-gray-800 rounded-md px-4 py-2 mb-4 w-full max-w-xl mx-auto">
+                        <Lightbulb className="w-4 h-4 text-yellow-500 flex-shrink-0" />
+                        <span className="text-gray-700 dark:text-gray-200 text-sm">
+                          Click a filter to apply it instantly
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        {initialClips.map(clip => (
+                          <GridVideoItem
+                            key={clip.id}
+                            clip={clip}
+                            onTryPrompt={handleTryPrompt}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex justify-center py-8">
+                      No clips available
+                    </div>
+                  )}
+                </TabsContent>
+
+                <TabsContent value="my-clips" className="py-4">
+                  {!authenticated ? (
+                    <div className="flex flex-col items-center justify-center py-8">
+                      <h3 className="text-lg font-medium mb-2">
+                        No clips here!
+                      </h3>
+                      <p className="text-sm text-gray-500 mb-4">
+                        Create an account to save and manage your clips
+                      </p>
+                      <Button
+                        variant="outline"
+                        className={cn("alwaysAnimatedButton", "px-4")}
+                        onClick={() => {
+                          // Reset guest user state to ensure they can sign in
+                          setIsGuestUser(false);
+                        }}
+                      >
+                        Sign in
+                      </Button>
+                    </div>
+                  ) : isLoadingMyClips ? (
+                    <div className="flex justify-center py-8">
+                      <div className="w-8 h-8 border-4 border-t-primary rounded-full animate-spin"></div>
+                    </div>
+                  ) : myClips.length > 0 ? (
+                    <div className="max-w-7xl mx-auto px-4 lg:px-8">
+                      <div className="flex items-center gap-2 bg-gray-50 dark:bg-gray-900/40 border border-gray-200 dark:border-gray-800 rounded-md px-4 py-2 mb-4 w-full max-w-xl mx-auto">
+                        <Lightbulb className="w-4 h-4 text-yellow-500 flex-shrink-0" />
+                        <span className="text-gray-700 dark:text-gray-200 text-sm">
+                          Click on a clip to apply its style
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        {myClips.map(clip => (
+                          <div key={clip.id} className="relative group">
+                            <GridVideoItem
+                              clip={clip}
+                              onTryPrompt={handleTryPrompt}
+                            />
+                            <div className="absolute top-3 right-3 p-0 z-30">
+                              <Button
+                                size="sm"
+                                className={cn(
+                                  "text-white text-[0.64rem] bg-black/50 backdrop-blur-sm px-2 py-1 rounded-lg whitespace-nowrap overflow-hidden text-ellipsis max-w-full",
+                                )}
+                                onClick={e => {
+                                  e.stopPropagation();
+                                  const link = `${window.location.origin}/clips/${clip.slug}`;
+                                  navigator.clipboard.writeText(link);
+                                  setCopiedClipId(clip.id);
+                                  setTimeout(() => setCopiedClipId(null), 3000);
+                                }}
+                              >
+                                Copy Link
+                                {copiedClipId === clip.id ? (
+                                  <Check className="w-4 h-4 ml-1 text-green-400" />
+                                ) : (
+                                  <CopyIcon className="w-4 h-4 ml-1" />
+                                )}
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex justify-center py-8">
+                      <div className="text-center">
+                        <h3 className="text-lg font-medium mb-2">
+                          No clips yet
+                        </h3>
+                        <p className="text-sm text-gray-500">
+                          Create your first clip to see it here
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </TabsContent>
+              </Tabs>
             </div>
           )}
 

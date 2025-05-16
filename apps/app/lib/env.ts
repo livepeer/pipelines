@@ -68,8 +68,8 @@ const envConfig = {
       process.env.NEXT_PUBLIC_RTMP_URL_SECONDARY ||
       process.env.NEXT_PUBLIC_RTMP_URL,
     newWhipUrl:
-      process.env.NEXT_PUBLIC_WHIP_URL_SECONDARY ||
-      process.env.NEXT_PUBLIC_AI_GATEWAY_API_BASE_URL,
+      process.env.NEXT_PUBLIC_AI_GATEWAY_API_BASE_URL_SECONDARY ||
+      process.env.NEXT_PUBLIC_WHIP_URL_SECONDARY,
     environment: process.env.NEXT_PUBLIC_ENV as Environment,
   },
   hubspot: {

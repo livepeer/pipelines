@@ -68,6 +68,8 @@ const otherPeoplePrompts = [
 const HIGHLIGHT_DURATION = 10000;
 const MAX_QUEUE_SIZE = 100;
 const FRONTEND_DISPLAY_SIZE = 20;
+const TARGET_STREAM_KEY = process.env
+  .NEXT_PUBLIC_MULTIPLAYER_STREAM_KEY as string;
 const RANDOM_PROMPT_INTERVAL = 20000;
 const REAPPLY_INTERVAL = 60000; // 1 minute
 
@@ -120,7 +122,7 @@ if (typeof window === "undefined") {
     },
     60 * 60 * 1000,
   );
-
+  /* disable reapply prompt worker
   setInterval(async () => {
     try {
       const now = Date.now();
@@ -145,7 +147,7 @@ if (typeof window === "undefined") {
     } catch (error) {
       console.error("Error in reapply prompt worker:", error);
     }
-  }, REAPPLY_INTERVAL);
+  }, REAPPLY_INTERVAL); */
 }
 
 const applyPromptToStream = async (promptText: string) => {

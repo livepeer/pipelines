@@ -213,7 +213,7 @@ export function ClipSummaryContent({
           className="w-full items-center justify-center gap-2 rounded-md h-[40px] sm:h-[44px]"
           disabled={isUploading}
         >
-          {isUploading ? "Processing..." : "Next"}
+          {isUploading ? "Processing..." : "Save & Continue"}
         </TrackedButton>
       </div>
     </DialogContent>

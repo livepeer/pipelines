@@ -63,6 +63,7 @@
     "react-textarea-autosize": "^8.5.7",
     "sonner": "^1.7.0",
     "swr": "^2.3.3",
+    "tailwindcss": "^3.4.14",
     "unique-names-generator": "^4.7.1",
     "uuid": "^11.1.0",
     "video.js": "^8.22.0",
