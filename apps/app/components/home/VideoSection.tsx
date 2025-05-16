@@ -17,10 +17,10 @@ export function getIframeUrl({
   isSource,
 }: {
   playbackId: string;
-  lowLatency: boolean;
+  lowLatency: boolean | "force";
   isSource?: boolean;
 }) {
-  return `https://${env === "production" || isSource ? "lvpr.tv" : "monster.lvpr.tv"}?v=${playbackId}&lowLatency=${lowLatency}&backoffMax=1000&ingestPlayback=true`;
+  return `https://${env === "production" || isSource ? "lvpr.tv" : "monster.lvpr.tv"}?v=${playbackId}&lowLatency=${lowLatency}&backoffMax=1000&ingestPlayback=true&controls=true`;
 }
 
 interface VideoSectionProps {
@@ -38,7 +38,7 @@ export function VideoSection({
   const [useLivepeerPlayer, setUseLivepeerPlayer] = useState(false);
   const transformedIframeUrl = getIframeUrl({
     playbackId: TRANSFORMED_PLAYBACK_ID,
-    lowLatency: true,
+    lowLatency: "force",
   });
   const originalIframeUrl = getIframeUrl({
     playbackId: ORIGINAL_PLAYBACK_ID,
