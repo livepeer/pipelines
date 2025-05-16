@@ -7,11 +7,7 @@ import { TrackedButton } from "@/components/analytics/TrackedButton";
 import { useMultiplayerStore } from "@/hooks/useMultiplayerStore";
 import { useUpdateMultiplayerStream } from "@/hooks/useUpdateMultiplayerStream";
 
-export const TRANSFORMED_PLAYBACK_ID =
-  process.env.NEXT_PUBLIC_TRANSFORMED_PLAYBACK_ID ?? "";
-const ORIGINAL_PLAYBACK_ID = process.env.NEXT_PUBLIC_ORIGINAL_PLAYBACK_ID ?? "";
-
-const env = process.env.NODE_ENV;
+export const env = process.env.NODE_ENV;
 
 interface VideoSectionProps {
   isMobile?: boolean;
@@ -27,9 +23,11 @@ export function VideoSection({
   const [isLoading, setIsLoading] = useState(true);
   const [useLivepeerPlayer, setUseLivepeerPlayer] = useState(false);
   const { originalPlaybackId, transformedPlaybackId } = useMultiplayerStore();
-  useUpdateMultiplayerStream();
+
   const transformedIframeUrl = `https://${env === "production" ? "lvpr.tv" : "monster.lvpr.tv"}?v=${transformedPlaybackId}&lowLatency=true&backoffMax=1000&ingestPlayback=true`;
   const originalIframeUrl = `https://${env === "production" ? "lvpr.tv" : "lvpr.tv"}?v=${originalPlaybackId}&lowLatency=false&backoffMax=1000&ingestPlayback=true&muted=true`;
+
+  useUpdateMultiplayerStream();
 
   useEffect(() => {
     if (typeof window !== "undefined") {

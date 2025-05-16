@@ -16,8 +16,9 @@ export const isLivepeerEmail = (user: User | null | undefined): boolean => {
 
 export const MULTIPLAYER_FALLBACK_STREAMS = [
   {
-    streamKey: "stk_1MAZq3UNNMRRWVvA",
-    originalPlaybackId: "85c28sa2o8wppm58",
-    transformedPlaybackId: "95705ossoplg7uvq",
+    streamKey: process.env.NEXT_PUBLIC_MULTIPLAYER_STREAM_KEY ?? "",
+    originalPlaybackId: process.env.NEXT_PUBLIC_ORIGINAL_PLAYBACK_ID ?? "",
+    transformedPlaybackId:
+      process.env.NEXT_PUBLIC_TRANSFORMED_PLAYBACK_ID ?? "",
   },
 ];

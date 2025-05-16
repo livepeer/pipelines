@@ -11,8 +11,8 @@ const FALLBACK_STREAMS = MULTIPLAYER_FALLBACK_STREAMS;
 let activeStreamIndex = 0;
 
 // Server action function to get multiplayer stream
-export async function getMultiplayerStream() {
-  console.log("getMultiplayerStream:: START", activeStreamIndex);
+export async function getUpdatedMultiplayerStream() {
+  console.log("getUpdatedMultiplayerStream:: START", activeStreamIndex);
   const stream = FALLBACK_STREAMS[activeStreamIndex];
   const currentStreamKey = stream.streamKey;
 
@@ -22,6 +22,8 @@ export async function getMultiplayerStream() {
     .from(streamsTable)
     .where(eq(streamsTable.streamKey, currentStreamKey))
     .limit(1);
+
+  console.log("getUpdatedMultiplayerStream:: streamInfo", streamInfo);
 
   if (streamInfo.length === 0) {
     activeStreamIndex = (activeStreamIndex + 1) % FALLBACK_STREAMS.length;
@@ -34,6 +36,8 @@ export async function getMultiplayerStream() {
   // 2. Fetch status of the stream
   const { error, data: statusData } = await getStreamStatus(streamInfo[0].id);
 
+  console.log("getUpdatedMultiplayerStream:: statusData", statusData);
+
   // 3. If error, round robin to the next stream.
   if (error || statusData.state !== "ONLINE") {
     activeStreamIndex = (activeStreamIndex + 1) % FALLBACK_STREAMS.length;
@@ -43,7 +47,19 @@ export async function getMultiplayerStream() {
     };
   }
 
+  console.log(
+    "getUpdatedMultiplayerStream:: returning stream info",
+    streamInfo[0],
+  );
+
   // 4. Return the stream info
+  return {
+    data: FALLBACK_STREAMS[activeStreamIndex],
+    status: 200,
+  };
+}
+
+export async function getMultiplayerStream() {
   return {
     data: FALLBACK_STREAMS[activeStreamIndex],
     status: 200,

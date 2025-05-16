@@ -1,8 +1,10 @@
-import { NextRequest, NextResponse } from "next/server";
-import { getMultiplayerStream } from "./actions";
+import { NextResponse } from "next/server";
+import { getUpdatedMultiplayerStream } from "./actions";
 
 // Get the active stream info for the multiplayer stream
 export async function GET() {
-  const result = await getMultiplayerStream();
+  console.log("multiplayer stream route:: GET");
+  const result = await getUpdatedMultiplayerStream();
+  console.log("multiplayer stream route:: result", result);
   return NextResponse.json(result.data, { status: result.status });
 }
