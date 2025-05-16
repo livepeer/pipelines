@@ -139,6 +139,7 @@ export function BroadcastWithControls({ className }: { className?: string }) {
       silentAudioTrack
       mirrored={false}
       video
+      noIceGathering
       aspectRatio={16 / 9}
       ingestUrl={ingestUrl}
       {...({
