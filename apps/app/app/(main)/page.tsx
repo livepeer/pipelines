@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
 import { usePrivy } from "@/hooks/usePrivy";
 import { useGuestUserStore } from "@/hooks/useGuestUser";
@@ -15,9 +15,8 @@ import { HeroSection } from "@/components/home/HeroSection";
 import { Footer } from "@/components/home/Footer";
 import TutorialModal from "./components/TutorialModal";
 import track from "@/lib/track";
-import { TrackedButton } from "@/components/analytics/TrackedButton";
-import { SquareDashedBottomCode, Workflow } from "lucide-react";
 import { PromptItem } from "@/app/api/prompts/types";
+import useMount from "@/hooks/useMount";
 
 export default function HomePage() {
   const { containerRef, getCloudTransform } = useCloudAnimation(0);
@@ -32,6 +31,14 @@ export default function HomePage() {
   const promptFormRef = useRef<HTMLFormElement>(null);
   const [optimisticPrompts, setOptimisticPrompts] = useState<PromptItem[]>([]);
   const [isMobile, setIsMobile] = useState(false);
+  const searchParams = useSearchParams();
+  const referrer = searchParams.get("referrer");
+
+  useMount(() => {
+    track("home_page_viewed", {
+      referrer,
+    });
+  });
 
   const {
     value: prompt,
