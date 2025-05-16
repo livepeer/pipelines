@@ -32,11 +32,11 @@ export default function HomePage() {
   const [optimisticPrompts, setOptimisticPrompts] = useState<PromptItem[]>([]);
   const [isMobile, setIsMobile] = useState(false);
   const searchParams = useSearchParams();
-  const referrer = searchParams.get("referrer");
+  const utmSource = searchParams.get("utm_source");
 
   useMount(() => {
     track("home_page_viewed", {
-      referrer,
+      utm_source: utmSource,
     });
   });
 

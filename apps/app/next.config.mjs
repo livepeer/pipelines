@@ -64,7 +64,7 @@ const nextConfig = {
     return [
       {
         source: "/:platform(x|tt|tiktok|twitter|ig|instagram|fb|facebook)",
-        destination: "/?referrer=:platform",
+        destination: "/?utm_source=:platform",
         permanent: false,
       },
     ];
