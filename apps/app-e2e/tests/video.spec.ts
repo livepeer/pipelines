@@ -101,38 +101,60 @@ test.describe("Daydream Page Tests", () => {
       await assertVideoPlaying(broadcast);
       await assertVideoPlaying(playback);
 
-      const streamInfo = await playback.evaluate((video: HTMLVideoElement) => {
+      console.log("here")
+      
+      // await playback.evaluate((video: HTMLVideoElement) => {
+      //   const stream = video.srcObject;
+      //   const audioCtx = new AudioContext();
+      //   if (!(stream instanceof MediaStream)) {
+      //     console.log("No stream found");
+      //     return;
+      //   }
+      //   const source = audioCtx.createMediaStreamSource(stream);
+      //   const analyser = audioCtx.createAnalyser();
+
+      //   analyser.fftSize = 2048;
+      //   const bufferLength = analyser.fftSize;
+      //   const dataArray = new Uint8Array(bufferLength);
+
+      //   source.connect(analyser);
+
+      //   function logWaveform() {
+      //     analyser.getByteTimeDomainData(dataArray);
+
+      //     // Print a basic snapshot of the waveform (min/max)
+      //     const min = Math.min(...dataArray);
+      //     const max = Math.max(...dataArray);
+      //     console.log(
+      //       `Waveform: min=${min}, max=${max}, mid=${dataArray[Math.floor(bufferLength / 2)]}`,
+      //     );
+
+      //     // Repeat every 500ms
+      //     setTimeout(logWaveform, 500);
+      //   }
+
+      //   logWaveform();
+      // });
+
+      const audioTracks = await playback.evaluate((video: HTMLVideoElement) => {
         const stream = video.srcObject;
-        const audioCtx = new AudioContext();
-        if (!(stream instanceof MediaStream)) {
-          console.log("No stream found");
-          return;
-        }
-        const source = audioCtx.createMediaStreamSource(stream);
-        const analyser = audioCtx.createAnalyser();
-
-        analyser.fftSize = 2048;
-        const bufferLength = analyser.fftSize;
-        const dataArray = new Uint8Array(bufferLength);
-
-        source.connect(analyser);
-
-        function logWaveform() {
-          analyser.getByteTimeDomainData(dataArray);
-
-          // Print a basic snapshot of the waveform (min/max)
-          const min = Math.min(...dataArray);
-          const max = Math.max(...dataArray);
-          console.log(
-            `Waveform: min=${min}, max=${max}, mid=${dataArray[Math.floor(bufferLength / 2)]}`,
-          );
-
-          // Repeat every 500ms
-          setTimeout(logWaveform, 500);
-        }
-
-        logWaveform();
+        if (!(stream instanceof MediaStream)) return [];
+        return stream.getAudioTracks().map(t => ({
+          kind: t.kind,
+          label: t.label,
+          enabled: t.enabled,
+          muted: t.muted,
+          readyState: t.readyState,
+        }));
       });
+      
+      console.log('Audio Tracks:', audioTracks);
+      expect(audioTracks.length).toBeGreaterThan(0);
+      expect(audioTracks[0].kind).toBe("audio");
+      expect(audioTracks[0].enabled).toBe(true);
+      expect(audioTracks[0].muted).toBe(false);
+      expect(audioTracks[0].readyState).toBe(1); // 1 means LIVE
+      
 
       await assertVideoContentChanging(
         broadcast,
