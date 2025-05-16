@@ -36,7 +36,9 @@ export const SEND_METRICS = process.env.SEND_METRICS === "true";
  * Randomly selects a WHIP region to communicate with, or fallback to default app behaviour
  * @param path - The path in app to fetch with custom query param including `whipServer`
  */
-export function selectWhipServer(path: string): string {
+export function selectWhipServer(region: string, path: string): string {
+  return `${path}?whipServer=https://${region}/live/video-to-video/`;
+
   // TODO sometimes this returns empty region
   const REGIONS = (process.env.WHIP_REGIONS || "").split(",");
   let retPath = path;

@@ -43,143 +43,151 @@ if (!APP_URL) {
   );
 }
 
-test.describe("Daydream Page Tests", () => {
-  test.beforeEach(async ({ page, context }) => {
-    await context.grantPermissions(["camera", "microphone"]);
-    await page.goto(selectWhipServer("/create"));
-  });
+const whipRegions = (process.env.WHIP_REGIONS || "").split(",");
 
-  test.afterEach(async ({}, testInfo) => {
-    if (SEND_METRICS) {
-      if (testInfo.status === "passed") {
-        testSuccessCounter.inc({
-          test_name: testInfo.title,
-          environment: ENVIRONMENT,
-        });
-      } else {
-        testFailureCounter.inc({
-          test_name: testInfo.title,
-          environment: ENVIRONMENT,
-        });
+test.describe.serial("Daydream Page Tests", () => {
+  whipRegions.forEach(region => {
+    test.beforeEach(async ({ page, context }) => {
+      await context.grantPermissions(["camera", "microphone"]);
+    });
+
+    test.afterEach(async ({}, testInfo) => {
+      if (SEND_METRICS) {
+        if (testInfo.status === "passed") {
+          testSuccessCounter.inc({
+            test_name: testInfo.title,
+            environment: ENVIRONMENT,
+          });
+        } else {
+          testFailureCounter.inc({
+            test_name: testInfo.title,
+            environment: ENVIRONMENT,
+          });
+        }
+
+        testDurationGauge.set(
+          { test_name: testInfo.title, environment: ENVIRONMENT },
+          testInfo.duration / 1000,
+        );
+
+        await pushMetrics();
       }
+    });
 
-      testDurationGauge.set(
-        { test_name: testInfo.title, environment: ENVIRONMENT },
-        testInfo.duration / 1000,
-      );
+    test(`video elements load and play correctly ${region}`, async ({
+      page,
+    }) => {
+      await page.goto(selectWhipServer(region, "/create"));
+      test.setTimeout(OVERALL_TEST_TIMEOUT_MS);
+      const testName = test.info().title;
 
-      await pushMetrics();
-    }
-  });
+      try {
+        const emailInput = page.getByTestId("email-input");
+        await expect(emailInput).toBeVisible({ timeout: 10 * MIN }); // Might still be building
+        await emailInput.fill(EMAIL);
 
-  test("video elements load and play correctly", async ({ page }) => {
-    test.setTimeout(OVERALL_TEST_TIMEOUT_MS);
-    const testName = test.info().title;
+        await page.getByTestId("submit-email").click();
 
-    try {
-      const emailInput = page.getByTestId("email-input");
-      await expect(emailInput).toBeVisible({ timeout: 10 * MIN }); // Might still be building
-      await emailInput.fill(EMAIL);
+        const otpForm = page.getByTestId("otp-form");
+        await expect(otpForm).toBeVisible({ timeout: MIN });
+        const otpInputElement = otpForm.locator("input");
+        await expect(otpInputElement).toBeAttached({ timeout: MIN });
+        await otpInputElement.fill(OTP_CODE);
 
-      await page.getByTestId("submit-email").click();
+        const broadcast = page.getByTestId(BROADCAST_VIDEO_TEST_ID);
+        const playback = page.getByTestId(PLAYBACK_VIDEO_TEST_ID);
 
-      const otpForm = page.getByTestId("otp-form");
-      await expect(otpForm).toBeVisible({ timeout: MIN });
-      const otpInputElement = otpForm.locator("input");
-      await expect(otpInputElement).toBeAttached({ timeout: MIN });
-      await otpInputElement.fill(OTP_CODE);
+        await page.locator('[title="Copy system info"]').click();
+        await page.waitForTimeout(10);
+        const clipboardText = await page.evaluate(async () => {
+          return await navigator.clipboard.readText();
+        });
 
-      const broadcast = page.getByTestId(BROADCAST_VIDEO_TEST_ID);
-      const playback = page.getByTestId(PLAYBACK_VIDEO_TEST_ID);
+        console.log("Stream info:", clipboardText);
 
-      await page.locator('[title="Copy system info"]').click();
-      await page.waitForTimeout(10);
-      const clipboardText = await page.evaluate(async () => {
-        return await navigator.clipboard.readText();
-      });
+        await assertVideoPlaying(broadcast);
+        await assertVideoPlaying(playback);
 
-      console.log("Stream info:", clipboardText);
+        // await playback.evaluate((video: HTMLVideoElement) => {
+        //   const stream = video.srcObject;
+        //   const audioCtx = new AudioContext();
+        //   if (!(stream instanceof MediaStream)) {
+        //     console.log("No stream found");
+        //     return;
+        //   }
+        //   const source = audioCtx.createMediaStreamSource(stream);
+        //   const analyser = audioCtx.createAnalyser();
 
-      await assertVideoPlaying(broadcast);
-      await assertVideoPlaying(playback);
+        //   analyser.fftSize = 2048;
+        //   const bufferLength = analyser.fftSize;
+        //   const dataArray = new Uint8Array(bufferLength);
 
-      // await playback.evaluate((video: HTMLVideoElement) => {
-      //   const stream = video.srcObject;
-      //   const audioCtx = new AudioContext();
-      //   if (!(stream instanceof MediaStream)) {
-      //     console.log("No stream found");
-      //     return;
-      //   }
-      //   const source = audioCtx.createMediaStreamSource(stream);
-      //   const analyser = audioCtx.createAnalyser();
+        //   source.connect(analyser);
 
-      //   analyser.fftSize = 2048;
-      //   const bufferLength = analyser.fftSize;
-      //   const dataArray = new Uint8Array(bufferLength);
+        //   function logWaveform() {
+        //     analyser.getByteTimeDomainData(dataArray);
 
-      //   source.connect(analyser);
+        //     // Print a basic snapshot of the waveform (min/max)
+        //     const min = Math.min(...dataArray);
+        //     const max = Math.max(...dataArray);
+        //     console.log(
+        //       `Waveform: min=${min}, max=${max}, mid=${dataArray[Math.floor(bufferLength / 2)]}`,
+        //     );
 
-      //   function logWaveform() {
-      //     analyser.getByteTimeDomainData(dataArray);
+        //     // Repeat every 500ms
+        //     setTimeout(logWaveform, 500);
+        //   }
 
-      //     // Print a basic snapshot of the waveform (min/max)
-      //     const min = Math.min(...dataArray);
-      //     const max = Math.max(...dataArray);
-      //     console.log(
-      //       `Waveform: min=${min}, max=${max}, mid=${dataArray[Math.floor(bufferLength / 2)]}`,
-      //     );
+        //   logWaveform();
+        // });
 
-      //     // Repeat every 500ms
-      //     setTimeout(logWaveform, 500);
-      //   }
+        const audioTracks = await playback.evaluate(
+          (video: HTMLVideoElement) => {
+            const stream = video.srcObject;
+            if (!(stream instanceof MediaStream)) return [];
+            return stream.getAudioTracks().map(t => ({
+              kind: t.kind,
+              label: t.label,
+              enabled: t.enabled,
+              muted: t.muted,
+              readyState: t.readyState,
+            }));
+          },
+        );
 
-      //   logWaveform();
-      // });
+        console.log("Audio Tracks:", audioTracks);
+        expect(audioTracks.length).toBeGreaterThan(0);
+        expect(audioTracks[0].kind).toBe("audio");
+        expect(audioTracks[0].enabled).toBe(true);
+        expect(audioTracks[0].muted).toBe(false);
+        expect(audioTracks[0].readyState).toBe("live");
 
-      const audioTracks = await playback.evaluate((video: HTMLVideoElement) => {
-        const stream = video.srcObject;
-        if (!(stream instanceof MediaStream)) return [];
-        return stream.getAudioTracks().map(t => ({
-          kind: t.kind,
-          label: t.label,
-          enabled: t.enabled,
-          muted: t.muted,
-          readyState: t.readyState,
-        }));
-      });
-
-      console.log("Audio Tracks:", audioTracks);
-      expect(audioTracks.length).toBeGreaterThan(0);
-      expect(audioTracks[0].kind).toBe("audio");
-      expect(audioTracks[0].enabled).toBe(true);
-      expect(audioTracks[0].muted).toBe(false);
-      expect(audioTracks[0].readyState).toBe("live");
-
-      await assertVideoContentChanging(
-        broadcast,
-        testName,
-        "broadcast",
-        NUM_SCREENSHOTS,
-        SCREENSHOT_INTERVAL_MS,
-        100,
-        0.5,
-      );
-      await broadcast.evaluate(el => {
-        (el as HTMLElement).style.visibility = "hidden";
-      });
-      await assertVideoContentChanging(
-        playback,
-        testName,
-        "playback",
-        NUM_SCREENSHOTS,
-        SCREENSHOT_INTERVAL_MS,
-        3000,
-        3,
-      );
-    } catch (error) {
-      page.screenshot({ path: `./screenshots/error.png` });
-      console.error("Error in test:", error);
-      throw error;
-    }
+        await assertVideoContentChanging(
+          broadcast,
+          testName,
+          "broadcast",
+          NUM_SCREENSHOTS,
+          SCREENSHOT_INTERVAL_MS,
+          100,
+          0.5,
+        );
+        await broadcast.evaluate(el => {
+          (el as HTMLElement).style.visibility = "hidden";
+        });
+        await assertVideoContentChanging(
+          playback,
+          testName,
+          "playback",
+          NUM_SCREENSHOTS,
+          SCREENSHOT_INTERVAL_MS,
+          3000,
+          3,
+        );
+      } catch (error) {
+        page.screenshot({ path: `./screenshots/error.png` });
+        console.error("Error in test:", error);
+        throw error;
+      }
+    });
   });
 });
