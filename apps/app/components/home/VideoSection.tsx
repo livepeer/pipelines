@@ -9,7 +9,19 @@ export const TRANSFORMED_PLAYBACK_ID =
   process.env.NEXT_PUBLIC_TRANSFORMED_PLAYBACK_ID ?? "";
 const ORIGINAL_PLAYBACK_ID = process.env.NEXT_PUBLIC_ORIGINAL_PLAYBACK_ID ?? "";
 
-const env = process.env.NODE_ENV;
+const env = process.env.NEXT_PUBLIC_VERCEL_ENV;
+
+export function getIframeUrl({
+  playbackId,
+  lowLatency,
+  isSource,
+}: {
+  playbackId: string;
+  lowLatency: boolean;
+  isSource?: boolean;
+}) {
+  return `https://${env === "production" || isSource ? "lvpr.tv" : "monster.lvpr.tv"}?v=${playbackId}&lowLatency=${lowLatency}&backoffMax=1000&ingestPlayback=true`;
+}
 
 interface VideoSectionProps {
   isMobile?: boolean;
@@ -24,8 +36,15 @@ export function VideoSection({
 }: VideoSectionProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [useLivepeerPlayer, setUseLivepeerPlayer] = useState(false);
-  const transformedIframeUrl = `https://${env === "production" ? "lvpr.tv" : "monster.lvpr.tv"}?v=${TRANSFORMED_PLAYBACK_ID}&lowLatency=true&backoffMax=1000&ingestPlayback=true`;
-  const originalIframeUrl = `https://${env === "production" ? "lvpr.tv" : "lvpr.tv"}?v=${ORIGINAL_PLAYBACK_ID}&lowLatency=false&backoffMax=1000&ingestPlayback=true&muted=true`;
+  const transformedIframeUrl = getIframeUrl({
+    playbackId: TRANSFORMED_PLAYBACK_ID,
+    lowLatency: true,
+  });
+  const originalIframeUrl = getIframeUrl({
+    playbackId: ORIGINAL_PLAYBACK_ID,
+    lowLatency: false,
+    isSource: true,
+  });
 
   useEffect(() => {
     if (typeof window !== "undefined") {
