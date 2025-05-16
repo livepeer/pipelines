@@ -1,4 +1,4 @@
-import React, { RefObject } from "react";
+import React, { RefObject, useMemo, useRef, useEffect } from "react";
 import { Camera } from "lucide-react";
 import { DiscordLogoIcon } from "@radix-ui/react-icons";
 import { PromptForm } from "./PromptForm";
@@ -7,6 +7,9 @@ import { ActionButton } from "./ActionButton";
 import { PromptItem } from "@/app/api/prompts/types";
 import { TrackedButton } from "@/components/analytics/TrackedButton";
 import { Button } from "@repo/design-system/components/ui/button";
+
+// Maximum number of prompts to display
+const MAX_PROMPT_SCROLLBACK = 100;
 
 interface PromptPanelProps {
   promptQueue: PromptItem[];
@@ -43,6 +46,8 @@ export function PromptPanel({
   promptFormRef,
   isMobile = false,
 }: PromptPanelProps) {
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
   const handlePastPromptClick = (prompt: string) => {
     setPromptValue(prompt);
   };
@@ -59,13 +64,35 @@ export function PromptPanel({
   const safeAreaBottom = 20; // Extra padding for browser home bars
   const promptPanelBottom = footerHeight + inputBoxHeight + marginBottom;
 
+  // Limit the number of displayed prompts to MAX_PROMPTS
+  const limitedDisplayedPrompts = useMemo(() => {
+    return displayedPrompts.slice(-MAX_PROMPT_SCROLLBACK);
+  }, [displayedPrompts]);
+
+  // Also limit the corresponding avatar seeds and user indices
+  const limitedPromptAvatarSeeds = useMemo(() => {
+    return promptAvatarSeeds.slice(-MAX_PROMPT_SCROLLBACK);
+  }, [promptAvatarSeeds]);
+
+  const limitedUserPromptIndices = useMemo(() => {
+    return userPromptIndices.slice(-MAX_PROMPT_SCROLLBACK);
+  }, [userPromptIndices]);
+
+  // Scroll to the bottom whenever prompts change
+  useEffect(() => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTop =
+        scrollContainerRef.current.scrollHeight;
+    }
+  }, [limitedDisplayedPrompts]);
+
   return (
     <div
       className={`
       ${
         isMobile
           ? "absolute bottom-0 left-0 right-0 z-50"
-          : "flex flex-col w-full md:w-[30%]"
+          : "flex flex-col w-full md:w-[30%] h-full"
       }
     `}
     >
@@ -93,14 +120,19 @@ export function PromptPanel({
 
       {isMobile && (
         <div
-          className="fixed left-0 right-0 max-h-[35vh] z-50 overflow-hidden bg-gradient-to-t from-black/80 via-black/40 to-transparent pb-6 pt-12"
-          style={{ bottom: `${promptPanelBottom}px` }}
+          ref={scrollContainerRef}
+          className="fixed left-0 right-0 max-h-[35vh] z-50 overflow-y-auto bg-gradient-to-t from-black/80 via-black/40 to-transparent pb-6 pt-12"
+          style={{
+            bottom: `${promptPanelBottom}px`,
+            maxHeight: "35vh",
+            overflowY: "auto",
+          }}
         >
           <PromptDisplay
             promptQueue={promptQueue}
-            displayedPrompts={displayedPrompts}
-            promptAvatarSeeds={promptAvatarSeeds}
-            userPromptIndices={userPromptIndices}
+            displayedPrompts={limitedDisplayedPrompts}
+            promptAvatarSeeds={limitedPromptAvatarSeeds}
+            userPromptIndices={limitedUserPromptIndices}
             onPastPromptClick={handlePastPromptClick}
             isMobile={isMobile}
           />
@@ -112,7 +144,7 @@ export function PromptPanel({
           ${
             isMobile
               ? "w-full flex flex-col overflow-hidden fixed z-40 left-0 right-0"
-              : "w-full flex flex-col overflow-hidden h-full md:h-[calc(100%-49px)] fixed bottom-0 left-0 right-0 md:relative"
+              : "w-full flex flex-col h-full md:h-[calc(100%-49px)] fixed bottom-0 left-0 right-0 md:relative"
           }
         `}
         style={{
@@ -176,42 +208,45 @@ export function PromptPanel({
             )}
 
             {!isMobile && (
-              <div className="flex-1 flex flex-col justify-end overflow-hidden relative">
-                <>
-                  <div
-                    className="absolute top-0 left-0 right-0 h-[60%] pointer-events-none z-30"
-                    style={{
-                      background:
-                        "linear-gradient(rgb(251, 251, 251) 0%, rgb(251, 251, 251) 3%, rgba(251, 251, 251, 0.9) 5%, rgba(251, 251, 251, 0.6) 38%, transparent 80%)",
-                    }}
-                  ></div>
-                  <div
-                    className="absolute top-0 left-0 right-0 h-[50%] pointer-events-none z-20"
-                    style={{
-                      background:
-                        "linear-gradient(to bottom, var(--background, rgb(249, 250, 251)) 0%, var(--background, rgb(249, 250, 251)) 40%, var(--background, rgb(249, 250, 251)) 60%, rgba(249, 250, 251, 0.2) 80%, rgba(249, 250, 251, 0.05) 90%, rgba(249, 250, 251, 0) 100%)",
-                    }}
-                  ></div>
-                  <div
-                    className="absolute top-0 left-0 right-0 h-[50%] pointer-events-none z-20"
-                    style={{
-                      backdropFilter: "blur(2px)",
-                      WebkitBackdropFilter: "blur(2px)",
-                      maskImage:
-                        "linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 40%, rgba(0,0,0,0.8) 60%, rgba(0,0,0,0.4) 80%, rgba(0,0,0,0.05) 90%, rgba(0,0,0,0) 100%)",
-                      WebkitMaskImage:
-                        "linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 40%, rgba(0,0,0,0.8) 60%, rgba(0,0,0,0.4) 80%, rgba(0,0,0,0.05) 90%, rgba(0,0,0,0) 100%)",
-                    }}
-                  ></div>
+              <div className="flex-1 flex flex-col h-[calc(100%-80px)] overflow-hidden relative">
+                <div
+                  className="absolute top-0 left-0 right-0 h-[60%] pointer-events-none z-30"
+                  style={{
+                    background:
+                      "linear-gradient(rgb(251, 251, 251) 0%, rgb(251, 251, 251) 3%, rgba(251, 251, 251, 0.9) 5%, rgba(251, 251, 251, 0.6) 38%, transparent 80%)",
+                  }}
+                ></div>
+                <div
+                  className="absolute top-0 left-0 right-0 h-[50%] pointer-events-none z-20"
+                  style={{
+                    background:
+                      "linear-gradient(to bottom, var(--background, rgb(249, 250, 251)) 0%, var(--background, rgb(249, 250, 251)) 40%, var(--background, rgb(249, 250, 251)) 60%, rgba(249, 250, 251, 0.2) 80%, rgba(249, 250, 251, 0.05) 90%, rgba(249, 250, 251, 0) 100%)",
+                  }}
+                ></div>
+                <div
+                  className="absolute top-0 left-0 right-0 h-[50%] pointer-events-none z-20"
+                  style={{
+                    backdropFilter: "blur(2px)",
+                    WebkitBackdropFilter: "blur(2px)",
+                    maskImage:
+                      "linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 40%, rgba(0,0,0,0.8) 60%, rgba(0,0,0,0.4) 80%, rgba(0,0,0,0.05) 90%, rgba(0,0,0,0) 100%)",
+                    WebkitMaskImage:
+                      "linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 40%, rgba(0,0,0,0.8) 60%, rgba(0,0,0,0.4) 80%, rgba(0,0,0,0.05) 90%, rgba(0,0,0,0) 100%)",
+                  }}
+                ></div>
+                <div
+                  ref={scrollContainerRef}
+                  className="h-full overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent pb-3"
+                >
                   <PromptDisplay
                     promptQueue={promptQueue}
-                    displayedPrompts={displayedPrompts}
-                    promptAvatarSeeds={promptAvatarSeeds}
-                    userPromptIndices={userPromptIndices}
+                    displayedPrompts={limitedDisplayedPrompts}
+                    promptAvatarSeeds={limitedPromptAvatarSeeds}
+                    userPromptIndices={limitedUserPromptIndices}
                     onPastPromptClick={handlePastPromptClick}
                     isMobile={isMobile}
                   />
-                </>
+                </div>
               </div>
             )}
 
@@ -229,6 +264,22 @@ export function PromptPanel({
           </div>
         </div>
       </div>
+      <style jsx global>{`
+        /* Custom scrollbar styles */
+        .scrollbar-thin::-webkit-scrollbar {
+          width: 6px;
+        }
+        .scrollbar-thin::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .scrollbar-thin::-webkit-scrollbar-thumb {
+          background-color: rgba(0, 0, 0, 0.2);
+          border-radius: 10px;
+        }
+        .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+          background-color: rgba(0, 0, 0, 0.3);
+        }
+      `}</style>
     </div>
   );
 }

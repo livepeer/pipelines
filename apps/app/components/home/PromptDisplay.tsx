@@ -190,7 +190,7 @@ export function PromptDisplay({
     }
 
     return (
-      <div className="w-full flex flex-col justify-end p-4 overflow-y-auto overflow-x-hidden">
+      <div className="w-full flex flex-col justify-end p-4 overflow-y-visible overflow-x-hidden">
         <div className="flex flex-col gap-2 w-full justify-end">
           {itemsToShow.map((item, index) => {
             const username = item.seed ? generateUsername(item.seed) : "User";
@@ -227,15 +227,14 @@ export function PromptDisplay({
   }
 
   return (
-    <div className="w-full flex flex-col justify-end p-4 pb-0 overflow-hidden relative">
+    <div className="w-full flex flex-col p-4 pb-0 relative">
       <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/30 md:hidden pointer-events-none z-0"></div>
       <div className="flex flex-col gap-2 relative z-10 w-full mb-4">
         {nonHighlightedPrompts.length > 0 && (
           <div className="flex flex-col gap-2 w-full">
-            {[...nonHighlightedPrompts].reverse().map((prevPrompt, rIndex) => {
-              const index = nonHighlightedPrompts.length - rIndex;
-              const isUserPrompt = userPromptIndices[index];
-              const seed = promptAvatarSeeds[index];
+            {[...nonHighlightedPrompts].map((prevPrompt, index) => {
+              const isUserPrompt = userPromptIndices[index + 1];
+              const seed = promptAvatarSeeds[index + 1];
               const username = seed ? generateUsername(seed) : "User";
               const color = getColorFromSeed(username);
 
