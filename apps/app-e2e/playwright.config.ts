@@ -9,7 +9,10 @@ dotenv.config();
  */
 
 // temporarily use a previous commit with silent audio
-const APP_URL = "https://pipelines-c0oivs6r4-livepeer.vercel.app/";
+let APP_URL = process.env.TEST_APP_URL;
+if (APP_URL?.includes("monster")) {
+  APP_URL = "https://pipelines-c0oivs6r4-livepeer.vercel.app/";
+}
 
 if (!APP_URL) {
   console.error(
