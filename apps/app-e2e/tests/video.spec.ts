@@ -44,7 +44,7 @@ if (!APP_URL) {
 }
 
 const whipRegions = (process.env.WHIP_REGIONS || "").split(",");
-const NUM_RUNS = 2;
+const NUM_RUNS = 4;
 
 test.describe.parallel("Daydream Page Tests", () => {
   whipRegions.forEach(region => {
@@ -78,6 +78,7 @@ test.describe.parallel("Daydream Page Tests", () => {
       for (let i = 0; i < NUM_RUNS; i++) {
         test(`video elements load and play correctly ${region}#${i + 1}`, async ({
           page,
+          context,
         }) => {
           await page.goto(selectWhipServer(region, "/create"));
           test.setTimeout(OVERALL_TEST_TIMEOUT_MS);
@@ -106,6 +107,12 @@ test.describe.parallel("Daydream Page Tests", () => {
             });
 
             console.log(`${region} Stream info: ${clipboardText}`);
+
+            if (i === 0) {
+              // hack to only do this on one test
+              // simulate opening new tab
+              await context.newPage();
+            }
 
             await assertVideoPlaying(broadcast);
             await assertVideoPlaying(playback);
@@ -165,7 +172,7 @@ test.describe.parallel("Daydream Page Tests", () => {
 
             // sleep to leave the stream running for longer
             console.log("Sleeping to allow the stream to run...");
-            // await page.waitForTimeout(30 * 1000);
+            await page.waitForTimeout(30 * 1000);
 
             await assertVideoContentChanging(
               broadcast,
