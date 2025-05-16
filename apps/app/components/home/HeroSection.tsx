@@ -3,9 +3,8 @@ import { WandSparkles, ChevronDown } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { TrackedButton } from "../analytics/TrackedButton";
-import VideoAISparkles from "../daydream/CustomIcons/VideoAISparkles";
 import { cn } from "@repo/design-system/lib/utils";
-import { TRANSFORMED_PLAYBACK_ID } from "./VideoSection";
+import { getIframeUrl, TRANSFORMED_PLAYBACK_ID } from "./VideoSection";
 
 interface HeroSectionProps {
   handlePromptSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
@@ -167,7 +166,10 @@ export const HeroSection = ({
           }}
         >
           <iframe
-            src={`https://lvpr.tv/?v=${TRANSFORMED_PLAYBACK_ID}&lowLatency=true&backoffMax=1000&ingestPlayback=true&controls=true`}
+            src={getIframeUrl({
+              playbackId: TRANSFORMED_PLAYBACK_ID,
+              lowLatency: true,
+            })}
             className="w-full h-full absolute inset-0"
             allow="autoplay; fullscreen"
             allowFullScreen
