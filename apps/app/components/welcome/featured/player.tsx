@@ -128,6 +128,7 @@ export const LivepeerPlayer = () => {
     return <PlayerLoading />;
   }
 
+  // If this fallback is used, no `livepeer-playback-url` header is sent
   const playbackUrlWithFallback =
     playbackUrl ||
     `${appConfig.whipUrl}${appConfig?.whipUrl?.endsWith("/") ? "" : "/"}${stream?.stream_key}-out/whep`;
