@@ -38,7 +38,7 @@ export function VideoSection({
   const [useLivepeerPlayer, setUseLivepeerPlayer] = useState(false);
   const transformedIframeUrl = getIframeUrl({
     playbackId: TRANSFORMED_PLAYBACK_ID,
-    lowLatency: "force",
+    lowLatency: true,
   });
   const originalIframeUrl = getIframeUrl({
     playbackId: ORIGINAL_PLAYBACK_ID,

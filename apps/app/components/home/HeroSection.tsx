@@ -168,7 +168,7 @@ export const HeroSection = ({
           <iframe
             src={getIframeUrl({
               playbackId: TRANSFORMED_PLAYBACK_ID,
-              lowLatency: "force",
+              lowLatency: true,
             })}
             className="w-full h-full absolute inset-0"
             allow="autoplay; fullscreen"
