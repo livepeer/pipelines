@@ -57,7 +57,7 @@ export default defineConfig({
         },
         ...devices["Desktop Chrome"],
         channel: "chrome",
-        headless: true,
+        headless: false,
         launchOptions: {
           args: [
             "--disable-web-security",

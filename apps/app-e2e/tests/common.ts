@@ -181,7 +181,7 @@ export async function assertVideoContentChanging(
     for (let i = 0; i < numFrames; i++) {
       const screenshot = await video.screenshot({
         type: EXTENSION,
-        path: `screenshots/${videoTitle}/${i}.${EXTENSION}`,
+        path: `screenshots/${testName}/${videoTitle}/${i}.${EXTENSION}`,
       });
       frameBuffers.push(screenshot);
       if (i < numFrames - 1) {
