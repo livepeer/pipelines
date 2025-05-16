@@ -72,6 +72,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: mh/region
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
