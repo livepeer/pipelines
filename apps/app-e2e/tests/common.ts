@@ -37,7 +37,6 @@ export const SEND_METRICS = process.env.SEND_METRICS === "true";
  * @param path - The path in app to fetch with custom query param including `whipServer`
  */
 export function selectWhipServer(path: string): string {
-  return path;
   // TODO sometimes this returns empty region
   const REGIONS = (process.env.WHIP_REGIONS || "").split(",");
   let retPath = path;

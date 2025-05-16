@@ -96,13 +96,11 @@ test.describe("Daydream Page Tests", () => {
         return await navigator.clipboard.readText();
       });
 
-      console.log("Clipboard contains:", clipboardText);
+      console.log("Stream info:", clipboardText);
 
       await assertVideoPlaying(broadcast);
       await assertVideoPlaying(playback);
 
-      console.log("here")
-      
       // await playback.evaluate((video: HTMLVideoElement) => {
       //   const stream = video.srcObject;
       //   const audioCtx = new AudioContext();
@@ -147,14 +145,13 @@ test.describe("Daydream Page Tests", () => {
           readyState: t.readyState,
         }));
       });
-      
-      console.log('Audio Tracks:', audioTracks);
+
+      console.log("Audio Tracks:", audioTracks);
       expect(audioTracks.length).toBeGreaterThan(0);
       expect(audioTracks[0].kind).toBe("audio");
       expect(audioTracks[0].enabled).toBe(true);
       expect(audioTracks[0].muted).toBe(false);
       expect(audioTracks[0].readyState).toBe(1); // 1 means LIVE
-      
 
       await assertVideoContentChanging(
         broadcast,
