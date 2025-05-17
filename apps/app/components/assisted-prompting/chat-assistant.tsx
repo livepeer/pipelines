@@ -132,7 +132,7 @@ export const ChatAssistant = ({
         ...updatedMessages,
         {
           role: "assistant",
-          content: "Sorry, I encountered an error. Please try again.",
+          content: "That didn't quite work out. Let's give it another spin!",
         },
       ]);
     } finally {
@@ -338,9 +338,9 @@ export const ChatAssistant = ({
                 {showSettings && (
                   <div className="p-4 sm:p-6">
                     <div className="mb-5">
-                      <h3 className="text-sm md:text-base font-medium mb-2 text-zinc-900">
+                      <p className="text-sm md:text-base font-medium mb-2 text-zinc-900">
                         Choose a style
-                      </h3>
+                      </p>
 
                       <div className="relative">
                         <div
@@ -370,9 +370,9 @@ export const ChatAssistant = ({
                     </div>
 
                     <div className="mb-5">
-                      <h3 className="text-sm md:text-base font-medium mb-2 text-zinc-900">
+                      <p className="text-sm md:text-base font-medium mb-2 text-zinc-900">
                         Enter keywords
-                      </h3>
+                      </p>
 
                       <div className="flex flex-wrap items-center gap-2 mb-2">
                         {keywords.map((keyword, index) => (
@@ -407,9 +407,9 @@ export const ChatAssistant = ({
 
                     {/* Trends dropdown */}
                     <div className="relative mb-5">
-                      <h3 className="text-sm md:text-base font-medium mb-2 text-zinc-900">
+                      <p className="text-sm md:text-base font-medium mb-2 text-zinc-900">
                         Use world trends 🔥
-                      </h3>
+                      </p>
 
                       <div className="mt-1.5 w-full max-h-64 overflow-y-auto no-scrollbar rounded">
                         {!trends || loading ? (
@@ -451,9 +451,9 @@ export const ChatAssistant = ({
                     </div>
 
                     <div className="mb-5">
-                      <h3 className="text-sm md:text-base font-medium mb-2 text-zinc-900">
+                      <p className="text-sm md:text-base font-medium mb-2 text-zinc-900">
                         Reasoning model
-                      </h3>
+                      </p>
                       <div className="flex justify-between items-center">
                         <p className="text-gray-600 text-sm">
                           Better, more detailed results.
@@ -593,9 +593,9 @@ export const ChatAssistant = ({
               {showSettings && (
                 <div className="p-4 sm:p-6">
                   <div className="mb-5">
-                    <h3 className="text-sm md:text-base font-medium mb-2 text-zinc-900">
+                    <p className="text-sm md:text-base font-medium mb-2 text-zinc-900">
                       Choose a style
-                    </h3>
+                    </p>
 
                     <div className="relative">
                       <div
@@ -625,9 +625,9 @@ export const ChatAssistant = ({
                   </div>
 
                   <div className="mb-5">
-                    <h3 className="text-sm md:text-base font-medium mb-2 text-zinc-900">
+                    <p className="text-sm md:text-base font-medium mb-2 text-zinc-900">
                       Enter keywords
-                    </h3>
+                    </p>
 
                     <div className="flex flex-wrap items-center gap-2 mb-2">
                       {keywords.map((keyword, index) => (
@@ -662,9 +662,9 @@ export const ChatAssistant = ({
 
                   {/* Trends dropdown */}
                   <div className="relative mb-5">
-                    <h3 className="text-sm md:text-base font-medium mb-2 text-zinc-900">
+                    <p className="text-sm md:text-base font-medium mb-2 text-zinc-900">
                       Use world trends 🔥
-                    </h3>
+                    </p>
 
                     <div className="mt-1.5 w-full max-h-64 overflow-y-auto no-scrollbar rounded">
                       {!trends || loading ? (
@@ -706,9 +706,9 @@ export const ChatAssistant = ({
                   </div>
 
                   <div className="mb-5">
-                    <h3 className="text-sm md:text-base font-medium mb-2 text-zinc-900">
+                    <p className="text-sm md:text-base font-medium mb-2 text-zinc-900">
                       Reasoning model
-                    </h3>
+                    </p>
                     <div className="flex justify-between items-center">
                       <p className="text-gray-600 text-sm">
                         Better, more detailed results.

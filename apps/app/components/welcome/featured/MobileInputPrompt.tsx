@@ -31,8 +31,6 @@ import { generateAIPrompt } from "@/lib/groq";
 import { useWorldTrends } from "@/hooks/useWorldTrends";
 import { ChatAssistant } from "@/components/assisted-prompting/chat-assistant";
 
-const PROMPT_PLACEHOLDER = "Enter your prompt...";
-
 type CommandOption = {
   id: string;
   label: string;
@@ -69,6 +67,10 @@ export const MobileInputPrompt = ({
   const ref = useRef<HTMLTextAreaElement>(null);
   const [isFocused, setIsFocused] = useState(false);
   const { profanity, exceedsMaxLength } = useValidateInput(inputValue);
+
+  const PROMPT_PLACEHOLDER = aiModeEnabled
+    ? "Describe what you would like to create or click generate to explore randomly!"
+    : "Enter your prompt...";
 
   const commandOptions = useMemo<CommandOption[]>(() => {
     if (!pipeline?.prioritized_params) return [];
@@ -182,7 +184,7 @@ export const MobileInputPrompt = ({
             wordBreak: "break-word",
             lineHeight: "1.25rem",
             paddingBottom: "2.5rem",
-            paddingRight: "5rem",
+            paddingRight: "6rem",
           }}
         >
           {parts.map((part, i) => (
@@ -314,7 +316,7 @@ export const MobileInputPrompt = ({
     >
       <div className="flex-1 relative flex items-center w-full">
         <div
-          className="relative w-full flex items-start overflow-hidden rounded-[10px]"
+          className="relative w-full flex items-start overflow-hidden rounded-[16px]"
           style={{
             minHeight: `${currentHeight}px!important`,
           }}
@@ -336,7 +338,7 @@ export const MobileInputPrompt = ({
               overflow: "hidden",
               lineHeight: "1.25rem",
               paddingBottom: "2.5rem",
-              paddingRight: "5rem",
+              paddingRight: "6rem",
             }}
             value={inputValue}
             onChange={e => setInputValue(e.target.value)}
@@ -382,7 +384,7 @@ export const MobileInputPrompt = ({
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 rounded-full"
+                className="h-6 w-6 rounded-full"
                 onClick={e => {
                   e.preventDefault();
                   setInputValue("");
@@ -397,7 +399,7 @@ export const MobileInputPrompt = ({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8 rounded-full md:flex"
+                  className="h-6 w-6 rounded-full md:flex"
                   onClick={e => {
                     e.preventDefault();
                     if (aiModeEnabled) {

@@ -32,8 +32,6 @@ import { ChatAssistant } from "@/components/assisted-prompting/chat-assistant";
 import { generateAIPrompt } from "@/lib/groq";
 import { useWorldTrends } from "@/hooks/useWorldTrends";
 
-const PROMPT_PLACEHOLDER = "Enter your prompt...";
-
 type CommandOption = {
   id: string;
   label: string;
@@ -67,6 +65,10 @@ export const InputPrompt = ({ onPromptSubmit }: InputPromptProps) => {
   const [settingsOpened, setSettingsOpened] = useState(false);
   const ref = useRef<HTMLTextAreaElement>(null);
   const { profanity, exceedsMaxLength } = useValidateInput(inputValue);
+
+  const PROMPT_PLACEHOLDER = aiModeEnabled
+    ? "Describe what you would like to create or click generate to explore randomly!"
+    : "Enter your prompt...";
 
   const commandOptions = useMemo<CommandOption[]>(() => {
     if (!pipeline?.prioritized_params) return [];
@@ -217,26 +219,31 @@ export const InputPrompt = ({ onPromptSubmit }: InputPromptProps) => {
     }
   }, []);
 
-  const submitPrompt = () => {
-    if (inputValue) {
-      if (onPromptSubmit && onPromptSubmit()) {
-        return;
-      }
-
-      track("daydream_prompt_submitted", {
-        is_authenticated: authenticated,
-        prompt: inputValue,
-        stream_id: stream?.id,
-      });
-
-      handleStreamUpdate(inputValue, { silent: true });
-      setLastSubmittedPrompt(inputValue);
-      setHasSubmittedPrompt(true);
-      incrementPromptVersion();
-    } else {
+  const submitPrompt = (aiPrompt?: string) => {
+    const prompt = aiPrompt ?? inputValue;
+  
+    if (!prompt) {
       console.error("No input value to submit");
+      return;
     }
+  
+    // Early exit if parent handler returns truthy
+    if (onPromptSubmit && onPromptSubmit()) {
+      return;
+    }
+  
+    track("daydream_prompt_submitted", {
+      is_authenticated: authenticated,
+      prompt: prompt,
+      stream_id: stream?.id,
+    });
+  
+    handleStreamUpdate(prompt, { silent: true });
+    setLastSubmittedPrompt(prompt);
+    setHasSubmittedPrompt(true);
+    incrementPromptVersion();
   };
+  
 
   const generatePrompt = async () => {
     try {
@@ -259,8 +266,9 @@ export const InputPrompt = ({ onPromptSubmit }: InputPromptProps) => {
       });
 
       setInputValue(aiPrompt);
+      submitPrompt(aiPrompt);
     } catch {
-      setInputValue("Error generating prompt. Please try again.");
+      setInputValue("That didn't quite work out. Let's give it another spin!");
     } finally {
       setIsLoading(false);
     }
@@ -304,7 +312,7 @@ export const InputPrompt = ({ onPromptSubmit }: InputPromptProps) => {
   return (
     <div
       className={cn(
-        "relative mx-auto flex flex-col justify-center items-start gap-2 h-auto min-h-20 md:h-auto md:min-h-20 md:gap-2 mt-4 mb-2 dark:bg-[#1A1A1A] bg-[#fefefe] md:rounded-xl w-[calc(100%-2rem)] md:w-[calc(min(100%,800px))] border-2 border-muted-foreground/10 z-10",
+        "relative mx-auto flex flex-col justify-center items-start gap-2 h-auto min-h-20 md:h-auto md:min-h-20 md:gap-2 mt-4 mb-2 dark:bg-[#1A1A1A] bg-[#fefefe] md:rounded-xl w-[calc(100%-2rem)] md:w-[calc(min(100%,800px))] border-2 border-muted-foreground/10",
         isFullscreen
           ? "fixed left-1/2 bottom-0 -translate-x-1/2 z-[10000] w-[600px] max-w-[calc(100%-2rem)] rounded-[100px]"
           : "rounded-[100px]",
