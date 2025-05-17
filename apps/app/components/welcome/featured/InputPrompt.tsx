@@ -15,6 +15,7 @@ import { cn } from "@repo/design-system/lib/utils";
 import {
   Brain,
   CircleDot,
+  Expand,
   Loader2,
   SlidersHorizontal,
   WandSparkles,
@@ -27,6 +28,9 @@ import { MAX_PROMPT_LENGTH, useValidateInput } from "./useValidateInput";
 import { Separator } from "@repo/design-system/components/ui/separator";
 import { usePrivy } from "@/hooks/usePrivy";
 import useAI from "@/hooks/useAI";
+import { ChatAssistant } from "@/components/assisted-prompting/chat-assistant";
+import { generateAIPrompt } from "@/lib/groq";
+import { useWorldTrends } from "@/hooks/useWorldTrends";
 
 const PROMPT_PLACEHOLDER = "Enter your prompt...";
 
@@ -55,12 +59,13 @@ export const InputPrompt = ({ onPromptSubmit }: InputPromptProps) => {
     usePromptStore();
   const { promptVersion, incrementPromptVersion } = usePromptVersionStore();
   const { aiModeEnabled, toggleAIMode } = useAI();
+  const { trends, loading, error, refetch } = useWorldTrends();
   const { authenticated } = usePrivy();
-
+  const [isChatAssistantOpen, setIsChatAssistantOpen] = useState(false);
   const [inputValue, setInputValue] = useState(lastSubmittedPrompt || "");
+  const [isLoading, setIsLoading] = useState(false);
   const [settingsOpened, setSettingsOpened] = useState(false);
   const ref = useRef<HTMLTextAreaElement>(null);
-
   const { profanity, exceedsMaxLength } = useValidateInput(inputValue);
 
   const commandOptions = useMemo<CommandOption[]>(() => {
@@ -233,6 +238,34 @@ export const InputPrompt = ({ onPromptSubmit }: InputPromptProps) => {
     }
   };
 
+  const generatePrompt = async () => {
+    try {
+      setIsLoading(true);
+      setInputValue("Standby, thinking...");
+
+      const pick4Random = <T,>(arr: T[]): T[] => {
+        const a = [...arr];
+        for (let i = a.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a.slice(0, 4);
+      };
+
+      const keywords = pick4Random(trends).map(t => t.trend);
+      const aiPrompt = await generateAIPrompt({
+        message: inputValue,
+        keywords,
+      });
+
+      setInputValue(aiPrompt);
+    } catch {
+      setInputValue("Error generating prompt. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (commandMenuOpen) {
       handleCommandKeyDown(e);
@@ -271,17 +304,17 @@ export const InputPrompt = ({ onPromptSubmit }: InputPromptProps) => {
   return (
     <div
       className={cn(
-        "relative mx-auto flex flex-col justify-center items-start gap-2 h-auto min-h-20 md:h-auto md:min-h-20 md:gap-2 mt-4 mb-2 dark:bg-[#1A1A1A] bg-[#fefefe] md:rounded-xl w-[calc(100%-2rem)] md:w-[calc(min(100%,800px))] border-2 border-muted-foreground/10",
+        "relative mx-auto flex flex-col justify-center items-start gap-2 h-auto min-h-20 md:h-auto md:min-h-20 md:gap-2 mt-4 mb-2 dark:bg-[#1A1A1A] bg-[#fefefe] md:rounded-xl w-[calc(100%-2rem)] md:w-[calc(min(100%,800px))] border-2 border-muted-foreground/10 z-10",
         isFullscreen
           ? "fixed left-1/2 bottom-0 -translate-x-1/2 z-[10000] w-[600px] max-w-[calc(100%-2rem)] rounded-[100px]"
           : "rounded-[100px]",
         (profanity || exceedsMaxLength) && "dark:border-red-700 border-red-600",
-        aiModeEnabled && "border-zinc-900",
+        aiModeEnabled && !profanity && !exceedsMaxLength && "border-zinc-900",
       )}
     >
       <div className="flex-1 relative flex items-center w-full">
         <div
-          className="relative w-full flex items-start overflow-hidden"
+          className="relative w-full flex items-start overflow-hidden rounded-[10px]"
           style={{
             minHeight: `${currentHeight}px`,
           }}
@@ -328,9 +361,9 @@ export const InputPrompt = ({ onPromptSubmit }: InputPromptProps) => {
             </div>
           )}
 
-          {/* Bottom toggle */}
+          {/* Assisted toggle */}
           <div className="absolute bottom-0 left-0 right-0 bg-white dark:bg-[#1A1A1A] w-full h-9 rounded-b-md">
-            <label className="absolute bottom-2 left-3 cursor-pointer flex gap-1.5 items-center">
+            <label className="absolute bottom-1 left-3 cursor-pointer flex gap-1.5 items-center">
               <input
                 type="checkbox"
                 className="sr-only peer focus:ring-0 active:ring-0"
@@ -365,135 +398,82 @@ export const InputPrompt = ({ onPromptSubmit }: InputPromptProps) => {
               </Button>
             )}
 
-            {aiModeEnabled ? (
-              <>
-                <Tooltip delayDuration={50}>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 rounded-full md:flex"
-                      onClick={e => {
-                        e.preventDefault();
-                        setSettingsOpened(!settingsOpened);
-                      }}
-                    >
-                      <SlidersHorizontal className="h-4 w-4 text-muted-foreground" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent
-                    side="top"
-                    className="bg-white text-black border border-gray-200 shadow-md dark:bg-zinc-900 dark:text-white dark:border-zinc-700"
-                  >
-                    Adjustments
-                  </TooltipContent>
-                </Tooltip>
+            <Tooltip delayDuration={50}>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 rounded-full md:flex"
+                  onClick={e => {
+                    e.preventDefault();
+                    if (aiModeEnabled) {
+                      setIsChatAssistantOpen(true);
+                    } else {
+                      setSettingsOpened(!settingsOpened);
+                    }
+                  }}
+                >
+                  {aiModeEnabled ? (
+                    <Expand className="h-4 w-4 text-muted-foreground" />
+                  ) : (
+                    <SlidersHorizontal className="h-4 w-4 text-muted-foreground" />
+                  )}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent
+                side="top"
+                className="bg-white text-black border border-gray-200 shadow-md dark:bg-zinc-900 dark:text-white dark:border-zinc-700"
+              >
+                {aiModeEnabled ? "Assistant" : "Adjustments"}
+              </TooltipContent>
+            </Tooltip>
 
-                <Separator orientation="vertical" className="h-6 mr-2" />
+            <Separator orientation="vertical" className="h-6 mr-2" />
 
-                <Tooltip delayDuration={50}>
-                  <TooltipTrigger asChild>
-                    <div className="relative inline-block">
-                      <Button
-                        disabled={
-                          updating ||
+            <Tooltip delayDuration={50}>
+              <TooltipTrigger asChild>
+                <div className="relative inline-block">
+                  <Button
+                    disabled={
+                      aiModeEnabled
+                        ? isLoading
+                        : updating ||
                           !inputValue ||
                           profanity ||
                           exceedsMaxLength
-                        }
-                        onClick={e => {
-                          e.preventDefault();
-                          submitPrompt();
-                        }}
-                        className={cn(
-                          "border-none items-center justify-center font-semibold text-xs bg-[#000000] flex disabled:bg-[#000000] disabled:opacity-80",
-                          "w-auto h-9 aspect-square rounded-md",
-                        )}
-                      >
-                        {updating ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <WandSparkles className="h-4 w-4 stroke-[2]" />
-                        )}
-                      </Button>
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent
-                    side="top"
-                    className="bg-white text-black border border-gray-200 shadow-md dark:bg-zinc-900 dark:text-white dark:border-zinc-700"
+                    }
+                    onClick={e => {
+                      e.preventDefault();
+                      if (aiModeEnabled) {
+                        generatePrompt();
+                      } else {
+                        submitPrompt();
+                      }
+                    }}
+                    className={cn(
+                      "border-none items-center justify-center font-semibold text-xs bg-[#000000] flex",
+                      "disabled:bg-[#000000] disabled:opacity-80",
+                      "w-auto h-9 aspect-square rounded-md",
+                    )}
                   >
-                    Prompt{" "}
-                    <span className="text-gray-400 dark:text-gray-500">
-                      Enter
-                    </span>
-                  </TooltipContent>
-                </Tooltip>
-              </>
-            ) : (
-              <>
-                <Tooltip delayDuration={50}>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 rounded-full md:flex"
-                      onClick={e => {
-                        e.preventDefault();
-                        setSettingsOpened(!settingsOpened);
-                      }}
-                    >
-                      <SlidersHorizontal className="h-4 w-4 text-muted-foreground" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent
-                    side="top"
-                    className="bg-white text-black border border-gray-200 shadow-md dark:bg-zinc-900 dark:text-white dark:border-zinc-700"
-                  >
-                    Adjustments
-                  </TooltipContent>
-                </Tooltip>
-
-                <Separator orientation="vertical" className="h-6 mr-2" />
-
-                <Tooltip delayDuration={50}>
-                  <TooltipTrigger asChild>
-                    <div className="relative inline-block">
-                      <Button
-                        disabled={
-                          updating ||
-                          !inputValue ||
-                          profanity ||
-                          exceedsMaxLength
-                        }
-                        onClick={e => {
-                          e.preventDefault();
-                          submitPrompt();
-                        }}
-                        className={cn(
-                          "border-none items-center justify-center font-semibold text-xs bg-[#000000] flex disabled:bg-[#000000] disabled:opacity-80",
-                          "w-auto h-9 aspect-square rounded-md",
-                        )}
-                      >
-                        {updating ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <WandSparkles className="h-4 w-4 stroke-[2]" />
-                        )}
-                      </Button>
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent
-                    side="top"
-                    className="bg-white text-black border border-gray-200 shadow-md dark:bg-zinc-900 dark:text-white dark:border-zinc-700"
-                  >
-                    Prompt{" "}
-                    <span className="text-gray-400 dark:text-gray-500">
-                      Enter
-                    </span>
-                  </TooltipContent>
-                </Tooltip>
-              </>
-            )}
+                    {updating || isLoading ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <WandSparkles className="h-4 w-4 stroke-[2]" />
+                    )}
+                  </Button>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent
+                side="top"
+                className="bg-white text-black border border-gray-200 shadow-md dark:bg-zinc-900 dark:text-white dark:border-zinc-700"
+              >
+                <span className="text-gray-400 dark:text-gray-500">
+                  {" "}
+                  {aiModeEnabled ? "Generate" : "Enter"}
+                </span>
+              </TooltipContent>
+            </Tooltip>
           </div>
         </div>
 
@@ -536,6 +516,18 @@ export const InputPrompt = ({ onPromptSubmit }: InputPromptProps) => {
           </div>
         )}
       </div>
+
+      {aiModeEnabled && (
+        <ChatAssistant
+          initialPrompt={inputValue}
+          onSavePrompt={newPrompt => {
+            setInputValue(newPrompt);
+            setIsChatAssistantOpen(false);
+          }}
+          open={isChatAssistantOpen}
+          onOpenChange={setIsChatAssistantOpen}
+        />
+      )}
 
       {settingsOpened && (
         <SettingsMenu

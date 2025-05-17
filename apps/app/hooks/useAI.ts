@@ -7,10 +7,10 @@ interface AI {
   toggleAIMode: () => void;
 }
 
-const useAI = create<AI>((set) => ({
+const useAI = create<AI>(set => ({
   aiModeEnabled: true,
   toggleAIMode: () =>
-    set((state) => ({
+    set(state => ({
       aiModeEnabled: !state.aiModeEnabled,
     })),
 }));
