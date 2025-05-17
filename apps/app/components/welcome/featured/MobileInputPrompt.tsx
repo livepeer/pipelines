@@ -12,7 +12,7 @@ import {
   TooltipTrigger,
 } from "@repo/design-system/components/ui/tooltip";
 import { cn } from "@repo/design-system/lib/utils";
-import { Loader2, SlidersHorizontal, WandSparkles } from "lucide-react";
+import { Brain, Loader2, SlidersHorizontal, WandSparkles } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import TextareaAutosize from "react-textarea-autosize";
 import { useDreamshaperStore, useStreamUpdates } from "@/hooks/useDreamshaper";
@@ -20,6 +20,7 @@ import SettingsMenu from "./prompt-settings";
 import { MAX_PROMPT_LENGTH, useValidateInput } from "./useValidateInput";
 import { Separator } from "@repo/design-system/components/ui/separator";
 import { usePrivy } from "@/hooks/usePrivy";
+import useAI from "@/hooks/useAI";
 
 const PROMPT_PLACEHOLDER = "Enter your prompt...";
 
@@ -49,7 +50,7 @@ export const MobileInputPrompt = ({
   const { lastSubmittedPrompt, setLastSubmittedPrompt, setHasSubmittedPrompt } =
     usePromptStore();
   const { promptVersion, incrementPromptVersion } = usePromptVersionStore();
-
+  const { aiModeEnabled, toggleAIMode } = useAI();
   const { authenticated } = usePrivy();
 
   const [inputValue, setInputValue] = useState(lastSubmittedPrompt || "");
@@ -165,11 +166,13 @@ export const MobileInputPrompt = ({
     return (
       <div className="absolute inset-0 pointer-events-none">
         <div
-          className="text-sm font-sans w-full h-full m-0 p-0 pl-3 py-3 break-all leading-tight"
+          className="text-sm font-sans w-full h-full m-0 p-0 px-4 py-3 break-all leading-tight"
           style={{
             whiteSpace: "pre-wrap",
             wordBreak: "break-word",
             lineHeight: "1.25rem",
+            paddingBottom: "2.5rem",
+            paddingRight: "5rem",
           }}
         >
           {parts.map((part, i) => (
@@ -263,14 +266,15 @@ export const MobileInputPrompt = ({
   return (
     <div
       className={cn(
-        "relative mx-auto flex justify-center items-start gap-2 h-auto min-h-14 md:h-auto md:min-h-14 md:gap-2 mt-7 mb-2 dark:bg-[#1A1A1A] bg-[#fefefe] md:rounded-xl py-2.5 px-3 md:py-1.5 md:px-3 w-[calc(100%-2rem)] md:w-[calc(min(100%,800px))] border-2 border-muted-foreground/10",
+        "relative mx-auto flex justify-center items-start gap-2 h-auto min-h-14 md:h-auto md:min-h-14 md:gap-2 mt-7 mb-2 dark:bg-[#1A1A1A] bg-[#fefefe] md:rounded-xl w-[calc(100%-2rem)] md:w-[calc(min(100%,800px))] border-2 border-muted-foreground/10",
         isFullscreen
-          ? "fixed left-1/2 bottom-[calc(env(safe-area-inset-bottom)+16px)] -translate-x-1/2 z-[10000] w-[600px] max-w-[calc(100%-2rem)] max-h-16 rounded-2xl"
+          ? "fixed left-1/2 bottom-[calc(env(safe-area-inset-bottom)+16px)] -translate-x-1/2 z-[10000] w-[600px] max-w-[calc(100%-2rem)] max-h-16 rounded-2xl "
           : "rounded-2xl shadow-[2px_6px_10px_0px_#37373F30]",
         (profanity || exceedsMaxLength) && "dark:border-red-700 border-red-600",
+        aiModeEnabled && "border-zinc-900",
       )}
     >
-      <div className="flex-1 relative flex items-center">
+      <div className="flex-1 relative flex items-center w-full">
         <div
           className="relative w-full flex items-start overflow-hidden"
           style={{
@@ -284,15 +288,17 @@ export const MobileInputPrompt = ({
             ref={ref}
             minRows={1}
             maxRows={15}
-            className="text-black w-full shadow-none border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-sm outline-none bg-transparent py-3 break-all font-sans pl-3"
+            className="text-black w-full shadow-none border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-sm outline-none bg-transparent py-3 px-4 break-all font-sans"
             style={{
               resize: "none",
-              color: inputValue ? "black" : "transparent",
+              color: "transparent",
               caretColor: "black",
               whiteSpace: "pre-wrap",
               wordBreak: "break-word",
               overflow: "hidden",
               lineHeight: "1.25rem",
+              paddingBottom: "2.5rem",
+              paddingRight: "5rem",
             }}
             value={inputValue}
             onChange={e => setInputValue(e.target.value)}
@@ -310,8 +316,177 @@ export const MobileInputPrompt = ({
             autoCorrect="off"
             placeholder={PROMPT_PLACEHOLDER}
           />
+
+          {/* Bottom toggle */}
+          <div className="absolute bottom-0 left-0 right-0 bg-white dark:bg-[#1A1A1A] w-full h-9 rounded-b-md">
+            <label className="absolute bottom-2 left-3 cursor-pointer flex gap-1.5 items-center">
+              <input
+                type="checkbox"
+                className="sr-only peer focus:ring-0 active:ring-0"
+                checked={aiModeEnabled}
+                onChange={toggleAIMode}
+              />
+              <div className="w-7 h-4 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:bg-zinc-800 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:after:translate-x-full peer-checked:after:border-white"></div>
+              <span className="text-gray-400 text-sm font-medium mr-1 flex gap-1.5 items-center">
+                <Brain
+                  size={16}
+                  className={cn(
+                    aiModeEnabled ? "text-gray-700" : "text-gray-400",
+                  )}
+                />
+              </span>
+            </label>
+          </div>
+
+          {/* Buttons */}
+          <div className="absolute top-4 right-3 flex items-center h-8">
+            {inputValue && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 rounded-full"
+                onClick={e => {
+                  e.preventDefault();
+                  setInputValue("");
+                }}
+              >
+                <span className="text-muted-foreground text-lg">×</span>
+              </Button>
+            )}
+
+            {aiModeEnabled ? (
+              <>
+                <Tooltip delayDuration={50}>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 rounded-full md:flex"
+                      onClick={e => {
+                        e.preventDefault();
+                        setSettingsOpened(!settingsOpened);
+                      }}
+                    >
+                      <SlidersHorizontal className="h-4 w-4 text-muted-foreground" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent
+                    side="top"
+                    className="bg-white text-black border border-gray-200 shadow-md dark:bg-zinc-900 dark:text-white dark:border-zinc-700"
+                  >
+                    Adjustments
+                  </TooltipContent>
+                </Tooltip>
+
+                <Separator orientation="vertical" className="h-6 mr-2" />
+
+                <Tooltip delayDuration={50}>
+                  <TooltipTrigger asChild>
+                    <div className="relative inline-block">
+                      <Button
+                        disabled={
+                          updating ||
+                          !inputValue ||
+                          profanity ||
+                          exceedsMaxLength
+                        }
+                        onClick={e => {
+                          e.preventDefault();
+                          submitPrompt();
+                        }}
+                        className={cn(
+                          "border-none items-center justify-center font-semibold text-xs bg-[#000000] flex disabled:bg-[#000000] disabled:opacity-80",
+                          "w-auto h-9 aspect-square rounded-md",
+                        )}
+                      >
+                        {updating ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <WandSparkles className="h-4 w-4 stroke-[2]" />
+                        )}
+                      </Button>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent
+                    side="top"
+                    className="bg-white text-black border border-gray-200 shadow-md dark:bg-zinc-900 dark:text-white dark:border-zinc-700"
+                  >
+                    Prompt{" "}
+                    <span className="text-gray-400 dark:text-gray-500">
+                      Enter
+                    </span>
+                  </TooltipContent>
+                </Tooltip>
+              </>
+            ) : (
+              <>
+                <Tooltip delayDuration={50}>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 rounded-full md:flex"
+                      onClick={e => {
+                        e.preventDefault();
+                        setSettingsOpened(!settingsOpened);
+                      }}
+                    >
+                      <SlidersHorizontal className="h-4 w-4 text-muted-foreground" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent
+                    side="top"
+                    className="bg-white text-black border border-gray-200 shadow-md dark:bg-zinc-900 dark:text-white dark:border-zinc-700"
+                  >
+                    Adjustments
+                  </TooltipContent>
+                </Tooltip>
+
+                <Separator orientation="vertical" className="h-6 mr-2" />
+
+                <Tooltip delayDuration={50}>
+                  <TooltipTrigger asChild>
+                    <div className="relative inline-block">
+                      <Button
+                        disabled={
+                          updating ||
+                          !inputValue ||
+                          profanity ||
+                          exceedsMaxLength
+                        }
+                        onClick={e => {
+                          e.preventDefault();
+                          submitPrompt();
+                        }}
+                        className={cn(
+                          "border-none items-center justify-center font-semibold text-xs bg-[#000000] flex disabled:bg-[#000000] disabled:opacity-80",
+                          "w-auto h-9 aspect-square rounded-md",
+                        )}
+                      >
+                        {updating ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <WandSparkles className="h-4 w-4 stroke-[2]" />
+                        )}
+                      </Button>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent
+                    side="top"
+                    className="bg-white text-black border border-gray-200 shadow-md dark:bg-zinc-900 dark:text-white dark:border-zinc-700"
+                  >
+                    Prompt{" "}
+                    <span className="text-gray-400 dark:text-gray-500">
+                      Enter
+                    </span>
+                  </TooltipContent>
+                </Tooltip>
+              </>
+            )}
+          </div>
         </div>
 
+        {/* Keep command menu as is */}
         {commandMenuOpen && filteredOptions.length > 0 && (
           <div
             className="absolute z-50 bottom-full mb-2 w-60 bg-popover rounded-md border shadow-md"
@@ -352,91 +527,16 @@ export const MobileInputPrompt = ({
         )}
       </div>
 
-      <div className="flex items-center self-stretch">
-        {inputValue ? (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 rounded-full"
-            onClick={e => {
-              e.preventDefault();
-              setInputValue("");
-            }}
-          >
-            <span className="text-muted-foreground text-lg">×</span>
-          </Button>
-        ) : null}
-
-        <div className="relative">
-          <Tooltip delayDuration={50}>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 rounded-full"
-                onClick={e => {
-                  e.preventDefault();
-                  setSettingsOpened(!settingsOpened);
-                }}
-              >
-                <SlidersHorizontal className="h-4 w-4 text-muted-foreground" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent
-              side="top"
-              className="bg-white text-black border border-gray-200 shadow-md dark:bg-zinc-900 dark:text-white dark:border-zinc-700"
-            >
-              Adjustments
-            </TooltipContent>
-          </Tooltip>
-
-          {settingsOpened && (
-            <SettingsMenu
-              pipeline={pipeline}
-              inputValue={inputValue}
-              setInputValue={setInputValue}
-              onClose={() => setSettingsOpened(false)}
-              onSubmit={submitPrompt}
-              originalPrompt={lastSubmittedPrompt || undefined}
-            />
-          )}
-        </div>
-
-        <Separator orientation="vertical" className="h-6 mr-2" />
-
-        <Tooltip delayDuration={50}>
-          <TooltipTrigger asChild>
-            <div className="relative inline-block">
-              <Button
-                disabled={
-                  updating || !inputValue || profanity || exceedsMaxLength
-                }
-                onClick={e => {
-                  e.preventDefault();
-                  submitPrompt();
-                }}
-                className={cn(
-                  "border-none items-center justify-center font-semibold text-xs bg-[#000000] flex disabled:bg-[#000000] disabled:opacity-80",
-                  "w-auto h-9 aspect-square rounded-md",
-                )}
-              >
-                {updating ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <WandSparkles className="h-4 w-4 stroke-[2]" />
-                )}
-              </Button>
-            </div>
-          </TooltipTrigger>
-          <TooltipContent
-            side="top"
-            className="bg-white text-black border border-gray-200 shadow-md dark:bg-zinc-900 dark:text-white dark:border-zinc-700"
-          >
-            Prompt{" "}
-            <span className="text-gray-400 dark:text-gray-500">Enter</span>
-          </TooltipContent>
-        </Tooltip>
-      </div>
+      {settingsOpened && (
+        <SettingsMenu
+          pipeline={pipeline}
+          inputValue={inputValue}
+          setInputValue={setInputValue}
+          onClose={() => setSettingsOpened(false)}
+          onSubmit={submitPrompt}
+          originalPrompt={lastSubmittedPrompt || undefined}
+        />
+      )}
 
       {(profanity || exceedsMaxLength) && (
         <div className="absolute -top-10 left-0 mx-auto flex items-center justify-center gap-4 text-xs text-muted-foreground mt-4">
@@ -451,6 +551,15 @@ export const MobileInputPrompt = ({
           )}
         </div>
       )}
+
+      <p
+        className={cn(
+          aiModeEnabled ? "text-gray-600" : "text-gray-400",
+          "absolute -bottom-6 left-0 mx-auto text-xs",
+        )}
+      >
+        {aiModeEnabled ? "Assisted mode is on " : "Assisted mode is off"}
+      </p>
     </div>
   );
 };
