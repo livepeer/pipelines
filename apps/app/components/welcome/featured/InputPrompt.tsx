@@ -29,7 +29,7 @@ import { Separator } from "@repo/design-system/components/ui/separator";
 import { usePrivy } from "@/hooks/usePrivy";
 import useAI from "@/hooks/useAI";
 import { ChatAssistant } from "@/components/assisted-prompting/chat-assistant";
-import { generateAIPrompt } from "@/lib/groq";
+import { generateAIPrompt } from "@/lib/prompting/groq";
 import { useWorldTrends } from "@/hooks/useWorldTrends";
 
 type CommandOption = {
@@ -57,7 +57,7 @@ export const InputPrompt = ({ onPromptSubmit }: InputPromptProps) => {
     usePromptStore();
   const { promptVersion, incrementPromptVersion } = usePromptVersionStore();
   const { aiModeEnabled, toggleAIMode } = useAI();
-  const { trends, loading, error, refetch } = useWorldTrends();
+  const { trends } = useWorldTrends();
   const { authenticated } = usePrivy();
   const [isChatAssistantOpen, setIsChatAssistantOpen] = useState(false);
   const [inputValue, setInputValue] = useState(lastSubmittedPrompt || "");
@@ -181,8 +181,8 @@ export const InputPrompt = ({ onPromptSubmit }: InputPromptProps) => {
             whiteSpace: "pre-wrap",
             wordBreak: "break-word",
             lineHeight: "1.25rem",
-            paddingBottom: "2.5rem",
-            paddingRight: "9rem",
+            paddingBottom: "2.5rem", // add space for toggle
+            paddingRight: "9rem",  // add space for main buttons
           }}
         >
           {parts.map((part, i) => (
@@ -221,35 +221,34 @@ export const InputPrompt = ({ onPromptSubmit }: InputPromptProps) => {
 
   const submitPrompt = (aiPrompt?: string) => {
     const prompt = aiPrompt ?? inputValue;
-  
+
     if (!prompt) {
       console.error("No input value to submit");
       return;
     }
-  
-    // Early exit if parent handler returns truthy
+
     if (onPromptSubmit && onPromptSubmit()) {
       return;
     }
-  
+
     track("daydream_prompt_submitted", {
       is_authenticated: authenticated,
       prompt: prompt,
       stream_id: stream?.id,
     });
-  
+
     handleStreamUpdate(prompt, { silent: true });
     setLastSubmittedPrompt(prompt);
     setHasSubmittedPrompt(true);
     incrementPromptVersion();
   };
-  
 
   const generatePrompt = async () => {
     try {
       setIsLoading(true);
-      setInputValue("Standby, thinking...");
+      setInputValue("Thinking...");
 
+      // pick 4 trends from worldtrends to use as keywords
       const pick4Random = <T,>(arr: T[]): T[] => {
         const a = [...arr];
         for (let i = a.length - 1; i > 0; i--) {
@@ -346,8 +345,8 @@ export const InputPrompt = ({ onPromptSubmit }: InputPromptProps) => {
               wordBreak: "break-word",
               overflow: "hidden",
               lineHeight: "1.25rem",
-              paddingBottom: "2.5rem",
-              paddingRight: "9rem",
+              paddingBottom: "2.5rem", // add space for toggle
+              paddingRight: "9rem", // add space for main buttons
             }}
             value={inputValue}
             onChange={e => setInputValue(e.target.value)}
@@ -530,7 +529,7 @@ export const InputPrompt = ({ onPromptSubmit }: InputPromptProps) => {
           initialPrompt={inputValue}
           onSavePrompt={newPrompt => {
             setInputValue(newPrompt);
-            setIsChatAssistantOpen(false);
+            submitPrompt(newPrompt);
           }}
           open={isChatAssistantOpen}
           onOpenChange={setIsChatAssistantOpen}
@@ -562,6 +561,7 @@ export const InputPrompt = ({ onPromptSubmit }: InputPromptProps) => {
         </div>
       )}
 
+      {/* helper text to show assisted on/off */}
       <p
         className={cn(
           aiModeEnabled ? "text-gray-600" : "text-gray-400",

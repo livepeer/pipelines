@@ -27,7 +27,7 @@ import { MAX_PROMPT_LENGTH, useValidateInput } from "./useValidateInput";
 import { Separator } from "@repo/design-system/components/ui/separator";
 import { usePrivy } from "@/hooks/usePrivy";
 import useAI from "@/hooks/useAI";
-import { generateAIPrompt } from "@/lib/groq";
+import { generateAIPrompt } from "@/lib/prompting/groq";
 import { useWorldTrends } from "@/hooks/useWorldTrends";
 import { ChatAssistant } from "@/components/assisted-prompting/chat-assistant";
 
@@ -58,7 +58,7 @@ export const MobileInputPrompt = ({
     usePromptStore();
   const { promptVersion, incrementPromptVersion } = usePromptVersionStore();
   const { aiModeEnabled, toggleAIMode } = useAI();
-  const { trends, loading, error, refetch } = useWorldTrends();
+  const { trends } = useWorldTrends();
   const { authenticated } = usePrivy();
   const [inputValue, setInputValue] = useState(lastSubmittedPrompt || "");
   const [isChatAssistantOpen, setIsChatAssistantOpen] = useState(false);
@@ -183,8 +183,8 @@ export const MobileInputPrompt = ({
             whiteSpace: "pre-wrap",
             wordBreak: "break-word",
             lineHeight: "1.25rem",
-            paddingBottom: "2.5rem",
-            paddingRight: "6rem",
+            paddingBottom: "2.5rem", // add space for toggle
+            paddingRight: "6rem", // add space for main buttons
           }}
         >
           {parts.map((part, i) => (
@@ -221,36 +221,36 @@ export const MobileInputPrompt = ({
     }
   }, []);
 
-  const submitPrompt = () => {
-    if (inputValue) {
-      if (document.activeElement instanceof HTMLElement) {
-        document.activeElement.blur();
-      }
+  const submitPrompt = (aiPrompt?: string) => {
+    const prompt = aiPrompt ?? inputValue;
 
-      if (onPromptSubmit && onPromptSubmit()) {
-        return;
-      }
-
-      track("daydream_prompt_submitted", {
-        is_authenticated: authenticated,
-        prompt: inputValue,
-        stream_id: stream?.id,
-      });
-
-      handleStreamUpdate(inputValue, { silent: true });
-      setLastSubmittedPrompt(inputValue);
-      setHasSubmittedPrompt(true);
-      setInputValue("");
-    } else {
+    if (!prompt) {
       console.error("No input value to submit");
+      return;
     }
+
+    if (onPromptSubmit && onPromptSubmit()) {
+      return;
+    }
+
+    track("daydream_prompt_submitted", {
+      is_authenticated: authenticated,
+      prompt: prompt,
+      stream_id: stream?.id,
+    });
+
+    handleStreamUpdate(prompt, { silent: true });
+    setLastSubmittedPrompt(prompt);
+    setHasSubmittedPrompt(true);
+    incrementPromptVersion();
   };
 
   const generatePrompt = async () => {
     try {
       setIsLoading(true);
-      setInputValue("Standby, thinking...");
+      setInputValue("Thinking...");
 
+      // pick 4 trends from worldtrends to use as keywords
       const pick4Random = <T,>(arr: T[]): T[] => {
         const a = [...arr];
         for (let i = a.length - 1; i > 0; i--) {
@@ -267,8 +267,9 @@ export const MobileInputPrompt = ({
       });
 
       setInputValue(aiPrompt);
+      submitPrompt(aiPrompt);
     } catch {
-      setInputValue("Error generating prompt. Please try again.");
+      setInputValue("That didn't quite work out. Let's give it another spin!");
     } finally {
       setIsLoading(false);
     }
@@ -337,8 +338,8 @@ export const MobileInputPrompt = ({
               wordBreak: "break-word",
               overflow: "hidden",
               lineHeight: "1.25rem",
-              paddingBottom: "2.5rem",
-              paddingRight: "6rem",
+              paddingBottom: "2.5rem", // add space for toggle
+              paddingRight: "6rem", // add space for main buttons
             }}
             value={inputValue}
             onChange={e => setInputValue(e.target.value)}
@@ -518,7 +519,7 @@ export const MobileInputPrompt = ({
           initialPrompt={inputValue}
           onSavePrompt={newPrompt => {
             setInputValue(newPrompt);
-            setIsChatAssistantOpen(false);
+            submitPrompt(newPrompt);
           }}
           open={isChatAssistantOpen}
           onOpenChange={setIsChatAssistantOpen}
@@ -550,6 +551,7 @@ export const MobileInputPrompt = ({
         </div>
       )}
 
+      {/* helper text to show assisted on/off */}
       <p
         className={cn(
           aiModeEnabled ? "text-gray-600" : "text-gray-400",

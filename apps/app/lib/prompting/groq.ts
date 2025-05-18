@@ -6,7 +6,7 @@ const groq = new Groq({
 });
 
 type PromptParams = {
-  keywords: string[];
+  keywords: string[]; 
   message: string;
 };
 
@@ -20,7 +20,7 @@ export const generateAIPrompt = async ({ keywords, message }: PromptParams) => {
   try {
     const knowledgeBase = await loadKnowledgeBase();
 
-    const userPrompt = `Study the knowledge base first ${knowledgeBase}, then generate a detailed character prompt.
+    const userPrompt = `Study this first ${knowledgeBase}, then generate a detailed character prompt.
 If the ${message} starts like a request e.g. "I want...", "Create a...", "Generate a...", "Make a...", "Design a...", "Draw a...", or "Illustrate a...", create the prompt around the user's request ignoring the keywords.
 Otherwise using these keywords, create a detailed character prompt: ${keywords.join(
       ", ",
@@ -32,7 +32,7 @@ Otherwise using these keywords, create a detailed character prompt: ${keywords.j
       temperature: 0.6,
       max_completion_tokens: 1024,
       top_p: 0.95,
-      reasoning_format: "hidden",
+      reasoning_format: "hidden", // set to raw to show model thought process
     });
 
     const response = chatCompletion.choices[0]?.message?.content || "";
@@ -48,9 +48,9 @@ export const chatWithAI = async ({ messages, style, keywords }: ChatParams) => {
   try {
     const knowledgeBase = await loadKnowledgeBase();
     const userInstructions = `
-Study the knowledge base first ${knowledgeBase}, then help generate or edit detailed character prompts.
-Current style: ${style} Maintain this aesthetic style in the prompts
-The following keywords should influence the prompt edit or creation if provided: ${
+Study this first ${knowledgeBase}, then create or edit detailed character prompts.
+Current style: ${style}, the style should strongly influence the prompt.
+The following keywords should be used in the prompt if provided: ${
       keywords.join(", ") || "none"
     } 
 
@@ -63,7 +63,7 @@ Key Improvements and Changes:
 2. Modular Code Structure:
    - Handles loading, caching, importing, and exporting the knowledge base
 
-After this section, end with a relevant question to the user about potential further improvements or suggest improvements you feel would improve the prompt.
+After this section, end with a question to the user about potential changes or suggest changes you feel would improve the prompt.
 
 Here's our conversation so far:
 `;
@@ -84,7 +84,7 @@ Here's our conversation so far:
       temperature: 0.6,
       max_completion_tokens: 1024,
       top_p: 0.95,
-      reasoning_format: "hidden",
+      reasoning_format: "hidden", // set to raw to show model thought process
     });
     const response = chatCompletion.choices[0]?.message?.content || "";
     return processResponse(response);
@@ -134,7 +134,7 @@ const processResponse = (response: string): string => {
   if (!processed.includes("--denoise")) {
     processed += " --denoise 0.5";
   } else if (!processed.match(/--denoise\s+\d+(\.\d+)?/)) {
-    processed = processed.replace(/--denoise(\s+)?($|\s)/, "--denoise 0.2 ");
+    processed = processed.replace(/--denoise(\s+)?($|\s)/, "--denoise 0.1 ");
   }
 
   return processed
@@ -150,40 +150,6 @@ export const cleanPromptParameters = (promptText: string) => {
     .replace(/\s*--creativity\s+\d+(\.\d+)?/g, "")
     .replace(/\s*--denoise\s+\d+(\.\d+)?/g, "")
     .trim();
-};
-
-export const extractParametersFromPrompt = (promptText: string) => {
-  const parameters: {
-    quality: number | null;
-    creativity: number | null;
-    denoise: number | null;
-  } = {
-    quality: 0,
-    creativity: 0,
-    denoise: 0,
-  };
-
-  const qualityRegex = /--quality\s+(\d+(\.\d+)?)/i;
-  const creativityRegex = /--creativity\s+(\d+(\.\d+)?)/i;
-  const denoiseRegex = /--denoise\s+(\d+(\.\d+)?)/i;
-
-  const qualityMatch = promptText.match(qualityRegex);
-  const creativityMatch = promptText.match(creativityRegex);
-  const denoiseMatch = promptText.match(denoiseRegex);
-
-  if (qualityMatch && qualityMatch[1]) {
-    parameters.quality = parseFloat(qualityMatch[1]);
-  }
-
-  if (creativityMatch && creativityMatch[1]) {
-    parameters.creativity = parseFloat(creativityMatch[1]);
-  }
-
-  if (denoiseMatch && denoiseMatch[1]) {
-    parameters.denoise = parseFloat(denoiseMatch[1]);
-  }
-
-  return parameters;
 };
 
 export function trimMessage(raw: string): string {

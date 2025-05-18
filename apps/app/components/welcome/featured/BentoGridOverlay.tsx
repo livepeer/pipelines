@@ -173,14 +173,15 @@ export const BentoGridOverlay = () => {
   useEffect(() => {
     if (isOverlayOpen && overlayType === "bento" && overlayRef.current) {
       const handleWheel = (e: WheelEvent) => {
-        if (overlayRef.current) {
+        // Only prevent default if scrolling inside the overlay
+        if (overlayRef.current?.contains(e.target as Node)) {
           overlayRef.current.scrollTop += e.deltaY;
           e.preventDefault();
         }
       };
-
+  
       document.addEventListener("wheel", handleWheel, { passive: false });
-
+  
       return () => {
         document.removeEventListener("wheel", handleWheel);
       };

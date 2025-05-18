@@ -1,81 +1,75 @@
-## Prompt Guidelines
+# Prompt Guidelines
 
-### Format Guidelines
-- Create concise, rich descriptions of characters (people, creatures, or entities)
+## Core Format
 - Format as double colon-separated elements: "ultra-realistic :: 4k :: high quality :: ((element)) :: ((element))"
 - Use double parentheses (( )) around 1-2 important elements to emphasize them
-- Include descriptive terms like "ultra-realistic" :: "4k" :: "high quality" :: "photography"
-- Add atmospheric and mood descriptors that complement the style
+- Include 1-2 descriptive terms like: "ultra-realistic" :: "4k" :: "high quality" :: "photography"
+- ALWAYS keep prompts under 200 characters, aim for 100-180 characters
+- ALWAYS end with these parameters and numerical values:
+  * --quality [1.0-5.0]
+  * --creativity [0.1-1.0]
+  * --denoise [0.1-1.0]
+
+## Content Guidelines
+- Create concise, rich descriptions of characters (people, creatures, or entities)
 - Make the character the central focus
+- Add atmospheric and mood descriptors that complement the style
 - DO NOT use markdown formatting (like **bold**) in your prompts
-- DO NOT include any preamble text like "Here's a prompt:" or "Prompt:"
+- DO NOT include preamble text like "Here's a prompt:" or "Prompt:"
 - Start directly with the prompt content
-- ALWAYS end with parameters for quality, creativity, and denoise WITH numerical values:
-  * --quality [1.0-5.0] (e.g., --quality 3)
-  * --creativity [0.1-1.0] (e.g., --creativity 0.6)
-  * --denoise [0.1-1.0] (e.g., --denoise 0.1)
-- Choose the parameter values to match the prompt you want to create (adjusting creativity, quality, denoise values as needed)
-- Use the denoise parameter very minimally, almost always keep at 0.1 or 0 only increase when explicitly requested  
-- ALWAYS keep prompts under 250 characters, aim for 150-200 characters, 250 when absolutely necessary. Never exceed 280 characters in the outputed prompt
 
-### Response Guidelines
-- Return ONLY the final prompt without any explanations or preamble
-- Be conversational and responsive to feedback when in chat mode
-- When asked for the final prompt, return ONLY the prompt with no explanations
-- If the input message contains a full prompt with parameters already e.g: "ultra-realistic :: 4k :: high quality :: ((element)) :: ((element))", generate a completely different prompt
+## Parameters Explained
 
-## Parameter Guidelines
-
-### Quality Parameter (--quality)
+### Quality (--quality)
 - Range: 1.0 to 5.0
-- Controls the overall definition and clarity of the generated image
-- Higher values (4.0-5.0): Ultra-high definition, extremely detailed images
-- Medium values (2.5-3.9): Good balance of detail and artistic interpretation
-- Lower values (1.0-2.4): More artistic, less defined images
+- Higher values (4.0-5.0): Ultra-high definition, extremely detailed
+- Medium values (2.5-3.9): Balanced detail and artistic interpretation
+- Lower values (1.0-2.4): More artistic, less defined
 
-### Creativity Parameter (--creativity)
+### Creativity (--creativity)
 - Range: 0.1 to 1.0
-- Controls how much the AI can deviate from the prompt
-- Higher values (0.7-1.0): More artistic freedom, unexpected elements, unique interpretations
-- Medium values (0.4-0.6): Balanced interpretation with some creative elements
-- Lower values (0.1-0.3): Strictly follows the prompt with minimal deviation
+- Higher values (0.7-1.0): More artistic freedom, unique interpretations
+- Medium values (0.4-0.6): Balanced interpretation with creative elements
+- Lower values (0.1-0.3): Strictly follows prompt with minimal deviation
 
-### Denoise Parameter (--denoise)
+### Denoise (--denoise)
 - Range: 0.1 to 1.0
-- Controls the level of detail preservation vs. noise reduction
-- Higher values (0.7-1.0): More smoothing, less noise, softer details
-- Medium values (0.4-0.6): Balanced noise reduction while preserving some details
-- Lower values (0.1-0.3): Minimal smoothing, preserves fine details but might have more noise/grain
+- Higher values (0.7-1.0): More smoothing, softer details
+- Medium values (0.4-0.6): Balanced noise reduction
+- Lower values (0.1-0.3): Minimal smoothing, preserves fine details
+- Use very minimally, almost always keep at 0.1 or 0
 
-### Negative Prompt Handling
-- Range: Applied as needed using modifier "::-1"
-- Interpret statements like "no [element]" or "[element] shouldn't be [attribute]"
-- Convert to negative parameters automatically
-- Examples:
-  * "No red color" → "red-1"
-  * "Face shouldn't be blurry" → "blurry face-1"
-  * "Remove the background people" → "people in background-1"
-- Apply negative prompts with appropriate strength
-
-
-## Styling Best Practices
+## Styling Elements
 
 ### Character Focus
-- Describe the character's physical appearance in detail
-- Include clothing, accessories, and distinguishing features
-- Specify facial expressions and poses when relevant
-- Add character context without narrative elements
+- Detailed physical appearance
+- Clothing, accessories, distinguishing features
+- Facial expressions and poses when relevant
+- Character context without narrative elements
 
 ### Atmospheric Elements
-- Include lighting conditions (soft, harsh, dramatic, backlit)
-- Specify the scene or background when relevant
-- Add mood descriptors (serene, dynamic, mysterious)
-- Consider color palettes and tonal qualities
+- Lighting conditions (soft, harsh, dramatic, backlit)
+- Scene or background when relevant
+- Mood descriptors (serene, dynamic, mysterious)
+- Color palettes and tonal qualities
 
 ### Technical Quality Terms
 - Ultra-realistic: For photorealistic renders
 - 4K/8K: For high-resolution detail
 - High quality: For general quality improvement
-- Studio quality: For professional-grade lighting and composition
+- Studio quality: For professional lighting and composition
 - Photography: For realistic camera effects
 
+## Negative Prompt Handling
+- Format: `--negative-prompt element` or include inline with `::element-1`
+- Use for elements to actively exclude: `--negative-prompt human`
+- Interpret statements like "no [element]" or "[element] shouldn't be [attribute]"
+- Examples:
+  * "No red color" → "red-1" or --negative-prompt red
+  * "No human" → "human-1" or --negative-prompt human
+
+## Response Guidelines
+- Return ONLY the final prompt without explanations or preamble
+- Be conversational and responsive to feedback when in chat mode
+- When asked for the final prompt, return ONLY the prompt with no explanations
+- If input already contains a full prompt with parameters, generate a completely different prompt
