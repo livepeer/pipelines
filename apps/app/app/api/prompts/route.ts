@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getPromptState, addToPromptQueue, addRandomPrompt } from "./store";
 import { checkPromptForNudity, getRandomSafePrompt } from "@/lib/nudityCheck";
+import track from "@/lib/track";
 
 export async function GET() {
   try {
@@ -52,6 +53,14 @@ export async function POST(request: NextRequest) {
         wasCensored = true;
         censorExplanation = nudityCheck.explanation;
         console.log(`Censored prompt: "${promptText}" - ${censorExplanation}`);
+        track("daydream_prompt_nsfw_check", {
+          prompt: promptText,
+          nsfw: true,
+        });
+      } else {
+        track("daydream_prompt_nsfw_check", {
+          nsfw: false,
+        });
       }
     }
 
