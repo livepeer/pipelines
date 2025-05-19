@@ -112,7 +112,6 @@ export const LivepeerPlayer = () => {
     `${appConfig.whipUrl}${appConfig?.whipUrl?.endsWith("/") ? "" : "/"}${stream?.stream_key}-out/whep`;
 
   if (iframePlayerFallback) {
-    console.log("@@@@@@@ iframePlayerFallback");
     return (
       <LPPLayer
         output_playback_id={stream?.output_playback_id!}
@@ -134,10 +133,9 @@ export const LivepeerPlayer = () => {
       </div>
     );
   }
-  console.log("@@@@@@@ Player");
 
   return (
-    <div className="w-full h-full">
+    <div className="w-full h-full" key={playbackUrl}>
       <Player.Root
         autoPlay
         aspectRatio={16 / 9}
