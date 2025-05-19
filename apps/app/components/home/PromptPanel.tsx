@@ -64,7 +64,7 @@ export function PromptPanel({
       className={`
       ${
         isMobile
-          ? "absolute bottom-0 left-0 right-0 z-50"
+          ? "relative bottom-0 left-0 right-0 z-50"
           : "flex flex-col w-full md:w-[30%]"
       }
     `}
@@ -93,7 +93,7 @@ export function PromptPanel({
 
       {isMobile && (
         <div
-          className="fixed left-0 right-0 max-h-[35vh] z-50 overflow-hidden bg-gradient-to-t from-black/80 via-black/40 to-transparent pb-6 pt-12"
+          className="absolute left-0 right-0 max-h-[35vh] z-50 overflow-hidden bg-gradient-to-t from-black/80 via-black/40 to-transparent pb-2"
           style={{ bottom: `${promptPanelBottom}px` }}
         >
           <PromptDisplay
@@ -116,7 +116,7 @@ export function PromptPanel({
           }
         `}
         style={{
-          position: isMobile ? "fixed" : "relative",
+          position: "relative",
           bottom: isMobile ? `${footerHeight}px` : undefined,
           background: isMobile
             ? "transparent"
@@ -215,7 +215,7 @@ export function PromptPanel({
               </div>
             )}
 
-            <div className={`${isMobile ? "p-4 bg-black pb-4" : ""}`}>
+            <div className={`${isMobile ? "p-4 bg-black" : ""}`}>
               <PromptForm
                 ref={promptFormRef}
                 onSubmit={onSubmit}
