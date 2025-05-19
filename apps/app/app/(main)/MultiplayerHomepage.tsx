@@ -131,12 +131,13 @@ export default function MultiplayerHomepage({
       sessionId,
     };
     setOptimisticPrompts(prev => [...prev, optimisticPrompt]);
-    await addToPromptQueue(value, userAvatarSeed, true);
+    const result = await addToPromptQueue(value, userAvatarSeed, true);
     setOptimisticPrompts(prev => prev.filter(p => p.sessionId !== sessionId));
 
     track("daydream_landing_page_prompt_submitted", {
       is_authenticated: authenticated,
       prompt: value,
+      nsfw: result.wasCensored || false,
     });
   });
 

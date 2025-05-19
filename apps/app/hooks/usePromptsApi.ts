@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { PromptState, AddPromptRequest } from "@/app/api/prompts/types";
 import { toast } from "sonner";
+import { track } from "mixpanel";
 
 const POLLING_INTERVAL = 3000; // Poll every second
 const SESSION_ID_KEY = "prompt_session_id";
@@ -85,14 +86,18 @@ export function usePromptsApi() {
             description: "We've replaced it with a fun, safe alternative.",
             duration: 5000,
           });
+          track("daydream_prompt_nsfw", {
+            prompt: promptText,
+            nsfw: true,
+          });
         }
 
         await fetchPromptState();
-        return true;
+        return data;
       } catch (err) {
         console.error("Failed to add prompt:", err);
         setError("Failed to add prompt");
-        return false;
+        return { wasCensored: false };
       }
     },
     [fetchPromptState, sessionId],
