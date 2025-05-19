@@ -1,12 +1,13 @@
-import React, { RefObject } from "react";
-import { Camera } from "lucide-react";
+import React, { RefObject, useEffect, useState } from "react";
+import { Camera, Heart } from "lucide-react";
 import { DiscordLogoIcon } from "@radix-ui/react-icons";
 import { PromptForm } from "./PromptForm";
 import { PromptDisplay } from "./PromptDisplay";
 import { ActionButton } from "./ActionButton";
-import { PromptItem } from "@/app/api/prompts/types";
+import { PromptItem, TrendingPrompt } from "@/app/api/prompts/types";
 import { TrackedButton } from "@/components/analytics/TrackedButton";
 import { Button } from "@repo/design-system/components/ui/button";
+import { TrendingPromptDisplay } from "./TrendingPromptDisplay";
 
 interface PromptPanelProps {
   promptQueue: PromptItem[];
@@ -43,6 +44,112 @@ export function PromptPanel({
   promptFormRef,
   isMobile = false,
 }: PromptPanelProps) {
+  const defaultTrendingPrompts: TrendingPrompt[] = [
+    {
+      text: "cyborg ((flat colors)) (borderland) (((primary colors))) --creativity 0.5 --quality 3",
+      likes: 5,
+      timestamp: Date.now(),
+    },
+    {
+      text: "(yoda:1.2), Star Wars, Brown Robe, Green Skin, Big Ears, (Green Light Saber:1.2) --denoise 1.0 --creativity 1.0 --negative-prompt human",
+      likes: 4,
+      timestamp: Date.now(),
+    },
+    {
+      text: "((ink illustration, clean linework, sharp contrast)) :: cyan, magenta, chartreuse, orange :: high resolution, bold color separation --creativity 0.5 --quality 3",
+      likes: 3,
+      timestamp: Date.now(),
+    },
+  ];
+
+  const [trendingPrompts, setTrendingPrompts] = useState<TrendingPrompt[]>(defaultTrendingPrompts);
+  const [likedPrompts, setLikedPrompts] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    const fetchTrendingPrompts = async () => {
+      try {
+        const response = await fetch("/api/prompts/trending");
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        // Use default prompts if the response is empty or invalid
+        if (Array.isArray(data) && data.length > 0) {
+          setTrendingPrompts(data);
+        } else {
+          console.log("Using default trending prompts");
+          setTrendingPrompts(defaultTrendingPrompts);
+        }
+      } catch (error) {
+        console.error("Error fetching trending prompts:", error);
+        setTrendingPrompts(defaultTrendingPrompts);
+      }
+    };
+
+    fetchTrendingPrompts();
+    const interval = setInterval(fetchTrendingPrompts, 60000); // Refresh every minute
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleLikeClick = async (prompt: string) => {
+    const isLiked = likedPrompts.has(prompt);
+    // Optimistically update likedPrompts and trendingPrompts
+    setLikedPrompts(prev => {
+      const newSet = new Set(prev);
+      if (isLiked) {
+        newSet.delete(prompt);
+      } else {
+        newSet.add(prompt);
+      }
+      return newSet;
+    });
+    setTrendingPrompts(prev =>
+      Array.isArray(prev)
+        ? prev.map(tp =>
+            tp.text === prompt
+              ? { ...tp, likes: Math.max(0, tp.likes + (isLiked ? -1 : 1)) }
+              : tp
+          )
+        : []
+    );
+
+    try {
+      const response = await fetch("/api/prompts/like", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ text: prompt, action: isLiked ? "unlike" : "like" }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update like");
+      }
+      // Don't refresh trending prompts on success - keep the optimistic update
+    } catch (error) {
+      // Revert optimistic update on error
+      setLikedPrompts(prev => {
+        const newSet = new Set(prev);
+        if (isLiked) {
+          newSet.add(prompt);
+        } else {
+          newSet.delete(prompt);
+        }
+        return newSet;
+      });
+      setTrendingPrompts(prev =>
+        Array.isArray(prev)
+          ? prev.map(tp =>
+              tp.text === prompt
+                ? { ...tp, likes: Math.max(0, tp.likes + (isLiked ? 1 : -1)) }
+                : tp
+            )
+          : []
+      );
+      console.error("Error liking/unliking prompt:", error);
+    }
+  };
+
   const handlePastPromptClick = (prompt: string) => {
     setPromptValue(prompt);
   };
@@ -91,6 +198,30 @@ export function PromptPanel({
         </TrackedButton>
       </div>
 
+      {!isMobile && (
+        <div
+          className="sticky top-0 z-30 backdrop-blur-sm flex flex-col justify-start rounded-lg mb-2"
+        >
+          <h3 className="text-lg font-extrabold tracking-widest text-[#1A1A1A] uppercase mb-2 px-4 pt-2">Trending Prompts</h3>
+          <div className="flex flex-row gap-2">
+            <TrendingPromptDisplay
+              promptQueue={trendingPrompts.map(p => ({
+                text: p.text,
+                seed: `trending-${p.timestamp}`,
+                isUser: false,
+                timestamp: p.timestamp,
+                likes: p.likes
+              }))}
+              displayedPrompts={trendingPrompts.map(p => p.text)}
+              promptAvatarSeeds={trendingPrompts.map(p => `trending-${p.timestamp}`)}
+              userPromptIndices={trendingPrompts.map(() => false)}
+              onPastPromptClick={handlePastPromptClick}
+              isMobile={false}
+            />
+          </div>
+        </div>
+      )}
+
       {isMobile && (
         <div
           className="absolute left-0 right-0 max-h-[35vh] z-50 overflow-hidden bg-gradient-to-t from-black/80 via-black/40 to-transparent pb-2"
@@ -103,6 +234,8 @@ export function PromptPanel({
             userPromptIndices={userPromptIndices}
             onPastPromptClick={handlePastPromptClick}
             isMobile={isMobile}
+            onLikeClick={handleLikeClick}
+            likedPrompts={likedPrompts}
           />
         </div>
       )}
@@ -210,6 +343,8 @@ export function PromptPanel({
                     userPromptIndices={userPromptIndices}
                     onPastPromptClick={handlePastPromptClick}
                     isMobile={isMobile}
+                    onLikeClick={handleLikeClick}
+                    likedPrompts={likedPrompts}
                   />
                 </>
               </div>

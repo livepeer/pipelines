@@ -1,7 +1,8 @@
 import React, { useMemo } from "react";
-import { ArrowLeft, Sparkle } from "lucide-react";
+import { ArrowLeft, Sparkle, Heart } from "lucide-react";
 import { GradientAvatar } from "@/components/GradientAvatar";
 import { PromptItem } from "@/app/api/prompts/types";
+import { Button } from "@repo/design-system/components/ui/button";
 import {
   uniqueNamesGenerator,
   Config,
@@ -16,7 +17,10 @@ interface PromptDisplayProps {
   promptAvatarSeeds: string[];
   userPromptIndices: boolean[];
   onPastPromptClick?: (prompt: string) => void;
+  onLikeClick?: (prompt: string) => void;
+  likedPrompts?: Set<string>;
   isMobile?: boolean;
+  isTrending?: boolean;
 }
 
 // Types for the combined items in mobile view
@@ -94,7 +98,10 @@ export function PromptDisplay({
   promptAvatarSeeds,
   userPromptIndices,
   onPastPromptClick,
+  onLikeClick,
+  likedPrompts = new Set(),
   isMobile = false,
+  isTrending = false,
 }: PromptDisplayProps) {
   const MAX_QUEUE_SIZE = 5;
   const MAX_MOBILE_PROMPTS = 4;
@@ -215,8 +222,23 @@ export function PromptDisplay({
                   onPastPromptClick && onPastPromptClick(item.text)
                 }
               >
-                <div className="min-w-0 flex-1">
+                <div className="min-w-0 flex-1 flex items-center justify-between">
                   <span className="truncate block w-full">{item.text}</span>
+                  {onLikeClick && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className={`p-1 h-8 w-8 ${
+                        likedPrompts.has(item.text) ? "text-red-500" : "text-white/50"
+                      }`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onLikeClick(item.text);
+                      }}
+                    >
+                      <Heart className="h-4 w-4" fill={likedPrompts.has(item.text) ? "currentColor" : "none"} />
+                    </Button>
+                  )}
                 </div>
               </div>
             );
@@ -261,8 +283,23 @@ export function PromptDisplay({
                   >
                     {username.substring(0, 6)}
                   </div>
-                  <div className="min-w-0 flex-1">
+                  <div className="min-w-0 flex-1 flex items-center justify-between">
                     <span className="truncate block w-full">{prevPrompt}</span>
+                    {!isTrending && onLikeClick && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className={`p-1 h-8 w-8 ${
+                          likedPrompts.has(prevPrompt) ? "text-red-500" : "text-gray-400"
+                        }`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onLikeClick(prevPrompt);
+                        }}
+                      >
+                        <Heart className="h-4 w-4" fill={likedPrompts.has(prevPrompt) ? "currentColor" : "none"} />
+                      </Button>
+                    )}
                   </div>
                 </div>
               );
@@ -282,8 +319,25 @@ export function PromptDisplay({
               onPastPromptClick && onPastPromptClick(highlightedPrompt)
             }
           >
-            <div className="min-w-0 flex-1">
+            <div className="min-w-0 flex-1 flex items-center justify-between">
               <span className="truncate block w-full">{highlightedPrompt}</span>
+              {isTrending ? (
+                <span className="text-lg">🔥</span>
+              ) : onLikeClick && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className={`p-1 h-8 w-8 ${
+                    likedPrompts.has(highlightedPrompt) ? "text-red-500" : "text-gray-400"
+                  }`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onLikeClick(highlightedPrompt);
+                  }}
+                >
+                  <Heart className="h-4 w-4" fill={likedPrompts.has(highlightedPrompt) ? "currentColor" : "none"} />
+                </Button>
+              )}
             </div>
           </div>
         )}
@@ -310,10 +364,25 @@ export function PromptDisplay({
                   <div className="hidden" style={{ color: color }}>
                     {username.substring(0, 6)}
                   </div>
-                  <div className="min-w-0 flex-1">
+                  <div className="min-w-0 flex-1 flex items-center justify-between">
                     <span className="truncate block w-full">
                       {queuedPrompt.text}
                     </span>
+                    {!isTrending && onLikeClick && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className={`p-1 h-8 w-8 hover:bg-transparent hover:opacity-100 ${
+                          likedPrompts.has(queuedPrompt.text) ? "text-red-500" : "text-gray-400"
+                        }`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onLikeClick(queuedPrompt.text);
+                        }}
+                      >
+                        <Heart className="h-4 w-4" fill={likedPrompts.has(queuedPrompt.text) ? "currentColor" : "none"} />
+                      </Button>
+                    )}
                   </div>
                 </div>
               );

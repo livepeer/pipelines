@@ -6,6 +6,7 @@ export type PromptItem = {
   isUser: boolean;
   timestamp: number;
   sessionId?: string;
+  likes?: number;
 };
 
 export type PromptState = {
@@ -15,6 +16,12 @@ export type PromptState = {
   userPromptIndices: boolean[];
   promptSessionIds?: string[];
   highlightedSince: number;
+};
+
+export type TrendingPrompt = {
+  text: string;
+  likes: number;
+  timestamp: number;
 };
 
 export const AddPromptSchema = z.object({
