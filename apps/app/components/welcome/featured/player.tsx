@@ -124,14 +124,9 @@ export const LivepeerPlayer = () => {
     stream?.output_playback_id,
   ]);
 
-  if (loading) {
+  if (loading || !playbackUrl) {
     return <PlayerLoading />;
   }
-
-  // If this fallback is used, no `livepeer-playback-url` header is sent
-  const playbackUrlWithFallback =
-    playbackUrl ||
-    `${appConfig.whipUrl}${appConfig?.whipUrl?.endsWith("/") ? "" : "/"}${stream?.stream_key}-out/whep`;
 
   if (iframePlayerFallback) {
     return (
@@ -146,7 +141,7 @@ export const LivepeerPlayer = () => {
   if (useVideoJS && pipeline) {
     return (
       <VideoJSPlayer
-        src={playbackUrlWithFallback}
+        src={playbackUrl}
         isMobile={isMobile}
         playbackId={stream?.output_playback_id!}
         streamId={stream?.id!}
@@ -156,7 +151,7 @@ export const LivepeerPlayer = () => {
     );
   }
 
-  const src = getSrc(useMediamtx ? playbackUrlWithFallback : playbackInfo);
+  const src = getSrc(useMediamtx ? playbackUrl : playbackInfo);
 
   if (!src) {
     return (
@@ -170,7 +165,7 @@ export const LivepeerPlayer = () => {
   }
 
   return (
-    <div className="w-full h-full">
+    <div className="w-full h-full" key={playbackUrl}>
       <Player.Root
         autoPlay
         aspectRatio={16 / 9}
