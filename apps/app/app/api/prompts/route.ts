@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getPromptState, addToPromptQueue, addRandomPrompt } from "./store";
-import { checkPromptForNudity, getRandomSafePrompt } from "@/lib/nudityCheck";
+import { isPromptNSFW as isPromptNSFW, getRandomSafePrompt } from "@/lib/nsfwCheck";
 import track from "@/lib/track";
 
 export async function GET() {
@@ -39,19 +39,19 @@ export async function POST(request: NextRequest) {
 
     const validatedIsUser = typeof isUser === "boolean" ? isUser : false;
 
-    // Check if the prompt is attempting to generate nudity
+    // Check if the prompt is attempting to generate NSFW content
     let finalPrompt = promptText;
     let wasCensored = false;
     let censorExplanation = "";
 
     if (validatedIsUser) {
-      const nudityCheck = await checkPromptForNudity(promptText);
+      const nsfwCheck = await isPromptNSFW(promptText);
 
-      if (nudityCheck.containsNudity) {
+      if (nsfwCheck.isNSFW) {
         // Replace with a safe prompt
         finalPrompt = getRandomSafePrompt();
         wasCensored = true;
-        censorExplanation = nudityCheck.explanation;
+        censorExplanation = nsfwCheck.explanation;
         console.log(`Censored prompt: "${promptText}" - ${censorExplanation}`);
         track("daydream_prompt_nsfw_check", {
           prompt: promptText,

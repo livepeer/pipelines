@@ -1,8 +1,8 @@
 import {
-  checkPromptForNudity,
+  isPromptNSFW,
   getRandomSafePrompt,
   safePrompts,
-} from "./nudityCheck";
+} from "./nsfwCheck";
 import { OpenAI } from "openai";
 
 // Mock the OpenAI class
@@ -64,9 +64,9 @@ describe("nudityCheck", () => {
         mockResponse,
       );
 
-      const result = await checkPromptForNudity("a nude person");
+      const result = await isPromptNSFW("a nude person");
 
-      expect(result.containsNudity).toBe(true);
+      expect(result.isNSFW).toBe(true);
       expect(result.explanation).toBe(
         "This prompt is trying to generate nudity",
       );
@@ -88,9 +88,9 @@ describe("nudityCheck", () => {
         mockResponse,
       );
 
-      const result = await checkPromptForNudity("a cute kitten");
+      const result = await isPromptNSFW("a cute kitten");
 
-      expect(result.containsNudity).toBe(false);
+      expect(result.isNSFW).toBe(false);
       expect(result.explanation).toBe("This prompt appears to be safe");
     });
 
@@ -100,9 +100,9 @@ describe("nudityCheck", () => {
         new Error("API error"),
       );
 
-      const result = await checkPromptForNudity("test prompt");
+      const result = await isPromptNSFW("test prompt");
 
-      expect(result.containsNudity).toBe(false);
+      expect(result.isNSFW).toBe(false);
       expect(result.explanation).toBe(
         "Error checking content, allowing by default",
       );

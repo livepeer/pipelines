@@ -44,8 +44,8 @@ function getOpenAIClient(): OpenAI {
  * @param prompt The user's prompt to check
  * @returns Object containing result and explanation
  */
-export async function checkPromptForNudity(prompt: string): Promise<{
-  containsNudity: boolean;
+export async function isPromptNSFW(prompt: string): Promise<{
+  isNSFW: boolean;
   explanation: string;
 }> {
   try {
@@ -74,7 +74,7 @@ export async function checkPromptForNudity(prompt: string): Promise<{
     const responseText = response.choices[0]?.message?.content || "";
 
     // Check if the response contains "true"
-    const containsNudity = responseText.toLowerCase().includes("true");
+    const isNSFW = responseText.toLowerCase().includes("true");
 
     // Extract explanation - everything after "true" or "false"
     const explanation = responseText
@@ -83,14 +83,14 @@ export async function checkPromptForNudity(prompt: string): Promise<{
       .trim();
 
     return {
-      containsNudity,
+      isNSFW: isNSFW,
       explanation,
     };
   } catch (error) {
-    console.error("Error checking prompt for nudity:", error);
+    console.error("Error checking prompt for NSFW content:", error);
     // Default to allowing the prompt if there's an API error
     return {
-      containsNudity: false,
+      isNSFW: false,
       explanation: "Error checking content, allowing by default",
     };
   }
