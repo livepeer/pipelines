@@ -88,11 +88,11 @@ export function usePromptsApi() {
         }
 
         await fetchPromptState();
-        return true;
+        return data;
       } catch (err) {
         console.error("Failed to add prompt:", err);
         setError("Failed to add prompt");
-        return false;
+        return { wasCensored: false };
       }
     },
     [fetchPromptState, sessionId],

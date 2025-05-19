@@ -4,7 +4,6 @@ import {
   isPromptNSFW as isPromptNSFW,
   getRandomSafePrompt,
 } from "@/lib/nsfwCheck";
-import track from "@/lib/track";
 
 export async function GET() {
   try {
@@ -56,14 +55,6 @@ export async function POST(request: NextRequest) {
         wasCensored = true;
         censorExplanation = nsfwCheck.explanation;
         console.log(`Censored prompt: "${promptText}" - ${censorExplanation}`);
-        track("daydream_prompt_nsfw_check", {
-          prompt: promptText,
-          nsfw: true,
-        });
-      } else {
-        track("daydream_prompt_nsfw_check", {
-          nsfw: false,
-        });
       }
     }
 
