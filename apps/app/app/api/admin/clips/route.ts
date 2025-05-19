@@ -58,25 +58,29 @@ export async function GET(request: Request) {
       .select(selectFields)
       .from(clipsTable)
       .leftJoin(users, eq(clipsTable.author_user_id, users.id)) // Left join for author
-      .where(and(
-        isNull(clipsTable.deleted_at), 
-        isNotNull(clipsTable.priority),
-        isNotNull(clipsTable.thumbnail_url)
-      ))
+      .where(
+        and(
+          isNull(clipsTable.deleted_at),
+          isNotNull(clipsTable.priority),
+          isNotNull(clipsTable.thumbnail_url),
+        ),
+      )
       .orderBy(asc(clipsTable.priority))) as AdminFetchedClip[];
 
     const nonPrioritizedClips = (await db
       .select(selectFields)
       .from(clipsTable)
       .leftJoin(users, eq(clipsTable.author_user_id, users.id)) // Left join for author
-      .where(and(
-        isNull(clipsTable.deleted_at), 
-        isNull(clipsTable.priority),
-        isNotNull(clipsTable.thumbnail_url)
-      ))
+      .where(
+        and(
+          isNull(clipsTable.deleted_at),
+          isNull(clipsTable.priority),
+          isNotNull(clipsTable.thumbnail_url),
+        ),
+      )
       .orderBy(
         desc(clipsTable.remix_count),
-        asc(clipsTable.created_at)
+        asc(clipsTable.created_at),
       )) as AdminFetchedClip[]; // Sort by remix count, then by creation date
 
     const finalClips: (AdminFetchedClip | null)[] = [];
@@ -104,7 +108,7 @@ export async function GET(request: Request) {
         nonPrioritizedClips.sort((a, b) => {
           if (a.remix_count === undefined || a.remix_count === null) return 1;
           if (b.remix_count === undefined || b.remix_count === null) return -1;
-          
+
           if (b.remix_count !== a.remix_count) {
             return b.remix_count - a.remix_count;
           }
