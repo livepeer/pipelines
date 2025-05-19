@@ -2,16 +2,13 @@ import { OpenAI } from "openai";
 
 // Array of fun, safe alternative prompts
 export const safePrompts = [
-  "Cute teletubbies dancing in a field of flowers --quality 3",
-  "Adorable kittens playing with yarn --creativity 0.8",
-  "Baby chicks hatching from colorful eggs --quality 3",
-  "Friendly panda bears eating bamboo --creativity 0.7",
-  "Magical unicorns in an enchanted forest --quality 3",
-  "Cartoon robots having a tea party --creativity 0.9",
-  "Happy sunflowers turning toward the sun --quality 3",
-  "Friendly dolphins jumping through ocean waves --creativity 0.8",
-  "Colorful hot air balloons floating over mountains --quality 3",
-  "Smiling turtles swimming in a crystal clear pond --creativity 0.7",
+  "Cute teletubbie --quality 3 --creativity 0.6",
+  "Adorable kitten --quality 3 --creativity 0.6",
+  "Baby chick hatching from a colorful egg --quality 3 --creativity 0.6",
+  "Friendly panda bear eating bamboo --quality 3 --creativity 0.6",
+  "Magical unicorns --quality 3 --creativity 0.6",
+  "Cartoon robot --quality 3 --creativity 0.6",
+  "Happy sunflower turning toward the sun --quality 3 --creativity 0.6",
 ];
 
 // Get a random safe prompt
