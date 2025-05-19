@@ -62,7 +62,9 @@ export function PromptPanel({
     },
   ];
 
-  const [trendingPrompts, setTrendingPrompts] = useState<TrendingPrompt[]>(defaultTrendingPrompts);
+  const [trendingPrompts, setTrendingPrompts] = useState<TrendingPrompt[]>(
+    defaultTrendingPrompts,
+  );
   const [likedPrompts, setLikedPrompts] = useState<Set<string>>(new Set());
 
   useEffect(() => {
@@ -108,9 +110,9 @@ export function PromptPanel({
         ? prev.map(tp =>
             tp.text === prompt
               ? { ...tp, likes: Math.max(0, tp.likes + (isLiked ? -1 : 1)) }
-              : tp
+              : tp,
           )
-        : []
+        : [],
     );
 
     try {
@@ -119,7 +121,10 @@ export function PromptPanel({
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ text: prompt, action: isLiked ? "unlike" : "like" }),
+        body: JSON.stringify({
+          text: prompt,
+          action: isLiked ? "unlike" : "like",
+        }),
       });
 
       if (!response.ok) {
@@ -142,9 +147,9 @@ export function PromptPanel({
           ? prev.map(tp =>
               tp.text === prompt
                 ? { ...tp, likes: Math.max(0, tp.likes + (isLiked ? 1 : -1)) }
-                : tp
+                : tp,
             )
-          : []
+          : [],
       );
       console.error("Error liking/unliking prompt:", error);
     }
@@ -199,10 +204,10 @@ export function PromptPanel({
       </div>
 
       {!isMobile && (
-        <div
-          className="sticky top-0 z-30 backdrop-blur-sm flex flex-col justify-start rounded-lg mb-2"
-        >
-          <h3 className="text-lg font-extrabold tracking-widest text-[#1A1A1A] uppercase mb-2 px-4 pt-2">Trending Prompts</h3>
+        <div className="sticky top-0 z-30 backdrop-blur-sm flex flex-col justify-start rounded-lg mb-2">
+          <h3 className="text-lg font-extrabold tracking-widest text-[#1A1A1A] uppercase mb-2 px-4 pt-2">
+            Trending Prompts
+          </h3>
           <div className="flex flex-row gap-2">
             <TrendingPromptDisplay
               promptQueue={trendingPrompts.map(p => ({
@@ -210,10 +215,12 @@ export function PromptPanel({
                 seed: `trending-${p.timestamp}`,
                 isUser: false,
                 timestamp: p.timestamp,
-                likes: p.likes
+                likes: p.likes,
               }))}
               displayedPrompts={trendingPrompts.map(p => p.text)}
-              promptAvatarSeeds={trendingPrompts.map(p => `trending-${p.timestamp}`)}
+              promptAvatarSeeds={trendingPrompts.map(
+                p => `trending-${p.timestamp}`,
+              )}
               userPromptIndices={trendingPrompts.map(() => false)}
               onPastPromptClick={handlePastPromptClick}
               isMobile={false}

@@ -34,7 +34,7 @@ export async function POST(request: Request) {
     console.error("Error liking/unliking prompt:", error);
     return NextResponse.json(
       { error: "Failed to like/unlike prompt" },
-      { status: 500 }
+      { status: 500 },
     );
   }
-} 
+}

@@ -67,7 +67,8 @@ export function TrendingPromptDisplay({
   const promptsToShow = expanded
     ? displayedPrompts.slice(0, EXPANDED_MAX)
     : displayedPrompts.slice(0, DEFAULT_MAX);
-  const showExpand = displayedPrompts.length > DEFAULT_MAX && displayedPrompts.length > 0;
+  const showExpand =
+    displayedPrompts.length > DEFAULT_MAX && displayedPrompts.length > 0;
 
   return (
     <div className="w-full flex flex-col justify-end p-2 pb-0 overflow-hidden relative">
@@ -79,13 +80,11 @@ export function TrendingPromptDisplay({
             style={{
               transition: "all 0.3s ease-out",
               borderRadius: "12px",
-              minWidth: '180px',
-              maxWidth: '320px',
-              flex: '1 1 220px',
+              minWidth: "180px",
+              maxWidth: "320px",
+              flex: "1 1 220px",
             }}
-            onClick={() =>
-              onPastPromptClick && onPastPromptClick(prompt)
-            }
+            onClick={() => onPastPromptClick && onPastPromptClick(prompt)}
           >
             <div className="min-w-0 flex-1 flex items-center justify-between">
               <span className="truncate block w-full">{prompt}</span>
@@ -104,4 +103,4 @@ export function TrendingPromptDisplay({
       )}
     </div>
   );
-} 
+}

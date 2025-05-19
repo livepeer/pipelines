@@ -30,7 +30,7 @@ export async function GET() {
     console.error("Error fetching trending prompts:", error);
     return NextResponse.json(
       { error: "Failed to fetch trending prompts" },
-      { status: 500 }
+      { status: 500 },
     );
   }
-} 
+}
