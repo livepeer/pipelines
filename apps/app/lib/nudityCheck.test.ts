@@ -26,6 +26,14 @@ describe("nudityCheck", () => {
   });
 
   describe("getRandomSafePrompt", () => {
+    // Save the original Math object
+    const originalMath = global.Math;
+
+    afterEach(() => {
+      // Restore the original Math object after the test
+      global.Math = originalMath;
+    });
+
     it("should return a random prompt from the safePrompts array", () => {
       // Mock Math.random to return a predictable value
       const mockMath = Object.create(global.Math);
