@@ -94,7 +94,7 @@ export default function QuickviewVideo({
 
   const handleClose = () => {
     setIsPreviewOpen(false);
-    router.push("/explore", { scroll: false });
+    router.push("/", { scroll: false });
   };
 
   const handleTryPrompt = (e: React.MouseEvent) => {
@@ -119,8 +119,8 @@ export default function QuickviewVideo({
       <Dialog open={isPreviewOpen}>
         <DialogTrigger asChild>{children}</DialogTrigger>
         <DialogContent
-          className="h-screen max-w-screen border-none bg-transparent shadow-none pt-12 pb-4 backdrop-filter backdrop-blur-[3px] flex justify-center items-center"
-          overlayClassName="bg-white sm:bg-[rgba(255,255,255,0.90)]"
+          className="h-screen max-w-screen border-none bg-transparent shadow-none pt-12 pb-4 backdrop-filter backdrop-blur-[3px] flex justify-center items-center z-[9999]"
+          overlayClassName="bg-white sm:bg-[rgba(255,255,255,0.90)] z-[9999]"
           displayCloseButton={false}
           onClick={handleClose}
           onOpenAutoFocus={e => {
