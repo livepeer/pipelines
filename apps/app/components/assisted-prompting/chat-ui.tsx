@@ -116,8 +116,8 @@ export const ChatUI = ({
             {isLoading && (
               <div className="flex justify-start">
                 <div className="max-w-[80%] p-3 rounded-xl bg-gray-200 text-gray-800 flex gap-2 text-sm">
-                  Thinking...
-                  <Loader2 className="h-5 w-5 animate-spin text-gray-500 ml-0.5" />
+                  <Loader2 className="h-5 w-5 animate-spin text-gray-500 mr-1" />
+                  Thinking..
                 </div>
               </div>
             )}

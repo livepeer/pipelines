@@ -18,31 +18,33 @@ type ChatParams = {
 
 export const generateAIPrompt = async ({ keywords, message }: PromptParams) => {
   try {
-    const knowledgeBase = await loadKnowledgeBase();
+    const kb = await loadKnowledgeBase();
+    const trimmed = (message ?? "").trim();
+    const isRandom = !trimmed || trimmed.length > 150;
 
-    const userPrompt = `Study this first ${knowledgeBase}, then generate a detailed character prompt.
-If the ${message} starts like a request e.g. "I want...", "Create a...", "Generate a...", "Make a...", "Design a...", "Draw a...", or "Illustrate a...", create the prompt around the user's request ignoring the keywords.
-Otherwise using these keywords, create a detailed character prompt: ${keywords.join(
-      ", ",
-    )}.`;
+    const intro = `Study this first ${kb}, then`;
+    const body = isRandom
+      ? `create a detailed character prompt influenced by: ${keywords.join(", ")}.`
+      : `create a detailed prompt based on this user description: "${trimmed}". Focus on the character or scene described.`;
 
-    const chatCompletion = await groq.chat.completions.create({
-      messages: [{ role: "user", content: userPrompt }],
+    const userPrompt = `${intro} ${body}`;
+
+    const { choices } = await groq.chat.completions.create({
       model: "deepseek-r1-distill-llama-70b",
       temperature: 0.6,
-      max_completion_tokens: 1024,
       top_p: 0.95,
-      reasoning_format: "hidden", // set to raw to show model thought process
+      max_completion_tokens: 1024,
+      reasoning_format: "hidden",
+      messages: [{ role: "user", content: userPrompt }],
     });
 
-    const response = chatCompletion.choices[0]?.message?.content || "";
-
-    return processResponse(response);
-  } catch (error) {
-    console.error("Error generating prompt:", error);
+    return processResponse(choices[0]?.message?.content ?? "");
+  } catch (err) {
+    console.error("Error generating prompt:", err);
     throw new Error("Failed to generate prompt");
   }
 };
+
 
 export const chatWithAI = async ({ messages, style, keywords }: ChatParams) => {
   try {
@@ -137,11 +139,13 @@ const processResponse = (response: string): string => {
     processed = processed.replace(/--denoise(\s+)?($|\s)/, "--denoise 0.1 ");
   }
 
-  return processed
+  processed = processed
     .replace(/\n/g, ", ")
     .replace(/,\s*,/g, ",")
     .replace(/\s+/g, " ")
     .trim();
+
+  return processed.replace(/^["',\s]+|["',\s]+$/g, "");
 };
 
 export const cleanPromptParameters = (promptText: string) => {
@@ -150,6 +154,10 @@ export const cleanPromptParameters = (promptText: string) => {
     .replace(/\s*--creativity\s+\d+(\.\d+)?/g, "")
     .replace(/\s*--denoise\s+\d+(\.\d+)?/g, "")
     .trim();
+};
+
+export const cleanDenoiseParam = (promptText: string) => {
+  return promptText.replace(/\s*--denoise\s+\d+(\.\d+)?/g, "").trim();
 };
 
 export function trimMessage(raw: string): string {

@@ -1,5 +1,9 @@
 import { useState, useRef, useEffect, KeyboardEvent, ChangeEvent } from "react";
-import { chatWithAI, trimMessage } from "@/lib/prompting/groq";
+import {
+  chatWithAI,
+  cleanDenoiseParam,
+  trimMessage,
+} from "@/lib/prompting/groq";
 import {
   Dialog,
   DialogContent,
@@ -128,7 +132,8 @@ export const ChatAssistant = ({
         .split("Key Improvements and Changes:")[0]
         .trim();
 
-      onSavePrompt(content);
+      // for some reason the Denoise param breaks the stream - remove when fixed
+      onSavePrompt(cleanDenoiseParam(content));
     }
   };
 

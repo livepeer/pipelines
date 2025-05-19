@@ -27,7 +27,7 @@ import { MAX_PROMPT_LENGTH, useValidateInput } from "./useValidateInput";
 import { Separator } from "@repo/design-system/components/ui/separator";
 import { usePrivy } from "@/hooks/usePrivy";
 import useAI from "@/hooks/useAI";
-import { generateAIPrompt } from "@/lib/prompting/groq";
+import { cleanDenoiseParam, generateAIPrompt } from "@/lib/prompting/groq";
 import { useWorldTrends } from "@/hooks/useWorldTrends";
 import { ChatAssistant } from "@/components/assisted-prompting/chat-assistant";
 
@@ -266,8 +266,11 @@ export const MobileInputPrompt = ({
         keywords,
       });
 
-      setInputValue(aiPrompt);
-      submitPrompt(aiPrompt);
+      // for some reason the Denoise param breaks the stream - remove when fixed
+      const prompt = cleanDenoiseParam(aiPrompt);
+
+      setInputValue(prompt);
+      submitPrompt(prompt);
     } catch {
       setInputValue("That didn't quite work out. Let's give it another spin!");
     } finally {
@@ -281,15 +284,16 @@ export const MobileInputPrompt = ({
       return;
     }
 
-    if (
-      !updating &&
-      !profanity &&
-      !exceedsMaxLength &&
-      e.key === "Enter" &&
-      !(e.metaKey || e.ctrlKey || e.shiftKey)
-    ) {
-      e.preventDefault();
+    if (e.key !== "Enter" || e.metaKey || e.ctrlKey || e.shiftKey) {
+      return;
+    }
+
+    e.preventDefault();
+
+    if (!updating && !profanity && !exceedsMaxLength && !aiModeEnabled) {
       submitPrompt();
+    } else {
+      generatePrompt();
     }
   };
 
