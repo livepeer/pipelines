@@ -8,6 +8,7 @@ import { and, asc, desc, eq, isNotNull, isNull, sql } from "drizzle-orm";
 import Header from "./Header";
 import MainLayoutClient from "./MainLayoutClient";
 import { headers } from "next/headers";
+import MultiplayerHomepage from "./MultiplayerHomepage";
 
 export const dynamic = "force-dynamic";
 
@@ -180,14 +181,16 @@ export default async function MainLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const initialClips = await getInitialClips();
   const headersList = headers();
   const pathname = headersList.get("x-pathname") || "/";
   const isHomePage = pathname === "/";
+  const isClipsOverlay = pathname.startsWith("/clips/");
 
-  if (isHomePage) {
-    return <>{children}</>;
+  if (isHomePage || isClipsOverlay) {
+    return <MultiplayerHomepage>{children}</MultiplayerHomepage>;
   }
+
+  const initialClips = await getInitialClips();
 
   return (
     <>
