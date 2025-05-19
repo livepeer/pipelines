@@ -181,7 +181,7 @@ export default function HomePage() {
           />
           <div
             id="main-content"
-            className={`relative flex flex-col md:flex-row gap-0 md:gap-8 w-full overflow-hidden pb-14 md:px-8 ${isMobile ? "h-[100vh] bg-black" : ""}`}
+            className={`relative flex flex-col md:flex-row gap-0 md:gap-8 w-full overflow-hidden pb-14 md:px-8 ${isMobile ? "h-[100dvh] bg-black" : ""}`}
             style={{ height: isMobile ? "100vh" : "100vh" }}
           >
             <VideoSection
