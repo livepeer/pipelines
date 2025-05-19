@@ -80,17 +80,13 @@ export const MainContent = () => {
         <div className="w-full h-full flex items-center justify-center">
           <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
         </div>
-      ) : stream?.output_playback_id ? (
+      ) : (
         <>
           <div className="relative w-full h-full">
             <LivepeerPlayer />
           </div>
           {!isPlaying && <Overlay />}
         </>
-      ) : (
-        <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-          Waiting for stream to start...
-        </div>
       )}
     </>
   );
