@@ -94,6 +94,7 @@ export async function GET(request: Request) {
           isNotNull(clipsTable.priority),
           eq(clipsTable.status, "completed"),
           eq(clipsTable.approval_status, "approved"),
+          isNotNull(clipsTable.thumbnail_url),
         ),
       )
       .orderBy(asc(clipsTable.priority))) as FetchedClip[];
@@ -109,6 +110,7 @@ export async function GET(request: Request) {
           isNull(clipsTable.priority),
           eq(clipsTable.status, "completed"),
           eq(clipsTable.approval_status, "approved"),
+          isNotNull(clipsTable.thumbnail_url),
         ),
       )
       .orderBy(
