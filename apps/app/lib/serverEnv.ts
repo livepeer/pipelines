@@ -33,7 +33,7 @@ export const ServerEnvironmentConfig = z.object({
   supabase: SupabaseConfig,
   gateway: GatewayConfig,
   gateway_secondary: GatewayConfig.optional(),
-  kafka: KafkaConfig,
+  kafka: KafkaConfig.optional(),
   gcp: GCPConfig,
 });
 
@@ -64,11 +64,12 @@ const serverOnlyEnvConfig = {
           process.env.STREAM_STATUS_ENDPOINT_PASSWORD,
       }
     : undefined,
-  kafka: {
+  kafka: process.env.KAFKA_BOOTSTRAP_NODE
+  ? {
     bootstrapServers: process.env.KAFKA_BOOTSTRAP_NODE,
     username: process.env.KAFKA_USER,
     password: process.env.KAFKA_PASSWORD,
-  },
+  } : undefined,
   gcp: {
     bucketName: process.env.GCP_BUCKET_NAME,
     credentials: process.env.GCP_CREDENTIALS,
