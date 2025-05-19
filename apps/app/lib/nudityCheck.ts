@@ -11,6 +11,10 @@ export const safePrompts = [
   "Happy sunflower turning toward the sun --quality 3 --creativity 0.6",
 ];
 
+// Default system prompt for content moderation
+const DEFAULT_SYSTEM_PROMPT =
+  "You are a content moderation assistant. Your task is to determine if a StableDiffusion image generation prompt is trying to generate nudity, explicit content, or NSFW imagery. Respond with either 'true' if the prompt is attempting to generate such content, or 'false' if it appears safe. Then provide a brief explanation of your decision.";
+
 // Get a random safe prompt
 export function getRandomSafePrompt(): string {
   const randomIndex = Math.floor(Math.random() * safePrompts.length);
@@ -47,13 +51,16 @@ export async function checkPromptForNudity(prompt: string): Promise<{
   try {
     const openai = getOpenAIClient();
 
+    // Use environment variable for system prompt if available, otherwise use default
+    const systemPrompt =
+      process.env.NSFW_CHECK_SYSTEM_PROMPT || DEFAULT_SYSTEM_PROMPT;
+
     const response = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
         {
           role: "system",
-          content:
-            "You are a content moderation assistant. Your task is to determine if a StableDiffusion image generation prompt is trying to generate nudity, explicit content, or NSFW imagery. Respond with either 'true' if the prompt is attempting to generate such content, or 'false' if it appears safe. Then provide a brief explanation of your decision.",
+          content: systemPrompt,
         },
         {
           role: "user",
