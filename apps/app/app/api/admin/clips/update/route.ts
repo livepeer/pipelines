@@ -36,22 +36,32 @@ export async function PUT(request: Request) {
 
     // Process numeric fields to make sure they're correctly typed
     const processedUpdateValues = { ...updateValues };
-    
+
     // Convert 'priority' to a proper number or null
-    if ('priority' in processedUpdateValues) {
-      if (processedUpdateValues.priority === '' || processedUpdateValues.priority === null || processedUpdateValues.priority === undefined) {
+    if ("priority" in processedUpdateValues) {
+      if (
+        processedUpdateValues.priority === "" ||
+        processedUpdateValues.priority === null ||
+        processedUpdateValues.priority === undefined
+      ) {
         processedUpdateValues.priority = null;
       } else {
         processedUpdateValues.priority = Number(processedUpdateValues.priority);
       }
     }
-    
+
     // Same for 'source_clip_id'
-    if ('source_clip_id' in processedUpdateValues) {
-      if (processedUpdateValues.source_clip_id === '' || processedUpdateValues.source_clip_id === null || processedUpdateValues.source_clip_id === undefined) {
+    if ("source_clip_id" in processedUpdateValues) {
+      if (
+        processedUpdateValues.source_clip_id === "" ||
+        processedUpdateValues.source_clip_id === null ||
+        processedUpdateValues.source_clip_id === undefined
+      ) {
         processedUpdateValues.source_clip_id = null;
       } else {
-        processedUpdateValues.source_clip_id = Number(processedUpdateValues.source_clip_id);
+        processedUpdateValues.source_clip_id = Number(
+          processedUpdateValues.source_clip_id,
+        );
       }
     }
 
@@ -61,7 +71,7 @@ export async function PUT(request: Request) {
     operationType = id === 0 ? "create" : "update";
 
     // Use withDbClient to ensure transaction is properly committed and connection closed
-    const result = await withDbClient(async (dbClient) => {
+    const result = await withDbClient(async dbClient => {
       return await dbClient.transaction(async tx => {
         let finalClipData: typeof clipsTable.$inferSelect | null = null;
         let finalSlug: string | null = null;
