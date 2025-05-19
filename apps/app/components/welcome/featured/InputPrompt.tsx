@@ -56,10 +56,14 @@ export const InputPrompt = ({ onPromptSubmit }: InputPromptProps) => {
   const { lastSubmittedPrompt, setLastSubmittedPrompt, setHasSubmittedPrompt } =
     usePromptStore();
   const { promptVersion, incrementPromptVersion } = usePromptVersionStore();
-  const { aiModeEnabled, toggleAIMode } = useAI();
+  const {
+    aiModeEnabled,
+    isChatAssistantOpen,
+    toggleAIMode,
+    setChatAssistantOpen,
+  } = useAI();
   const { trends } = useWorldTrends();
   const { authenticated } = usePrivy();
-  const [isChatAssistantOpen, setIsChatAssistantOpen] = useState(false);
   const [inputValue, setInputValue] = useState(lastSubmittedPrompt || "");
   const [isLoading, setIsLoading] = useState(false);
   const [settingsOpened, setSettingsOpened] = useState(false);
@@ -281,26 +285,25 @@ export const InputPrompt = ({ onPromptSubmit }: InputPromptProps) => {
       handleCommandKeyDown(e);
       return;
     }
-  
+
     if (e.key === "ArrowUp" && !inputValue && lastSubmittedPrompt) {
       e.preventDefault();
       restoreLastPrompt();
       return;
     }
-  
+
     if (e.key !== "Enter" || e.metaKey || e.ctrlKey || e.shiftKey) {
       return;
     }
-  
+
     e.preventDefault();
-  
+
     if (!updating && !profanity && !exceedsMaxLength && !aiModeEnabled) {
       submitPrompt();
     } else {
       generatePrompt();
     }
   };
-  
 
   const getHeight = () => {
     if (!lastSubmittedPrompt) return 44;
@@ -419,7 +422,7 @@ export const InputPrompt = ({ onPromptSubmit }: InputPromptProps) => {
                   onClick={e => {
                     e.preventDefault();
                     if (aiModeEnabled) {
-                      setIsChatAssistantOpen(true);
+                      setChatAssistantOpen(true);
                     } else {
                       setSettingsOpened(!settingsOpened);
                     }
@@ -436,7 +439,7 @@ export const InputPrompt = ({ onPromptSubmit }: InputPromptProps) => {
                 side="top"
                 className="bg-white text-black border border-gray-200 shadow-md dark:bg-zinc-900 dark:text-white dark:border-zinc-700"
               >
-                {aiModeEnabled ? "Assistant" : "Adjustments"}
+                {aiModeEnabled ? "Open assistant" : "Adjustments"}
               </TooltipContent>
             </Tooltip>
 
@@ -537,7 +540,7 @@ export const InputPrompt = ({ onPromptSubmit }: InputPromptProps) => {
             submitPrompt(newPrompt);
           }}
           open={isChatAssistantOpen}
-          onOpenChange={setIsChatAssistantOpen}
+          onOpenChange={setChatAssistantOpen}
         />
       )}
 

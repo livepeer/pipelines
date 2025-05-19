@@ -58,25 +58,18 @@ export const ChatAssistant = ({
   }, [isMobile, messages]);
 
   useEffect(() => {
-    const initialMessages: Message[] = initialPrompt
-      ? [
-          {
-            role: "assistant",
-            content: `Hi 👋, how would you like to improve the following prompt?\n\n${initialPrompt}`,
-          },
-        ]
-      : [
-          {
-            role: "assistant",
-            content:
-              "Hi 👋, I can help you edit prompts or create new ones from scratch. What kind of character or scene would you like to create?",
-          },
-        ];
+    const initialMessages: Message[] = [
+      {
+        role: "assistant",
+        content:
+          "Hi 👋, I'll help you create amazing Daydream transformations! Just describe your desired character or scene, and I'll craft the perfect prompt.",
+      },
+    ];
 
     setMessages(initialMessages);
 
     setTimeout(() => inputRef.current?.focus(), 100);
-  }, [initialPrompt]);
+  }, []);
 
   const handleSendMessage = async () => {
     if (!inputMessage.trim()) return;

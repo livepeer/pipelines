@@ -1,5 +1,5 @@
-import { KeyboardEvent, ChangeEvent } from "react";
-import { Send, Loader2, Settings, X } from "lucide-react";
+import { KeyboardEvent, ChangeEvent, useEffect, useRef } from "react";
+import { Send, Loader2, Settings, X, RotateCcw } from "lucide-react";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Separator } from "@repo/design-system/components/ui/separator";
 import { presets } from "@/lib/prompting/constants";
@@ -62,6 +62,31 @@ export const ChatUI = ({
   messagesEndRef,
   scrollContainerRef,
 }: ChatUIProps) => {
+ 
+  const prevMessageCountRef = useRef(0);
+
+  useEffect(() => {
+    if (messages.length <= prevMessageCountRef.current) {
+      prevMessageCountRef.current = messages.length;
+      return;
+    }
+
+    const lastMessage = messages[messages.length - 1];
+
+    if (
+      lastMessage &&
+      lastMessage.role === "assistant" &&
+      messages.length > 1 &&
+      messages.length > prevMessageCountRef.current
+    ) {
+      prevMessageCountRef.current = messages.length;
+
+      handleSavePrompt();
+    } else {
+      prevMessageCountRef.current = messages.length;
+    }
+  }, [messages, handleSavePrompt]);
+
   return (
     <div className="w-full h-full rounded-lg flex flex-col overflow-hidden">
       <div className="bg-gray-100 px-4 sm:px-6 py-3 flex justify-between items-center border-b border-gray-200">
@@ -70,19 +95,11 @@ export const ChatUI = ({
         </h3>
         <div className="flex items-center gap-2 h-8">
           <Button
-            onClick={handleSavePrompt}
+            onClick={handleReset}
             size={isMobile ? "sm" : "default"}
             className="bg-zinc-900 text-xs cursor-pointer hover:bg-zinc-700 text-white sm:text-sm rounded-md px-2 sm:px-3 py-1"
           >
-            Save changes
-          </Button>
-          <Button
-            onClick={handleReset}
-            variant="outline"
-            size={isMobile ? "sm" : "default"}
-            className="text-xs cursor-pointer text-black sm:text-sm rounded-md px-2 sm:px-3 py-1"
-          >
-            Reset
+            <RotateCcw /> Reset
           </Button>
           <Separator orientation="vertical" className="bg-gray-400" />
           <button
@@ -116,7 +133,7 @@ export const ChatUI = ({
             {isLoading && (
               <div className="flex justify-start">
                 <div className="max-w-[80%] p-3 rounded-xl bg-gray-200 text-gray-800 flex gap-2 text-sm">
-                  <Loader2 className="h-5 w-5 animate-spin text-gray-500 mr-1" />
+                  <Loader2 className="h-5 w-5 animate-spin text-gray-500" />
                   Thinking..
                 </div>
               </div>

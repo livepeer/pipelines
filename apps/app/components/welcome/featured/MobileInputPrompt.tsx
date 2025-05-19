@@ -57,11 +57,10 @@ export const MobileInputPrompt = ({
   const { lastSubmittedPrompt, setLastSubmittedPrompt, setHasSubmittedPrompt } =
     usePromptStore();
   const { promptVersion, incrementPromptVersion } = usePromptVersionStore();
-  const { aiModeEnabled, toggleAIMode } = useAI();
+  const { aiModeEnabled, isChatAssistantOpen, toggleAIMode, setChatAssistantOpen, } = useAI();
   const { trends } = useWorldTrends();
   const { authenticated } = usePrivy();
   const [inputValue, setInputValue] = useState(lastSubmittedPrompt || "");
-  const [isChatAssistantOpen, setIsChatAssistantOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [settingsOpened, setSettingsOpened] = useState(false);
   const ref = useRef<HTMLTextAreaElement>(null);
@@ -408,7 +407,7 @@ export const MobileInputPrompt = ({
                   onClick={e => {
                     e.preventDefault();
                     if (aiModeEnabled) {
-                      setIsChatAssistantOpen(true);
+                      setChatAssistantOpen(true)
                     } else {
                       setSettingsOpened(!settingsOpened);
                     }
@@ -425,7 +424,7 @@ export const MobileInputPrompt = ({
                 side="top"
                 className="bg-white text-black border border-gray-200 shadow-md dark:bg-zinc-900 dark:text-white dark:border-zinc-700"
               >
-                {aiModeEnabled ? "Assistant" : "Adjustments"}
+                {aiModeEnabled ? "Open assistant" : "Adjustments"}
               </TooltipContent>
             </Tooltip>
 
@@ -526,7 +525,7 @@ export const MobileInputPrompt = ({
             submitPrompt(newPrompt);
           }}
           open={isChatAssistantOpen}
-          onOpenChange={setIsChatAssistantOpen}
+          onOpenChange={setChatAssistantOpen}
         />
       )}
 
