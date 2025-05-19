@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { clips as clipsTable, users } from "@/lib/db/schema";
 import { requireAdminAuth } from "@/app/api/admin/auth";
-import { eq, isNull, isNotNull, asc, and } from "drizzle-orm";
+import { eq, isNull, isNotNull, asc, and, desc } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
 
@@ -23,6 +23,7 @@ type AdminFetchedClip = {
   } | null;
   approval_status: string | null;
   is_tutorial: boolean | null;
+  remix_count: number | null;
 };
 
 export async function GET(request: Request) {
@@ -50,21 +51,37 @@ export async function GET(request: Request) {
         name: users.name,
       },
       is_tutorial: clipsTable.is_tutorial,
+      remix_count: clipsTable.remix_count,
     };
 
     const prioritizedClips = (await db
       .select(selectFields)
       .from(clipsTable)
       .leftJoin(users, eq(clipsTable.author_user_id, users.id)) // Left join for author
-      .where(and(isNull(clipsTable.deleted_at), isNotNull(clipsTable.priority)))
+      .where(
+        and(
+          isNull(clipsTable.deleted_at),
+          isNotNull(clipsTable.priority),
+          isNotNull(clipsTable.thumbnail_url),
+        ),
+      )
       .orderBy(asc(clipsTable.priority))) as AdminFetchedClip[];
 
     const nonPrioritizedClips = (await db
       .select(selectFields)
       .from(clipsTable)
       .leftJoin(users, eq(clipsTable.author_user_id, users.id)) // Left join for author
-      .where(and(isNull(clipsTable.deleted_at), isNull(clipsTable.priority)))
-      .orderBy(asc(clipsTable.created_at))) as AdminFetchedClip[]; // Older first
+      .where(
+        and(
+          isNull(clipsTable.deleted_at),
+          isNull(clipsTable.priority),
+          isNotNull(clipsTable.thumbnail_url),
+        ),
+      )
+      .orderBy(
+        desc(clipsTable.remix_count),
+        asc(clipsTable.created_at),
+      )) as AdminFetchedClip[]; // Sort by remix count, then by creation date
 
     const finalClips: (AdminFetchedClip | null)[] = [];
     const priorityMap = new Map<number, AdminFetchedClip>();
@@ -87,9 +104,17 @@ export async function GET(request: Request) {
           `[Admin API] Clip ${clip.id} has invalid priority: ${clip.priority}. Ignoring priority.`,
         );
         nonPrioritizedClips.push(clip);
-        nonPrioritizedClips.sort(
-          (a, b) => a.created_at.getTime() - b.created_at.getTime(),
-        );
+        // Sort demoted clips the same way as the trending styles - by remix count first, then by creation date
+        nonPrioritizedClips.sort((a, b) => {
+          if (a.remix_count === undefined || a.remix_count === null) return 1;
+          if (b.remix_count === undefined || b.remix_count === null) return -1;
+
+          if (b.remix_count !== a.remix_count) {
+            return b.remix_count - a.remix_count;
+          }
+          // tie-breaker, older first
+          return a.created_at.getTime() - b.created_at.getTime();
+        });
       }
     }
 

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { db, withDbClient } from "@/lib/db";
 import {
   clips as clipsTable,
   clipSlugs as clipSlugsTable,
@@ -34,63 +34,103 @@ export async function PUT(request: Request) {
       );
     }
 
+    // Process numeric fields to make sure they're correctly typed
+    const processedUpdateValues = { ...updateValues };
+
+    // Convert 'priority' to a proper number or null
+    if ("priority" in processedUpdateValues) {
+      if (
+        processedUpdateValues.priority === "" ||
+        processedUpdateValues.priority === null ||
+        processedUpdateValues.priority === undefined
+      ) {
+        processedUpdateValues.priority = null;
+      } else {
+        processedUpdateValues.priority = Number(processedUpdateValues.priority);
+      }
+    }
+
+    // Same for 'source_clip_id'
+    if ("source_clip_id" in processedUpdateValues) {
+      if (
+        processedUpdateValues.source_clip_id === "" ||
+        processedUpdateValues.source_clip_id === null ||
+        processedUpdateValues.source_clip_id === undefined
+      ) {
+        processedUpdateValues.source_clip_id = null;
+      } else {
+        processedUpdateValues.source_clip_id = Number(
+          processedUpdateValues.source_clip_id,
+        );
+      }
+    }
+
+    console.log("Original update values:", updateValues);
+    console.log("Processed update values:", processedUpdateValues);
+
     operationType = id === 0 ? "create" : "update";
 
-    const result = await db.transaction(async tx => {
-      let finalClipData: typeof clipsTable.$inferSelect | null = null;
-      let finalSlug: string | null = null;
+    // Use withDbClient to ensure transaction is properly committed and connection closed
+    const result = await withDbClient(async dbClient => {
+      return await dbClient.transaction(async tx => {
+        let finalClipData: typeof clipsTable.$inferSelect | null = null;
+        let finalSlug: string | null = null;
 
-      if (id === 0) {
-        const [newClip] = await tx
-          .insert(clipsTable)
-          .values(updateValues)
-          .returning();
+        if (id === 0) {
+          const [newClip] = await tx
+            .insert(clipsTable)
+            .values(processedUpdateValues)
+            .returning();
 
-        if (!newClip) {
-          throw new Error("Failed to create clip entry.");
-        }
+          if (!newClip) {
+            throw new Error("Failed to create clip entry.");
+          }
 
-        const slug = generateSlug();
-
-        await tx.insert(clipSlugsTable).values({
-          slug,
-          clip_id: newClip.id,
-        });
-
-        finalClipData = newClip;
-        finalSlug = slug;
-      } else {
-        const [updatedClip] = await tx
-          .update(clipsTable)
-          .set(updateValues)
-          .where(eq(clipsTable.id, id))
-          .returning();
-
-        if (!updatedClip) {
-          return { status: 404, error: "Clip not found" };
-        }
-
-        finalClipData = updatedClip;
-
-        const existingSlugResult = await tx
-          .select({ slug: clipSlugsTable.slug })
-          .from(clipSlugsTable)
-          .where(eq(clipSlugsTable.clip_id, id))
-          .limit(1);
-
-        finalSlug = existingSlugResult[0]?.slug;
-
-        if (!finalSlug) {
-          finalSlug = generateSlug();
+          const slug = generateSlug();
 
           await tx.insert(clipSlugsTable).values({
-            slug: finalSlug,
-            clip_id: id,
+            slug,
+            clip_id: newClip.id,
           });
-        }
-      }
 
-      return { status: 200, clip: finalClipData, slug: finalSlug };
+          finalClipData = newClip;
+          finalSlug = slug;
+        } else {
+          const [updatedClip] = await tx
+            .update(clipsTable)
+            .set(processedUpdateValues)
+            .where(eq(clipsTable.id, id))
+            .returning();
+
+          if (!updatedClip) {
+            return { status: 404, error: "Clip not found" };
+          }
+
+          console.log("Updated clip in database:", updatedClip);
+          console.log("Fields updated:", Object.keys(processedUpdateValues));
+
+          finalClipData = updatedClip;
+
+          const existingSlugResult = await tx
+            .select({ slug: clipSlugsTable.slug })
+            .from(clipSlugsTable)
+            .where(eq(clipSlugsTable.clip_id, id))
+            .limit(1);
+
+          finalSlug = existingSlugResult[0]?.slug;
+
+          if (!finalSlug) {
+            finalSlug = generateSlug();
+
+            await tx.insert(clipSlugsTable).values({
+              slug: finalSlug,
+              clip_id: id,
+            });
+          }
+        }
+
+        return { status: 200, clip: finalClipData, slug: finalSlug };
+      });
     });
 
     if (result.status === 404) {
