@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { PromptState, AddPromptRequest } from "@/app/api/prompts/types";
+import { toast } from "sonner";
 
 const POLLING_INTERVAL = 3000; // Poll every second
 const SESSION_ID_KEY = "prompt_session_id";
@@ -74,6 +75,16 @@ export function usePromptsApi() {
 
         if (!response.ok) {
           throw new Error(`Error adding prompt: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+
+        // Handle censored prompts
+        if (data.wasCensored) {
+          toast.warning("Your prompt has been censored", {
+            description: "We've replaced it with a fun, safe alternative.",
+            duration: 5000,
+          });
         }
 
         await fetchPromptState();

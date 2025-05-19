@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getPromptState, addToPromptQueue, addRandomPrompt } from "./store";
+import { checkPromptForNudity, getRandomSafePrompt } from "@/lib/nudityCheck";
 
 export async function GET() {
   try {
@@ -37,8 +38,25 @@ export async function POST(request: NextRequest) {
 
     const validatedIsUser = typeof isUser === "boolean" ? isUser : false;
 
+    // Check if the prompt is attempting to generate nudity
+    let finalPrompt = promptText;
+    let wasCensored = false;
+    let censorExplanation = "";
+
+    if (validatedIsUser) {
+      const nudityCheck = await checkPromptForNudity(promptText);
+
+      if (nudityCheck.containsNudity) {
+        // Replace with a safe prompt
+        finalPrompt = getRandomSafePrompt();
+        wasCensored = true;
+        censorExplanation = nudityCheck.explanation;
+        console.log(`Censored prompt: "${promptText}" - ${censorExplanation}`);
+      }
+    }
+
     const result = await addToPromptQueue(
-      promptText,
+      finalPrompt,
       seed,
       validatedIsUser,
       sessionId,
@@ -54,6 +72,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       queuePosition: result.queuePosition,
+      wasCensored,
+      censorExplanation: wasCensored ? censorExplanation : undefined,
+      safePrompt: wasCensored ? finalPrompt : undefined,
     });
   } catch (error) {
     console.error("Error adding to prompt queue:", error);
