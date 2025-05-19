@@ -7,7 +7,7 @@ import { presets } from "@/lib/prompting/constants";
 interface Message {
   role: "user" | "assistant";
   content: string;
-} 
+}
 
 interface ChatUIProps {
   isMobile: boolean;

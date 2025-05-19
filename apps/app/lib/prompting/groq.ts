@@ -6,7 +6,7 @@ const groq = new Groq({
 });
 
 type PromptParams = {
-  keywords: string[]; 
+  keywords: string[];
   message: string;
 };
 

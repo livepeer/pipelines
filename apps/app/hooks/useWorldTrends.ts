@@ -15,10 +15,9 @@ export function useWorldTrends() {
     // https://corsproxy.io/?
     // https://thingproxy.freeboard.io/fetch/
 
- 
     try {
       const response = await fetch(
-        `${proxyUrl}${encodeURIComponent(targetUrl)}`
+        `${proxyUrl}${encodeURIComponent(targetUrl)}`,
       );
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);

@@ -16,4 +16,3 @@ const useAI = create<AI>(set => ({
 }));
 
 export default useAI;
- 

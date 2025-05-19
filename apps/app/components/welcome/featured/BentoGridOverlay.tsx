@@ -179,9 +179,9 @@ export const BentoGridOverlay = () => {
           e.preventDefault();
         }
       };
-  
+
       document.addEventListener("wheel", handleWheel, { passive: false });
-  
+
       return () => {
         document.removeEventListener("wheel", handleWheel);
       };

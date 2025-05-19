@@ -182,7 +182,7 @@ export const InputPrompt = ({ onPromptSubmit }: InputPromptProps) => {
             wordBreak: "break-word",
             lineHeight: "1.25rem",
             paddingBottom: "2.5rem", // add space for toggle
-            paddingRight: "9rem",  // add space for main buttons
+            paddingRight: "9rem", // add space for main buttons
           }}
         >
           {parts.map((part, i) => (
