@@ -1,8 +1,4 @@
-import {
-  isPromptNSFW,
-  getRandomSafePrompt,
-  safePrompts,
-} from "./nsfwCheck";
+import { isPromptNSFW, getRandomSafePrompt, safePrompts } from "./nsfwCheck";
 import { OpenAI } from "openai";
 
 // Mock the OpenAI class

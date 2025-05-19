@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getPromptState, addToPromptQueue, addRandomPrompt } from "./store";
-import { isPromptNSFW as isPromptNSFW, getRandomSafePrompt } from "@/lib/nsfwCheck";
+import {
+  isPromptNSFW as isPromptNSFW,
+  getRandomSafePrompt,
+} from "@/lib/nsfwCheck";
 import track from "@/lib/track";
 
 export async function GET() {
