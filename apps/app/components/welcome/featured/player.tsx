@@ -270,16 +270,7 @@ export const LivepeerPlayer = () => {
                 <Player.Thumb className="block transition-all group-hover:scale-110 w-3 h-3 bg-white rounded-full" />
               </Player.Volume>
             </div>
-            <div className="flex sm:flex-1 md:flex-[1.5] justify-end items-center gap-2.5">
-              <Player.FullscreenTrigger className="w-6 h-6 hover:scale-110 transition-all flex-shrink-0">
-                <Player.FullscreenIndicator asChild>
-                  <ExitFullscreenIcon className="w-full h-full text-white" />
-                </Player.FullscreenIndicator>
-                <Player.FullscreenIndicator matcher={false} asChild>
-                  <EnterFullscreenIcon className="w-full h-full text-white" />
-                </Player.FullscreenIndicator>
-              </Player.FullscreenTrigger>
-            </div>
+            <div className="flex sm:flex-1 md:flex-[1.5] justify-end items-center gap-2.5"></div>
           </div>
         </Player.Controls>
 
