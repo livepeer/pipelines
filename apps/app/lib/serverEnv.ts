@@ -65,11 +65,12 @@ const serverOnlyEnvConfig = {
       }
     : undefined,
   kafka: process.env.KAFKA_BOOTSTRAP_NODE
-  ? {
-    bootstrapServers: process.env.KAFKA_BOOTSTRAP_NODE,
-    username: process.env.KAFKA_USER,
-    password: process.env.KAFKA_PASSWORD,
-  } : undefined,
+    ? {
+        bootstrapServers: process.env.KAFKA_BOOTSTRAP_NODE,
+        username: process.env.KAFKA_USER,
+        password: process.env.KAFKA_PASSWORD,
+      }
+    : undefined,
   gcp: {
     bucketName: process.env.GCP_BUCKET_NAME,
     credentials: process.env.GCP_CREDENTIALS,
