@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getPromptState, addToPromptQueue, addRandomPrompt } from "./store";
+import {
+  isPromptNSFW as isPromptNSFW,
+  getRandomSafePrompt,
+} from "@/lib/nsfwCheck";
+import track from "@/lib/track";
 
 export async function GET() {
   try {
@@ -37,8 +42,33 @@ export async function POST(request: NextRequest) {
 
     const validatedIsUser = typeof isUser === "boolean" ? isUser : false;
 
+    // Check if the prompt is attempting to generate NSFW content
+    let finalPrompt = promptText;
+    let wasCensored = false;
+    let censorExplanation = "";
+
+    if (validatedIsUser) {
+      const nsfwCheck = await isPromptNSFW(promptText);
+
+      if (nsfwCheck.isNSFW) {
+        // Replace with a safe prompt
+        finalPrompt = getRandomSafePrompt();
+        wasCensored = true;
+        censorExplanation = nsfwCheck.explanation;
+        console.log(`Censored prompt: "${promptText}" - ${censorExplanation}`);
+        track("daydream_prompt_nsfw_check", {
+          prompt: promptText,
+          nsfw: true,
+        });
+      } else {
+        track("daydream_prompt_nsfw_check", {
+          nsfw: false,
+        });
+      }
+    }
+
     const result = await addToPromptQueue(
-      promptText,
+      finalPrompt,
       seed,
       validatedIsUser,
       sessionId,
@@ -54,6 +84,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       queuePosition: result.queuePosition,
+      wasCensored,
+      censorExplanation: wasCensored ? censorExplanation : undefined,
+      safePrompt: wasCensored ? finalPrompt : undefined,
     });
   } catch (error) {
     console.error("Error adding to prompt queue:", error);
