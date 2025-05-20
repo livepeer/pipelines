@@ -18,8 +18,8 @@ export function usePromptsApi() {
       created_at: Date.now().toString(),
     };
 
-    // Optimistically append to UI
-    setPrompts(prev => [...prev, newPrompt]);
+    // Optimistically prepend to UI
+    setPrompts(prev => [newPrompt, ...prev]);
 
     const res = await fetch("/api/prompts", {
       method: "POST",

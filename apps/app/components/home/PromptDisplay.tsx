@@ -19,24 +19,29 @@ export function PromptDisplay({
     return (
       <div className="w-full flex flex-col justify-end p-4 overflow-y-auto overflow-x-hidden">
         <div className="flex flex-col gap-2 w-full justify-end">
-          {prompts.slice(0, MAX_MOBILE_PROMPTS).map(item => {
-            return (
-              <div
-                key={item.id}
-                className={cn(
-                  "p-2 px-3 text-sm rounded-xl w-full font-medium cursor-pointer transition-all duration-300 ease-out",
-                  item.id === activeIndex
-                    ? "text-white font-bold border border-white/90 backdrop-blur-sm"
-                    : "text-white/80 italic",
-                )}
-                onClick={() => onPastPromptClick?.(item.content)}
-              >
-                <div className="min-w-0 flex-1">
-                  <span className="truncate block w-full">{item.content}</span>
+          {prompts
+            .reverse()
+            .slice(0, MAX_MOBILE_PROMPTS)
+            .map(item => {
+              return (
+                <div
+                  key={item.id}
+                  className={cn(
+                    "p-2 px-3 text-sm rounded-xl w-full font-medium cursor-pointer transition-all duration-300 ease-out",
+                    item.id === activeIndex
+                      ? "text-white font-bold border border-white/90 backdrop-blur-sm"
+                      : "text-white/80 italic",
+                  )}
+                  onClick={() => onPastPromptClick?.(item.content)}
+                >
+                  <div className="min-w-0 flex-1">
+                    <span className="truncate block w-full">
+                      {item.content}
+                    </span>
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
         </div>
       </div>
     );
@@ -48,7 +53,7 @@ export function PromptDisplay({
       <div className="flex flex-col gap-2 relative z-10 w-full mb-4">
         {prompts.length > 0 && (
           <div className="flex flex-col gap-2 w-full">
-            {prompts.map(item => {
+            {prompts.reverse().map(item => {
               return (
                 <div
                   key={item.id}
