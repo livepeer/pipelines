@@ -139,19 +139,19 @@ export const LivepeerPlayer = () => {
     );
   }
 
-  if (useVideoJS && pipeline) {
-    console.log("@@@@@@@", "VideoJS Fallback");
-    return (
-      <VideoJSPlayer
-        src={playbackUrl}
-        isMobile={isMobile}
-        playbackId={stream?.output_playback_id!}
-        streamId={stream?.id!}
-        pipelineId={pipeline?.id!}
-        pipelineType={pipeline?.type!}
-      />
-    );
-  }
+  // if (useVideoJS && pipeline) {
+  //   console.log("@@@@@@@", "VideoJS Fallback");
+  //   return (
+  //     <VideoJSPlayer
+  //       src={playbackUrl}
+  //       isMobile={isMobile}
+  //       playbackId={stream?.output_playback_id!}
+  //       streamId={stream?.id!}
+  //       pipelineId={pipeline?.id!}
+  //       pipelineType={pipeline?.type!}
+  //     />
+  //   );
+  // }
 
   const src = getSrc(useMediamtx ? playbackUrl : playbackInfo);
 
