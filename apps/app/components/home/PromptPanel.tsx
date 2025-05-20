@@ -4,15 +4,12 @@ import { DiscordLogoIcon } from "@radix-ui/react-icons";
 import { PromptForm } from "./PromptForm";
 import { PromptDisplay } from "./PromptDisplay";
 import { ActionButton } from "./ActionButton";
-import { PromptItem } from "@/app/api/prompts/types";
 import { TrackedButton } from "@/components/analytics/TrackedButton";
-import { Button } from "@repo/design-system/components/ui/button";
+import { MultiplayerPrompt } from "@/hooks/usePromptsApi";
 
 interface PromptPanelProps {
-  promptQueue: PromptItem[];
-  displayedPrompts: string[];
-  promptAvatarSeeds: string[];
-  userPromptIndices: boolean[];
+  prompts: MultiplayerPrompt[];
+  activeIndex: string;
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
   promptValue: string;
   onPromptChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
@@ -21,16 +18,13 @@ interface PromptPanelProps {
   throttleTimeLeft: number;
   onTryCameraClick: () => void;
   buttonText?: string;
-  isAuthenticated?: boolean;
   promptFormRef?: RefObject<HTMLFormElement>;
   isMobile?: boolean;
 }
 
 export function PromptPanel({
-  promptQueue,
-  displayedPrompts,
-  promptAvatarSeeds,
-  userPromptIndices,
+  prompts,
+  activeIndex,
   onSubmit,
   promptValue,
   onPromptChange,
@@ -39,7 +33,6 @@ export function PromptPanel({
   throttleTimeLeft,
   onTryCameraClick,
   buttonText = "Pick your own video",
-  isAuthenticated = false,
   promptFormRef,
   isMobile = false,
 }: PromptPanelProps) {
@@ -97,10 +90,8 @@ export function PromptPanel({
           style={{ bottom: `${promptPanelBottom}px` }}
         >
           <PromptDisplay
-            promptQueue={promptQueue}
-            displayedPrompts={displayedPrompts}
-            promptAvatarSeeds={promptAvatarSeeds}
-            userPromptIndices={userPromptIndices}
+            prompts={prompts}
+            activeIndex={activeIndex}
             onPastPromptClick={handlePastPromptClick}
             isMobile={isMobile}
           />
@@ -204,10 +195,8 @@ export function PromptPanel({
                     }}
                   ></div>
                   <PromptDisplay
-                    promptQueue={promptQueue}
-                    displayedPrompts={displayedPrompts}
-                    promptAvatarSeeds={promptAvatarSeeds}
-                    userPromptIndices={userPromptIndices}
+                    prompts={prompts}
+                    activeIndex={activeIndex}
                     onPastPromptClick={handlePastPromptClick}
                     isMobile={isMobile}
                   />

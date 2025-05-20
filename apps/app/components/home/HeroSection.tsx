@@ -7,16 +7,12 @@ import { cn } from "@repo/design-system/lib/utils";
 import { getIframeUrl, TRANSFORMED_PLAYBACK_ID } from "./VideoSection";
 
 interface HeroSectionProps {
-  handlePromptSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
-  promptValue: string;
   setPromptValue: (value: string) => void;
   submitPromptForm: () => void;
   isAuthenticated?: boolean;
 }
 
 export const HeroSection = ({
-  handlePromptSubmit,
-  promptValue,
   setPromptValue,
   submitPromptForm,
   isAuthenticated = false,

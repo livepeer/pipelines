@@ -52,21 +52,7 @@ export default function MultiplayerHomepage({
     throttleTimeLeft,
   } = useThrottledInput();
 
-  const {
-    promptState,
-    loading,
-    error,
-    userAvatarSeed,
-    addToPromptQueue,
-    addRandomPrompt,
-  } = usePromptsApi();
-
-  useRandomPromptApiTimer({
-    authenticated,
-    ready,
-    showContent,
-    addRandomPrompt,
-  });
+  const { prompts, activeIndex, submitPrompt } = usePromptsApi();
 
   const redirectToCreate = () => {
     if (!authenticated) {
@@ -121,17 +107,7 @@ export default function MultiplayerHomepage({
   }, [containerRef]);
 
   const handlePromptSubmit = getHandleSubmit(async value => {
-    const sessionId = "optimistic-" + Date.now();
-    const optimisticPrompt: PromptItem = {
-      text: value,
-      seed: userAvatarSeed || "optimistic",
-      isUser: true,
-      timestamp: Date.now(),
-      sessionId,
-    };
-    setOptimisticPrompts(prev => [...prev, optimisticPrompt]);
-    const result = await addToPromptQueue(value, userAvatarSeed, true);
-    setOptimisticPrompts(prev => prev.filter(p => p.sessionId !== sessionId));
+    const result = await submitPrompt(value);
 
     track("daydream_landing_page_prompt_submitted", {
       is_authenticated: authenticated,
@@ -148,11 +124,11 @@ export default function MultiplayerHomepage({
     promptFormRef.current?.requestSubmit();
   };
 
-  if (!ready || loading) {
+  if (!ready) {
     return <div className="flex items-center justify-center h-screen"></div>;
   }
 
-  if (!promptState) {
+  if (!prompts || !activeIndex) {
     return (
       <div className="flex items-center justify-center h-screen">
         Loading prompt state...
@@ -178,8 +154,6 @@ export default function MultiplayerHomepage({
             }`}
           >
             <HeroSection
-              handlePromptSubmit={handlePromptSubmit}
-              promptValue={prompt}
               setPromptValue={setPrompt}
               submitPromptForm={submitPromptForm}
               isAuthenticated={authenticated}
@@ -196,10 +170,8 @@ export default function MultiplayerHomepage({
               />
 
               <PromptPanel
-                promptQueue={[...optimisticPrompts, ...promptState.promptQueue]}
-                displayedPrompts={promptState.displayedPrompts}
-                promptAvatarSeeds={promptState.promptAvatarSeeds}
-                userPromptIndices={promptState.userPromptIndices}
+                prompts={prompts}
+                activeIndex={activeIndex}
                 onSubmit={handlePromptSubmit}
                 promptValue={prompt}
                 onPromptChange={handlePromptChange}
@@ -208,7 +180,6 @@ export default function MultiplayerHomepage({
                 throttleTimeLeft={throttleTimeLeft}
                 onTryCameraClick={handleButtonClick}
                 buttonText={authenticated ? "Create" : "Use your camera"}
-                isAuthenticated={authenticated}
                 promptFormRef={promptFormRef}
                 isMobile={isMobile}
               />
