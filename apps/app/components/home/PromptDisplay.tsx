@@ -120,7 +120,7 @@ export function PromptDisplay({
 
   useEffect(() => {
     if (!highlightedSince) {
-      console.log('No highlightedSince value');
+      console.log("No highlightedSince value");
       return;
     }
 
@@ -131,22 +131,27 @@ export function PromptDisplay({
       const timeHighlighted = now - serverTime;
       const currentPrompt = displayedPrompts[0];
       const isLiked = currentPrompt ? likedPrompts.has(currentPrompt) : false;
-      const effectiveDuration = isLiked ? Math.min(highlightDuration + 1000, 30000) : highlightDuration;
+      const effectiveDuration = isLiked
+        ? Math.min(highlightDuration + 1000, 30000)
+        : highlightDuration;
       const adjustedTimeHighlighted = Math.max(0, timeHighlighted);
-      const remaining = Math.max(0, Math.ceil((effectiveDuration - adjustedTimeHighlighted) / 1000));
-      console.log('Time remaining calculation:', {
+      const remaining = Math.max(
+        0,
+        Math.ceil((effectiveDuration - adjustedTimeHighlighted) / 1000),
+      );
+      console.log("Time remaining calculation:", {
         now,
         serverTime,
         timeHighlighted,
         adjustedTimeHighlighted,
         effectiveDuration,
-        remaining
+        remaining,
       });
       setTimeRemaining(remaining);
     };
 
     setTimeRemaining(Math.ceil(highlightDuration / 1000));
-    
+
     updateTimeRemaining();
     const interval = setInterval(updateTimeRemaining, 1000);
     return () => clearInterval(interval);
@@ -392,8 +397,9 @@ export function PromptDisplay({
           >
             <div className="min-w-0 flex-1 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className="truncate block w-full">{highlightedPrompt}</span>
-                
+                <span className="truncate block w-full">
+                  {highlightedPrompt}
+                </span>
               </div>
               {onLikeClick && (
                 <div className="flex items-center gap-2">
@@ -402,14 +408,12 @@ export function PromptDisplay({
                       {timeRemaining}s remaining
                     </span>
                   )}
-                  {isTrending && (
-                    <span className="text-lg">🔥</span>
-                  )}
+                  {isTrending && <span className="text-lg">🔥</span>}
                   <TooltipProvider delayDuration={0}>
                     <Tooltip>
                       <TooltipTrigger>
                         <div>
-                          <TrackedButton 
+                          <TrackedButton
                             trackingEvent="boost_prompt"
                             variant="ghost"
                             size="sm"

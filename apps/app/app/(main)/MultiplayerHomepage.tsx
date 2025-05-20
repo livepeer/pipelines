@@ -84,7 +84,7 @@ export default function MultiplayerHomepage({
     if (ready) {
       setAnimationStarted(true);
       const timer = setTimeout(() => {
-        console.log('Setting showContent to true');
+        console.log("Setting showContent to true");
         setShowContent(true);
       }, 800);
 
@@ -213,7 +213,7 @@ export default function MultiplayerHomepage({
                 isAuthenticated={authenticated}
                 promptFormRef={promptFormRef}
                 isMobile={isMobile}
-                handleLikePrompt={(prompt) => {
+                handleLikePrompt={prompt => {
                   // Add your like prompt handling logic here
                 }}
                 highlightedSince={promptState?.highlightedSince || Date.now()}

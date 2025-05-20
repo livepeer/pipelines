@@ -80,7 +80,7 @@ export function PromptPanel({
       text: "((watercolor splashes, flowing gradients, ethereal atmosphere)) :: teal, amber, lavender, coral :: dreamlike, floating elements, translucent layers --creativity 0.6 --quality 3 --negative-prompt sharp",
       likes: 5,
       timestamp: Date.now(),
-    }
+    },
   ];
 
   const [trendingPrompts, setTrendingPrompts] = useState<TrendingPrompt[]>(

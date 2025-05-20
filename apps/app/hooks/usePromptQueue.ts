@@ -79,7 +79,9 @@ export function usePromptQueue({
     const timeHighlighted = now - highlightedSince;
     const currentPrompt = displayedPrompts[0];
     const isLiked = currentPrompt ? likedPrompts.has(currentPrompt) : false;
-    const effectiveDuration = isLiked ? Math.min(highlightDuration + 1000, 30000) : highlightDuration;
+    const effectiveDuration = isLiked
+      ? Math.min(highlightDuration + 1000, 30000)
+      : highlightDuration;
 
     if (
       (highlightedSince === 0 || timeHighlighted >= effectiveDuration) &&
@@ -143,7 +145,7 @@ export function usePromptQueue({
 
   useEffect(() => {
     if (displayedPrompts.length > 0 && showContent) {
-      console.log('Using server timestamp for highlightedSince');
+      console.log("Using server timestamp for highlightedSince");
     }
   }, [showContent, displayedPrompts.length]);
 

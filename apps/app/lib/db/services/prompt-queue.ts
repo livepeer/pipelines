@@ -182,7 +182,7 @@ export const processNextPrompt = async (
 
     // Use server timestamp for consistency
     const serverTimestamp = new Date();
-    
+
     await dbClient
       .update(promptState)
       .set({
