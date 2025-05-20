@@ -46,17 +46,17 @@ export async function POST(request: NextRequest) {
     let wasCensored = false;
     let censorExplanation = "";
 
-    if (validatedIsUser) {
-      const nsfwCheck = await isPromptNSFW(promptText);
+    // if (validatedIsUser) {
+    //   const nsfwCheck = await isPromptNSFW(promptText);
 
-      if (nsfwCheck.isNSFW) {
-        // Replace with a safe prompt
-        finalPrompt = getRandomSafePrompt();
-        wasCensored = true;
-        censorExplanation = nsfwCheck.explanation;
-        console.log(`Censored prompt: "${promptText}" - ${censorExplanation}`);
-      }
-    }
+    //   if (nsfwCheck.isNSFW) {
+    //     // Replace with a safe prompt
+    //     finalPrompt = getRandomSafePrompt();
+    //     wasCensored = true;
+    //     censorExplanation = nsfwCheck.explanation;
+    //     console.log(`Censored prompt: "${promptText}" - ${censorExplanation}`);
+    //   }
+    // }
 
     const result = await addToPromptQueue(
       finalPrompt,
