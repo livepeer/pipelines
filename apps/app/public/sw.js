@@ -32,7 +32,7 @@ self.addEventListener("fetch", event => {
     );
   }
 
-  if (request.url.endsWith("/whip") && request.method === "POST") {
+  if (request.url.includes("/whip") && request.method === "POST") {
     event.respondWith(
       fetch(request)
         .then(response => {
