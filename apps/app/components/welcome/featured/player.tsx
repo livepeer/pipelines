@@ -129,6 +129,7 @@ export const LivepeerPlayer = () => {
   }
 
   if (iframePlayerFallback) {
+    console.log("@@@@@@@", "Iframe Player Fallback");
     return (
       <LPPLayer
         output_playback_id={stream?.output_playback_id!}
@@ -139,6 +140,7 @@ export const LivepeerPlayer = () => {
   }
 
   if (useVideoJS && pipeline) {
+    console.log("@@@@@@@", "VideoJS Fallback");
     return (
       <VideoJSPlayer
         src={playbackUrl}
