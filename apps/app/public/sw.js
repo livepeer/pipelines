@@ -13,7 +13,10 @@ self.addEventListener("activate", event => {
 self.addEventListener("fetch", event => {
   const { request } = event;
 
-  if (request.url.includes("/whip") && request.method === "HEAD") {
+  if (
+    (request.url.includes("/whip") || request.url.includes("/whep")) &&
+    request.method === "HEAD"
+  ) {
     event.respondWith(
       new Response(null, {
         status: 405,
@@ -29,7 +32,7 @@ self.addEventListener("fetch", event => {
     );
   }
 
-  if (request.url.endsWith("/whip") && request.method === "POST") {
+  if (request.url.includes("/whip") && request.method === "POST") {
     event.respondWith(
       fetch(request)
         .then(response => {

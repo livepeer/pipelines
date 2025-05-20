@@ -1,17 +1,14 @@
 "use client";
 
-import { sendKafkaEvent } from "@/lib/analytics/event-middleware";
 import { getStreamPlaybackInfo } from "@/app/api/streams/get";
 import { LPPLayer } from "@/components/playground/player";
-import { useAppConfig } from "@/hooks/useAppConfig";
 import { useDreamshaperStore } from "@/hooks/useDreamshaper";
-import { useFallbackDetection } from "@/hooks/useFallbackDetection";
 import useFullscreenStore from "@/hooks/useFullscreenStore";
 import useMobileStore from "@/hooks/useMobileStore";
+import { usePlaybackUrlStore } from "@/hooks/usePlaybackUrlStore";
 import { usePrivy } from "@/hooks/usePrivy";
+import { sendKafkaEvent } from "@/lib/analytics/event-middleware";
 import {
-  EnterFullscreenIcon,
-  ExitFullscreenIcon,
   LoadingIcon,
   MuteIcon,
   PrivateErrorIcon,
@@ -20,24 +17,10 @@ import {
 import { getSrc } from "@livepeer/react/external";
 import * as Player from "@livepeer/react/player";
 import { PlaybackInfo } from "livepeer/models/components";
-import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
 import * as React from "react";
 import { useEffect, useRef, useState } from "react";
 import { create } from "zustand";
-import { usePlaybackUrlStore } from "@/hooks/usePlaybackUrlStore";
-
-const VideoJSPlayer = dynamic(() => import("./videojs-player"), {
-  ssr: false,
-  loading: () => (
-    <div className="w-full relative h-full bg-black/50 backdrop-blur">
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-        <LoadingIcon className="w-8 h-8 animate-spin" />
-      </div>
-      <PlayerLoading />
-    </div>
-  ),
-});
 
 interface PlayerState {
   isPlaying: boolean;
@@ -76,17 +59,13 @@ const calculateDelay = (count: number): number => {
 };
 
 export const LivepeerPlayer = () => {
-  const { stream, pipeline } = useDreamshaperStore();
+  const { stream } = useDreamshaperStore();
   const { isMobile } = useMobileStore();
-  const appConfig = useAppConfig();
   const { isFullscreen } = useFullscreenStore();
   const { setIsPlaying } = usePlayerStore();
   const [playbackInfo, setPlaybackInfo] = useState<PlaybackInfo | null>(null);
   const { playbackUrl, setPlaybackUrl, setLoading, loading } =
     usePlaybackUrlStore();
-
-  const { useFallbackPlayer: useFallbackVideoJSPlayer, handleError } =
-    useFallbackDetection(stream?.output_playback_id!);
 
   useEffect(() => {
     setIsPlaying(false);
@@ -105,11 +84,9 @@ export const LivepeerPlayer = () => {
   const debugMode = searchParams.get("debugMode") === "true";
   const iframePlayerFallback =
     process.env.NEXT_PUBLIC_IFRAME_PLAYER_FALLBACK === "true";
-  const useVideoJS =
-    searchParams.get("videoJS") === "true" || useFallbackVideoJSPlayer;
 
   useEffect(() => {
-    if (useMediamtx || iframePlayerFallback || useVideoJS) {
+    if (useMediamtx || iframePlayerFallback) {
       return;
     }
     const fetchPlaybackInfo = async () => {
@@ -117,12 +94,7 @@ export const LivepeerPlayer = () => {
       setPlaybackInfo(info);
     };
     fetchPlaybackInfo();
-  }, [
-    useMediamtx,
-    iframePlayerFallback,
-    useVideoJS,
-    stream?.output_playback_id,
-  ]);
+  }, [useMediamtx, iframePlayerFallback, stream?.output_playback_id]);
 
   if (loading || !playbackUrl) {
     return <PlayerLoading />;
@@ -134,19 +106,6 @@ export const LivepeerPlayer = () => {
         output_playback_id={stream?.output_playback_id!}
         stream_key={stream?.stream_key || null}
         isMobile={isMobile}
-      />
-    );
-  }
-
-  if (useVideoJS && pipeline) {
-    return (
-      <VideoJSPlayer
-        src={playbackUrl}
-        isMobile={isMobile}
-        playbackId={stream?.output_playback_id!}
-        streamId={stream?.id!}
-        pipelineId={pipeline?.id!}
-        pipelineType={pipeline?.type!}
       />
     );
   }
@@ -184,7 +143,6 @@ export const LivepeerPlayer = () => {
             ],
           },
         } as any)}
-        onError={handleError}
       >
         <div
           className="absolute inset-0 z-[5]"
