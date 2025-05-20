@@ -35,6 +35,7 @@
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.46.1",
     "@types/video.js": "^7.3.58",
+    "@upstash/redis": "^1.34.9",
     "@vercel/toolbar": "^0.1.26",
     "app": "link:",
     "bcrypt": "^5.1.1",

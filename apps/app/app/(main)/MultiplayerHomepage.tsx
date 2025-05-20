@@ -29,7 +29,6 @@ export default function MultiplayerHomepage({
   const { setIsGuestUser } = useGuestUserStore();
   const [animationStarted, setAnimationStarted] = useState(false);
   const [showContent, setShowContent] = useState(false);
-  const [isTutorialModalOpen, setIsTutorialModalOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
   const [showFooter, setShowFooter] = useState(false);
   const promptFormRef = useRef<HTMLFormElement>(null);
@@ -227,11 +226,6 @@ export default function MultiplayerHomepage({
         <div className="md:hidden fixed bottom-0 left-0 w-full z-20">
           <Footer showFooter={true} isMobile={true} />
         </div>
-
-        <TutorialModal
-          isOpen={isTutorialModalOpen}
-          onClose={() => setIsTutorialModalOpen(false)}
-        />
       </div>
       {children}
     </>
