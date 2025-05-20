@@ -27,18 +27,6 @@ import { useEffect, useRef, useState } from "react";
 import { create } from "zustand";
 import { usePlaybackUrlStore } from "@/hooks/usePlaybackUrlStore";
 
-const VideoJSPlayer = dynamic(() => import("./videojs-player"), {
-  ssr: false,
-  loading: () => (
-    <div className="w-full relative h-full bg-black/50 backdrop-blur">
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-        <LoadingIcon className="w-8 h-8 animate-spin" />
-      </div>
-      <PlayerLoading />
-    </div>
-  ),
-});
-
 interface PlayerState {
   isPlaying: boolean;
   setIsPlaying: (value: boolean) => void;
@@ -76,17 +64,13 @@ const calculateDelay = (count: number): number => {
 };
 
 export const LivepeerPlayer = () => {
-  const { stream, pipeline } = useDreamshaperStore();
+  const { stream } = useDreamshaperStore();
   const { isMobile } = useMobileStore();
-  const appConfig = useAppConfig();
   const { isFullscreen } = useFullscreenStore();
   const { setIsPlaying } = usePlayerStore();
   const [playbackInfo, setPlaybackInfo] = useState<PlaybackInfo | null>(null);
   const { playbackUrl, setPlaybackUrl, setLoading, loading } =
     usePlaybackUrlStore();
-
-  const { useFallbackPlayer: useFallbackVideoJSPlayer, handleError } =
-    useFallbackDetection(stream?.output_playback_id!);
 
   useEffect(() => {
     setIsPlaying(false);
@@ -105,8 +89,6 @@ export const LivepeerPlayer = () => {
   const debugMode = searchParams.get("debugMode") === "true";
   const iframePlayerFallback =
     process.env.NEXT_PUBLIC_IFRAME_PLAYER_FALLBACK === "true";
-  const useVideoJS =
-    searchParams.get("videoJS") === "true" || useFallbackVideoJSPlayer;
 
   useEffect(() => {
     if (useMediamtx || iframePlayerFallback || useVideoJS) {
@@ -117,12 +99,7 @@ export const LivepeerPlayer = () => {
       setPlaybackInfo(info);
     };
     fetchPlaybackInfo();
-  }, [
-    useMediamtx,
-    iframePlayerFallback,
-    useVideoJS,
-    stream?.output_playback_id,
-  ]);
+  }, [useMediamtx, iframePlayerFallback, stream?.output_playback_id]);
 
   if (loading || !playbackUrl) {
     return <PlayerLoading />;
@@ -134,19 +111,6 @@ export const LivepeerPlayer = () => {
         output_playback_id={stream?.output_playback_id!}
         stream_key={stream?.stream_key || null}
         isMobile={isMobile}
-      />
-    );
-  }
-
-  if (useVideoJS && pipeline) {
-    return (
-      <VideoJSPlayer
-        src={playbackUrl}
-        isMobile={isMobile}
-        playbackId={stream?.output_playback_id!}
-        streamId={stream?.id!}
-        pipelineId={pipeline?.id!}
-        pipelineType={pipeline?.type!}
       />
     );
   }
