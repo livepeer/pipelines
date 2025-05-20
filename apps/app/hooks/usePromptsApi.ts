@@ -45,8 +45,8 @@ export function usePromptsApi() {
 
   useEffect(() => {
     pollPrompts(); // initial
-    const interval = setInterval(pollPrompts, 3000);
-    return () => clearInterval(interval);
+    // const interval = setInterval(pollPrompts, 10000);
+    // return () => clearInterval(interval);
   }, [pollPrompts]);
 
   return {

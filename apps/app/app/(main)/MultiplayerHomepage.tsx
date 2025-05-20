@@ -124,18 +124,6 @@ export default function MultiplayerHomepage({
     promptFormRef.current?.requestSubmit();
   };
 
-  if (!ready) {
-    return <div className="flex items-center justify-center h-screen"></div>;
-  }
-
-  if (!prompts || !activeIndex) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        Loading prompt state...
-      </div>
-    );
-  }
-
   return (
     <>
       <div className="fixed inset-0 z-[1000] w-screen h-screen overflow-hidden">
@@ -168,7 +156,7 @@ export default function MultiplayerHomepage({
                 onTryCameraClick={handleButtonClick}
                 buttonText={authenticated ? "Create" : "Use your camera"}
               />
-
+              {/* 
               <PromptPanel
                 prompts={prompts}
                 activeIndex={activeIndex}
@@ -182,7 +170,7 @@ export default function MultiplayerHomepage({
                 buttonText={authenticated ? "Create" : "Use your camera"}
                 promptFormRef={promptFormRef}
                 isMobile={isMobile}
-              />
+              /> */}
             </div>
           </div>
         </div>

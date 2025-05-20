@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 
 export async function GET() {
   // Get the last 20 prompts
-  const rawPrompts = await redis.lrange("prompt:stream", 0, 19); // 0 = latest
+  const rawPrompts = await redis.lrange("prompt:stream", 0, -1); // 0 = latest
   const prompts = rawPrompts.map(str => JSON.parse(str));
   if (prompts.length === 0) {
     await redis.del("prompt:active");
