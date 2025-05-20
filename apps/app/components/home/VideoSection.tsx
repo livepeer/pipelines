@@ -9,18 +9,17 @@ export const TRANSFORMED_PLAYBACK_ID =
   process.env.NEXT_PUBLIC_TRANSFORMED_PLAYBACK_ID ?? "";
 const ORIGINAL_PLAYBACK_ID = process.env.NEXT_PUBLIC_ORIGINAL_PLAYBACK_ID ?? "";
 
-const env = process.env.NEXT_PUBLIC_VERCEL_ENV;
+const env = process.env.NEXT_PUBLIC_ENV;
 
 export function getIframeUrl({
   playbackId,
   lowLatency,
-  isSource,
 }: {
   playbackId: string;
   lowLatency: boolean | "force";
-  isSource?: boolean;
 }) {
-  return `https://${env === "production" || isSource ? "lvpr.tv" : "monster.lvpr.tv"}?v=${playbackId}&lowLatency=${lowLatency}&backoffMax=1000&ingestPlayback=true&controls=true`;
+  const baseUrl = env === "production" ? "lvpr.tv" : "monster.lvpr.tv";
+  return `https://${baseUrl}?v=${playbackId}&lowLatency=${lowLatency}&backoffMax=1000&ingestPlayback=true&controls=true`;
 }
 
 interface VideoSectionProps {
@@ -43,7 +42,6 @@ export function VideoSection({
   const originalIframeUrl = getIframeUrl({
     playbackId: ORIGINAL_PLAYBACK_ID,
     lowLatency: false,
-    isSource: true,
   });
 
   useEffect(() => {
