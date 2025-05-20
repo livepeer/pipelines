@@ -415,6 +415,7 @@ export function useParamsHandling() {
 export function useStreamUpdates() {
   const { stream, pipeline, setUpdating } = useDreamshaperStore();
   const { incrementPromptVersion } = usePromptVersionStore();
+  const searchParams = useSearchParams();
 
   const handleStreamUpdate = useCallback(
     async (prompt: string, options?: { silent?: boolean }) => {
@@ -461,14 +462,21 @@ export function useStreamUpdates() {
         if (!updatedInputValues.prompt) {
           updatedInputValues.prompt = {};
         }
-        if (!updatedInputValues.prompt["5"]) {
-          updatedInputValues.prompt["5"] = { inputs: {} };
-        }
-        if (!updatedInputValues.prompt["5"].inputs) {
-          updatedInputValues.prompt["5"].inputs = {};
-        }
 
-        updatedInputValues.prompt["5"].inputs.text = cleanedPrompt;
+        /**
+         * TODO: Remove once we have a better way to handle this
+         * Hack to get around not attaching the prompt to pipelines which are not dreamshaper
+         */
+        if (searchParams.get("isDreamshaper") !== "false") {
+          if (!updatedInputValues.prompt["5"]) {
+            updatedInputValues.prompt["5"] = { inputs: {} };
+          }
+          if (!updatedInputValues.prompt["5"].inputs) {
+            updatedInputValues.prompt["5"].inputs = {};
+          }
+
+          updatedInputValues.prompt["5"].inputs.text = cleanedPrompt;
+        }
 
         if (
           freshPipeline?.prioritized_params &&
