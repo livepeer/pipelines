@@ -13,7 +13,7 @@ export const DesignSystemProvider = ({
 }: DesignSystemProviderProperties) => (
   <ThemeProvider {...properties}>
     <PrivyProvider>
-      <TooltipProvider>{children}</TooltipProvider>
+      <TooltipProvider delayDuration={0}>{children}</TooltipProvider>
     </PrivyProvider>
     <Toaster />
     {process.env.NODE_ENV !== "production" && <VercelToolbar />}

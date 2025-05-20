@@ -25,6 +25,9 @@ interface PromptPanelProps {
   isAuthenticated?: boolean;
   promptFormRef?: RefObject<HTMLFormElement>;
   isMobile?: boolean;
+  handleLikePrompt: (prompt: string) => void;
+  highlightedSince: number;
+  highlightDuration: number;
 }
 
 export function PromptPanel({
@@ -43,6 +46,9 @@ export function PromptPanel({
   isAuthenticated = false,
   promptFormRef,
   isMobile = false,
+  handleLikePrompt,
+  highlightedSince,
+  highlightDuration,
 }: PromptPanelProps) {
   const defaultTrendingPrompts: TrendingPrompt[] = [
     {
@@ -60,6 +66,21 @@ export function PromptPanel({
       likes: 3,
       timestamp: Date.now(),
     },
+    {
+      text: "cyberpunk samurai ((neon highlights)) (futuristic cityscape) (((electric blue, crimson, violet))) --creativity 0.7 --quality 3 --negative-prompt realistic",
+      likes: 7,
+      timestamp: Date.now(),
+    },
+    {
+      text: "ancient dragon, (scales:1.3), Mountain Lair, Treasure Hoard, (Smoke Tendrils:1.1), ((iridescent colors)) --denoise 0.9 --creativity 0.8 --negative-prompt modern",
+      likes: 6,
+      timestamp: Date.now(),
+    },
+    {
+      text: "((watercolor splashes, flowing gradients, ethereal atmosphere)) :: teal, amber, lavender, coral :: dreamlike, floating elements, translucent layers --creativity 0.6 --quality 3 --negative-prompt sharp",
+      likes: 5,
+      timestamp: Date.now(),
+    }
   ];
 
   const [trendingPrompts, setTrendingPrompts] = useState<TrendingPrompt[]>(
@@ -243,6 +264,9 @@ export function PromptPanel({
             isMobile={isMobile}
             onLikeClick={handleLikeClick}
             likedPrompts={likedPrompts}
+            handleLikePrompt={handleLikePrompt}
+            highlightedSince={highlightedSince}
+            highlightDuration={highlightDuration}
           />
         </div>
       )}
@@ -352,6 +376,9 @@ export function PromptPanel({
                     isMobile={isMobile}
                     onLikeClick={handleLikeClick}
                     likedPrompts={likedPrompts}
+                    handleLikePrompt={handleLikePrompt}
+                    highlightedSince={highlightedSince}
+                    highlightDuration={highlightDuration}
                   />
                 </>
               </div>

@@ -76,7 +76,7 @@ export function TrendingPromptDisplay({
         {promptsToShow.map((prompt, idx) => (
           <div
             key={`trending-prompt-${idx}-${prompt.substring(0, 10)}`}
-            className={`p-2 px-4 text-sm md:text-base text-white md:text-black font-bold flex items-center animate-fadeSlideIn relative alwaysAnimatedButton bg-white/90 rounded-xl ${onPastPromptClick ? "cursor-pointer hover:bg-white" : ""}`}
+            className={`p-1 px-4 text-sm md:text-base text-white md:text-black font-bold flex items-center animate-fadeSlideIn relative alwaysAnimatedButton bg-white/90 rounded-xl ${onPastPromptClick ? "cursor-pointer hover:bg-white" : ""}`}
             style={{
               transition: "all 0.3s ease-out",
               borderRadius: "12px",

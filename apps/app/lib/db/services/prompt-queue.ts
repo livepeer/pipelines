@@ -180,11 +180,15 @@ export const processNextPrompt = async (
       return { success: true, processed: false, remainingItems: 0 };
     }
 
+    // Use server timestamp for consistency
+    const serverTimestamp = new Date();
+    
     await dbClient
       .update(promptState)
       .set({
         isProcessing: true,
-        lastUpdated: new Date(),
+        lastUpdated: serverTimestamp,
+        highlightedSince: serverTimestamp,
       })
       .where(eq(promptState.id, "main"));
 
@@ -219,9 +223,9 @@ export const processNextPrompt = async (
           promptAvatarSeeds,
           userPromptIndices,
           promptSessionIds,
-          highlightedSince: now,
+          highlightedSince: serverTimestamp,
           isProcessing: false,
-          lastUpdated: now,
+          lastUpdated: serverTimestamp,
         })
         .where(eq(promptState.id, "main"));
 
@@ -229,7 +233,7 @@ export const processNextPrompt = async (
         .update(promptQueue)
         .set({
           processed: true,
-          processedAt: now,
+          processedAt: serverTimestamp,
         })
         .where(eq(promptQueue.id, promptItem.id));
 

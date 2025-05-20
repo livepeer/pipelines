@@ -1,8 +1,14 @@
-import React, { useMemo } from "react";
-import { ArrowLeft, Sparkle, Heart } from "lucide-react";
+import React, { useMemo, useState, useEffect } from "react";
+import { ArrowLeft, Sparkle, Heart, RocketIcon } from "lucide-react";
 import { GradientAvatar } from "@/components/GradientAvatar";
 import { PromptItem } from "@/app/api/prompts/types";
 import { Button } from "@repo/design-system/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@repo/design-system/components/ui/tooltip";
 import {
   uniqueNamesGenerator,
   Config,
@@ -10,6 +16,7 @@ import {
   animals,
   NumberDictionary,
 } from "unique-names-generator";
+import { TrackedButton } from "../analytics/TrackedButton";
 
 interface PromptDisplayProps {
   promptQueue: PromptItem[];
@@ -21,6 +28,9 @@ interface PromptDisplayProps {
   likedPrompts?: Set<string>;
   isMobile?: boolean;
   isTrending?: boolean;
+  handleLikePrompt?: (prompt: string) => void;
+  highlightedSince?: number;
+  highlightDuration?: number;
 }
 
 // Types for the combined items in mobile view
@@ -102,7 +112,46 @@ export function PromptDisplay({
   likedPrompts = new Set(),
   isMobile = false,
   isTrending = false,
+  handleLikePrompt,
+  highlightedSince = 0,
+  highlightDuration = 5000,
 }: PromptDisplayProps) {
+  const [timeRemaining, setTimeRemaining] = useState<number>(0);
+
+  useEffect(() => {
+    if (!highlightedSince) {
+      console.log('No highlightedSince value');
+      return;
+    }
+
+    const updateTimeRemaining = () => {
+      // Get server time from the highlightedSince timestamp
+      const serverTime = highlightedSince;
+      const now = Date.now();
+      const timeHighlighted = now - serverTime;
+      const currentPrompt = displayedPrompts[0];
+      const isLiked = currentPrompt ? likedPrompts.has(currentPrompt) : false;
+      const effectiveDuration = isLiked ? Math.min(highlightDuration + 1000, 30000) : highlightDuration;
+      const adjustedTimeHighlighted = Math.max(0, timeHighlighted);
+      const remaining = Math.max(0, Math.ceil((effectiveDuration - adjustedTimeHighlighted) / 1000));
+      console.log('Time remaining calculation:', {
+        now,
+        serverTime,
+        timeHighlighted,
+        adjustedTimeHighlighted,
+        effectiveDuration,
+        remaining
+      });
+      setTimeRemaining(remaining);
+    };
+
+    setTimeRemaining(Math.ceil(highlightDuration / 1000));
+    
+    updateTimeRemaining();
+    const interval = setInterval(updateTimeRemaining, 1000);
+    return () => clearInterval(interval);
+  }, [highlightedSince, displayedPrompts, likedPrompts, highlightDuration]);
+
   const MAX_QUEUE_SIZE = 5;
   const MAX_MOBILE_PROMPTS = 4;
 
@@ -142,6 +191,16 @@ export function PromptDisplay({
       }
     });
   }, []);
+
+  const handleLike = (e: React.MouseEvent, prompt: string) => {
+    e.stopPropagation();
+    if (handleLikePrompt) {
+      handleLikePrompt(prompt);
+    }
+    if (onLikeClick) {
+      onLikeClick(prompt);
+    }
+  };
 
   if (isMobile) {
     let itemsToShow = [];
@@ -233,10 +292,7 @@ export function PromptDisplay({
                           ? "text-red-500"
                           : "text-white/50"
                       }`}
-                      onClick={e => {
-                        e.stopPropagation();
-                        onLikeClick(item.text);
-                      }}
+                      onClick={e => handleLike(e, item.text)}
                     >
                       <Heart
                         className="h-4 w-4"
@@ -292,6 +348,8 @@ export function PromptDisplay({
                   </div>
                   <div className="min-w-0 flex-1 flex items-center justify-between">
                     <span className="truncate block w-full">{prevPrompt}</span>
+                    {/* 
+                    no like button for past prompts
                     {!isTrending && onLikeClick && (
                       <Button
                         variant="ghost"
@@ -301,10 +359,7 @@ export function PromptDisplay({
                             ? "text-red-500"
                             : "text-gray-400"
                         }`}
-                        onClick={e => {
-                          e.stopPropagation();
-                          onLikeClick(prevPrompt);
-                        }}
+                        onClick={e => handleLike(e, prevPrompt)}
                       >
                         <Heart
                           className="h-4 w-4"
@@ -315,7 +370,7 @@ export function PromptDisplay({
                           }
                         />
                       </Button>
-                    )}
+                    )} */}
                   </div>
                 </div>
               );
@@ -336,34 +391,52 @@ export function PromptDisplay({
             }
           >
             <div className="min-w-0 flex-1 flex items-center justify-between">
-              <span className="truncate block w-full">{highlightedPrompt}</span>
-              {isTrending ? (
-                <span className="text-lg">🔥</span>
-              ) : (
-                onLikeClick && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className={`p-1 h-8 w-8 ${
-                      likedPrompts.has(highlightedPrompt)
-                        ? "text-red-500"
-                        : "text-gray-400"
-                    }`}
-                    onClick={e => {
-                      e.stopPropagation();
-                      onLikeClick(highlightedPrompt);
-                    }}
-                  >
-                    <Heart
-                      className="h-4 w-4"
-                      fill={
-                        likedPrompts.has(highlightedPrompt)
-                          ? "currentColor"
-                          : "none"
-                      }
-                    />
-                  </Button>
-                )
+              <div className="flex items-center gap-2">
+                <span className="truncate block w-full">{highlightedPrompt}</span>
+                
+              </div>
+              {onLikeClick && (
+                <div className="flex items-center gap-2">
+                  {timeRemaining > 0 && (
+                    <span className="text-xs font-normal text-gray-500 whitespace-nowrap">
+                      {timeRemaining}s remaining
+                    </span>
+                  )}
+                  {isTrending && (
+                    <span className="text-lg">🔥</span>
+                  )}
+                  <TooltipProvider delayDuration={0}>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <div>
+                          <TrackedButton 
+                            trackingEvent="boost_prompt"
+                            variant="ghost"
+                            size="sm"
+                            className={`p-1 h-8 w-8 hover:bg-transparent hover:opacity-100 ${
+                              likedPrompts.has(highlightedPrompt)
+                                ? "text-red-500"
+                                : "text-gray-400"
+                            }`}
+                            onClick={e => handleLike(e, highlightedPrompt)}
+                          >
+                            <RocketIcon
+                              className="h-4 w-4"
+                              fill={
+                                likedPrompts.has(highlightedPrompt)
+                                  ? "currentColor"
+                                  : "none"
+                              }
+                            />
+                          </TrackedButton>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent className="z-[9999]">
+                        <p>Boosting this prompt increases its time on-screen</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
               )}
             </div>
           </div>
@@ -395,30 +468,38 @@ export function PromptDisplay({
                     <span className="truncate block w-full">
                       {queuedPrompt.text}
                     </span>
+                    {/* 
+                    no boosts on queued items for now
                     {!isTrending && onLikeClick && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className={`p-1 h-8 w-8 hover:bg-transparent hover:opacity-100 ${
-                          likedPrompts.has(queuedPrompt.text)
-                            ? "text-red-500"
-                            : "text-gray-400"
-                        }`}
-                        onClick={e => {
-                          e.stopPropagation();
-                          onLikeClick(queuedPrompt.text);
-                        }}
-                      >
-                        <Heart
-                          className="h-4 w-4"
-                          fill={
-                            likedPrompts.has(queuedPrompt.text)
-                              ? "currentColor"
-                              : "none"
-                          }
-                        />
-                      </Button>
-                    )}
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className={`p-1 h-8 w-8 hover:bg-transparent hover:opacity-100 ${
+                                likedPrompts.has(queuedPrompt.text)
+                                  ? "text-red-500"
+                                  : "text-gray-400"
+                              }`}
+                              onClick={e => handleLike(e, queuedPrompt.text)}
+                            >
+                              <RocketIcon
+                                className="h-4 w-4"
+                                fill={
+                                  likedPrompts.has(queuedPrompt.text)
+                                    ? "currentColor"
+                                    : "none"
+                                }
+                              />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent side="top" className="z-[9999]">
+                            <p>Boosting this prompt increases its time on-screen</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    )} */}
                   </div>
                 </div>
               );

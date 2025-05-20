@@ -37,6 +37,7 @@ export function usePromptQueue({
   const [userPromptIndices, setUserPromptIndices] = useState<boolean[]>(
     initialPrompts.map(() => false),
   );
+  const [likedPrompts, setLikedPrompts] = useState<Set<string>>(new Set());
 
   const processNextPrompt = useCallback(() => {
     setIsProcessingQueue(true);
@@ -76,9 +77,12 @@ export function usePromptQueue({
 
     const now = Date.now();
     const timeHighlighted = now - highlightedSince;
+    const currentPrompt = displayedPrompts[0];
+    const isLiked = currentPrompt ? likedPrompts.has(currentPrompt) : false;
+    const effectiveDuration = isLiked ? Math.min(highlightDuration + 1000, 30000) : highlightDuration;
 
     if (
-      (highlightedSince === 0 || timeHighlighted >= highlightDuration) &&
+      (highlightedSince === 0 || timeHighlighted >= effectiveDuration) &&
       promptQueue.length > 0 &&
       !isProcessingQueue
     ) {
@@ -88,13 +92,13 @@ export function usePromptQueue({
     const timer = setTimeout(() => {
       if (
         highlightedSince > 0 &&
-        Date.now() - highlightedSince >= highlightDuration &&
+        Date.now() - highlightedSince >= effectiveDuration &&
         promptQueue.length > 0
       ) {
         processNextPrompt();
       }
       setIsProcessingQueue(false);
-    }, highlightDuration);
+    }, effectiveDuration);
 
     return () => clearTimeout(timer);
   }, [
@@ -104,6 +108,8 @@ export function usePromptQueue({
     showContent,
     isProcessingQueue,
     highlightDuration,
+    likedPrompts,
+    displayedPrompts,
   ]);
 
   const addToPromptQueue = useCallback(
@@ -137,9 +143,21 @@ export function usePromptQueue({
 
   useEffect(() => {
     if (displayedPrompts.length > 0 && showContent) {
-      setHighlightedSince(Date.now());
+      console.log('Using server timestamp for highlightedSince');
     }
   }, [showContent, displayedPrompts.length]);
+
+  const handleLikePrompt = useCallback((prompt: string) => {
+    setLikedPrompts(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(prompt)) {
+        newSet.delete(prompt);
+      } else {
+        newSet.add(prompt);
+      }
+      return newSet;
+    });
+  }, []);
 
   return {
     promptQueue,
@@ -151,5 +169,7 @@ export function usePromptQueue({
     addRandomPrompt,
     highlightedSince,
     isProcessingQueue,
+    likedPrompts,
+    handleLikePrompt,
   };
 }
