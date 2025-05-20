@@ -1,17 +1,14 @@
 "use client";
 
-import { sendKafkaEvent } from "@/lib/analytics/event-middleware";
 import { getStreamPlaybackInfo } from "@/app/api/streams/get";
 import { LPPLayer } from "@/components/playground/player";
-import { useAppConfig } from "@/hooks/useAppConfig";
 import { useDreamshaperStore } from "@/hooks/useDreamshaper";
-import { useFallbackDetection } from "@/hooks/useFallbackDetection";
 import useFullscreenStore from "@/hooks/useFullscreenStore";
 import useMobileStore from "@/hooks/useMobileStore";
+import { usePlaybackUrlStore } from "@/hooks/usePlaybackUrlStore";
 import { usePrivy } from "@/hooks/usePrivy";
+import { sendKafkaEvent } from "@/lib/analytics/event-middleware";
 import {
-  EnterFullscreenIcon,
-  ExitFullscreenIcon,
   LoadingIcon,
   MuteIcon,
   PrivateErrorIcon,
@@ -20,12 +17,10 @@ import {
 import { getSrc } from "@livepeer/react/external";
 import * as Player from "@livepeer/react/player";
 import { PlaybackInfo } from "livepeer/models/components";
-import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
 import * as React from "react";
 import { useEffect, useRef, useState } from "react";
 import { create } from "zustand";
-import { usePlaybackUrlStore } from "@/hooks/usePlaybackUrlStore";
 
 interface PlayerState {
   isPlaying: boolean;
@@ -91,7 +86,7 @@ export const LivepeerPlayer = () => {
     process.env.NEXT_PUBLIC_IFRAME_PLAYER_FALLBACK === "true";
 
   useEffect(() => {
-    if (useMediamtx || iframePlayerFallback || useVideoJS) {
+    if (useMediamtx || iframePlayerFallback) {
       return;
     }
     const fetchPlaybackInfo = async () => {
@@ -148,7 +143,6 @@ export const LivepeerPlayer = () => {
             ],
           },
         } as any)}
-        onError={handleError}
       >
         <div
           className="absolute inset-0 z-[5]"
