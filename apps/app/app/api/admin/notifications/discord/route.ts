@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
       embeds: [
         {
           title: "New Clip by " + authorName,
-          description: "Prompt: " + prompt,
+          description: "**Prompt:** " + prompt,
           color: 3447003, // Blue color
           image: thumbnailUrl ? { url: thumbnailUrl } : undefined,
           url: videoUrl || undefined,
