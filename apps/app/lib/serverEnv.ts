@@ -116,3 +116,5 @@ export const validateServerEnv = async () => {
 };
 
 export const gcpConfig = serverOnlyConfig.gcp;
+
+export const redisConfig = serverOnlyConfig.redis;
