@@ -150,6 +150,37 @@ export default function ClipApprovalQueue() {
         );
       }
 
+      // If the clip was approved, send a notification to Discord
+      if (newStatus === "approved") {
+        const clipToApprove = pendingClips.find(clip => clip.id === clipId);
+        if (clipToApprove) {
+          try {
+            const authorName =
+              typeof clipToApprove.author === "object" &&
+              clipToApprove.author?.name
+                ? clipToApprove.author.name
+                : typeof clipToApprove.author === "string"
+                  ? clipToApprove.author
+                  : "Unknown";
+
+            await fetch("/api/admin/notifications/discord", {
+              method: "POST",
+              headers,
+              body: JSON.stringify({
+                clipId: clipToApprove.id,
+                clipTitle: clipToApprove.video_title || "Untitled clip",
+                authorName,
+                thumbnailUrl: clipToApprove.thumbnail_url,
+                videoUrl: clipToApprove.video_url,
+              }),
+            });
+          } catch (discordError) {
+            console.error("Failed to send Discord notification:", discordError);
+            // Don't block the approval process if Discord notification fails
+          }
+        }
+      }
+
       setPendingClips(clips => clips.filter(clip => clip.id !== clipId));
       toast.success(`Clip ${newStatus} successfully!`);
       return true;
