@@ -174,15 +174,29 @@ export function PromptDisplay({
 
     // Add queue items first, before limiting the display size
     if (nonEmptyQueueItems.length > 0) {
+      // Add queue items in chronological order (oldest first)
+      // nonEmptyQueueItems should already be sorted by position/timestamp
       nonEmptyQueueItems.forEach(item => {
         allPromptsChronological.push({
           type: "queue",
           text: item.text,
           isUser: item.isUser,
           seed: item.seed,
+          timestamp: item.timestamp,
         });
       });
     }
+
+    // Sort all prompts by timestamp to ensure correct chronological order
+    allPromptsChronological.sort((a, b) => {
+      // Past prompts and highlighted prompt don't have timestamps, so we 
+      // maintain their existing order (they're already in chronological order)
+      if (a.type === "queue" && b.type === "queue") {
+        return a.timestamp - b.timestamp;
+      }
+      // Keep existing order for non-queue items
+      return 0;
+    });
 
     // Take only the most recent N items to fit into our display
     itemsToShow = allPromptsChronological.slice(-maxItems);
@@ -289,7 +303,10 @@ export function PromptDisplay({
 
         {nonEmptyQueueItems.length > 0 && (
           <div className="hidden md:flex flex-col gap-2 w-full">
-            {nonEmptyQueueItems.map((queuedPrompt, qIndex) => {
+            {nonEmptyQueueItems
+              // Sort queue items by timestamp to ensure chronological order
+              .sort((a, b) => a.timestamp - b.timestamp)
+              .map((queuedPrompt, qIndex) => {
               const username = queuedPrompt.seed
                 ? generateUsername(queuedPrompt.seed)
                 : "User";
