@@ -57,7 +57,7 @@ test.describe.parallel("Daydream Page Tests", () => {
         await context.grantPermissions(["camera", "microphone"]);
       });
 
-      test.afterEach(async ({ page, context }, testInfo) => {
+      test.afterEach(async ({ page }, testInfo) => {
         if (testInfo.status !== testInfo.expectedStatus) {
           await page.screenshot({
             path: `./screenshots/${testInfo.title}/error.png`,
@@ -88,15 +88,10 @@ test.describe.parallel("Daydream Page Tests", () => {
       });
       for (let i = 0; i < parseInt(RUN_COUNT); i++) {
         test(`video elements load and play correctly ${region}#${i + 1}`, async ({
-          browser,
-        }, testInfo) => {
-          const context = await browser.newContext({
-            recordHar: { path: `./screenshots/${testInfo.title}/capture.har` },
-            permissions: ['camera', 'microphone', "clipboard-read", "clipboard-write"],
-          });
+          page,
+          context,
+        }) => {
           try {
-            const page = await context.newPage();
-
             const path = regionalPath(region, "/create");
             console.log(
               `Running test ${i + 1} for region ${region} with path ${path}`,
@@ -192,7 +187,7 @@ test.describe.parallel("Daydream Page Tests", () => {
 
             // sleep to leave the stream running for longer
             console.log("Sleeping to allow the stream to run...");
-            await page.waitForTimeout(30 * 1000);
+            // await page.waitForTimeout(30 * 1000);
 
             await assertVideoContentChanging(
               broadcast,
@@ -218,9 +213,6 @@ test.describe.parallel("Daydream Page Tests", () => {
           } catch (error) {
             console.error("Error in test:", error);
             throw error;
-          } finally {
-            // Close the context to ensure the HAR file is saved
-            await context.close();
           }
         });
       }
