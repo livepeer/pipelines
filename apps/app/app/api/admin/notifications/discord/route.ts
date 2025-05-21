@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const { clipId, clipTitle, authorName, thumbnailUrl, videoUrl, prompt} =
+    const { clipId, clipTitle, authorName, thumbnailUrl, videoUrl, prompt } =
       await request.json();
 
     // Make sure webhookUrl is stored in environment variables
@@ -29,15 +29,22 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Determine the base URL
+    const baseUrl =
+      process.env.NEXT_PUBLIC_SITE_URL ||
+      (process.env.VERCEL_URL
+        ? `https://${process.env.VERCEL_URL}`
+        : "http://localhost:3000");
+
     // Create the Discord message
     const message = {
       embeds: [
         {
-          title: "New Clip by " + authorName,
-          description: "**Prompt:** " + prompt,
+          title: "New clip by " + authorName,
+          description: "**Prompt:** " + "*" + prompt + "*",
           color: 3447003, // Blue color
           image: thumbnailUrl ? { url: thumbnailUrl } : undefined,
-          url: videoUrl || undefined,
+          url: `${baseUrl}/clips/${clipId}`,
           timestamp: new Date().toISOString(),
         },
       ],
