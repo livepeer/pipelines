@@ -21,9 +21,7 @@ import {
 
 const EMAIL = process.env.TEST_EMAIL;
 const OTP_CODE = process.env.TEST_OTP_CODE;
-// const APP_URL = process.env.TEST_APP_URL;
-// TODO remove: temporarily use a previous commit with silent audio
-const APP_URL = "https://pipelines-app-git-mh-audio-livepeer.vercel.app/";
+const APP_URL = process.env.TEST_APP_URL;
 
 if (!EMAIL) {
   throw new Error(

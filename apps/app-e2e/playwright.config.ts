@@ -8,13 +8,7 @@ dotenv.config();
  * https://github.com/motdotla/dotenv
  */
 
-process.env.EXTRA_QP = "";
-// temporarily use a previous commit with silent audio
-let APP_URL = process.env.TEST_APP_URL;
-if (APP_URL?.includes("monster")) {
-  APP_URL = "https://pipelines-app-git-mh-audio-livepeer.vercel.app/";
-  process.env.EXTRA_QP = "orchestrator=lvpr.io&";
-}
+const APP_URL = process.env.TEST_APP_URL;
 
 if (!APP_URL) {
   console.error(
