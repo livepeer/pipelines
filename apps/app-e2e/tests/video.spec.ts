@@ -41,6 +41,7 @@ if (!APP_URL) {
   );
 }
 
+// TODO is this working?
 let RUN_COUNT = process.env.RUN_COUNT;
 if (!RUN_COUNT) {
   RUN_COUNT = "1";
@@ -51,7 +52,7 @@ const whipRegions = (process.env.WHIP_REGIONS || "").split(",");
 test.describe.parallel("Daydream Page Tests", () => {
   whipRegions.forEach(region => {
     test.describe.serial("Repeated runs", () => {
-      test.beforeEach(async ({ page, context }) => {
+      test.beforeEach(async ({ context }) => {
         await context.grantPermissions(["camera", "microphone"]);
       });
 
@@ -87,7 +88,6 @@ test.describe.parallel("Daydream Page Tests", () => {
       for (let i = 0; i < parseInt(RUN_COUNT); i++) {
         test(`video elements load and play correctly ${region}#${i + 1}`, async ({
           page,
-          context,
         }) => {
           try {
             const path = regionalPath(region, "/create");
@@ -121,47 +121,8 @@ test.describe.parallel("Daydream Page Tests", () => {
 
             console.log(`${region} Stream info: ${clipboardText}`);
 
-            if (i === 0) {
-              // hack to only do this on one test
-              // simulate opening new tab
-              await context.newPage();
-            }
-
             await assertVideoPlaying(broadcast);
             await assertVideoPlaying(playback);
-
-            // await playback.evaluate((video: HTMLVideoElement) => {
-            //   const stream = video.srcObject;
-            //   const audioCtx = new AudioContext();
-            //   if (!(stream instanceof MediaStream)) {
-            //     console.log("No stream found");
-            //     return;
-            //   }
-            //   const source = audioCtx.createMediaStreamSource(stream);
-            //   const analyser = audioCtx.createAnalyser();
-
-            //   analyser.fftSize = 2048;
-            //   const bufferLength = analyser.fftSize;
-            //   const dataArray = new Uint8Array(bufferLength);
-
-            //   source.connect(analyser);
-
-            //   function logWaveform() {
-            //     analyser.getByteTimeDomainData(dataArray);
-
-            //     // Print a basic snapshot of the waveform (min/max)
-            //     const min = Math.min(...dataArray);
-            //     const max = Math.max(...dataArray);
-            //     console.log(
-            //       `Waveform: min=${min}, max=${max}, mid=${dataArray[Math.floor(bufferLength / 2)]}`,
-            //     );
-
-            //     // Repeat every 500ms
-            //     setTimeout(logWaveform, 500);
-            //   }
-
-            //   logWaveform();
-            // });
 
             const audioTracks = await playback.evaluate(
               (video: HTMLVideoElement) => {
@@ -185,7 +146,7 @@ test.describe.parallel("Daydream Page Tests", () => {
 
             // sleep to leave the stream running for longer
             console.log("Sleeping to allow the stream to run...");
-            // await page.waitForTimeout(30 * 1000);
+            await page.waitForTimeout(10 * 1000);
 
             await assertVideoContentChanging(
               broadcast,

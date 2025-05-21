@@ -49,7 +49,7 @@ export function selectWhipServer(path: string): string {
 }
 
 export function regionalPath(region: string, path: string): string {
-  return `${path}?${process.env.EXTRA_QP}whipServer=https://${region}/live/video-to-video/`;
+  return `${path}?${process.env.EXTRA_QP || ""}whipServer=https://${region}/live/video-to-video/`;
 }
 
 /**
