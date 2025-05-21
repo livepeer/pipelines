@@ -17,20 +17,20 @@ export async function POST(req: Request) {
 
     // Check if the prompt is attempting to generate NSFW content
     let finalPrompt = content;
-    let wasCensored = false;
-    let censorExplanation = "";
+    // let wasCensored = false;
+    // let censorExplanation = "";
 
-    const nsfwCheck = await isPromptNSFW(content);
+    // const nsfwCheck = await isPromptNSFW(content);
 
-    if (nsfwCheck.isNSFW) {
-      // Replace with a safe prompt
-      finalPrompt = getRandomSafePrompt();
-      wasCensored = true;
-      censorExplanation = nsfwCheck.explanation;
-      console.log(`Censored prompt: "${content}" - ${censorExplanation}`);
-    }
+    // if (nsfwCheck.isNSFW) {
+    //   // Replace with a safe prompt
+    //   finalPrompt = getRandomSafePrompt();
+    //   wasCensored = true;
+    //   censorExplanation = nsfwCheck.explanation;
+    //   console.log(`Censored prompt: "${content}" - ${censorExplanation}`);
+    // }
 
-    const newId = id || uuidv4();
+    const newId = id ? id : uuidv4();
     const createdAt = Date.now().toString();
 
     const prompt = {
@@ -42,7 +42,13 @@ export async function POST(req: Request) {
     await redis.lpush("prompt:stream", JSON.stringify(prompt));
     await redis.ltrim("prompt:stream", 0, 99); // keep latest 100
 
-    return NextResponse.json({ prompt, wasCensored, censorExplanation });
+    console.log("Prompt added to stream:", prompt);
+
+    return NextResponse.json({
+      prompt,
+      wasCensored: false,
+      censorExplanation: "",
+    });
   } catch (error) {
     console.error("Error adding to prompt queue:", error);
     return NextResponse.json(

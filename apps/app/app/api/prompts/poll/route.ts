@@ -36,9 +36,6 @@ export async function GET() {
     );
 
     const activeId = await redis.get("prompt:active");
-    const activeIndex = activeId
-      ? prompts.findIndex(p => p.id === activeId)
-      : -1;
 
     if (prompts.length === 0) {
       console.log("Initializing few prompts");
@@ -46,7 +43,7 @@ export async function GET() {
       return NextResponse.json(data, { status: 200 });
     }
 
-    return NextResponse.json({ prompts, activeIndex });
+    return NextResponse.json({ prompts, activeIndex: activeId ?? -1 });
   } catch (error) {
     console.error("Error fetching prompts:", error);
     return NextResponse.json(

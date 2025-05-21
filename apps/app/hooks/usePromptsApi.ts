@@ -18,8 +18,8 @@ export function usePromptsApi() {
       created_at: Date.now().toString(),
     };
 
-    // Optimistically prepend to UI
-    setPrompts(prev => [newPrompt, ...prev]);
+    // Optimistically append to UI
+    setPrompts(prev => [...prev, newPrompt]);
 
     const res = await fetch("/api/prompts", {
       method: "POST",
@@ -39,14 +39,14 @@ export function usePromptsApi() {
     const serverPrompts: MultiplayerPrompt[] = data.prompts;
     const serverActiveIndex: string = data.activeIndex;
 
-    setPrompts(serverPrompts);
+    setPrompts(serverPrompts.reverse());
     setActiveIndex(serverActiveIndex);
   }, []);
 
   useEffect(() => {
     pollPrompts(); // initial
-    // const interval = setInterval(pollPrompts, 10000);
-    // return () => clearInterval(interval);
+    const interval = setInterval(pollPrompts, 1000);
+    return () => clearInterval(interval);
   }, [pollPrompts]);
 
   return {
