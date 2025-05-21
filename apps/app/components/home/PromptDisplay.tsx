@@ -141,8 +141,23 @@ export function PromptDisplay({
     let itemCount = 0;
     const maxItems = MAX_MOBILE_PROMPTS;
 
-    if (nonHighlightedPrompts.length > 0) {
-      const recentPastPrompts = nonHighlightedPrompts.slice(0, maxItems - 1);
+    // Add highlighted prompt first
+    if (highlightedPrompt) {
+      itemsToShow.push({
+        type: "highlighted",
+        text: highlightedPrompt,
+        isUser: userPromptIndices[0],
+        seed: promptAvatarSeeds[0],
+      });
+      itemCount++;
+    }
+
+    // Then add past prompts in correct order (newest to oldest)
+    if (nonHighlightedPrompts.length > 0 && itemCount < maxItems) {
+      const recentPastPrompts = nonHighlightedPrompts.slice(
+        0,
+        maxItems - itemCount,
+      );
 
       recentPastPrompts.forEach((prompt, idx) => {
         const isUserPrompt = userPromptIndices[idx + 1];
@@ -154,22 +169,11 @@ export function PromptDisplay({
           isUser: isUserPrompt,
           seed: seed,
         });
-
         itemCount++;
       });
     }
 
-    if (itemCount < maxItems && highlightedPrompt) {
-      itemsToShow.push({
-        type: "highlighted",
-        text: highlightedPrompt,
-        isUser: userPromptIndices[0],
-        seed: promptAvatarSeeds[0],
-      });
-
-      itemCount++;
-    }
-
+    // Finally add queue items if there's still space
     if (itemCount < maxItems && nonEmptyQueueItems.length > 0) {
       const queueItemsToShow = nonEmptyQueueItems.slice(
         0,
