@@ -172,19 +172,10 @@ export function PromptDisplay({
       });
     }
 
-    // Take only the most recent N items to fit into our display
-    itemsToShow = allPromptsChronological.slice(-maxItems);
-    itemCount = itemsToShow.length;
-
-    // Add queue items if there's still space
-    if (itemCount < maxItems && nonEmptyQueueItems.length > 0) {
-      const queueItemsToShow = nonEmptyQueueItems.slice(
-        0,
-        maxItems - itemCount,
-      );
-
-      queueItemsToShow.forEach(item => {
-        itemsToShow.push({
+    // Add queue items first, before limiting the display size
+    if (nonEmptyQueueItems.length > 0) {
+      nonEmptyQueueItems.forEach(item => {
+        allPromptsChronological.push({
           type: "queue",
           text: item.text,
           isUser: item.isUser,
@@ -192,6 +183,10 @@ export function PromptDisplay({
         });
       });
     }
+
+    // Take only the most recent N items to fit into our display
+    itemsToShow = allPromptsChronological.slice(-maxItems);
+    itemCount = itemsToShow.length;
 
     return (
       <div className="w-full flex flex-col justify-end p-4 overflow-y-auto overflow-x-hidden">
