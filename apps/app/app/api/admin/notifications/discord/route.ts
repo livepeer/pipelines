@@ -9,8 +9,15 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const { clipId, clipTitle, authorName, thumbnailUrl, videoUrl, prompt } =
-      await request.json();
+    const {
+      clipId,
+      clipSlug,
+      clipTitle,
+      authorName,
+      thumbnailUrl,
+      videoUrl,
+      prompt,
+    } = await request.json();
 
     // Make sure webhookUrl is stored in environment variables
     const webhookUrl = process.env.DISCORD_CLIP_WEBHOOK_URL;
@@ -44,7 +51,7 @@ export async function POST(request: NextRequest) {
           description: "**Prompt:** " + "*" + prompt + "*",
           color: 3447003, // Blue color
           image: thumbnailUrl ? { url: thumbnailUrl } : undefined,
-          url: `${baseUrl}/clips/${clipId}`,
+          url: `${baseUrl}/clips/${clipSlug}`,
           timestamp: new Date().toISOString(),
         },
       ],
