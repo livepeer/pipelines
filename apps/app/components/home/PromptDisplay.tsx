@@ -141,39 +141,42 @@ export function PromptDisplay({
     let itemCount = 0;
     const maxItems = MAX_MOBILE_PROMPTS;
 
-    // Add highlighted prompt first
+    // Create a combined chronological order list (oldest to newest, including current)
+    const allPromptsChronological = [];
+    
+    // First add past prompts in reverse chronological order (oldest first)
+    if (nonHighlightedPrompts.length > 0) {
+      // nonHighlightedPrompts is already in reverse chronological order (newest first)
+      // so we need to reverse it to get oldest first
+      const oldestToNewest = [...nonHighlightedPrompts].reverse();
+      
+      // Add all the past prompts (they'll be oldest to newest)
+      oldestToNewest.forEach((prompt, idx) => {
+        const originalIndex = nonHighlightedPrompts.length - idx;
+        allPromptsChronological.push({
+          type: "past",
+          text: prompt,
+          isUser: userPromptIndices[originalIndex],
+          seed: promptAvatarSeeds[originalIndex],
+        });
+      });
+    }
+    
+    // Then add highlighted prompt (which is the newest)
     if (highlightedPrompt) {
-      itemsToShow.push({
+      allPromptsChronological.push({
         type: "highlighted",
         text: highlightedPrompt,
         isUser: userPromptIndices[0],
         seed: promptAvatarSeeds[0],
       });
-      itemCount++;
     }
+    
+    // Take only the most recent N items to fit into our display
+    itemsToShow = allPromptsChronological.slice(-maxItems);
+    itemCount = itemsToShow.length;
 
-    // Then add past prompts in correct order (newest to oldest)
-    if (nonHighlightedPrompts.length > 0 && itemCount < maxItems) {
-      const recentPastPrompts = nonHighlightedPrompts.slice(
-        0,
-        maxItems - itemCount,
-      );
-
-      recentPastPrompts.forEach((prompt, idx) => {
-        const isUserPrompt = userPromptIndices[idx + 1];
-        const seed = promptAvatarSeeds[idx + 1];
-
-        itemsToShow.push({
-          type: "past",
-          text: prompt,
-          isUser: isUserPrompt,
-          seed: seed,
-        });
-        itemCount++;
-      });
-    }
-
-    // Finally add queue items if there's still space
+    // Add queue items if there's still space
     if (itemCount < maxItems && nonEmptyQueueItems.length > 0) {
       const queueItemsToShow = nonEmptyQueueItems.slice(
         0,
