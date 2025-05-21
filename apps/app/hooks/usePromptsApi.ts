@@ -43,6 +43,16 @@ export function usePromptsApi() {
     setActiveIndex(serverActiveIndex);
   }, []);
 
+  const changeActivePrompt = useCallback(async () => {
+    await fetch("/api/cron/process-queue");
+  }, []);
+
+  useEffect(() => {
+    changeActivePrompt();
+    const interval = setInterval(changeActivePrompt, 5000);
+    return () => clearInterval(interval);
+  }, [changeActivePrompt]);
+
   useEffect(() => {
     pollPrompts(); // initial
     const interval = setInterval(pollPrompts, 1000);

@@ -20,7 +20,7 @@ export const PromptDisplay = React.memo(
       return (
         <div className="w-full flex flex-col justify-end p-4 overflow-y-auto overflow-x-hidden">
           <div className="flex flex-col gap-2 w-full justify-end">
-            {prompts.slice(0, MAX_MOBILE_PROMPTS).map(item => {
+            {prompts.slice(-MAX_MOBILE_PROMPTS).map(item => {
               return (
                 <div
                   key={item.id}
