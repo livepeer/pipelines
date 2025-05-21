@@ -143,13 +143,13 @@ export function PromptDisplay({
 
     // Create a combined chronological order list (oldest to newest, including current)
     const allPromptsChronological = [];
-    
+
     // First add past prompts in reverse chronological order (oldest first)
     if (nonHighlightedPrompts.length > 0) {
       // nonHighlightedPrompts is already in reverse chronological order (newest first)
       // so we need to reverse it to get oldest first
       const oldestToNewest = [...nonHighlightedPrompts].reverse();
-      
+
       // Add all the past prompts (they'll be oldest to newest)
       oldestToNewest.forEach((prompt, idx) => {
         const originalIndex = nonHighlightedPrompts.length - idx;
@@ -161,7 +161,7 @@ export function PromptDisplay({
         });
       });
     }
-    
+
     // Then add highlighted prompt (which is the newest)
     if (highlightedPrompt) {
       allPromptsChronological.push({
@@ -171,7 +171,7 @@ export function PromptDisplay({
         seed: promptAvatarSeeds[0],
       });
     }
-    
+
     // Take only the most recent N items to fit into our display
     itemsToShow = allPromptsChronological.slice(-maxItems);
     itemCount = itemsToShow.length;
