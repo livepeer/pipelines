@@ -42,7 +42,12 @@ export function selectWhipServer(path: string): string {
   if (REGIONS.length > 0 && Math.random() > 0.49) {
     const region = REGIONS[Math.floor(Math.random() * REGIONS.length)];
     console.log("selected whip region", region);
-    retPath = `${path}?whipServer=https://${region}/live/video-to-video/`;
+    const whipServerParam = `whipServer=https://${region}/live/video-to-video/`;
+    if (retPath.includes("?")) {
+      retPath = `${retPath}&${whipServerParam}`;
+    } else {
+      retPath = `${retPath}?${whipServerParam}`;
+    }
   }
   console.log("generated path for request (with WHIP request)", retPath);
   return retPath;
