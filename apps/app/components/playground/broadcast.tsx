@@ -136,7 +136,7 @@ export function BroadcastWithControls({ className }: { className?: string }) {
           : null;
       }}
       forceEnabled
-      silentAudioTrack={false}
+      silentAudioTrack
       audio={false}
       mirrored={false}
       video
