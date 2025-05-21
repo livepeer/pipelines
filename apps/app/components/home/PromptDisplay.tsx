@@ -141,38 +141,42 @@ export function PromptDisplay({
     let itemCount = 0;
     const maxItems = MAX_MOBILE_PROMPTS;
 
+    // Create a combined chronological order list (oldest to newest, including current)
+    const allPromptsChronological = [];
+
+    // First add past prompts in reverse chronological order (oldest first)
     if (nonHighlightedPrompts.length > 0) {
-      const reversedPastPrompts = [...nonHighlightedPrompts].reverse();
-      const pastPromptsToShow = reversedPastPrompts.slice(0, maxItems - 1);
+      // nonHighlightedPrompts is already in reverse chronological order (newest first)
+      // so we need to reverse it to get oldest first
+      const oldestToNewest = [...nonHighlightedPrompts].reverse();
 
-      pastPromptsToShow.forEach(prompt => {
-        const index =
-          nonHighlightedPrompts.length - reversedPastPrompts.indexOf(prompt);
-        const isUserPrompt = userPromptIndices[index];
-        const seed = promptAvatarSeeds[index];
-
-        itemsToShow.push({
+      // Add all the past prompts (they'll be oldest to newest)
+      oldestToNewest.forEach((prompt, idx) => {
+        const originalIndex = nonHighlightedPrompts.length - idx;
+        allPromptsChronological.push({
           type: "past",
           text: prompt,
-          isUser: isUserPrompt,
-          seed: seed,
+          isUser: userPromptIndices[originalIndex],
+          seed: promptAvatarSeeds[originalIndex],
         });
-
-        itemCount++;
       });
     }
 
-    if (itemCount < maxItems && highlightedPrompt) {
-      itemsToShow.push({
+    // Then add highlighted prompt (which is the newest)
+    if (highlightedPrompt) {
+      allPromptsChronological.push({
         type: "highlighted",
         text: highlightedPrompt,
         isUser: userPromptIndices[0],
         seed: promptAvatarSeeds[0],
       });
-
-      itemCount++;
     }
 
+    // Take only the most recent N items to fit into our display
+    itemsToShow = allPromptsChronological.slice(-maxItems);
+    itemCount = itemsToShow.length;
+
+    // Add queue items if there's still space
     if (itemCount < maxItems && nonEmptyQueueItems.length > 0) {
       const queueItemsToShow = nonEmptyQueueItems.slice(
         0,
