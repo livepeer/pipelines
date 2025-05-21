@@ -172,6 +172,7 @@ export default function ClipApprovalQueue() {
                 authorName,
                 thumbnailUrl: clipToApprove.thumbnail_url,
                 videoUrl: clipToApprove.video_url,
+                prompt: clipToApprove.prompt || "No prompt provided",
               }),
             });
           } catch (discordError) {
