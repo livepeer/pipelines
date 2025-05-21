@@ -142,14 +142,11 @@ export function PromptDisplay({
     const maxItems = MAX_MOBILE_PROMPTS;
 
     if (nonHighlightedPrompts.length > 0) {
-      const reversedPastPrompts = [...nonHighlightedPrompts].reverse();
-      const pastPromptsToShow = reversedPastPrompts.slice(0, maxItems - 1);
+      const recentPastPrompts = nonHighlightedPrompts.slice(0, maxItems - 1);
 
-      pastPromptsToShow.forEach(prompt => {
-        const index =
-          nonHighlightedPrompts.length - reversedPastPrompts.indexOf(prompt);
-        const isUserPrompt = userPromptIndices[index];
-        const seed = promptAvatarSeeds[index];
+      recentPastPrompts.forEach((prompt, idx) => {
+        const isUserPrompt = userPromptIndices[idx + 1];
+        const seed = promptAvatarSeeds[idx + 1];
 
         itemsToShow.push({
           type: "past",
