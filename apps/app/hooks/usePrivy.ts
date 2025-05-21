@@ -24,9 +24,7 @@ const mockPrivy = {
   logout: () => {},
 };
 
-const shouldMock =
-  process.env.NEXT_PUBLIC_USE_PRIVY_MOCK === "true" &&
-  process.env.NODE_ENV === "development";
+const shouldMock = true;
 
 export const usePrivy = shouldMock
   ? () => mockPrivy as unknown as PrivyInterface
