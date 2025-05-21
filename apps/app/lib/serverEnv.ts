@@ -28,6 +28,11 @@ const GCPConfig = z.object({
   credentials: z.string().optional(),
 });
 
+const RedisConfig = z.object({
+  url: z.string().min(1),
+  token: z.string().min(1),
+});
+
 export const ServerEnvironmentConfig = z.object({
   db: DBConfig,
   supabase: SupabaseConfig,
@@ -35,6 +40,7 @@ export const ServerEnvironmentConfig = z.object({
   gateway_secondary: GatewayConfig.optional(),
   kafka: KafkaConfig,
   gcp: GCPConfig,
+  redis: RedisConfig,
 });
 
 type ServerEnvironmentConfig = z.infer<typeof ServerEnvironmentConfig>;
@@ -73,6 +79,10 @@ const serverOnlyEnvConfig = {
     bucketName: process.env.GCP_BUCKET_NAME,
     credentials: process.env.GCP_CREDENTIALS,
   },
+  redis: {
+    url: process.env.UPSTASH_REDIS_REST_URL,
+    token: process.env.UPSTASH_REDIS_REST_TOKEN,
+  },
 } as const;
 
 const serverOnlyConfig = ServerEnvironmentConfig.parse(serverOnlyEnvConfig);
@@ -106,3 +116,5 @@ export const validateServerEnv = async () => {
 };
 
 export const gcpConfig = serverOnlyConfig.gcp;
+
+export const redisConfig = serverOnlyConfig.redis;

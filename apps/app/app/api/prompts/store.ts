@@ -149,7 +149,7 @@ if (typeof window === "undefined") {
   }, REAPPLY_INTERVAL); */
 }
 
-const applyPromptToStream = async (promptText: string) => {
+export const applyPromptToStream = async (promptText: string) => {
   if (typeof window !== "undefined") {
     console.log(
       "Client-side environment detected, skipping prompt application",

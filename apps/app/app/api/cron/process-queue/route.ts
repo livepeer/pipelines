@@ -1,42 +1,46 @@
+import type { MultiplayerPrompt } from "@/hooks/usePromptsApi";
+import { redis } from "@/lib/redis";
 import { NextResponse } from "next/server";
-import { checkAndProcessQueue } from "../../prompts/store";
-import { getPromptState as dbGetPromptState } from "../../../../lib/db/services/prompt-queue";
+import { applyPromptToStream } from "../../prompts/store";
 
 export async function GET() {
-  try {
-    const stateBefore = await dbGetPromptState();
-    const queueLengthBefore = stateBefore.promptQueue.length;
+  // Get the last 20 prompts
+  const prompts = await redis.lrange<MultiplayerPrompt>("prompt:stream", 0, -1);
 
-    await checkAndProcessQueue();
-
-    const stateAfter = await dbGetPromptState();
-
+  if (prompts.length === 0) {
     return NextResponse.json({
-      success: true,
-      message: "Queue processed successfully",
-      queueStats: {
-        before: queueLengthBefore,
-        after: stateAfter.promptQueue.length,
-        processed: Math.max(
-          0,
-          queueLengthBefore - stateAfter.promptQueue.length,
-        ),
-      },
-      timestamp: new Date().toISOString(),
+      message: "No prompts found, active prompt cleared.",
     });
-  } catch (error) {
-    console.error("Error processing queue:", error);
-
-    return NextResponse.json(
-      {
-        success: false,
-        message: "Error processing queue",
-        error: error instanceof Error ? error.message : String(error),
-        timestamp: new Date().toISOString(),
-      },
-      { status: 500 },
-    );
   }
-}
 
-export const dynamic = "force-dynamic";
+  const currentActiveId = (await redis.get("prompt:active")) as string;
+
+  let newActiveId: string;
+  let newActivePrompt: string;
+
+  const currentIndex = prompts.findIndex(p => p.id === currentActiveId);
+
+  console.log("currentIndex", currentIndex);
+
+  if (currentIndex === -1) {
+    // Active prompt is NOT in top 20 → reset to latest (index 0)
+    newActiveId = prompts[0].id;
+    newActivePrompt = prompts[0].content;
+  } else if (currentIndex === 0) {
+    newActiveId = currentActiveId;
+    newActivePrompt = prompts[currentIndex].content;
+  } else {
+    // Rotate to next in the top 20 which is the previous index, add modulo correctly
+    const nextIndex = (currentIndex - 1) % prompts.length;
+    newActiveId = prompts[nextIndex].id;
+    newActivePrompt = prompts[nextIndex].content;
+  }
+
+  console.log("newActiveId", newActiveId);
+
+  await applyPromptToStream(newActivePrompt);
+
+  await redis.set("prompt:active", newActiveId);
+
+  return NextResponse.json({ activePromptId: newActiveId });
+}
