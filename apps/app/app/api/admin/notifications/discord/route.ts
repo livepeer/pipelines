@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const { clipId, clipTitle, authorName, thumbnailUrl, videoUrl } =
+    const { clipId, clipTitle, authorName, thumbnailUrl, videoUrl, prompt} =
       await request.json();
 
     // Make sure webhookUrl is stored in environment variables
@@ -31,11 +31,10 @@ export async function POST(request: NextRequest) {
 
     // Create the Discord message
     const message = {
-      content: "🎬 **New Clip Approved!**",
       embeds: [
         {
-          title: clipTitle || "Untitled Clip",
-          description: `Clip ID: ${clipId}\nCreated by: ${authorName || "Unknown"}`,
+          title: "New Clip by " + authorName,
+          description: "Prompt: " + prompt,
           color: 3447003, // Blue color
           image: thumbnailUrl ? { url: thumbnailUrl } : undefined,
           url: videoUrl || undefined,
