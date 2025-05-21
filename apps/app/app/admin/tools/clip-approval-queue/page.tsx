@@ -7,9 +7,6 @@ import { redirect } from "next/navigation";
 import { Clip } from "@/app/admin/types";
 import { useFfmpegClipPreview } from "@/hooks/useFfmpegClipPreview";
 import { toast } from "sonner";
-import { db } from "@/lib/db";
-import { clipSlugs } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
 
 export default function ClipApprovalQueue() {
   const { user } = usePrivy();
@@ -158,23 +155,7 @@ export default function ClipApprovalQueue() {
         const clipToApprove = pendingClips.find(clip => clip.id === clipId);
         if (clipToApprove) {
           try {
-            // Directly query the database for the slug
-            let clipSlug = String(clipId); // Default to using ID as fallback
-
-            try {
-              const result = await db
-                .select({ slug: clipSlugs.slug })
-                .from(clipSlugs)
-                .where(eq(clipSlugs.clip_id, clipId))
-                .limit(1);
-
-              if (result.length > 0) {
-                clipSlug = result[0].slug;
-              }
-            } catch (slugError) {
-              console.error("Error fetching slug:", slugError);
-              // Continue with ID as fallback
-            }
+            // Slug will be fetched on the server side in the Discord notification API
 
             const authorName =
               typeof clipToApprove.author === "object" &&
@@ -189,7 +170,6 @@ export default function ClipApprovalQueue() {
               headers,
               body: JSON.stringify({
                 clipId: clipToApprove.id,
-                clipSlug: clipSlug,
                 clipTitle: clipToApprove.video_title || "Untitled clip",
                 authorName,
                 thumbnailUrl: clipToApprove.thumbnail_url,

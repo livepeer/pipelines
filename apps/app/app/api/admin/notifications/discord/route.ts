@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { validateAdminRequest } from "@/app/api/admin/validate";
+import { db } from "@/lib/db";
+import { clipSlugs } from "@/lib/db/schema";
+import { eq } from "drizzle-orm";
 
 export async function POST(request: NextRequest) {
   // Validate admin privileges
@@ -11,7 +14,6 @@ export async function POST(request: NextRequest) {
   try {
     const {
       clipId,
-      clipSlug,
       clipTitle,
       authorName,
       thumbnailUrl,
@@ -34,6 +36,23 @@ export async function POST(request: NextRequest) {
         { error: "Missing required clip information" },
         { status: 400 },
       );
+    }
+    
+    // Fetch the slug for this clip ID
+    let clipSlug = String(clipId); // Default to using ID as fallback
+    try {
+      const result = await db
+        .select({ slug: clipSlugs.slug })
+        .from(clipSlugs)
+        .where(eq(clipSlugs.clip_id, parseInt(String(clipId))))
+        .limit(1);
+      
+      if (result.length > 0) {
+        clipSlug = result[0].slug;
+      }
+    } catch (slugError) {
+      console.error("Error fetching slug:", slugError);
+      // Continue with ID as fallback
     }
 
     // Determine the base URL
