@@ -478,3 +478,15 @@ export const pgStatMonitor = pgView("pg_stat_monitor", {
 );
 
 export * from "./schema/prompt-queue";
+
+export const upscaleJobs = pgTable("upscale_jobs", {
+  id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+  clipId: text("clip_id").notNull(),
+  clipUrl: text("clip_url").notNull(),
+  email: text("email").notNull(),
+  status: text("status", { enum: ["pending", "processing", "completed", "failed"] }).notNull().default("pending"),
+  upscaledUrl: text("upscaled_url"),
+  error: text("error"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});

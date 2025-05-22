@@ -4,6 +4,9 @@ import { spawn } from "child_process";
 import { promises as fs } from "fs";
 import * as path from "path";
 import * as os from "os";
+import upscaleWorker from "./upscale";
+import { Hono } from "hono";
+import { cors } from "hono/cors";
 
 const FFMPEG_COMMAND = "ffmpeg";
 const FFPROBE_COMMAND = "ffprobe";
@@ -271,3 +274,10 @@ functions.cloudEvent(
     }
   },
 );
+
+const app = new Hono();
+
+app.use("*", cors());
+
+// Add upscale worker
+app.route("/upscale", upscaleWorker);

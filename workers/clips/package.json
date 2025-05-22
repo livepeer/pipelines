@@ -13,7 +13,10 @@
   "license": "ISC",
   "dependencies": {
     "@google-cloud/functions-framework": "^3.5.1",
-    "@google-cloud/storage": "^7.16.0"
+    "@google-cloud/storage": "^7.16.0",
+    "hono": "^3.12.8",
+    "drizzle-orm": "^0.29.3",
+    "postgres": "^3.4.3"
   },
   "devDependencies": {
     "@types/node": "^22.14.1",
