@@ -82,6 +82,18 @@ export const HeroSection = ({
     }
   };
 
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const anchor = window.location.hash;
+      if (anchor === "#main-content") {
+        document.getElementById("main-content")?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }
+    }
+  }, []);
+
   return (
     <section
       className="relative w-full flex flex-col"
