@@ -7,7 +7,11 @@ interface EmailOptions {
 }
 
 export async function sendEmail({ to, subject, html }: EmailOptions) {
-  // For now, we'll use SendGrid as our email provider
+  if (!config.sendgrid?.apiKey) {
+    console.warn("SendGrid API key not configured. Email not sent.");
+    return;
+  }
+
   const response = await fetch("https://api.sendgrid.com/v3/mail/send", {
     method: "POST",
     headers: {
@@ -21,20 +25,12 @@ export async function sendEmail({ to, subject, html }: EmailOptions) {
           subject,
         },
       ],
-      from: {
-        email: "noreply@daydream.live",
-        name: "Daydream",
-      },
-      content: [
-        {
-          type: "text/html",
-          value: html,
-        },
-      ],
+      from: { email: "noreply@daydream.com" },
+      content: [{ type: "text/html", value: html }],
     }),
   });
 
   if (!response.ok) {
-    throw new Error("Failed to send email");
+    throw new Error(`Failed to send email: ${response.statusText}`);
   }
 }
