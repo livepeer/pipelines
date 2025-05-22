@@ -6,7 +6,7 @@ import { sendEmail } from "@/lib/email";
 
 export async function POST(req: Request) {
   let jobId: string | undefined;
-  
+
   try {
     const { jobId: requestJobId, clipUrl, email } = await req.json();
     jobId = requestJobId;
@@ -14,7 +14,7 @@ export async function POST(req: Request) {
     if (!jobId || !clipUrl || !email) {
       return NextResponse.json(
         { error: "Missing required fields" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -38,7 +38,7 @@ export async function POST(req: Request) {
           scale_factor: "4x",
           optimized_for: "standard",
         }),
-      }
+      },
     );
 
     if (!response.ok) {
@@ -85,7 +85,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json(
       { error: "Failed to process upscale request" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

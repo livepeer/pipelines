@@ -479,21 +479,18 @@ export const pgStatMonitor = pgView("pg_stat_monitor", {
 
 export * from "./schema/prompt-queue";
 
-export const upscaleJobs = pgTable(
-  "upscale_jobs",
-  {
-    id: text().primaryKey().notNull(),
-    status: text().notNull().default("pending"),
-    clipUrl: text().notNull(),
-    upscaledUrl: text(),
-    error: text(),
-    createdAt: timestamp("created_at", {
-      withTimezone: true,
-      mode: "string",
-    }).defaultNow(),
-    updatedAt: timestamp("updated_at", {
-      withTimezone: true,
-      mode: "string",
-    }).defaultNow(),
-  }
-);
+export const upscaleJobs = pgTable("upscale_jobs", {
+  id: text().primaryKey().notNull(),
+  status: text().notNull().default("pending"),
+  clipUrl: text().notNull(),
+  upscaledUrl: text(),
+  error: text(),
+  createdAt: timestamp("created_at", {
+    withTimezone: true,
+    mode: "string",
+  }).defaultNow(),
+  updatedAt: timestamp("updated_at", {
+    withTimezone: true,
+    mode: "string",
+  }).defaultNow(),
+});
