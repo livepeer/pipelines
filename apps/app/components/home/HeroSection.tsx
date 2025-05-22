@@ -68,7 +68,7 @@ export const HeroSection = ({
       setTimeout(() => {
         submitPromptForm();
       }, 0);
-      document.getElementById("main-content")?.scrollIntoView({
+      document.getElementById("player")?.scrollIntoView({
         behavior: "smooth",
         block: "start",
       });
@@ -85,8 +85,8 @@ export const HeroSection = ({
   useEffect(() => {
     if (typeof window !== "undefined") {
       const anchor = window.location.hash;
-      if (anchor === "#main-content") {
-        document.getElementById("main-content")?.scrollIntoView({
+      if (anchor === "#player") {
+        document.getElementById("player")?.scrollIntoView({
           behavior: "smooth",
           block: "start",
         });
@@ -171,7 +171,7 @@ export const HeroSection = ({
         <div
           className="w-[190px] aspect-video rounded-lg overflow-hidden shadow-lg mb-8 cursor-pointer hover:shadow-xl transition-shadow relative"
           onClick={() => {
-            document.getElementById("main-content")?.scrollIntoView({
+            document.getElementById("player")?.scrollIntoView({
               behavior: "smooth",
               block: "start",
             });
@@ -192,7 +192,7 @@ export const HeroSection = ({
         <motion.button
           type="button"
           onClick={() => {
-            document.getElementById("main-content")?.scrollIntoView({
+            document.getElementById("player")?.scrollIntoView({
               behavior: "smooth",
               block: "start",
             });
