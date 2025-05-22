@@ -15,11 +15,15 @@ interface UpscaleRequest {
   email: string;
 }
 
-app.post("/upscale", async (c) => {
+app.post("/upscale", async c => {
   let jobId: string | undefined;
-  
+
   try {
-    const { jobId: reqJobId, clipUrl, email } = await c.req.json() as UpscaleRequest;
+    const {
+      jobId: reqJobId,
+      clipUrl,
+      email,
+    } = (await c.req.json()) as UpscaleRequest;
     jobId = reqJobId;
 
     // Update job status to processing
@@ -29,18 +33,21 @@ app.post("/upscale", async (c) => {
       .where(eq(upscaleJobs.id, jobId));
 
     // Call Freepik API for upscaling
-    const response = await fetch("https://api.freepik.com/v1/ai/image-upscaler", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-freepik-api-key": process.env.FREEPIK_API_KEY!,
+    const response = await fetch(
+      "https://api.freepik.com/v1/ai/image-upscaler",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-freepik-api-key": process.env.FREEPIK_API_KEY!,
+        },
+        body: JSON.stringify({
+          image: clipUrl,
+          scale_factor: "4x",
+          optimized_for: "standard",
+        }),
       },
-      body: JSON.stringify({
-        image: clipUrl,
-        scale_factor: "4x",
-        optimized_for: "standard",
-      }),
-    });
+    );
 
     if (!response.ok) {
       throw new Error("Failed to upscale image");
@@ -88,4 +95,4 @@ app.post("/upscale", async (c) => {
   }
 });
 
-export default app; 
+export default app;

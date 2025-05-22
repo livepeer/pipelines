@@ -37,9 +37,11 @@ const EnvironmentConfig = z.object({
   app: AppConfig,
   app_secondary: AppConfig.optional(),
   hubspot: HubspotConfig,
-  sendgrid: z.object({
-    apiKey: z.string().min(1),
-  }).optional(),
+  sendgrid: z
+    .object({
+      apiKey: z.string().min(1),
+    })
+    .optional(),
 });
 
 type EnvironmentConfig = z.infer<typeof EnvironmentConfig>;
@@ -80,9 +82,11 @@ const envConfig = {
     formId: process.env.NEXT_PUBLIC_HUBSPOT_FORM_ID,
     capacityFormId: process.env.NEXT_PUBLIC_HUBSPOT_FORM_ID_CAPACITY,
   },
-  sendgrid: process.env.SENDGRID_API_KEY ? {
-    apiKey: process.env.SENDGRID_API_KEY,
-  } : undefined,
+  sendgrid: process.env.SENDGRID_API_KEY
+    ? {
+        apiKey: process.env.SENDGRID_API_KEY,
+      }
+    : undefined,
 } as const;
 
 export const config = EnvironmentConfig.parse(envConfig);

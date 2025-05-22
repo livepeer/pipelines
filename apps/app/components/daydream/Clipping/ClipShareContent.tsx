@@ -69,7 +69,9 @@ export default function ClipShareContent({ clipData }: ClipShareContentProps) {
         throw new Error("Failed to request upscaling");
       }
 
-      toast.success("Upscaling request submitted! We'll email you when it's ready.");
+      toast.success(
+        "Upscaling request submitted! We&apos;ll email you when it&apos;s ready.",
+      );
       setEmail("");
     } catch (error) {
       console.error("Error requesting upscale:", error);
@@ -195,7 +197,7 @@ export default function ClipShareContent({ clipData }: ClipShareContentProps) {
             type="email"
             placeholder="Enter your email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={e => setEmail(e.target.value)}
             className="flex-1 rounded-full py-6 px-8"
           />
           <TrackedButton
@@ -211,7 +213,8 @@ export default function ClipShareContent({ clipData }: ClipShareContentProps) {
           </TrackedButton>
         </div>
         <p className="text-xs text-gray-500 text-center">
-          We'll email you both the original and upscaled versions of your clip
+          We&apos;ll email you both the original and upscaled versions of your
+          clip
         </p>
       </div>
 

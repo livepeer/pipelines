@@ -45,7 +45,7 @@ export async function POST(req: Request) {
     console.error("Error creating upscale job:", error);
     return NextResponse.json(
       { error: "Failed to create upscale job" },
-      { status: 500 }
+      { status: 500 },
     );
   }
-} 
+}
