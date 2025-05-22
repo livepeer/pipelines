@@ -107,7 +107,7 @@ export default function MultiplayerHomepage({
 
   useEffect(() => {
     const handleScroll = () => {
-      const mainContent = document.getElementById("main-content");
+      const mainContent = document.getElementById("player");
       if (mainContent) {
         const rect = mainContent.getBoundingClientRect();
         setShowFooter(rect.top <= 56);
@@ -186,7 +186,7 @@ export default function MultiplayerHomepage({
               isAuthenticated={authenticated}
             />
             <div
-              id="main-content"
+              id="player"
               className={`relative flex flex-col md:flex-row gap-0 md:gap-8 w-full overflow-hidden pb-14 md:px-8 ${isMobile ? "h-[100dvh] bg-black" : ""}`}
               style={{ height: isMobile ? "100vh" : "100vh" }}
             >
