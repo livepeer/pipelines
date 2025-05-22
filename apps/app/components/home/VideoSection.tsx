@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { LivepeerPlayer } from "./LivepeerPlayer";
 import { Camera } from "lucide-react";
 import { TrackedButton } from "@/components/analytics/TrackedButton";
+import { Button } from "@repo/design-system/components/ui/button";
 
 export const TRANSFORMED_PLAYBACK_ID =
   process.env.NEXT_PUBLIC_TRANSFORMED_PLAYBACK_ID ?? "";
@@ -147,6 +148,18 @@ export function VideoSection({
           )}
 
           <div className="absolute inset-0 z-20 pointer-events-auto bg-transparent"></div>
+
+          <div className="absolute flex justify-end w-full gap-3 p-4">
+            <Button className="border border-neutral-600 rounded-lg bg-black">
+              Stream 1
+            </Button>
+            <Button className="border border-neutral-600 rounded-lg bg-black">
+              Stream 2
+            </Button>
+            <Button className="border border-neutral-600 rounded-lg bg-black">
+              Stream 3
+            </Button>
+          </div>
         </div>
       </div>
     </div>
