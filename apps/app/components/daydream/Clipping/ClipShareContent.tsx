@@ -53,20 +53,25 @@ export default function ClipShareContent({ clipData }: ClipShareContentProps) {
 
     setIsSubmitting(true);
     try {
+      const requestData = {
+        email,
+        jobId: clipData.id,
+        clipUrl: clipData.clipUrl,
+      };
+      console.log('Sending upscale request with data:', requestData);
+      
       const response = await fetch("/api/clips/upscale", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          email,
-          jobId: clipData.id,
-          clipUrl: clipData.clipUrl,
-        }),
+        body: JSON.stringify(requestData),
       });
 
       if (!response.ok) {
-        throw new Error("Failed to request upscaling");
+        const errorData = await response.json();
+        console.error('Upscale request failed:', errorData);
+        throw new Error(errorData.error || "Failed to request upscaling");
       }
 
       toast.success(

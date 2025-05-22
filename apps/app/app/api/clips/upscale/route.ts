@@ -3,26 +3,28 @@ import { db } from "@/lib/db";
 import { upscaleJobs } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { sendEmail } from "@/lib/email";
+import { nanoid } from "nanoid";
 
 export async function POST(req: Request) {
   let jobId: string | undefined;
 
   try {
-    const { jobId: requestJobId, clipUrl, email } = await req.json();
-    jobId = requestJobId;
+    const { clipUrl, email } = await req.json();
 
-    if (!jobId || !clipUrl || !email) {
+    if (!clipUrl || !email) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 },
       );
     }
 
-    // Update job status to processing
-    await db
-      .update(upscaleJobs)
-      .set({ status: "processing" })
-      .where(eq(upscaleJobs.id, jobId));
+    // Create a new job record
+    jobId = nanoid();
+    await db.insert(upscaleJobs).values({
+      id: jobId,
+      status: "processing",
+      clipUrl,
+    });
 
     // Call Freepik API for upscaling
     const response = await fetch(
