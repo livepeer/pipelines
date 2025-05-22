@@ -60,7 +60,7 @@ export default function ClipShareContent({ clipData }: ClipShareContentProps) {
         },
         body: JSON.stringify({
           email,
-          clipId: clipData.id,
+          jobId: clipData.id,
           clipUrl: clipData.clipUrl,
         }),
       });
