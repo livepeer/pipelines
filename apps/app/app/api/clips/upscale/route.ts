@@ -9,7 +9,7 @@ import { createServerClient } from "@repo/supabase";
 async function uploadToSupabase(blobUrl: string): Promise<string> {
   try {
     console.log("Starting blob upload process for URL:", blobUrl);
-    
+
     // Fetch the blob data
     console.log("Fetching blob data...");
     const response = await fetch(blobUrl);
@@ -17,7 +17,7 @@ async function uploadToSupabase(blobUrl: string): Promise<string> {
       console.error("Failed to fetch blob:", {
         status: response.status,
         statusText: response.statusText,
-        headers: Object.fromEntries(response.headers.entries())
+        headers: Object.fromEntries(response.headers.entries()),
       });
       throw new Error(`Failed to fetch blob: ${response.statusText}`);
     }
@@ -26,7 +26,7 @@ async function uploadToSupabase(blobUrl: string): Promise<string> {
     const blob = await response.blob();
     console.log("Blob details:", {
       type: blob.type,
-      size: blob.size
+      size: blob.size,
     });
 
     // Create a unique filename
@@ -38,19 +38,19 @@ async function uploadToSupabase(blobUrl: string): Promise<string> {
     console.log("Initializing Supabase client...");
     const supabase = await createServerClient();
     console.log("Uploading to Supabase...");
-    
+
     const { data, error } = await supabase.storage
       .from("assets")
       .upload(uniqueFileName, blob, {
         contentType: "video/mp4",
         cacheControl: "3600",
-        upsert: true // Add upsert to handle potential duplicates
+        upsert: true, // Add upsert to handle potential duplicates
       });
 
     if (error) {
       console.error("Error uploading to Supabase:", {
         error,
-        errorMessage: error.message
+        errorMessage: error.message,
       });
       throw new Error(`Failed to upload video: ${error.message}`);
     }
@@ -65,8 +65,8 @@ async function uploadToSupabase(blobUrl: string): Promise<string> {
   } catch (error) {
     console.error("Error in uploadToSupabase:", {
       error,
-      errorMessage: error instanceof Error ? error.message : 'Unknown error',
-      errorStack: error instanceof Error ? error.stack : undefined
+      errorMessage: error instanceof Error ? error.message : "Unknown error",
+      errorStack: error instanceof Error ? error.stack : undefined,
     });
     throw error;
   }
@@ -111,7 +111,9 @@ export async function POST(req: Request) {
         console.log("Successfully converted to public URL:", publicUrl);
       } catch (uploadError) {
         console.error("Failed to upload blob to Supabase:", uploadError);
-        throw new Error(`Failed to upload video: ${uploadError instanceof Error ? uploadError.message : 'Unknown error'}`);
+        throw new Error(
+          `Failed to upload video: ${uploadError instanceof Error ? uploadError.message : "Unknown error"}`,
+        );
       }
     }
 
@@ -141,7 +143,7 @@ export async function POST(req: Request) {
         status: response.status,
         statusText: response.statusText,
         body: errorText,
-        headers: Object.fromEntries(response.headers.entries())
+        headers: Object.fromEntries(response.headers.entries()),
       });
       throw new Error(`Failed to upscale video: ${response.statusText}`);
     }
@@ -186,8 +188,8 @@ export async function POST(req: Request) {
   } catch (error: any) {
     console.error("Error in upscale endpoint:", {
       error,
-      errorMessage: error instanceof Error ? error.message : 'Unknown error',
-      errorStack: error instanceof Error ? error.stack : undefined
+      errorMessage: error instanceof Error ? error.message : "Unknown error",
+      errorStack: error instanceof Error ? error.stack : undefined,
     });
 
     // Update job status to failed if we have a jobId
@@ -197,7 +199,7 @@ export async function POST(req: Request) {
           .update(upscaleJobs)
           .set({
             status: "failed",
-            error: error instanceof Error ? error.message : 'Unknown error',
+            error: error instanceof Error ? error.message : "Unknown error",
           })
           .where(eq(upscaleJobs.id, jobId));
         console.log("Successfully updated job status to failed");
