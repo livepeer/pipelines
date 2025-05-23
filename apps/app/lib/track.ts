@@ -90,6 +90,12 @@ const track = async (
   eventProperties?: TrackProperties,
   user?: User,
 ): Promise<boolean> => {
+  if (navigator) {
+    if (navigator.webdriver) {
+      return false;
+    }
+  }
+
   if (process.env.DISABLE_ANALYTICS === "true") {
     console.log("Analytics disabled, skipping event tracking.");
     return false;
