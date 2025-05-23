@@ -71,6 +71,9 @@ test.describe.parallel("Daydream Page Tests", () => {
               environment: ENVIRONMENT,
             });
           } else {
+            console.log(
+              `Test ${testInfo.title} failed, writing fail metric. Status: ${testInfo.status}`,
+            );
             testFailureCounter.inc({
               test_name: testInfo.title,
               environment: ENVIRONMENT,
