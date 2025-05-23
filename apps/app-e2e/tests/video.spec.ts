@@ -41,7 +41,6 @@ if (!APP_URL) {
   );
 }
 
-// TODO is this working?
 let RUN_COUNT = process.env.RUN_COUNT;
 if (!RUN_COUNT) {
   RUN_COUNT = "1";
