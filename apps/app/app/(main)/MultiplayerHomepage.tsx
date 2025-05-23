@@ -157,7 +157,7 @@ export default function MultiplayerHomepage({
             />
             <div
               id="player"
-              className={`relative flex flex-col gap-0 md:gap-8 w-full overflow-hidden md:px-8 h-[100dvh]`}
+              className={`relative flex flex-col gap-0 md:gap-8 w-full overflow-hidden md:px-8 h-[100vh]`}
             >
               <HeaderSection onTryCameraClick={handleButtonClick} />
               <div

@@ -50,7 +50,7 @@ export const HeaderSection = ({
           trackingProperties={{ location: "explore_header" }}
         >
           <Camera className="h-4 w-4" />
-          {authenticated ? "Create" : "Use your camera"}
+          Create
         </TrackedButton>
       </div>
     </div>
