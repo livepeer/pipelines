@@ -4,6 +4,46 @@ import { upscaleJobs } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { sendEmail } from "@/lib/email";
 import { nanoid } from "nanoid";
+import { createServerClient } from "@repo/supabase";
+
+async function uploadToSupabase(blobUrl: string): Promise<string> {
+  try {
+    // Fetch the blob data
+    const response = await fetch(blobUrl);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch blob: ${response.statusText}`);
+    }
+    const blob = await response.blob();
+
+    // Create a unique filename
+    const timestamp = Date.now();
+    const uniqueFileName = `upscale-inputs/${timestamp}-${nanoid()}.mp4`;
+
+    // Upload to Supabase
+    const supabase = await createServerClient();
+    const { data, error } = await supabase.storage
+      .from("assets")
+      .upload(uniqueFileName, blob, {
+        contentType: "video/mp4",
+        cacheControl: "3600",
+      });
+
+    if (error) {
+      console.error("Error uploading to Supabase:", error);
+      throw new Error(`Failed to upload video: ${error.message}`);
+    }
+
+    // Get the public URL
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const bucketName = "assets";
+    const fileUrl = `${supabaseUrl}/storage/v1/object/public/${bucketName}/${uniqueFileName}`;
+
+    return fileUrl;
+  } catch (error) {
+    console.error('Error uploading video:', error);
+    throw error;
+  }
+}
 
 export async function POST(req: Request) {
   let jobId: string | undefined;
@@ -35,6 +75,14 @@ export async function POST(req: Request) {
       throw dbError;
     }
 
+    // Handle blob URL by uploading to Supabase first
+    let publicUrl = clipUrl;
+    if (clipUrl.startsWith('blob:')) {
+      console.log("Converting blob URL to public URL...");
+      publicUrl = await uploadToSupabase(clipUrl);
+      console.log("Successfully converted to public URL:", publicUrl);
+    }
+
     // Call Runway API for video upscaling
     console.log("Calling Runway API...");
     const response = await fetch("https://api.runwayml.com/v1/video-to-video", {
@@ -44,7 +92,7 @@ export async function POST(req: Request) {
         Authorization: `Bearer ${process.env.RUNWAY_API_KEY}`,
       },
       body: JSON.stringify({
-        input_video: clipUrl,
+        input_video: publicUrl,
         model: "gen-3-alpha", // Using Gen-3 Alpha for high quality
         prompt:
           "Upscale this video to 4K quality while maintaining the original content and style",
@@ -91,7 +139,7 @@ export async function POST(req: Request) {
         html: `
           <h1>Your upscaled video is ready!</h1>
           <p>Here are your videos:</p>
-          <p>Original video: <a href="${clipUrl}">Download</a></p>
+          <p>Original video: <a href="${publicUrl}">Download</a></p>
           <p>Upscaled video: <a href="${upscaledUrl}">Download</a></p>
         `,
       });
