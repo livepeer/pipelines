@@ -8,6 +8,7 @@ import { PromptItem } from "@/app/api/prompts/types";
 import { TrackedButton } from "@/components/analytics/TrackedButton";
 import { Button } from "@repo/design-system/components/ui/button";
 import { cn } from "@repo/design-system/lib/utils";
+import { Separator } from "@repo/design-system/components/ui/separator";
 
 interface PromptPanelProps {
   promptQueue: PromptItem[];
@@ -114,6 +115,10 @@ export function PromptPanel({
           />
         </div>
 
+        <div className="px-4 my-2 mb-4">
+          <Separator orientation="horizontal" className="bg-[#CECECE]/40" />
+        </div>
+
         <PromptForm
           ref={promptFormRef}
           onSubmit={onSubmit}
@@ -126,32 +131,4 @@ export function PromptPanel({
       </div>
     </div>
   );
-}
-
-{
-  /* <div
-className="absolute top-0 left-0 right-0 h-[60%] pointer-events-none z-30"
-style={{
-  background:
-    "linear-gradient(rgb(251, 251, 251) 0%, rgb(251, 251, 251) 3%, rgba(251, 251, 251, 0.9) 5%, rgba(251, 251, 251, 0.6) 38%, transparent 80%)",
-}}
-></div>
-<div
-className="absolute top-0 left-0 right-0 h-[50%] pointer-events-none z-20"
-style={{
-  background:
-    "linear-gradient(to bottom, var(--background, rgb(249, 250, 251)) 0%, var(--background, rgb(249, 250, 251)) 40%, var(--background, rgb(249, 250, 251)) 60%, rgba(249, 250, 251, 0.2) 80%, rgba(249, 250, 251, 0.05) 90%, rgba(249, 250, 251, 0) 100%)",
-}}
-></div>
-<div
-className="absolute top-0 left-0 right-0 h-[50%] pointer-events-none z-20"
-style={{
-  backdropFilter: "blur(2px)",
-  WebkitBackdropFilter: "blur(2px)",
-  maskImage:
-    "linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 40%, rgba(0,0,0,0.8) 60%, rgba(0,0,0,0.4) 80%, rgba(0,0,0,0.05) 90%, rgba(0,0,0,0) 100%)",
-  WebkitMaskImage:
-    "linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 40%, rgba(0,0,0,0.8) 60%, rgba(0,0,0,0.4) 80%, rgba(0,0,0,0.05) 90%, rgba(0,0,0,0) 100%)",
-}}
-></div> */
 }

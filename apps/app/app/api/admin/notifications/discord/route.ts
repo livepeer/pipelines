@@ -12,14 +12,8 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const {
-      clipId,
-      clipTitle,
-      authorName,
-      thumbnailUrl,
-      videoUrl,
-      prompt,
-    } = await request.json();
+    const { clipId, clipTitle, authorName, thumbnailUrl, videoUrl, prompt } =
+      await request.json();
 
     // Make sure webhookUrl is stored in environment variables
     const webhookUrl = process.env.DISCORD_CLIP_WEBHOOK_URL;
@@ -37,7 +31,7 @@ export async function POST(request: NextRequest) {
         { status: 400 },
       );
     }
-    
+
     // Fetch the slug for this clip ID
     let clipSlug = String(clipId); // Default to using ID as fallback
     try {
@@ -46,7 +40,7 @@ export async function POST(request: NextRequest) {
         .from(clipSlugs)
         .where(eq(clipSlugs.clip_id, parseInt(String(clipId))))
         .limit(1);
-      
+
       if (result.length > 0) {
         clipSlug = result[0].slug;
       }
