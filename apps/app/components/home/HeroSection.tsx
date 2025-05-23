@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { TrackedButton } from "../analytics/TrackedButton";
 import { cn } from "@repo/design-system/lib/utils";
-import { getIframeUrl, TRANSFORMED_PLAYBACK_ID } from "./VideoSection";
+import { getIframeUrl, useMultiplayerStreamStore } from "./VideoSection";
 
 interface HeroSectionProps {
   handlePromptSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
@@ -27,6 +27,7 @@ export const HeroSection = ({
   const [displayText, setDisplayText] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
   const [typingSpeed, setTypingSpeed] = useState(100);
+  const { currentStream } = useMultiplayerStreamStore();
 
   const placeholders = [
     "an art style",
@@ -93,6 +94,8 @@ export const HeroSection = ({
       }
     }
   }, []);
+
+  if (!currentStream) return null;
 
   return (
     <section
@@ -179,7 +182,7 @@ export const HeroSection = ({
         >
           <iframe
             src={getIframeUrl({
-              playbackId: TRANSFORMED_PLAYBACK_ID,
+              playbackId: currentStream?.transformedPlaybackId,
               lowLatency: true,
             })}
             className="w-full h-full absolute inset-0"
