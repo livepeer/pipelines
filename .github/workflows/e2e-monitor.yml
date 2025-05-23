@@ -110,6 +110,8 @@ jobs:
           LIVEPEER_PROMETHEUS_JOB_NAME: e2e
           LIVEPEER_PROMETHEUS_URL: ${{ secrets.LIVEPEER_PROMETHEUS_URL }}
           ENVIRONMENT: ${{ matrix.env.name }}
+          APP_QUERYPARAMS: ${{ vars.APP_QUERYPARAMS }}
+          RUN_COUNT: ${{ vars.RUN_COUNT }}
         run: pnpm --filter app-e2e monitor
         continue-on-error: true
 
