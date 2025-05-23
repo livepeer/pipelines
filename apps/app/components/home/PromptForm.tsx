@@ -101,7 +101,7 @@ export const PromptForm = forwardRef<HTMLFormElement, PromptFormProps>(
       <form
         ref={formRef}
         onSubmit={handleSubmit}
-        className={`pt-0 ${isMobile ? "px-0" : "px-4"} pb-4 ${isMobile ? "" : "md:border-b border-t md:border-t-0 border-gray-200/30"} relative z-10`}
+        className={`pt-0 relative z-10 px-4 ${isMobile ? "px-0 bg-transparent" : "md:border-b border-t md:border-t-0 border-gray-200/30"}`}
       >
         <div className="relative">
           <Textarea
@@ -113,7 +113,7 @@ export const PromptForm = forwardRef<HTMLFormElement, PromptFormProps>(
             }
             className={`w-full ${
               isMobile
-                ? "bg-white text-black border-0 py-3 rounded-[18px] text-sm flex items-center"
+                ? "text-black rounded-[18px] text-sm flex items-center bg-white"
                 : "md:bg-white/50 bg-white/80 border border-solid border-[#DFDEDE] py-5 rounded-[24px]"
             } focus:ring-0 focus:border-[#DFDEDE] focus:outline-none pl-[25px] pr-16 ${
               isThrottled ? "opacity-50" : ""

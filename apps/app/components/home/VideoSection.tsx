@@ -2,9 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import { LivepeerPlayer } from "./LivepeerPlayer";
-import { Camera } from "lucide-react";
-import { TrackedButton } from "@/components/analytics/TrackedButton";
-
+import useMobileStore from "@/hooks/useMobileStore";
+import { cn } from "@repo/design-system/lib/utils";
 export const TRANSFORMED_PLAYBACK_ID =
   process.env.NEXT_PUBLIC_TRANSFORMED_PLAYBACK_ID ?? "";
 const ORIGINAL_PLAYBACK_ID = process.env.NEXT_PUBLIC_ORIGINAL_PLAYBACK_ID ?? "";
@@ -22,17 +21,8 @@ export function getIframeUrl({
   return `https://${baseUrl}?v=${playbackId}&lowLatency=${lowLatency}&backoffMax=1000&ingestPlayback=true&controls=true`;
 }
 
-interface VideoSectionProps {
-  isMobile?: boolean;
-  onTryCameraClick?: () => void;
-  buttonText?: string;
-}
-
-export function VideoSection({
-  isMobile = false,
-  onTryCameraClick,
-  buttonText = "Create",
-}: VideoSectionProps) {
+export function VideoSection() {
+  const { isMobile } = useMobileStore();
   const [isLoading, setIsLoading] = useState(true);
   const [useLivepeerPlayer, setUseLivepeerPlayer] = useState(false);
   const transformedIframeUrl = getIframeUrl({
@@ -59,37 +49,15 @@ export function VideoSection({
 
   return (
     <div
-      className={`flex flex-col w-full ${isMobile ? "h-full mt-[3%]" : "md:w-[70%]"}`}
+      className={cn("flex flex-col w-full", isMobile ? "h-fit" : "md:w-[70%]")}
     >
-      <div className="w-full py-3 px-4 hidden md:flex items-center justify-between">
-        <h1
-          className="text-4xl md:text-[36px] font-bold tracking-widest italic"
-          style={{ color: "#000000" }}
-        >
-          DAYDREAM
-        </h1>
-      </div>
-
-      {isMobile && onTryCameraClick && (
-        <div className="flex justify-center w-full mb-4 px-4">
-          <TrackedButton
-            className="px-5 py-2 rounded-lg bg-white/85 text-black hover:bg-white flex items-center justify-center gap-2 backdrop-blur-sm w-full mx-4"
-            onClick={onTryCameraClick}
-            trackingEvent="mobile_top_center_camera_clicked"
-            trackingProperties={{ location: "mobile_top_center" }}
-          >
-            <Camera className="h-4 w-4" />
-            {buttonText}
-          </TrackedButton>
-        </div>
-      )}
-
       <div
-        className={`w-full relative ${
+        className={cn(
+          "w-full relative overflow-hidden bg-black/10 backdrop-blur-sm shadow-lg",
           isMobile
-            ? "aspect-square rounded-none"
-            : "md:rounded-xl md:aspect-video h-[calc(100%-65px)]"
-        } overflow-hidden bg-black/10 backdrop-blur-sm shadow-lg`}
+            ? "aspect-video rounded-none min-h-[220px] h-[42%]"
+            : "md:rounded-xl md:aspect-video h-[calc(100%)]",
+        )}
       >
         <div className="w-full h-full relative overflow-hidden">
           {isLoading && (
@@ -145,8 +113,6 @@ export function VideoSection({
               )}
             </div>
           )}
-
-          <div className="absolute inset-0 z-20 pointer-events-auto bg-transparent"></div>
         </div>
       </div>
     </div>
