@@ -1,0 +1,122 @@
+name: Deploy Fly Restreamers
+
+on:
+  workflow_dispatch:
+    inputs:
+      app_names_csv:
+        description: "Comma-separated list of Fly App Names. Must be valid and globally unique for Fly.io."
+        required: true
+        type: string
+      youtube_urls_csv:
+        description: 'Comma-separated list of YouTube URLs (e.g., "urlA,urlB,urlC")'
+        required: true
+        type: string
+      rtmp_targets1_csv:
+        description: "Comma-separated list of RTMP Target 1 URLs for Stream 1"
+        required: true
+        type: string
+      hls_urls_csv:
+        description: "Comma-separated list of HLS Source URLs for Stream 2"
+        required: true
+        type: string
+      rtmp_targets2_csv:
+        description: "Comma-separated list of RTMP Target 2 URLs for Stream 2"
+        required: true
+        type: string
+      fly_org_slug:
+        description: "Your Fly.io organization slug"
+        required: true
+        type: string
+      fly_primary_region:
+        description: "Primary Fly.io region for all deployments (e.g., sea, lhr, nrt)"
+        required: true
+        type: string
+
+jobs:
+  deploy_batch:
+    name: Deploy Batch of Restreamers to Fly.io
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup flyctl
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Parse Inputs and Deploy in Loop
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          APP_NAMES_STR: ${{ github.event.inputs.app_names_csv }}
+          YOUTUBE_URLS_STR: ${{ github.event.inputs.youtube_urls_csv }}
+          RTMP_TARGETS1_STR: ${{ github.event.inputs.rtmp_targets1_csv }}
+          HLS_URLS_STR: ${{ github.event.inputs.hls_urls_csv }}
+          RTMP_TARGETS2_STR: ${{ github.event.inputs.rtmp_targets2_csv }}
+          FLY_ORG: ${{ github.event.inputs.fly_org_slug }}
+          FLY_REGION: ${{ github.event.inputs.fly_primary_region }}
+        run: |
+          IFS=',' read -r -a APP_NAME_ARRAY <<< "$APP_NAMES_STR"
+          IFS=',' read -r -a YOUTUBE_URL_ARRAY <<< "$YOUTUBE_URLS_STR"
+          IFS=',' read -r -a RTMP_TARGET1_ARRAY <<< "$RTMP_TARGETS1_STR"
+          IFS=',' read -r -a HLS_URL_ARRAY <<< "$HLS_URLS_STR"
+          IFS=',' read -r -a RTMP_TARGET2_ARRAY <<< "$RTMP_TARGETS2_STR"
+
+          num_app_names=${#APP_NAME_ARRAY[@]}
+          if [[ $num_app_names -ne ${#YOUTUBE_URL_ARRAY[@]} || \
+                $num_app_names -ne ${#RTMP_TARGET1_ARRAY[@]} || \
+                $num_app_names -ne ${#HLS_URL_ARRAY[@]} || \
+                $num_app_names -ne ${#RTMP_TARGET2_ARRAY[@]} ]]; then
+            echo "Error: Input CSV lists have mismatched lengths. Ensure all lists (including app_names_csv) have the same number of items."
+            exit 1
+          fi
+
+          if [[ $num_app_names -eq 0 || -z "${APP_NAME_ARRAY[0]}" ]]; then
+            echo "No configurations (app names) found to deploy."
+            exit 0
+          fi
+
+          echo "Found $num_app_names configurations to process."
+
+          for i in "${!APP_NAME_ARRAY[@]}"; do
+            CURRENT_APP_NAME="${APP_NAME_ARRAY[$i]}"
+            CURRENT_YOUTUBE_URL="${YOUTUBE_URL_ARRAY[$i]}"
+            CURRENT_RTMP_TARGET1="${RTMP_TARGET1_ARRAY[$i]}"
+            CURRENT_HLS_URL="${HLS_URL_ARRAY[$i]}"
+            CURRENT_RTMP_TARGET2="${RTMP_TARGET2_ARRAY[$i]}"
+
+            # Validate current app name (basic check, Fly will do the final validation)
+            if [[ -z "$CURRENT_APP_NAME" ]]; then
+              echo "Error: App name for configuration #$((i+1)) is empty. Skipping."
+              continue
+            fi
+
+            echo ""
+            echo "---------------------------------------------------------------------"
+            echo "Processing configuration #$((i+1)) for App: $CURRENT_APP_NAME"
+            echo "YouTube URL: $CURRENT_YOUTUBE_URL"
+            echo "---------------------------------------------------------------------"
+
+            echo "::group::Deploying app: $CURRENT_APP_NAME"
+
+            echo "Checking if app '$CURRENT_APP_NAME' exists or creating it..."
+            # Assuming FLY_ORG is correctly set from inputs
+            flyctl status -a "$CURRENT_APP_NAME" --org "$FLY_ORG" || \
+              flyctl apps create "$CURRENT_APP_NAME" --org "$FLY_ORG" --machines
+
+            echo "Setting secrets for app '$CURRENT_APP_NAME'..."
+            # Corrected secret names
+            flyctl secrets set -a "$CURRENT_APP_NAME" --stage \
+              YOUTUBE_URL_STREAM1="$CURRENT_YOUTUBE_URL" \
+              RTMP_TARGET_STREAM1="$CURRENT_RTMP_TARGET1" \
+              HLS_URL_STREAM2="$CURRENT_HLS_URL" \
+              RTMP_TARGET_STREAM2="$CURRENT_RTMP_TARGET2" \
+              PYTHONUNBUFFERED="1"
+
+            echo "Deploying app '$CURRENT_APP_NAME' to region '$FLY_REGION'..."
+            # Assuming FLY_REGION is correctly set from inputs
+            flyctl deploy -a "$CURRENT_APP_NAME" --region "$FLY_REGION" --ha=false --strategy immediate
+            
+            echo "::endgroup::"
+            # Optional: sleep 5 
+          done
+          echo "All $num_app_names configurations processed."
