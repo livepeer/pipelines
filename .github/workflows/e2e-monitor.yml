@@ -13,7 +13,7 @@ on:
           - production
           - staging
   schedule:
-    - cron: "*/30 * * * *"
+    - cron: "*/5 * * * *"
 
 jobs:
   prepare:
@@ -122,7 +122,7 @@ jobs:
           retention-days: 14
 
       - name: Fail workflow if tests failed for ${{ matrix.env.name }}
-        if: steps.playwright.outcome == 'failure'
+        if: steps.playwright.outcome == 'failure' || steps.playwright.outcome == 'flaky'
         run: |
           echo "::error::Playwright tests failed for the ${{ matrix.env.name }} environment."
           exit 1
