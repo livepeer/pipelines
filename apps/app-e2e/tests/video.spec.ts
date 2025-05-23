@@ -89,9 +89,19 @@ test.describe.parallel("Daydream Page Tests", () => {
       });
       for (let i = 0; i < parseInt(RUN_COUNT); i++) {
         test(`video elements load and play correctly ${region}#${i + 1}`, async ({
-          page,
-        }) => {
+          browser,
+        }, testInfo) => {
+          const context = await browser.newContext({
+            recordHar: { path: `./screenshots/${testInfo.title}/capture.har` },
+            permissions: [
+              "camera",
+              "microphone",
+              "clipboard-read",
+              "clipboard-write",
+            ],
+          });
           try {
+            const page = await context.newPage();
             const path = regionalPath(region, "/create");
             console.log(
               `Running test ${i + 1} for region ${region} with path ${path}`,
@@ -174,6 +184,9 @@ test.describe.parallel("Daydream Page Tests", () => {
           } catch (error) {
             console.error("Error in test:", error);
             throw error;
+          } finally {
+            // Close the context to ensure the HAR file is saved
+            await context.close();
           }
         });
       }
