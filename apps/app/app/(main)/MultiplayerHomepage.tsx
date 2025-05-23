@@ -159,6 +159,12 @@ export default function MultiplayerHomepage({
               id="player"
               className={`relative flex flex-col gap-0 md:gap-8 w-full overflow-hidden md:px-8 h-[100vh]`}
             >
+              <div className="absolute inset-0 -z-10 opacity-50">
+                <CloudBackground
+                  animationStarted={animationStarted}
+                  getCloudTransform={getCloudTransform}
+                />
+              </div>
               <HeaderSection onTryCameraClick={handleButtonClick} />
               <div
                 className={cn(

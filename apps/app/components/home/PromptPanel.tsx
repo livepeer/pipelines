@@ -56,7 +56,7 @@ export function PromptPanel({
       className={cn(
         "flex flex-col justify-end flex-1",
         isMobile
-          ? "w-full pb-8 overflow-hidden bg-[#FBFBFB] border-none"
+          ? "w-full pb-8 overflow-hidden bg-transparent border-none"
           : "md:w-[30%]",
       )}
     >
@@ -79,7 +79,12 @@ export function PromptPanel({
             : "md:rounded-xl",
         )}
       >
-        <div className="flex-1 flex flex-col justify-end overflow-hidden relative rounded-xl custom">
+        <div
+          className={cn(
+            "flex-1 flex flex-col justify-end overflow-hidden relative rounded-xl custom",
+            isMobile && "rounded-none",
+          )}
+        >
           <div
             className="absolute top-0 left-0 right-0 h-[60%] pointer-events-none z-30"
             style={{

@@ -37,7 +37,7 @@ export const HeaderSection = ({
           onClick={handleJoinDiscordClick}
           trackingEvent="explore_header_join_discord_clicked"
           trackingProperties={{ location: "explore_header" }}
-          variant="link"
+          variant={isMobile ? "link" : "default"}
         >
           <DiscordLogoIcon className="h-4 w-4" />
           {!isMobile && "Join Discord"}
