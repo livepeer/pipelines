@@ -188,6 +188,8 @@ const applyPromptToStream = async (promptText: string) => {
         .where(inArray(streams.streamKey, TARGET_STREAM_KEYS))
         .limit(TARGET_STREAM_KEYS.length);
 
+      console.log(">>", streams_data);
+
       if (!streams_data || streams_data.length === 0) {
         console.error(
           `No streams found for keys: ${TARGET_STREAM_KEYS.join(", ")}`,
@@ -429,6 +431,8 @@ const applyPromptToStream = async (promptText: string) => {
       const credentials = Buffer.from(
         `${process.env.STREAM_STATUS_ENDPOINT_USER}:${process.env.STREAM_STATUS_ENDPOINT_PASSWORD}`,
       ).toString("base64");
+
+      console.log(">>", credentials);
 
       const requests = TARGET_STREAM_KEYS.map(async streamKey => {
         const gatewayHost = streamMap.get(streamKey);
