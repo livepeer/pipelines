@@ -33,6 +33,7 @@ export function ClipModal({
   const isRotating = usePhoneRotation();
   const [clipStep, setClipStep] = useState<ClipStep>("summary");
   const [clipData, setClipData] = useState<ClipData>({
+    id: "",
     clipUrl: clipUrl || "",
     clipFilename: clipFilename || "",
     serverClipUrl: "",
@@ -46,6 +47,7 @@ export function ClipModal({
     if (clipUrl && clipFilename) {
       setClipData(state => ({
         ...state,
+        id: state.id || "",
         clipUrl,
         clipFilename,
         thumbnailUrl,
