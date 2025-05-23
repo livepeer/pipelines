@@ -24,6 +24,7 @@ export const promptQueue = pgTable(
     position: integer().notNull(),
     processed: boolean().default(false).notNull(),
     processedAt: timestamp("processed_at", { withTimezone: true }),
+    likes: integer("likes").default(0),
   },
   table => ({
     positionIdx: index("prompt_queue_position_idx").on(table.position),
