@@ -8,28 +8,50 @@ import { createServerClient } from "@repo/supabase";
 
 async function uploadToSupabase(blobUrl: string): Promise<string> {
   try {
+    console.log("Starting blob upload process for URL:", blobUrl);
+    
     // Fetch the blob data
+    console.log("Fetching blob data...");
     const response = await fetch(blobUrl);
     if (!response.ok) {
+      console.error("Failed to fetch blob:", {
+        status: response.status,
+        statusText: response.statusText,
+        headers: Object.fromEntries(response.headers.entries())
+      });
       throw new Error(`Failed to fetch blob: ${response.statusText}`);
     }
+
+    console.log("Converting response to blob...");
     const blob = await response.blob();
+    console.log("Blob details:", {
+      type: blob.type,
+      size: blob.size
+    });
 
     // Create a unique filename
     const timestamp = Date.now();
     const uniqueFileName = `upscale-inputs/${timestamp}-${nanoid()}.mp4`;
+    console.log("Generated unique filename:", uniqueFileName);
 
     // Upload to Supabase
+    console.log("Initializing Supabase client...");
     const supabase = await createServerClient();
+    console.log("Uploading to Supabase...");
+    
     const { data, error } = await supabase.storage
       .from("assets")
       .upload(uniqueFileName, blob, {
         contentType: "video/mp4",
         cacheControl: "3600",
+        upsert: true // Add upsert to handle potential duplicates
       });
 
     if (error) {
-      console.error("Error uploading to Supabase:", error);
+      console.error("Error uploading to Supabase:", {
+        error,
+        errorMessage: error.message
+      });
       throw new Error(`Failed to upload video: ${error.message}`);
     }
 
@@ -37,10 +59,15 @@ async function uploadToSupabase(blobUrl: string): Promise<string> {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const bucketName = "assets";
     const fileUrl = `${supabaseUrl}/storage/v1/object/public/${bucketName}/${uniqueFileName}`;
+    console.log("Generated public URL:", fileUrl);
 
     return fileUrl;
   } catch (error) {
-    console.error('Error uploading video:', error);
+    console.error("Error in uploadToSupabase:", {
+      error,
+      errorMessage: error instanceof Error ? error.message : 'Unknown error',
+      errorStack: error instanceof Error ? error.stack : undefined
+    });
     throw error;
   }
 }
@@ -77,14 +104,19 @@ export async function POST(req: Request) {
 
     // Handle blob URL by uploading to Supabase first
     let publicUrl = clipUrl;
-    if (clipUrl.startsWith('blob:')) {
+    if (clipUrl.startsWith("blob:")) {
       console.log("Converting blob URL to public URL...");
-      publicUrl = await uploadToSupabase(clipUrl);
-      console.log("Successfully converted to public URL:", publicUrl);
+      try {
+        publicUrl = await uploadToSupabase(clipUrl);
+        console.log("Successfully converted to public URL:", publicUrl);
+      } catch (uploadError) {
+        console.error("Failed to upload blob to Supabase:", uploadError);
+        throw new Error(`Failed to upload video: ${uploadError instanceof Error ? uploadError.message : 'Unknown error'}`);
+      }
     }
 
     // Call Runway API for video upscaling
-    console.log("Calling Runway API...");
+    console.log("Calling Runway API with URL:", publicUrl);
     const response = await fetch("https://api.runwayml.com/v1/video-to-video", {
       method: "POST",
       headers: {
@@ -109,6 +141,7 @@ export async function POST(req: Request) {
         status: response.status,
         statusText: response.statusText,
         body: errorText,
+        headers: Object.fromEntries(response.headers.entries())
       });
       throw new Error(`Failed to upscale video: ${response.statusText}`);
     }
@@ -151,7 +184,11 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ success: true });
   } catch (error: any) {
-    console.error("Error in upscale endpoint:", error);
+    console.error("Error in upscale endpoint:", {
+      error,
+      errorMessage: error instanceof Error ? error.message : 'Unknown error',
+      errorStack: error instanceof Error ? error.stack : undefined
+    });
 
     // Update job status to failed if we have a jobId
     if (jobId) {
@@ -160,7 +197,7 @@ export async function POST(req: Request) {
           .update(upscaleJobs)
           .set({
             status: "failed",
-            error: error.message,
+            error: error instanceof Error ? error.message : 'Unknown error',
           })
           .where(eq(upscaleJobs.id, jobId));
         console.log("Successfully updated job status to failed");
