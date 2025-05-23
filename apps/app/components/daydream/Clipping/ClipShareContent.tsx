@@ -12,6 +12,8 @@ import { ClipData } from "./types";
 import { toast } from "sonner";
 import useMobileStore from "@/hooks/useMobileStore";
 import { TrackedButton } from "@/components/analytics/TrackedButton";
+import { createBrowserClient } from "@supabase/ssr";
+import { nanoid } from "nanoid";
 
 interface ClipShareContentProps {
   clipData: ClipData;
@@ -53,14 +55,50 @@ export default function ClipShareContent({ clipData }: ClipShareContentProps) {
 
     setIsSubmitting(true);
     try {
+      // First, fetch the blob data
+      console.log("Fetching video blob...");
+      const response = await fetch(clipData.clipUrl);
+      if (!response.ok) {
+        throw new Error("Failed to fetch video");
+      }
+      const videoBlob = await response.blob();
+
+      // Upload to Supabase
+      console.log("Uploading to Supabase...");
+      const supabase = createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      );
+      const timestamp = Date.now();
+      const uniqueFileName = `upscale-inputs/${timestamp}-${nanoid()}.mp4`;
+      
+      const { data, error } = await supabase.storage
+        .from("assets")
+        .upload(uniqueFileName, videoBlob, {
+          contentType: "video/mp4",
+          cacheControl: "3600",
+          upsert: true
+        });
+
+      if (error) {
+        console.error("Error uploading to Supabase:", error);
+        throw new Error("Failed to upload video");
+      }
+
+      // Get the public URL
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+      const bucketName = "assets";
+      const publicUrl = `${supabaseUrl}/storage/v1/object/public/${bucketName}/${data.path}`;
+      console.log("Video uploaded successfully:", publicUrl);
+
+      // Now call the upscale endpoint with the public URL
       const requestData = {
         email,
-        jobId: clipData.id,
-        clipUrl: clipData.clipUrl,
+        clipUrl: publicUrl,
       };
       console.log("Sending upscale request with data:", requestData);
 
-      const response = await fetch("/api/clips/upscale", {
+      const upscaleResponse = await fetch("/api/clips/upscale", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -68,14 +106,14 @@ export default function ClipShareContent({ clipData }: ClipShareContentProps) {
         body: JSON.stringify(requestData),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
+      if (!upscaleResponse.ok) {
+        const errorData = await upscaleResponse.json();
         console.error("Upscale request failed:", errorData);
         throw new Error(errorData.error || "Failed to request upscaling");
       }
 
       toast.success(
-        "Upscaling request submitted! We&apos;ll email you when it&apos;s ready.",
+        "Upscaling request submitted! We'll email you when it's ready.",
       );
       setEmail("");
     } catch (error) {

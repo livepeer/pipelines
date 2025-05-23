@@ -4,73 +4,6 @@ import { upscaleJobs } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { sendEmail } from "@/lib/email";
 import { nanoid } from "nanoid";
-import { createServerClient } from "@repo/supabase";
-
-async function uploadToSupabase(blobUrl: string): Promise<string> {
-  try {
-    console.log("Starting blob upload process for URL:", blobUrl);
-
-    // Fetch the blob data
-    console.log("Fetching blob data...");
-    const response = await fetch(blobUrl);
-    if (!response.ok) {
-      console.error("Failed to fetch blob:", {
-        status: response.status,
-        statusText: response.statusText,
-        headers: Object.fromEntries(response.headers.entries()),
-      });
-      throw new Error(`Failed to fetch blob: ${response.statusText}`);
-    }
-
-    console.log("Converting response to blob...");
-    const blob = await response.blob();
-    console.log("Blob details:", {
-      type: blob.type,
-      size: blob.size,
-    });
-
-    // Create a unique filename
-    const timestamp = Date.now();
-    const uniqueFileName = `upscale-inputs/${timestamp}-${nanoid()}.mp4`;
-    console.log("Generated unique filename:", uniqueFileName);
-
-    // Upload to Supabase
-    console.log("Initializing Supabase client...");
-    const supabase = await createServerClient();
-    console.log("Uploading to Supabase...");
-
-    const { data, error } = await supabase.storage
-      .from("assets")
-      .upload(uniqueFileName, blob, {
-        contentType: "video/mp4",
-        cacheControl: "3600",
-        upsert: true, // Add upsert to handle potential duplicates
-      });
-
-    if (error) {
-      console.error("Error uploading to Supabase:", {
-        error,
-        errorMessage: error.message,
-      });
-      throw new Error(`Failed to upload video: ${error.message}`);
-    }
-
-    // Get the public URL
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const bucketName = "assets";
-    const fileUrl = `${supabaseUrl}/storage/v1/object/public/${bucketName}/${uniqueFileName}`;
-    console.log("Generated public URL:", fileUrl);
-
-    return fileUrl;
-  } catch (error) {
-    console.error("Error in uploadToSupabase:", {
-      error,
-      errorMessage: error instanceof Error ? error.message : "Unknown error",
-      errorStack: error instanceof Error ? error.stack : undefined,
-    });
-    throw error;
-  }
-}
 
 export async function POST(req: Request) {
   let jobId: string | undefined;
@@ -83,6 +16,15 @@ export async function POST(req: Request) {
       console.log("Missing required fields:", { clipUrl, email });
       return NextResponse.json(
         { error: "Missing required fields" },
+        { status: 400 },
+      );
+    }
+
+    // Validate that the URL is not a blob URL
+    if (clipUrl.startsWith("blob:")) {
+      console.error("Received blob URL, which is not supported on the server");
+      return NextResponse.json(
+        { error: "Blob URLs are not supported. Please upload the file first and provide a direct URL." },
         { status: 400 },
       );
     }
@@ -102,23 +44,8 @@ export async function POST(req: Request) {
       throw dbError;
     }
 
-    // Handle blob URL by uploading to Supabase first
-    let publicUrl = clipUrl;
-    if (clipUrl.startsWith("blob:")) {
-      console.log("Converting blob URL to public URL...");
-      try {
-        publicUrl = await uploadToSupabase(clipUrl);
-        console.log("Successfully converted to public URL:", publicUrl);
-      } catch (uploadError) {
-        console.error("Failed to upload blob to Supabase:", uploadError);
-        throw new Error(
-          `Failed to upload video: ${uploadError instanceof Error ? uploadError.message : "Unknown error"}`,
-        );
-      }
-    }
-
     // Call Runway API for video upscaling
-    console.log("Calling Runway API with URL:", publicUrl);
+    console.log("Calling Runway API with URL:", clipUrl);
     const response = await fetch("https://api.runwayml.com/v1/video-to-video", {
       method: "POST",
       headers: {
@@ -126,7 +53,7 @@ export async function POST(req: Request) {
         Authorization: `Bearer ${process.env.RUNWAY_API_KEY}`,
       },
       body: JSON.stringify({
-        input_video: publicUrl,
+        input_video: clipUrl,
         model: "gen-3-alpha", // Using Gen-3 Alpha for high quality
         prompt:
           "Upscale this video to 4K quality while maintaining the original content and style",
@@ -143,7 +70,7 @@ export async function POST(req: Request) {
         status: response.status,
         statusText: response.statusText,
         body: errorText,
-        headers: Object.fromEntries(response.headers.entries()),
+        headers: Object.fromEntries(response.headers.entries())
       });
       throw new Error(`Failed to upscale video: ${response.statusText}`);
     }
@@ -174,7 +101,7 @@ export async function POST(req: Request) {
         html: `
           <h1>Your upscaled video is ready!</h1>
           <p>Here are your videos:</p>
-          <p>Original video: <a href="${publicUrl}">Download</a></p>
+          <p>Original video: <a href="${clipUrl}">Download</a></p>
           <p>Upscaled video: <a href="${upscaledUrl}">Download</a></p>
         `,
       });
@@ -188,8 +115,8 @@ export async function POST(req: Request) {
   } catch (error: any) {
     console.error("Error in upscale endpoint:", {
       error,
-      errorMessage: error instanceof Error ? error.message : "Unknown error",
-      errorStack: error instanceof Error ? error.stack : undefined,
+      errorMessage: error instanceof Error ? error.message : 'Unknown error',
+      errorStack: error instanceof Error ? error.stack : undefined
     });
 
     // Update job status to failed if we have a jobId
@@ -199,7 +126,7 @@ export async function POST(req: Request) {
           .update(upscaleJobs)
           .set({
             status: "failed",
-            error: error instanceof Error ? error.message : "Unknown error",
+            error: error instanceof Error ? error.message : 'Unknown error',
           })
           .where(eq(upscaleJobs.id, jobId));
         console.log("Successfully updated job status to failed");
