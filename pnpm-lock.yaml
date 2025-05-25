@@ -18238,7 +18238,7 @@ snapshots:
 
   groq-sdk@0.22.0(encoding@0.1.13):
     dependencies:
-      '@types/node': 18.19.100
+      '@types/node': 18.19.101
       '@types/node-fetch': 2.6.12
       abort-controller: 3.0.0
       agentkeepalive: 4.6.0

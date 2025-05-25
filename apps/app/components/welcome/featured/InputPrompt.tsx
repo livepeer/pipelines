@@ -31,6 +31,7 @@ import useAI from "@/hooks/useAI";
 import { ChatAssistant } from "@/components/assisted-prompting/chat-assistant";
 import { cleanDenoiseParam, generateAIPrompt } from "@/lib/prompting/groq";
 import { useWorldTrends } from "@/hooks/useWorldTrends";
+import AssistantHelper from "@/components/assisted-prompting/assistant-helper";
 
 type CommandOption = {
   id: string;
@@ -67,6 +68,7 @@ export const InputPrompt = ({ onPromptSubmit }: InputPromptProps) => {
   const [inputValue, setInputValue] = useState(lastSubmittedPrompt || "");
   const [isLoading, setIsLoading] = useState(false);
   const [settingsOpened, setSettingsOpened] = useState(false);
+  const [isNewUser, setIsNewUser] = useState(true);
   const ref = useRef<HTMLTextAreaElement>(null);
   const { profanity, exceedsMaxLength } = useValidateInput(inputValue);
 
@@ -247,10 +249,19 @@ export const InputPrompt = ({ onPromptSubmit }: InputPromptProps) => {
     incrementPromptVersion();
   };
 
+  useEffect(() => {
+    if (!isNewUser) return;
+    const timer = setTimeout(() => {
+      setIsNewUser(false);
+    },8000);
+    return () => clearTimeout(timer);
+  }, [isNewUser]);
+  
+
   const generatePrompt = async () => {
     try {
       setIsLoading(true);
-      setInputValue("Thinking...");
+      setInputValue("thinking...");
 
       // pick 4 trends from worldtrends to use as keywords
       const pick4Random = <T,>(arr: T[]): T[] => {
@@ -543,6 +554,8 @@ export const InputPrompt = ({ onPromptSubmit }: InputPromptProps) => {
           onOpenChange={setChatAssistantOpen}
         />
       )}
+
+      {isNewUser && <AssistantHelper onClose={() => setIsNewUser(false)} />}
 
       {settingsOpened && (
         <SettingsMenu

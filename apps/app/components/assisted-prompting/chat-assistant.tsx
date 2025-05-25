@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, KeyboardEvent, ChangeEvent } from "react";
 import {
   chatWithAI,
   cleanDenoiseParam,
-  trimMessage,
+  extractSuggestions,
 } from "@/lib/prompting/groq";
 import {
   Dialog,
@@ -43,6 +43,7 @@ export const ChatAssistant = ({
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const [keywords, setKeywords] = useState<string[]>([]);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
   const [keywordInput, setKeywordInput] = useState("");
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [showSettings, setShowSettings] = useState(false);
@@ -58,13 +59,20 @@ export const ChatAssistant = ({
   }, [isMobile, messages]);
 
   useEffect(() => {
-    const initialMessages: Message[] = [
-      {
+    const initialMessages: Message[] = [];
+
+    if (initialPrompt) {
+      initialMessages.push({
+        role: "assistant",
+        content: `Hi 👋, I can help you enhance prompt:\n\n"${initialPrompt}"\n\nHow would you like to improve it?`,
+      });
+    } else {
+      initialMessages.push({
         role: "assistant",
         content:
-          "Hi 👋, I'll help you create amazing Daydream transformations! Just describe your desired character or scene, and I'll craft the perfect prompt.",
-      },
-    ];
+          "Hi 👋, I can help you create amazing Daydream transformations! Just describe your desired character or scene, and I'll craft the perfect prompt. \n\nℹ️ Quick tip: minimize the assistant and use the generate button to explore randomly!",
+      });
+    }
 
     setMessages(initialMessages);
 
@@ -76,32 +84,32 @@ export const ChatAssistant = ({
 
     const userMessage = inputMessage.trim();
     setInputMessage("");
-
     const updatedMessages: Message[] = [
       ...messages,
-      { role: "user" as const, content: userMessage },
+      { role: "user", content: userMessage },
     ];
     setMessages(updatedMessages);
     setIsLoading(true);
 
     try {
-      let response = await chatWithAI({
+      const rawResponse = await chatWithAI({
         messages: updatedMessages,
         style: selectedPreset.id,
         keywords,
       });
-      response = trimMessage(response);
 
-      setMessages([
-        ...updatedMessages,
-        { role: "assistant" as const, content: response },
-      ]);
+      const { content, suggestions: newSuggestions } =
+        extractSuggestions(rawResponse);
+
+      setSuggestions(newSuggestions);
+
+      setMessages([...updatedMessages, { role: "assistant", content }]);
     } catch (error) {
       console.error("Error in chat:", error);
       setMessages([
         ...updatedMessages,
         {
-          role: "assistant" as const,
+          role: "assistant",
           content: "That didn't quite work out. Let's give it another spin!",
         },
       ]);
@@ -113,27 +121,29 @@ export const ChatAssistant = ({
   const handleSavePrompt = () => {
     const lastAssistantMessage = [...messages]
       .reverse()
-      .find(msg => msg.role === "assistant");
+      .find(
+        msg => msg.role === "assistant" && !msg.content.startsWith("Hi 👋"),
+      );
 
-    // add to ensure only prompt is saved
     if (lastAssistantMessage) {
       let content = lastAssistantMessage.content
-        .replace(
-          "Hi 👋, how would you like to improve the following prompt?\n\n",
-          "",
-        )
-        .split("Key Improvements and Changes:")[0]
+        .replace("That didn't quite work out. Let's give it another spin!", "")
+        .split("What's New:")[0]
         .trim();
 
-      // for some reason the Denoise param breaks the stream - remove when fixed
       onSavePrompt(cleanDenoiseParam(content));
     }
   };
 
   const handleReset = () => {
-    if (messages.length > 0) {
-      setMessages([messages[0]]);
-    }
+    setMessages([
+      {
+        role: "assistant",
+        content:
+          "Hi 👋 I can help you create amazing Daydream transformations! Just describe your desired character or scene and I'll craft the perfect prompt. \n\nℹ️ Quick tip: minimize the assistant and use the generate button to explore randomly!",
+      },
+    ]);
+    setTimeout(() => inputRef.current?.focus(), 100);
   };
 
   const handleResizeInput = (e: ChangeEvent<HTMLTextAreaElement>) => {
@@ -185,6 +195,7 @@ export const ChatAssistant = ({
               messages={messages}
               isLoading={isLoading}
               inputMessage={inputMessage}
+              suggestions={suggestions}
               setInputMessage={setInputMessage}
               handleSendMessage={handleSendMessage}
               handleKeyDown={handleKeyDown}
@@ -220,6 +231,7 @@ export const ChatAssistant = ({
               messages={messages}
               isLoading={isLoading}
               inputMessage={inputMessage}
+              suggestions={suggestions}
               setInputMessage={setInputMessage}
               handleSendMessage={handleSendMessage}
               handleKeyDown={handleKeyDown}

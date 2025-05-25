@@ -1,4 +1,5 @@
 import { KeyboardEvent, ChangeEvent, useEffect, useRef } from "react";
+import React from "react";
 import { Send, Loader2, Settings, X, RotateCcw } from "lucide-react";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Separator } from "@repo/design-system/components/ui/separator";
@@ -16,6 +17,7 @@ interface ChatUIProps {
   showSettings: boolean;
   setShowSettings: (show: boolean) => void;
   messages: Message[];
+  suggestions: string[];
   isLoading: boolean;
   inputMessage: string;
   setInputMessage: (value: string) => void;
@@ -45,6 +47,7 @@ export const ChatUI = ({
   messages,
   isLoading,
   inputMessage,
+  suggestions,
   setInputMessage,
   handleSendMessage,
   handleKeyDown,
@@ -62,7 +65,6 @@ export const ChatUI = ({
   messagesEndRef,
   scrollContainerRef,
 }: ChatUIProps) => {
- 
   const prevMessageCountRef = useRef(0);
 
   useEffect(() => {
@@ -87,6 +89,11 @@ export const ChatUI = ({
     }
   }, [messages, handleSavePrompt]);
 
+  const handleSuggestion = (suggestion: string) => {
+    setInputMessage(suggestion);
+    handleSendMessage();
+  };
+
   return (
     <div className="w-full h-full rounded-lg flex flex-col overflow-hidden">
       <div className="bg-gray-100 px-4 sm:px-6 py-3 flex justify-between items-center border-b border-gray-200">
@@ -97,7 +104,7 @@ export const ChatUI = ({
           <Button
             onClick={handleReset}
             size={isMobile ? "sm" : "default"}
-            className="bg-zinc-900 text-xs cursor-pointer hover:bg-zinc-700 text-white sm:text-sm rounded-md px-2 sm:px-3 py-1"
+            className="bg-zinc-800 text-xs cursor-pointer hover:bg-zinc-700 text-white sm:text-sm rounded-md px-2 sm:px-3 py-1"
           >
             <RotateCcw /> Reset
           </Button>
@@ -116,20 +123,61 @@ export const ChatUI = ({
           className={`flex-1 flex flex-col overflow-hidden transition-all ${showSettings ? "w-0 sm:w-1/2 md:w-3/5" : "w-full"}`}
         >
           <div className="flex-1 overflow-y-auto no-scrollbar p-4 space-y-4 bg-gray-50">
-            {messages.map((message, index) => (
-              <div
-                key={index}
-                className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
-              >
+            {messages.map((message, index) => {
+              const isLastAssistant =
+                message.role === "assistant" &&
+                index ===
+                  [...messages].map(m => m.role).lastIndexOf("assistant");
+
+              return (
                 <div
-                  className={`max-w-[80%] p-3 rounded-xl ${message.role === "user" ? "bg-zinc-800 text-white" : "bg-gray-200 text-gray-800"}`}
+                  key={index}
+                  className={`flex ${
+                    message.role === "user" ? "justify-end" : "justify-start"
+                  }`}
                 >
-                  <div className="whitespace-pre-wrap text-sm">
-                    {message.content}
+                  <div
+                    className={`max-w-[80%] p-3 rounded-xl ${
+                      message.role === "user"
+                        ? "bg-zinc-800 text-white"
+                        : "bg-gray-200 text-gray-800"
+                    }`}
+                  >
+                    <div className="whitespace-pre-wrap text-sm">
+                      {message.content}
+                    </div>
+
+                    {isLastAssistant &&
+                      suggestions.length > 0 &&
+                      (() => {
+                        console.log(
+                          `Rendering suggestions for last assistant message (index ${index})`,
+                        );
+                        console.log("Suggestions:", suggestions);
+                        return (
+                          <div className="mt-3 pt-2 border-t border-gray-300">
+                            <div className="text-xs text-gray-600 mb-2 font-medium">
+                              Try these suggestions:
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                              {suggestions.map((text, i) => (
+                                <button
+                                  key={i}
+                                  onClick={() => handleSuggestion(text)}
+                                  className="px-3 py-1.5 text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 hover:text-blue-800 rounded-full transition-all duration-200 border border-blue-200 hover:border-blue-300 cursor-pointer font-medium"
+                                >
+                                  {text}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      })()}
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
+
             {isLoading && (
               <div className="flex justify-start">
                 <div className="max-w-[80%] p-3 rounded-xl bg-gray-200 text-gray-800 flex gap-2 text-sm">
@@ -138,6 +186,7 @@ export const ChatUI = ({
                 </div>
               </div>
             )}
+
             <div ref={messagesEndRef} />
           </div>
 

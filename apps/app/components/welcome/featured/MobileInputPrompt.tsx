@@ -30,6 +30,7 @@ import useAI from "@/hooks/useAI";
 import { cleanDenoiseParam, generateAIPrompt } from "@/lib/prompting/groq";
 import { useWorldTrends } from "@/hooks/useWorldTrends";
 import { ChatAssistant } from "@/components/assisted-prompting/chat-assistant";
+import AssistantHelper from "@/components/assisted-prompting/assistant-helper";
 
 type CommandOption = {
   id: string;
@@ -57,11 +58,17 @@ export const MobileInputPrompt = ({
   const { lastSubmittedPrompt, setLastSubmittedPrompt, setHasSubmittedPrompt } =
     usePromptStore();
   const { promptVersion, incrementPromptVersion } = usePromptVersionStore();
-  const { aiModeEnabled, isChatAssistantOpen, toggleAIMode, setChatAssistantOpen, } = useAI();
+  const {
+    aiModeEnabled,
+    isChatAssistantOpen,
+    toggleAIMode,
+    setChatAssistantOpen,
+  } = useAI();
   const { trends } = useWorldTrends();
   const { authenticated } = usePrivy();
   const [inputValue, setInputValue] = useState(lastSubmittedPrompt || "");
   const [isLoading, setIsLoading] = useState(false);
+  const [isNewUser, setIsNewUser] = useState(true);
   const [settingsOpened, setSettingsOpened] = useState(false);
   const ref = useRef<HTMLTextAreaElement>(null);
   const [isFocused, setIsFocused] = useState(false);
@@ -247,7 +254,7 @@ export const MobileInputPrompt = ({
   const generatePrompt = async () => {
     try {
       setIsLoading(true);
-      setInputValue("Thinking...");
+      setInputValue("thinking...");
 
       // pick 4 trends from worldtrends to use as keywords
       const pick4Random = <T,>(arr: T[]): T[] => {
@@ -407,7 +414,7 @@ export const MobileInputPrompt = ({
                   onClick={e => {
                     e.preventDefault();
                     if (aiModeEnabled) {
-                      setChatAssistantOpen(true)
+                      setChatAssistantOpen(true);
                     } else {
                       setSettingsOpened(!settingsOpened);
                     }
@@ -539,6 +546,8 @@ export const MobileInputPrompt = ({
           originalPrompt={lastSubmittedPrompt || undefined}
         />
       )}
+
+      {isNewUser && <AssistantHelper onClose={() => setIsNewUser(false)} />}
 
       {(profanity || exceedsMaxLength) && (
         <div className="absolute -top-10 left-0 mx-auto flex items-center justify-center gap-4 text-xs text-muted-foreground mt-4">

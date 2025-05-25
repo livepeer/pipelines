@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "scripts": {
     "build": "turbo build",
-    "dev": "turbo dev",
+    "dev": "turbo dev --filter=app",
     "lint": "turbo lint",
     "analyze": "turbo analyze",
     "test": "pnpm --filter app-e2e test",

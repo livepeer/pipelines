@@ -45,7 +45,6 @@ export const generateAIPrompt = async ({ keywords, message }: PromptParams) => {
   }
 };
 
-
 export const chatWithAI = async ({ messages, style, keywords }: ChatParams) => {
   try {
     const knowledgeBase = await loadKnowledgeBase();
@@ -57,15 +56,19 @@ The following keywords should be used in the prompt if provided: ${
     } 
 
 IMPORTANT FORMATTING INSTRUCTION:
-At the end of your response, include a section titled "Key Improvements and Changes". For example:
+At the end of your response, include a section titled "What's New". For example:
 
-Key Improvements and Changes:
-1. Created a Knowledge Base File:
-   - Moved all the system instructions, prompt creation guidelines
-2. Modular Code Structure:
-   - Handles loading, caching, importing, and exporting the knowledge base
+What's New:
+1. Created a Knowledge Base File
+2. Modular Code Structure
 
-After this section, end with a question to the user about potential changes or suggest changes you feel would improve the prompt.
+After this section, end with a question to the user about potential changes and suggest 3 changes you feel would improve the current prompt. For example:
+
+Would you like to improve the prompt further? 
+1. Add a beautiful sunset background
+2. Add more details to appearance
+3. Reduce the creativity for more consistent character
+
 
 Here's our conversation so far:
 `;
@@ -89,6 +92,7 @@ Here's our conversation so far:
       reasoning_format: "hidden", // set to raw to show model thought process
     });
     const response = chatCompletion.choices[0]?.message?.content || "";
+
     return processResponse(response);
   } catch (error) {
     console.error("Error in chat:", error);
@@ -111,6 +115,18 @@ export async function loadKnowledgeBase(): Promise<string> {
     throw new Error("Failed to load knowledge base");
   }
 }
+
+export const cleanPromptParameters = (promptText: string) => {
+  return promptText
+    .replace(/\s*--quality\s+\d+(\.\d+)?/g, "")
+    .replace(/\s*--creativity\s+\d+(\.\d+)?/g, "")
+    .replace(/\s*--denoise\s+\d+(\.\d+)?/g, "")
+    .trim();
+};
+
+export const cleanDenoiseParam = (promptText: string) => {
+  return promptText.replace(/\s*--denoise\s+\d+(\.\d+)?/g, "").trim();
+};
 
 const processResponse = (response: string): string => {
   let processed = response
@@ -139,54 +155,47 @@ const processResponse = (response: string): string => {
     processed = processed.replace(/--denoise(\s+)?($|\s)/, "--denoise 0.1 ");
   }
 
-  processed = processed
-    .replace(/\n/g, ", ")
-    .replace(/,\s*,/g, ",")
-    .replace(/\s+/g, " ")
-    .trim();
+  processed = processed.replace(/,/g, "").replace(/\s+/g, " ").trim();
 
-  return processed.replace(/^["',\s]+|["',\s]+$/g, "");
+  return processed.replace(/^["'\s]+|["'\s]+$/g, "");
 };
 
-export const cleanPromptParameters = (promptText: string) => {
-  return promptText
-    .replace(/\s*--quality\s+\d+(\.\d+)?/g, "")
-    .replace(/\s*--creativity\s+\d+(\.\d+)?/g, "")
-    .replace(/\s*--denoise\s+\d+(\.\d+)?/g, "")
-    .trim();
-};
+export function extractSuggestions(response: string): {
+  content: string;
+  suggestions: string[];
+} {
+  const sectionRegex =
+    /Would you like to improve the prompt further\?([\s\S]*?)(?=\n\n|$)/i;
+  const sectionMatch = response.match(sectionRegex);
+  let suggestions: string[] = [];
+  let content = response;
 
-export const cleanDenoiseParam = (promptText: string) => {
-  return promptText.replace(/\s*--denoise\s+\d+(\.\d+)?/g, "").trim();
-};
-
-export function trimMessage(raw: string): string {
-  let result = raw
-    .replace(
-      /Key Improvements and Changes:/g,
-      "\n\nKey Improvements and Changes:",
-    )
-    .replace(/,\s*(\d+\.)/g, "\n$1")
-    .replace(/,\s*\*/g, "*")
-    .replace(/(\d+\.)\s+([A-Z])/g, "$1 $2")
-    .replace(
-      /(\*\s*\d+\.\s*\*\s*\*\*.*?\*\.?)\s*(Would|Do|Should|What|How|Could)/g,
-      "$1\n$2",
-    );
-
-  if (
-    !result.includes("\n\nWould") &&
-    !result.includes("\n\nDo") &&
-    !result.includes("\n\nShould") &&
-    !result.includes("\n\nWhat") &&
-    !result.includes("\n\nHow") &&
-    !result.includes("\n\nCould")
-  ) {
-    result = result.replace(
-      /([^.!?\n])((?:Would|Do|Should|What|How|Could)\s+you)/g,
-      "$1\n\n$2",
-    );
+  if (sectionMatch) {
+    const rawSection = sectionMatch[0];
+    const lineRegex = /^\s*\d+\.\s*(.+)$/gm;
+    suggestions = Array.from(rawSection.matchAll(lineRegex), m => m[1].trim());
+    content = response.replace(sectionRegex, "").trim();
   }
 
-  return result;
+  // Split content into main prompt and "What's New" section
+  const whatsNewMatch = content.match(/(.*?)\s*What's New:\s*([\s\S]*)/i);
+
+  if (whatsNewMatch) {
+    const mainPrompt = whatsNewMatch[1].trim();
+    const whatsNewSection = whatsNewMatch[2].trim();
+
+    const processedMainPrompt = processResponse(mainPrompt);
+
+    const formattedWhatsNew = whatsNewSection
+      .replace(/(\d+)\.\s*/g, "\n$1. ")
+      .replace(/^\n/, "")
+      .trim();
+
+    // Combine everything with proper spacing
+    const finalContent = `${processedMainPrompt}\n\nWhat's New:\n${formattedWhatsNew}`;
+
+    return { content: finalContent, suggestions };
+  } else {
+    return { content: processResponse(content), suggestions };
+  }
 }
