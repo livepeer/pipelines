@@ -21,11 +21,11 @@ jobs:
 
       - name: Parse Inputs and Deploy in Loop
         env:
-          APP_NAMES_STR: ${{ secrets.RESTREAMER_APP_NAMES }}
-          YOUTUBE_URLS_STR: ${{ secrets.RESTREAMER_ORIGINAL_YOUTUBE_URLS }}
-          RTMP_TARGETS1_STR: ${{ secrets.RESTREAMER_ORIGINAL_RTMP_TARGETS }}
-          HLS_URLS_STR: ${{ secrets.RESTREAMER_TRANSFORMED_HLS_URLS }}
-          RTMP_TARGETS2_STR: ${{ secrets.RESTREAMER_TRANSFORMED_RTMP_TARGETS }}
+          APP_NAMES_STR: ${{ vars.RESTREAMER_APP_NAMES }}
+          YOUTUBE_URLS_STR: ${{ vars.RESTREAMER_ORIGINAL_YOUTUBE_URLS }}
+          RTMP_TARGETS1_STR: ${{ vars.RESTREAMER_ORIGINAL_RTMP_TARGETS }}
+          HLS_URLS_STR: ${{ vars.RESTREAMER_TRANSFORMED_HLS_URLS }}
+          RTMP_TARGETS2_STR: ${{ vars.RESTREAMER_TRANSFORMED_RTMP_TARGETS }}
           FLY_ORG: livepeer-673
           FLY_REGION: lax
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
