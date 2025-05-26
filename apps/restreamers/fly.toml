@@ -1,4 +1,4 @@
-primary_region = "lax"
+primary_region = "fra"
 
 [build]
   dockerfile = "Dockerfile"
@@ -9,3 +9,8 @@ primary_region = "lax"
 [processes]
   lp_to_dd = "/app/restream-lp-to-dd.sh"
   yt_to_lp = "/app/restream-yt-to-lp.sh"
+
+[[vm]]
+  cpu_kind = "performance"
+  cpus = 1
+  memory_mb = 512
