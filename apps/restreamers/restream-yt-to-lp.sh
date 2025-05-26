@@ -13,80 +13,66 @@ fi
 YOUTUBE_URL="${YOUTUBE_URL_STREAM1}"
 RTMP_TARGET="${RTMP_TARGET_STREAM1}"
 
-LOCAL_VIDEO_PATH="/app/data/youtube_video.mp4"
+DOWNLOAD_DIR="/app/data"
 COOKIES_FILE="/app/cookies.txt"
 
 USER_AGENT="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-FORMAT_SELECTOR="best[ext=mp4][protocol^=https]/best[protocol^=https]/best"
+FORMAT_SELECTOR="bestvideo[height<=360][vcodec^=avc][ext=mp4]+bestaudio[acodec=aac][ext=m4a]/bestvideo[height<=360][vcodec^=avc][ext=mp4]+bestaudio/bestvideo[height<=360][ext=mp4]+bestaudio/best[ext=mp4][height<=360]/best[height<=360]"
 FFMPEG_INPUT_OPTS="-re"
-FFMPEG_CODEC_OPTS="-c copy"
+FFMPEG_CODEC_OPTS="-c:v copy -c:a aac -ar 44100 -b:a 128k"
 FFMPEG_OUTPUT_OPTS="-f flv"
-DOWNLOAD_ATTEMPTS="3"
-RESTART_DELAY="1"
+RESTART_DELAY="10"
 
 if [ -z "$YOUTUBE_URL" ]; then echo "Error: YOUTUBE_URL_STREAM1 environment variable is not set." >&2; exit 1; fi
 if [ -z "$RTMP_TARGET" ]; then echo "Error: RTMP_TARGET_STREAM1 environment variable is not set." >&2; exit 1; fi
 
-mkdir -p "$(dirname "$LOCAL_VIDEO_PATH")"
+mkdir -p "$DOWNLOAD_DIR"
 
-if [ ! -f "$LOCAL_VIDEO_PATH" ]; then
-  echo "Local file '$LOCAL_VIDEO_PATH' not found. Downloading from YouTube: $YOUTUBE_URL"
-  success=false
-  for i in $(seq 1 "$DOWNLOAD_ATTEMPTS"); do
-    echo "Download attempt $i/$DOWNLOAD_ATTEMPTS..."
-    # Clean up any existing temp files first
-    rm -f "$LOCAL_VIDEO_PATH.tmp"*
-    # Use a unique temp filename to avoid conflicts
-    temp_file="$LOCAL_VIDEO_PATH.tmp.$$"
-    
-    ytdlp_cmd="yt-dlp --no-progress --user-agent \"$USER_AGENT\" --no-check-certificates --merge-output-format mp4 --no-playlist --format \"$FORMAT_SELECTOR\" --no-part --force-overwrites --no-continue"
-    
-    # Add cookies if file exists
-    if [ -f "$COOKIES_FILE" ]; then
-      echo "Using cookies file: $COOKIES_FILE"
-      ytdlp_cmd="$ytdlp_cmd --cookies \"$COOKIES_FILE\""
-    else
-      echo "No cookies file found at $COOKIES_FILE - proceeding without cookies"
-    fi
-    
-    ytdlp_cmd="$ytdlp_cmd -o \"$temp_file\" \"$YOUTUBE_URL\""
-    
-    echo "Running: $ytdlp_cmd"
-    if eval $ytdlp_cmd; then
-      if [ -f "$temp_file" ]; then
-        mv "$temp_file" "$LOCAL_VIDEO_PATH" && \
-        echo "Download success: $LOCAL_VIDEO_PATH" && \
-        success=true && break
-      else
-        echo "Download completed but file not found: $temp_file" >&2
-        # Check if file was created with different extension
-        found_file=$(find "$(dirname "$temp_file")" -name "$(basename "$temp_file")*" -type f | head -1)
-        if [ -n "$found_file" ]; then
-          echo "Found file with different name: $found_file"
-          mv "$found_file" "$LOCAL_VIDEO_PATH" && \
-          echo "Download success: $LOCAL_VIDEO_PATH" && \
-          success=true && break
-        fi
-      fi
-    fi
-    echo "Download failed (attempt $i). Retrying in 5 seconds..." >&2
-    rm -f "$temp_file"*
-    sleep 5
-  done
-  if [ "$success" = false ]; then
-    echo "Final download failed: $YOUTUBE_URL" >&2
-    rm -f "$LOCAL_VIDEO_PATH.tmp"*
+set -- yt-dlp --no-progress --get-filename -f "$FORMAT_SELECTOR" --merge-output-format mp4
+if [ -f "$COOKIES_FILE" ]; then
+  set -- "$@" --cookies "$COOKIES_FILE"
+fi
+set -- "$@" -o "${DOWNLOAD_DIR}/%(title)s.%(ext)s" "$YOUTUBE_URL"
+
+echo "Determining filename using command: $@"
+ACTUAL_VIDEO_FILE=$("$@")
+
+if [ -z "$ACTUAL_VIDEO_FILE" ]; then
+  echo "Error: yt-dlp --get-filename failed to determine video filename for $YOUTUBE_URL." >&2
+  echo "yt-dlp command was: $@" >&2
+  exit 1
+fi
+echo "Determined video file path: $ACTUAL_VIDEO_FILE"
+
+
+if [ ! -f "$ACTUAL_VIDEO_FILE" ]; then
+  echo "Local file '$ACTUAL_VIDEO_FILE' not found. Downloading from YouTube: $YOUTUBE_URL"
+  
+  set -- yt-dlp --no-progress -f "$FORMAT_SELECTOR" --merge-output-format mp4
+  if [ -f "$COOKIES_FILE" ]; then
+    echo "Using cookies file: $COOKIES_FILE"
+    set -- "$@" --cookies "$COOKIES_FILE"
+  else
+    echo "No cookies file found at $COOKIES_FILE - proceeding without cookies"
+  fi
+  set -- "$@" -o "$ACTUAL_VIDEO_FILE" "$YOUTUBE_URL"
+  
+  echo "Running command: $@"
+  if ! "$@"; then
+    echo "Download failed for $YOUTUBE_URL. Please check the URL and network." >&2
+    rm -f "$ACTUAL_VIDEO_FILE"
     exit 1
   fi
+  echo "Download success: $ACTUAL_VIDEO_FILE"
 else
-  echo "Using local file: $LOCAL_VIDEO_PATH"
+  echo "Using local file: $ACTUAL_VIDEO_FILE"
 fi
 
-echo "Stream 1 starting: local file ($LOCAL_VIDEO_PATH) -> $RTMP_TARGET"
-echo "FFMPEG options: $FFMPEG_INPUT_OPTS -i \"$LOCAL_VIDEO_PATH\" $FFMPEG_CODEC_OPTS $FFMPEG_OUTPUT_OPTS"
+echo "Stream 1 starting: local file ($ACTUAL_VIDEO_FILE) -> $RTMP_TARGET"
+echo "FFMPEG options: $FFMPEG_INPUT_OPTS -i \\"$ACTUAL_VIDEO_FILE\\" $FFMPEG_CODEC_OPTS $FFMPEG_OUTPUT_OPTS"
 
 while true; do
-  ffmpeg $FFMPEG_INPUT_OPTS -i "$LOCAL_VIDEO_PATH" $FFMPEG_CODEC_OPTS $FFMPEG_OUTPUT_OPTS "$RTMP_TARGET"
+  ffmpeg $FFMPEG_INPUT_OPTS -i "$ACTUAL_VIDEO_FILE" $FFMPEG_CODEC_OPTS $FFMPEG_OUTPUT_OPTS "$RTMP_TARGET"
   echo "Stream 1 ffmpeg process terminated. Restarting in $RESTART_DELAY seconds..."
   sleep "$RESTART_DELAY"
 done
