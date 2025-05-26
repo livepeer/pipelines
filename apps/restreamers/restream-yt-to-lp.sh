@@ -1,10 +1,23 @@
 #!/bin/ash
 
+if [ -n "$YOUTUBE_COOKIES_BASE64" ]; then
+    echo "Creating cookies file from environment variable..."
+    echo "$YOUTUBE_COOKIES_BASE64" | base64 -d > /app/cookies.txt
+    echo "Cookies file created successfully"
+elif [ -n "$YOUTUBE_COOKIES" ]; then
+    echo "Creating cookies file from plain text environment variable..."
+    echo "$YOUTUBE_COOKIES" > /app/cookies.txt
+    echo "Cookies file created successfully"
+fi
+
 YOUTUBE_URL="${YOUTUBE_URL_STREAM1}"
 RTMP_TARGET="${RTMP_TARGET_STREAM1}"
 
 LOCAL_VIDEO_PATH="/app/data/youtube_video.mp4"
-YTDLP_FORMAT="bv[vcodec~=^h264][height<=1080]+ba[acodec~=^aac]/b[vcodec~=^h264][height<=1080]/bv*+ba/b"
+COOKIES_FILE="/app/cookies.txt"
+
+USER_AGENT="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+FORMAT_SELECTOR="best[ext=mp4][protocol^=https]/best[protocol^=https]/best"
 FFMPEG_INPUT_OPTS="-re"
 FFMPEG_CODEC_OPTS="-c copy"
 FFMPEG_OUTPUT_OPTS="-f flv"
@@ -21,16 +34,48 @@ if [ ! -f "$LOCAL_VIDEO_PATH" ]; then
   success=false
   for i in $(seq 1 "$DOWNLOAD_ATTEMPTS"); do
     echo "Download attempt $i/$DOWNLOAD_ATTEMPTS..."
-    yt-dlp --no-progress -f "$YTDLP_FORMAT" -o "$LOCAL_VIDEO_PATH.tmp" "$YOUTUBE_URL" && \
-    mv "$LOCAL_VIDEO_PATH.tmp" "$LOCAL_VIDEO_PATH" && \
-    echo "Download success: $LOCAL_VIDEO_PATH" && \
-    success=true && break
+    # Clean up any existing temp files first
+    rm -f "$LOCAL_VIDEO_PATH.tmp"*
+    # Use a unique temp filename to avoid conflicts
+    temp_file="$LOCAL_VIDEO_PATH.tmp.$$"
+    
+    ytdlp_cmd="yt-dlp --no-progress --user-agent \"$USER_AGENT\" --no-check-certificates --merge-output-format mp4 --no-playlist --format \"$FORMAT_SELECTOR\" --no-part --force-overwrites --no-continue"
+    
+    # Add cookies if file exists
+    if [ -f "$COOKIES_FILE" ]; then
+      echo "Using cookies file: $COOKIES_FILE"
+      ytdlp_cmd="$ytdlp_cmd --cookies \"$COOKIES_FILE\""
+    else
+      echo "No cookies file found at $COOKIES_FILE - proceeding without cookies"
+    fi
+    
+    ytdlp_cmd="$ytdlp_cmd -o \"$temp_file\" \"$YOUTUBE_URL\""
+    
+    echo "Running: $ytdlp_cmd"
+    if eval $ytdlp_cmd; then
+      if [ -f "$temp_file" ]; then
+        mv "$temp_file" "$LOCAL_VIDEO_PATH" && \
+        echo "Download success: $LOCAL_VIDEO_PATH" && \
+        success=true && break
+      else
+        echo "Download completed but file not found: $temp_file" >&2
+        # Check if file was created with different extension
+        found_file=$(find "$(dirname "$temp_file")" -name "$(basename "$temp_file")*" -type f | head -1)
+        if [ -n "$found_file" ]; then
+          echo "Found file with different name: $found_file"
+          mv "$found_file" "$LOCAL_VIDEO_PATH" && \
+          echo "Download success: $LOCAL_VIDEO_PATH" && \
+          success=true && break
+        fi
+      fi
+    fi
     echo "Download failed (attempt $i). Retrying in 5 seconds..." >&2
+    rm -f "$temp_file"*
     sleep 5
   done
   if [ "$success" = false ]; then
     echo "Final download failed: $YOUTUBE_URL" >&2
-    rm -f "$LOCAL_VIDEO_PATH.tmp"
+    rm -f "$LOCAL_VIDEO_PATH.tmp"*
     exit 1
   fi
 else

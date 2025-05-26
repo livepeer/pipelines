@@ -21,11 +21,12 @@ jobs:
 
       - name: Parse Inputs and Deploy in Loop
         env:
-          APP_NAMES_STR: ${{ secrets.RESTREAMER_APP_NAMES }}
-          YOUTUBE_URLS_STR: ${{ secrets.RESTREAMER_ORIGINAL_YOUTUBE_URLS }}
-          RTMP_TARGETS1_STR: ${{ secrets.RESTREAMER_ORIGINAL_RTMP_TARGETS }}
-          HLS_URLS_STR: ${{ secrets.RESTREAMER_TRANSFORMED_HLS_URLS }}
-          RTMP_TARGETS2_STR: ${{ secrets.RESTREAMER_TRANSFORMED_RTMP_TARGETS }}
+          APP_NAMES_STR: ${{ vars.RESTREAMER_APP_NAMES }}
+          YOUTUBE_URLS_STR: ${{ vars.RESTREAMER_ORIGINAL_YOUTUBE_URLS }}
+          RTMP_TARGETS1_STR: ${{ vars.RESTREAMER_ORIGINAL_RTMP_TARGETS }}
+          HLS_URLS_STR: ${{ vars.RESTREAMER_TRANSFORMED_HLS_URLS }}
+          RTMP_TARGETS2_STR: ${{ vars.RESTREAMER_TRANSFORMED_RTMP_TARGETS }}
+          YOUTUBE_COOKIES_BASE64: ${{ secrets.YOUTUBE_COOKIES_BASE64 }}
           FLY_ORG: livepeer-673
           FLY_REGION: lax
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
@@ -98,6 +99,7 @@ jobs:
               RTMP_TARGET_STREAM1="$CURRENT_RTMP_TARGET1" \
               HLS_URL_STREAM2="$CURRENT_HLS_URL" \
               RTMP_TARGET_STREAM2="$CURRENT_RTMP_TARGET2" \
+              YOUTUBE_COOKIES_BASE64="$YOUTUBE_COOKIES_BASE64" \
               PYTHONUNBUFFERED="1"
 
             echo "Deploying app '$CURRENT_APP_NAME' to region '$FLY_REGION'..."
