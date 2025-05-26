@@ -21,7 +21,6 @@ FORMAT_SELECTOR="best[ext=mp4][protocol^=https]/best[protocol^=https]/best"
 FFMPEG_INPUT_OPTS="-re"
 FFMPEG_CODEC_OPTS="-c copy"
 FFMPEG_OUTPUT_OPTS="-f flv"
-DOWNLOAD_ATTEMPTS="3"
 RESTART_DELAY="1"
 
 if [ -z "$YOUTUBE_URL" ]; then echo "Error: YOUTUBE_URL_STREAM1 environment variable is not set." >&2; exit 1; fi
@@ -31,53 +30,27 @@ mkdir -p "$(dirname "$LOCAL_VIDEO_PATH")"
 
 if [ ! -f "$LOCAL_VIDEO_PATH" ]; then
   echo "Local file '$LOCAL_VIDEO_PATH' not found. Downloading from YouTube: $YOUTUBE_URL"
-  success=false
-  for i in $(seq 1 "$DOWNLOAD_ATTEMPTS"); do
-    echo "Download attempt $i/$DOWNLOAD_ATTEMPTS..."
-    # Clean up any existing temp files first
-    rm -f "$LOCAL_VIDEO_PATH.tmp"*
-    # Use a unique temp filename to avoid conflicts
-    temp_file="$LOCAL_VIDEO_PATH.tmp.$$"
-    
-    ytdlp_cmd="yt-dlp --no-progress --user-agent \"$USER_AGENT\" --no-check-certificates --merge-output-format mp4 --no-playlist --format \"$FORMAT_SELECTOR\" --no-part --force-overwrites --no-continue"
-    
-    # Add cookies if file exists
-    if [ -f "$COOKIES_FILE" ]; then
-      echo "Using cookies file: $COOKIES_FILE"
-      ytdlp_cmd="$ytdlp_cmd --cookies \"$COOKIES_FILE\""
-    else
-      echo "No cookies file found at $COOKIES_FILE - proceeding without cookies"
-    fi
-    
-    ytdlp_cmd="$ytdlp_cmd -o \"$temp_file\" \"$YOUTUBE_URL\""
-    
-    echo "Running: $ytdlp_cmd"
-    if eval $ytdlp_cmd; then
-      if [ -f "$temp_file" ]; then
-        mv "$temp_file" "$LOCAL_VIDEO_PATH" && \
-        echo "Download success: $LOCAL_VIDEO_PATH" && \
-        success=true && break
-      else
-        echo "Download completed but file not found: $temp_file" >&2
-        # Check if file was created with different extension
-        found_file=$(find "$(dirname "$temp_file")" -name "$(basename "$temp_file")*" -type f | head -1)
-        if [ -n "$found_file" ]; then
-          echo "Found file with different name: $found_file"
-          mv "$found_file" "$LOCAL_VIDEO_PATH" && \
-          echo "Download success: $LOCAL_VIDEO_PATH" && \
-          success=true && break
-        fi
-      fi
-    fi
-    echo "Download failed (attempt $i). Retrying in 5 seconds..." >&2
-    rm -f "$temp_file"*
-    sleep 5
-  done
-  if [ "$success" = false ]; then
-    echo "Final download failed: $YOUTUBE_URL" >&2
-    rm -f "$LOCAL_VIDEO_PATH.tmp"*
+  
+  ytdlp_cmd="yt-dlp --no-progress --user-agent \"$USER_AGENT\" --no-check-certificates --merge-output-format mp4 --no-playlist --format \"$FORMAT_SELECTOR\" --no-part --force-overwrites --no-continue"
+  
+  # Add cookies if file exists
+  if [ -f "$COOKIES_FILE" ]; then
+    echo "Using cookies file: $COOKIES_FILE"
+    ytdlp_cmd="$ytdlp_cmd --cookies \"$COOKIES_FILE\""
+  else
+    echo "No cookies file found at $COOKIES_FILE - proceeding without cookies"
+  fi
+  
+  # Output directly to the final path
+  ytdlp_cmd="$ytdlp_cmd -o \"$LOCAL_VIDEO_PATH\" \"$YOUTUBE_URL\""
+  
+  echo "Running: $ytdlp_cmd"
+  if ! eval "$ytdlp_cmd"; then
+    echo "Download failed for $YOUTUBE_URL. Please check the URL and network." >&2
+    rm -f "$LOCAL_VIDEO_PATH" # Attempt to clean up partially downloaded file
     exit 1
   fi
+  echo "Download success: $LOCAL_VIDEO_PATH"
 else
   echo "Using local file: $LOCAL_VIDEO_PATH"
 fi
