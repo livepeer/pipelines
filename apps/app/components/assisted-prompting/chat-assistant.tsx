@@ -50,13 +50,19 @@ export const ChatAssistant = ({
   const [selectedPreset, setSelectedPreset] = useState({ id: "none" });
 
   useEffect(() => {
-    if (isMobile && chatContainerRef.current) {
-      chatContainerRef.current.scrollTop =
-        chatContainerRef.current.scrollHeight;
+    if (isMobile) {
+      const container = chatContainerRef.current;
+      if (container) {
+        container.scrollTo({
+          top: container.scrollHeight,
+          behavior: 'smooth'
+        });
+      }
     } else {
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
   }, [isMobile, messages]);
+
 
   useEffect(() => {
     const initialMessages: Message[] = [];
@@ -70,7 +76,7 @@ export const ChatAssistant = ({
       initialMessages.push({
         role: "assistant",
         content:
-          "Hi! Tell me your vision and I'll create the perfect prompt. \n\nℹ️ Quick tip: minimize this window and use the generate button to explore randomly!",
+          "Hi! Tell me what you like to create and I'll craft the perfect prompt. \n\nℹ️ Quick tip: minimize this window to explore randomly with the generate button!",
       });
     }
 
@@ -79,10 +85,12 @@ export const ChatAssistant = ({
     setTimeout(() => inputRef.current?.focus(), 100);
   }, []);
 
-  const handleSendMessage = async () => {
-    if (!inputMessage.trim()) return;
+  const handleSendMessage = async (message?: string) => {
+    const finalMessage = message ? message.trim() : inputMessage.trim();
 
-    const userMessage = inputMessage.trim();
+    if (!finalMessage) return;
+
+    const userMessage = finalMessage.trim();
     setInputMessage("");
     const updatedMessages: Message[] = [
       ...messages,
@@ -99,6 +107,7 @@ export const ChatAssistant = ({
       });
 
       const { content, suggestions: newSuggestions } =
+        // extract suggestions from response
         extractSuggestions(rawResponse);
 
       setSuggestions(newSuggestions);
@@ -121,9 +130,7 @@ export const ChatAssistant = ({
   const handleSavePrompt = () => {
     const lastAssistantMessage = [...messages]
       .reverse()
-      .find(
-        msg => msg.role === "assistant" && !msg.content.startsWith("Hi 👋"),
-      );
+      .find(msg => msg.role === "assistant" && !msg.content.startsWith("Hi!"));
 
     if (lastAssistantMessage) {
       let content = lastAssistantMessage.content
@@ -131,6 +138,7 @@ export const ChatAssistant = ({
         .split("What's New:")[0]
         .trim();
 
+      // for some reason the Denoise param breaks the stream - remove when fixed
       onSavePrompt(cleanDenoiseParam(content));
     }
   };
@@ -140,7 +148,7 @@ export const ChatAssistant = ({
       {
         role: "assistant",
         content:
-        "Hi! Tell me your vision and I'll create the perfect prompt. \n\nℹ️ Quick tip: minimize this window and use the generate button to explore randomly!",
+          "Hi! Tell me what you like to create and I'll craft the perfect prompt. \n\nℹ️ Quick tip: minimize this window to explore randomly with the generate button!",
       },
     ]);
     setTimeout(() => inputRef.current?.focus(), 100);
@@ -149,7 +157,7 @@ export const ChatAssistant = ({
   const handleResizeInput = (e: ChangeEvent<HTMLTextAreaElement>) => {
     const textarea = e.target;
     textarea.style.height = "auto";
-    textarea.style.height = `${textarea.scrollHeight}px`;
+    textarea.style.height = `${Math.min(textarea.scrollHeight, 120)}px`;
   };
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
@@ -168,15 +176,6 @@ export const ChatAssistant = ({
     }
   };
 
-  useEffect(() => {
-    if (open) {
-      document.body.style.overflow = "hidden";
-      return () => {
-        document.body.style.overflow = "";
-      };
-    }
-  }, [open]);
-
   return (
     <>
       {!isMobile ? (
@@ -184,7 +183,7 @@ export const ChatAssistant = ({
           <DialogContent
             displayCloseButton={false}
             style={{ zIndex: 9999 }}
-            className="max-w-[100vw] md:max-w-[70vw] z-[250] font-gamja p-0 border-0 shadow-2xl sm:rounded-t-lg rounded-t-lg sm:rounded-b-lg sm:mt-0 mt-12 sm:h-[calc(100vh-300px)] h-[calc(100vh-100px)] fixed bottom-0 sm:bottom-auto animate-in slide-in-from-bottom duration-300"
+            className="max-w-[100vw] md:max-w-[70vw] z-[250] p-0 border-0 shadow-2xl sm:rounded-t-lg rounded-t-lg sm:rounded-b-lg sm:mt-0 mt-12 h-[calc(100vh-300px)] fixed bottom-0 sm:bottom-auto animate-in slide-in-from-bottom duration-300"
           >
             <ChatUI
               isMobile={isMobile}
@@ -221,7 +220,7 @@ export const ChatAssistant = ({
         </Dialog>
       ) : (
         <Drawer open={open} onOpenChange={onOpenChange}>
-          <DrawerContent className="[&>div:first-child]:hidden font-gamja p-0 z-[250] border-0 shadow-2xl sm:rounded-t-lg rounded-t-lg sm:rounded-b-lg h-[calc(100vh-100px)] overflow-hidden animate-in slide-in-from-bottom duration-300">
+          <DrawerContent className="[&>div:first-child]:hidden p-0 z-[250] border-0 shadow-2xl h-[85dvh] overflow-hidden animate-in slide-in-from-bottom duration-300">
             <ChatUI
               isMobile={isMobile}
               handleSavePrompt={handleSavePrompt}

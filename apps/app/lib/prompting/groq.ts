@@ -34,7 +34,7 @@ export const generateAIPrompt = async ({ keywords, message }: PromptParams) => {
       temperature: 0.6,
       top_p: 0.95,
       max_completion_tokens: 1024,
-      reasoning_format: "hidden",
+      reasoning_format: "hidden", // set to raw to show model thought process
       messages: [{ role: "user", content: userPrompt }],
     });
 
@@ -47,9 +47,9 @@ export const generateAIPrompt = async ({ keywords, message }: PromptParams) => {
 
 export const chatWithAI = async ({ messages, style, keywords }: ChatParams) => {
   try {
-    const knowledgeBase = await loadKnowledgeBase();
+    const kb = await loadKnowledgeBase();
     const userInstructions = `
-Study this first ${knowledgeBase}, then create or edit detailed character prompts.
+Study this first ${kb}, then create or edit detailed character prompts.
 Current style: ${style}, the style should strongly influence the prompt.
 The following keywords should be used in the prompt if provided: ${
       keywords.join(", ") || "none"
@@ -59,8 +59,8 @@ IMPORTANT FORMATTING INSTRUCTION:
 Include a section titled "What's New". For example:
 
 What's New:
-1. Created a Knowledge Base File
-2. Modular Code Structure
+1. First change
+2. Second change
 
 After the What's New section, add a section titled "Would you like to improve the prompt further?" 
 IMPORTANT: This section MUST contain EXACTLY 3 suggestions in this format:
@@ -147,7 +147,7 @@ const processResponse = (response: string): string => {
   if (!processed.match(/--creativity\s+\d+(\.\d+)?/)) {
     processed = processed.replace(
       /--creativity(\s+)?($|\s)/,
-      "--creativity 0.7 ",
+      "--creativity 0.3 ",
     );
   }
 
@@ -174,34 +174,52 @@ export function extractSuggestions(response: string): {
 
   if (sectionMatch) {
     const rawSection = sectionMatch[0];
-
-    const suggestionItems = rawSection.matchAll(/\d+\.\s*(.+?)(?=\s*\d+\.|$)/g);
-    suggestions = Array.from(suggestionItems, m => m[1].trim());
-
+    const suggestionItems = rawSection.matchAll(/(\d+)\.\s*(.+?)(?=\s*\d+\.\s*[A-Z]|$)/gs);
+    suggestions = Array.from(suggestionItems, m => m[2].trim());
+    suggestions = suggestions.filter(
+      (suggestion, index, arr) =>
+        arr.findIndex(s => s.toLowerCase() === suggestion.toLowerCase()) ===
+        index,
+    );
     content = response.replace(
       rawSection,
       "Would you like to improve the prompt further?",
     );
   }
 
-  // Split content into main prompt and "What's New" section
+  // Split content and add character limit
   const whatsNewMatch = content.match(/(.*?)\s*What's New:\s*([\s\S]*)/i);
 
   if (whatsNewMatch) {
-    const mainPrompt = whatsNewMatch[1].trim();
-    const whatsNewSection = whatsNewMatch[2].trim();
+    let mainPrompt = whatsNewMatch[1].trim();
+
+    // Keep prompts under 300 characters
+    if (mainPrompt.length > 270) {
+      mainPrompt = mainPrompt.substring(0, 270).trim() + "...";
+    }
 
     const processedMainPrompt = processResponse(mainPrompt);
+    let formattedWhatsNew = whatsNewMatch[2];
+    formattedWhatsNew = formattedWhatsNew.replace(
+      /(\d+)\.\s+([A-Z])/g,
+      "\n$1. $2",
+    );
+    formattedWhatsNew = formattedWhatsNew.replace(/^\n/, "").trim();
 
-    const formattedWhatsNew = whatsNewSection
-      .replace(/(\d+)\.\s*/g, "\n$1. ")
-      .replace(/^\n/, "")
+    // trim duplicate would you like to improve.. text
+    formattedWhatsNew = formattedWhatsNew
+      .replace(/Would you like to improve the prompt further\?/gi, "")
       .trim();
 
-    const finalContent = `${processedMainPrompt}\n\nWhat's New:\n${formattedWhatsNew}\n\nWould you like to improve the prompt further? you can`;
+    const finalContent = `${processedMainPrompt}\n\nWhat's New:\n${formattedWhatsNew}\n\nWould you like to improve the prompt further?`;
 
     return { content: finalContent, suggestions };
   } else {
-    return { content: processResponse(content), suggestions };
+    // cases without "What's New" section
+    let truncatedContent = processResponse(content);
+    if (truncatedContent.length > 270) {
+      truncatedContent = truncatedContent.substring(0, 270).trim() + "...";
+    }
+    return { content: truncatedContent, suggestions };
   }
 }

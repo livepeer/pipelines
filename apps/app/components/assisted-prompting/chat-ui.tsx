@@ -22,7 +22,7 @@ interface ChatUIProps {
   isLoading: boolean;
   inputMessage: string;
   setInputMessage: (value: string) => void;
-  handleSendMessage: () => void;
+  handleSendMessage: (message?: string) => void;
   handleKeyDown: (e: KeyboardEvent<HTMLTextAreaElement>) => void;
   handleResizeInput: (e: ChangeEvent<HTMLTextAreaElement>) => void;
   keywords: string[];
@@ -69,11 +69,13 @@ export const ChatUI = ({
   const prevMessageCountRef = useRef(0);
 
   useEffect(() => {
+    // save and submit responses from assistant to dreamshaper
     if (messages.length <= prevMessageCountRef.current) {
       prevMessageCountRef.current = messages.length;
       return;
     }
 
+    // ensure not to submit initial messages (Hi! Tell me what you like to create ..)
     const lastMessage = messages[messages.length - 1];
 
     if (
@@ -92,7 +94,7 @@ export const ChatUI = ({
 
   const handleSuggestion = (suggestion: string) => {
     setInputMessage(suggestion);
-    handleSendMessage();
+    handleSendMessage(suggestion);
   };
 
   return (
@@ -119,11 +121,12 @@ export const ChatUI = ({
         </div>
       </div>
 
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 overflow-hidden min-h-0">
         <div
-          className={`flex-1 flex flex-col overflow-hidden transition-all ${showSettings ? "w-0 sm:w-1/2 md:w-3/5" : "w-full"}`}
+          className={`flex-1 flex flex-col overflow-hidden transition-all ${showSettings ? "w-0 sm:w-1/2 md:w-3/5" : "w-full"} min-h-0`}
         >
-          <div className="flex-1 overflow-y-auto no-scrollbar p-4 space-y-4 bg-gray-50">
+          {/* Messages area */}
+          <div className="flex-1 overflow-y-auto no-scrollbar p-4 space-y-4 bg-gray-50 min-h-0">
             {messages.map((message, index) => {
               const lastAssistantIndex = messages
                 .map(m => m.role)
@@ -141,32 +144,37 @@ export const ChatUI = ({
                   >
                     {/* Message Bubble */}
                     <div
-                      className={`p-3 text-sm rounded-lg ${
+                      className={`p-3 text-sm rounded-sm whitespace-pre-wrap ${
                         message.role === "user"
-                          ? "bg-zinc-800 text-white"
-                          : "bg-zinc-200 text-gray-800"
+                          ? "bg-zinc-800 text-white text-start"
+                          : "bg-zinc-100 text-gray-800"
                       }`}
                     >
+                      {/* Display prompts without parameters */}
                       {cleanPromptParameters(message.content)}
                     </div>
 
                     {isLastAssistant && suggestions.length > 0 && (
-                      <div className="flex items-center gap-2 mt-2">
+                      <div className="flex flex-col sm:flex-row items-center gap-2 mt-2 flex-wrap">
                         {suggestions.map((text, i) => (
-                          <React.Fragment key={i}>
-                            <button
-                              onClick={() => handleSuggestion(text)}
-                              className="p-0 m-0 text-gray-500 text-xs cursor-pointer"
-                            >
-                              {text}
-                            </button>
-                            {i < suggestions.length - 1 && (
-                              <Separator
-                                orientation="vertical"
-                                className="h-6"
-                              />
-                            )}
-                          </React.Fragment>
+                          <button
+                            key={i}
+                            onClick={() => handleSuggestion(text)}
+                            className="
+                           flex-shrink-0
+                           w-full sm:w-auto
+                           max-w-lg            
+                           text-xs
+                           bg-blue-50 hover:bg-blue-100
+                           text-blue-700
+                           px-3 py-1
+                           rounded-full
+                           transition-colors
+                           border border-blue-200
+                         "
+                          >
+                            {text}
+                          </button>
                         ))}
                       </div>
                     )}
@@ -177,7 +185,7 @@ export const ChatUI = ({
 
             {isLoading && (
               <div className="flex justify-start">
-                <div className="max-w-[80%] p-3 rounded-xl bg-gray-200 text-gray-800 flex gap-1 text-sm">
+                <div className="max-w-[80%] p-3 rounded-sm bg-zinc-100 text-gray-800 flex gap-1 text-sm">
                   <Loader2 className="h-5 w-5 animate-spin text-gray-500" />
                   thinking...
                 </div>
@@ -200,7 +208,7 @@ export const ChatUI = ({
                 className="flex-1 bg-white border border-gray-300 rounded-lg p-3 text-gray-800 text-sm focus:outline-none resize-none h-12 min-h-[48px] max-h-[48px] overflow-y-auto"
               />
               <Button
-                onClick={handleSendMessage}
+                onClick={() => handleSendMessage}
                 disabled={isLoading || !inputMessage.trim()}
                 className="flex items-center justify-center bg-zinc-900 hover:bg-zinc-700 text-white rounded-lg h-12 min-h-[48px] w-[44px] px-3"
               >
@@ -215,7 +223,9 @@ export const ChatUI = ({
         </div>
 
         <div
-          className={`bg-gray-50 border-l border-gray-200 overflow-y-auto no-scrollbar transition-all duration-300 ${showSettings ? "w-full sm:w-1/2 md:w-2/5" : "w-0"}`}
+          className={`bg-gray-50 border-l border-gray-200 overflow-y-auto no-scrollbar transition-all duration-300 ${
+            showSettings ? "w-full sm:relative sm:w-1/2 md:w-2/5" : "w-0"
+          } min-h-0`}
         >
           {showSettings && (
             <div className="p-4 sm:p-6">
@@ -272,7 +282,7 @@ export const ChatUI = ({
                       value={keywordInput}
                       onChange={handleKeywordInputChange}
                       onKeyDown={handleKeywordKeyDown}
-                      placeholder="Click enter to save"
+                      placeholder="Input keyword and click enter to save"
                       className="bg-white border border-gray-300 placeholder:text-sm rounded-full w-full sm:w-[230px] px-3 py-1.5 focus:outline-none"
                     />
                   )}

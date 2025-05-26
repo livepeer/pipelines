@@ -249,11 +249,12 @@ export const InputPrompt = ({ onPromptSubmit }: InputPromptProps) => {
     incrementPromptVersion();
   };
 
+  // Auto close the assistant toast after 30secs
   useEffect(() => {
     if (!isNewUser) return;
     const timer = setTimeout(() => {
       setIsNewUser(false);
-    }, 15000);
+    }, 30000);
     return () => clearTimeout(timer);
   }, [isNewUser]);
 
@@ -554,7 +555,9 @@ export const InputPrompt = ({ onPromptSubmit }: InputPromptProps) => {
         />
       )}
 
-      {isNewUser && <AssistantHelper onClose={() => setIsNewUser(false)} />}
+      {isNewUser && !aiModeEnabled && (
+        <AssistantHelper onClose={() => setIsNewUser(false)} />
+      )}
 
       {settingsOpened && (
         <SettingsMenu

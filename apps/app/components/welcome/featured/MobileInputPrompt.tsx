@@ -111,11 +111,12 @@ export const MobileInputPrompt = ({
     }
   }, [lastSubmittedPrompt, restoreLastPrompt]);
 
+  // Auto close the assistant toast after 30secs
   useEffect(() => {
     if (!isNewUser) return;
     const timer = setTimeout(() => {
       setIsNewUser(false);
-    }, 15000);
+    }, 30000);
     return () => clearTimeout(timer);
   }, [isNewUser]);
 
@@ -544,7 +545,9 @@ export const MobileInputPrompt = ({
         />
       )}
 
-      {isNewUser && <AssistantHelper onClose={() => setIsNewUser(false)} />}
+      {isNewUser && !aiModeEnabled && (
+        <AssistantHelper onClose={() => setIsNewUser(false)} />
+      )}
 
       {settingsOpened && (
         <SettingsMenu
