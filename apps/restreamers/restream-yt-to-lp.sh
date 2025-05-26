@@ -31,10 +31,10 @@ mkdir -p "$DOWNLOAD_DIR" # Ensure download directory exists
 # Determine the actual video file path
 GET_FILENAME_OPTS="--no-progress --get-filename -f \\"$FORMAT_SELECTOR\\" --merge-output-format mp4"
 if [ -f "$COOKIES_FILE" ]; then
-  GET_FILENAME_OPTS="$GET_FILENAME_OPTS --cookies \\"$COOKIES_FILE\\""
+  GET_FILENAME_OPTS="$GET_FILENAME_OPTS --cookies \"$COOKIES_FILE\""
 fi
-GET_FILENAME_OPTS="$GET_FILENAME_OPTS -o \\"${DOWNLOAD_DIR}/%(title)s.%(ext)s\\""
-get_filename_cmd="yt-dlp $GET_FILENAME_OPTS \\"$YOUTUBE_URL\\""
+GET_FILENAME_OPTS="$GET_FILENAME_OPTS -o \"${DOWNLOAD_DIR}/%(title)s.%(ext)s\""
+get_filename_cmd="yt-dlp $GET_FILENAME_OPTS \"$YOUTUBE_URL\""
 
 echo "Determining filename using: $get_filename_cmd"
 ACTUAL_VIDEO_FILE=$(eval "$get_filename_cmd")
