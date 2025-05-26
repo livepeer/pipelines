@@ -13,7 +13,7 @@ fi
 YOUTUBE_URL="${YOUTUBE_URL_STREAM1}"
 RTMP_TARGET="${RTMP_TARGET_STREAM1}"
 
-DOWNLOAD_DIR="/app/data" # Define download directory
+DOWNLOAD_DIR="/app/data"
 COOKIES_FILE="/app/cookies.txt"
 
 USER_AGENT="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
@@ -26,9 +26,8 @@ RESTART_DELAY="10"
 if [ -z "$YOUTUBE_URL" ]; then echo "Error: YOUTUBE_URL_STREAM1 environment variable is not set." >&2; exit 1; fi
 if [ -z "$RTMP_TARGET" ]; then echo "Error: RTMP_TARGET_STREAM1 environment variable is not set." >&2; exit 1; fi
 
-mkdir -p "$DOWNLOAD_DIR" # Ensure download directory exists
+mkdir -p "$DOWNLOAD_DIR"
 
-# Determine the actual video file path
 set -- yt-dlp --no-progress --get-filename -f "$FORMAT_SELECTOR" --merge-output-format mp4
 if [ -f "$COOKIES_FILE" ]; then
   set -- "$@" --cookies "$COOKIES_FILE"
@@ -40,7 +39,7 @@ ACTUAL_VIDEO_FILE=$("$@")
 
 if [ -z "$ACTUAL_VIDEO_FILE" ]; then
   echo "Error: yt-dlp --get-filename failed to determine video filename for $YOUTUBE_URL." >&2
-  echo "yt-dlp command was: $@" >&2 # Log the command arguments
+  echo "yt-dlp command was: $@" >&2
   exit 1
 fi
 echo "Determined video file path: $ACTUAL_VIDEO_FILE"
@@ -61,7 +60,7 @@ if [ ! -f "$ACTUAL_VIDEO_FILE" ]; then
   echo "Running command: $@"
   if ! "$@"; then
     echo "Download failed for $YOUTUBE_URL. Please check the URL and network." >&2
-    rm -f "$ACTUAL_VIDEO_FILE" # Attempt to clean up partially downloaded file
+    rm -f "$ACTUAL_VIDEO_FILE"
     exit 1
   fi
   echo "Download success: $ACTUAL_VIDEO_FILE"
