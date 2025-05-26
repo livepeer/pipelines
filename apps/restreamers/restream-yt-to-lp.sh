@@ -5,6 +5,7 @@ RTMP_TARGET="${RTMP_TARGET_STREAM1}"
 
 LOCAL_VIDEO_PATH="/app/data/youtube_video.mp4"
 YTDLP_FORMAT="bv[vcodec~=^h264][height<=1080]+ba[acodec~=^aac]/b[vcodec~=^h264][height<=1080]/bv*+ba/b"
+YTDLP_OPTS="--user-agent 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' --extractor-args 'youtube:player_client=web' --no-check-certificates"
 FFMPEG_INPUT_OPTS="-re"
 FFMPEG_CODEC_OPTS="-c copy"
 FFMPEG_OUTPUT_OPTS="-f flv"
@@ -21,7 +22,7 @@ if [ ! -f "$LOCAL_VIDEO_PATH" ]; then
   success=false
   for i in $(seq 1 "$DOWNLOAD_ATTEMPTS"); do
     echo "Download attempt $i/$DOWNLOAD_ATTEMPTS..."
-    yt-dlp --no-progress --cookies-from-browser -o "$LOCAL_VIDEO_PATH.tmp" "$YOUTUBE_URL" && \
+    yt-dlp --no-progress $YTDLP_OPTS -o "$LOCAL_VIDEO_PATH.tmp" "$YOUTUBE_URL" && \
     mv "$LOCAL_VIDEO_PATH.tmp" "$LOCAL_VIDEO_PATH" && \
     echo "Download success: $LOCAL_VIDEO_PATH" && \
     success=true && break
