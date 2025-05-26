@@ -4,7 +4,7 @@ YOUTUBE_URL="${YOUTUBE_URL_STREAM1}"
 RTMP_TARGET="${RTMP_TARGET_STREAM1}"
 
 LOCAL_VIDEO_PATH="/app/data/youtube_video.mp4"
-YTDLP_OPTS="--user-agent 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' --no-check-certificates --merge-output-format mp4 --no-playlist --format 'best[ext=mp4]/best' --no-part"
+YTDLP_OPTS="--user-agent 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' --no-check-certificates --merge-output-format mp4 --no-playlist --format 'best[ext=mp4]/best' --no-part --force-overwrites --no-continue"
 FFMPEG_INPUT_OPTS="-re"
 FFMPEG_CODEC_OPTS="-c copy"
 FFMPEG_OUTPUT_OPTS="-f flv"
@@ -25,10 +25,24 @@ if [ ! -f "$LOCAL_VIDEO_PATH" ]; then
     rm -f "$LOCAL_VIDEO_PATH.tmp"*
     # Use a unique temp filename to avoid conflicts
     temp_file="$LOCAL_VIDEO_PATH.tmp.$$"
-    yt-dlp --no-progress $YTDLP_OPTS -o "$temp_file" "$YOUTUBE_URL" && \
-    mv "$temp_file" "$LOCAL_VIDEO_PATH" && \
-    echo "Download success: $LOCAL_VIDEO_PATH" && \
-    success=true && break
+    echo "Running: yt-dlp $YTDLP_OPTS -o \"$temp_file\" \"$YOUTUBE_URL\""
+    if yt-dlp --no-progress $YTDLP_OPTS -o "$temp_file" "$YOUTUBE_URL"; then
+      if [ -f "$temp_file" ]; then
+        mv "$temp_file" "$LOCAL_VIDEO_PATH" && \
+        echo "Download success: $LOCAL_VIDEO_PATH" && \
+        success=true && break
+      else
+        echo "Download completed but file not found: $temp_file" >&2
+        # Check if file was created with different extension
+        found_file=$(find "$(dirname "$temp_file")" -name "$(basename "$temp_file")*" -type f | head -1)
+        if [ -n "$found_file" ]; then
+          echo "Found file with different name: $found_file"
+          mv "$found_file" "$LOCAL_VIDEO_PATH" && \
+          echo "Download success: $LOCAL_VIDEO_PATH" && \
+          success=true && break
+        fi
+      fi
+    fi
     echo "Download failed (attempt $i). Retrying in 5 seconds..." >&2
     rm -f "$temp_file"*
     sleep 5
