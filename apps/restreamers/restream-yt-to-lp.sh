@@ -31,7 +31,7 @@ mkdir -p "$(dirname "$LOCAL_VIDEO_PATH")"
 if [ ! -f "$LOCAL_VIDEO_PATH" ]; then
   echo "Local file '$LOCAL_VIDEO_PATH' not found. Downloading from YouTube: $YOUTUBE_URL"
   
-  ytdlp_cmd="yt-dlp --no-progress --user-agent \"$USER_AGENT\" --no-check-certificates --merge-output-format mp4 --no-playlist --format \"$FORMAT_SELECTOR\" --no-part --force-overwrites --no-continue"
+  ytdlp_cmd="yt-dlp --no-progress"
   
   # Add cookies if file exists
   if [ -f "$COOKIES_FILE" ]; then
