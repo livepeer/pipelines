@@ -205,7 +205,7 @@ export function PromptPanel({
           "w-full h-full flex flex-col bg-[#FBFBFB] rounded-xl",
           isMobile
             ? "rounded-none bg-transparent overflow-hidden"
-            : "md:rounded-xl",
+            : "md:rounded-xl overflow-hidden",
         )}
       >
         <div
