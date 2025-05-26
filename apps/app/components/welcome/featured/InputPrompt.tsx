@@ -249,14 +249,14 @@ export const InputPrompt = ({ onPromptSubmit }: InputPromptProps) => {
     incrementPromptVersion();
   };
 
-  // Auto close the assistant toast after 30secs
-  useEffect(() => {
-    if (!isNewUser) return;
-    const timer = setTimeout(() => {
-      setIsNewUser(false);
-    }, 30000);
-    return () => clearTimeout(timer);
-  }, [isNewUser]);
+  // uncomment to auto close the assistant toast after 15 secs
+  // useEffect(() => {
+  //   if (!isNewUser) return;
+  //   const timer = setTimeout(() => {
+  //     setIsNewUser(false);
+  //   }, 15000);
+  //   return () => clearTimeout(timer);
+  // }, [isNewUser]);
 
   const generatePrompt = async () => {
     try {
@@ -471,6 +471,7 @@ export const InputPrompt = ({ onPromptSubmit }: InputPromptProps) => {
                     onClick={e => {
                       e.preventDefault();
                       if (aiModeEnabled) {
+                        setInputValue("")
                         generatePrompt();
                       } else {
                         submitPrompt();

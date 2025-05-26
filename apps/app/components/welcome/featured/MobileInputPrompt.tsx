@@ -111,14 +111,14 @@ export const MobileInputPrompt = ({
     }
   }, [lastSubmittedPrompt, restoreLastPrompt]);
 
-  // Auto close the assistant toast after 30secs
-  useEffect(() => {
-    if (!isNewUser) return;
-    const timer = setTimeout(() => {
-      setIsNewUser(false);
-    }, 30000);
-    return () => clearTimeout(timer);
-  }, [isNewUser]);
+  // uncomment to auto close the assistant toast after 15 secs
+  // useEffect(() => {
+  //   if (!isNewUser) return;
+  //   const timer = setTimeout(() => {
+  //     setIsNewUser(false);
+  //   }, 15000);
+  //   return () => clearTimeout(timer);
+  // }, [isNewUser]);
 
   const {
     commandMenuOpen,
@@ -461,6 +461,7 @@ export const MobileInputPrompt = ({
                     onClick={e => {
                       e.preventDefault();
                       if (aiModeEnabled) {
+                        
                         generatePrompt();
                       } else {
                         submitPrompt();
