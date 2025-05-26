@@ -41,13 +41,13 @@ if [ ! -f "$LOCAL_VIDEO_PATH" ]; then
     echo "No cookies file found at $COOKIES_FILE - proceeding without cookies"
   fi
   
-  # Output directly to the final path
-  ytdlp_cmd="$ytdlp_cmd -o \"$LOCAL_VIDEO_PATH\" \"$YOUTUBE_URL\""
+  output_template_for_ytdlp="${LOCAL_VIDEO_PATH%.*}"
+  ytdlp_cmd="$ytdlp_cmd -o "$output_template_for_ytdlp" "$YOUTUBE_URL""
   
   echo "Running: $ytdlp_cmd"
   if ! eval "$ytdlp_cmd"; then
     echo "Download failed for $YOUTUBE_URL. Please check the URL and network." >&2
-    rm -f "$LOCAL_VIDEO_PATH" # Attempt to clean up partially downloaded file
+    rm -f "$LOCAL_VIDEO_PATH"
     exit 1
   fi
   echo "Download success: $LOCAL_VIDEO_PATH"
