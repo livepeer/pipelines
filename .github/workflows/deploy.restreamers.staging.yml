@@ -91,7 +91,7 @@ jobs:
 
             echo "Deploying app '$CURRENT_APP_NAME' to region '$FLY_REGION'..."
             # Deploy from the restreamers directory where fly.toml is located
-            flyctl deploy -a "$CURRENT_APP_NAME" --region "$FLY_REGION" --ha=false --strategy immediate --config fly.toml --dockerfile Dockerfile
+            flyctl deploy -a "$CURRENT_APP_NAME" --regions "$FLY_REGION" --ha=false --strategy immediate --config fly.toml --dockerfile Dockerfile
 
             echo "::endgroup::"
             # Optional: sleep 5 
