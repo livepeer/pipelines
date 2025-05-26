@@ -28,7 +28,7 @@ jobs:
           RTMP_TARGETS2_STR: ${{ vars.RESTREAMER_TRANSFORMED_RTMP_TARGETS }}
           YOUTUBE_COOKIES_BASE64: ${{ secrets.YOUTUBE_COOKIES_BASE64 }}
           FLY_ORG: livepeer-673
-          FLY_REGION: lax
+          FLY_REGION: fra
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
         run: |
           IFS=',' read -r -a APP_NAME_ARRAY <<< "$APP_NAMES_STR"
