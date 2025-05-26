@@ -29,19 +29,18 @@ if [ -z "$RTMP_TARGET" ]; then echo "Error: RTMP_TARGET_STREAM1 environment vari
 mkdir -p "$DOWNLOAD_DIR" # Ensure download directory exists
 
 # Determine the actual video file path
-GET_FILENAME_OPTS="--no-progress --get-filename -f \\"$FORMAT_SELECTOR\\" --merge-output-format mp4"
+set -- yt-dlp --no-progress --get-filename -f "$FORMAT_SELECTOR" --merge-output-format mp4
 if [ -f "$COOKIES_FILE" ]; then
-  GET_FILENAME_OPTS="$GET_FILENAME_OPTS --cookies \"$COOKIES_FILE\""
+  set -- "$@" --cookies "$COOKIES_FILE"
 fi
-GET_FILENAME_OPTS="$GET_FILENAME_OPTS -o \"${DOWNLOAD_DIR}/%(title)s.%(ext)s\""
-get_filename_cmd="yt-dlp $GET_FILENAME_OPTS \"$YOUTUBE_URL\""
+set -- "$@" -o "${DOWNLOAD_DIR}/%(title)s.%(ext)s" "$YOUTUBE_URL"
 
-echo "Determining filename using: $get_filename_cmd"
-ACTUAL_VIDEO_FILE=$(eval "$get_filename_cmd")
+echo "Determining filename using command: $@"
+ACTUAL_VIDEO_FILE=$("$@")
 
 if [ -z "$ACTUAL_VIDEO_FILE" ]; then
   echo "Error: yt-dlp --get-filename failed to determine video filename for $YOUTUBE_URL." >&2
-  echo "yt-dlp command was: $get_filename_cmd" >&2
+  echo "yt-dlp command was: $@" >&2 # Log the command arguments
   exit 1
 fi
 echo "Determined video file path: $ACTUAL_VIDEO_FILE"
@@ -50,21 +49,17 @@ echo "Determined video file path: $ACTUAL_VIDEO_FILE"
 if [ ! -f "$ACTUAL_VIDEO_FILE" ]; then
   echo "Local file '$ACTUAL_VIDEO_FILE' not found. Downloading from YouTube: $YOUTUBE_URL"
   
-  ytdlp_cmd="yt-dlp --no-progress -f \\"$FORMAT_SELECTOR\\" --merge-output-format mp4"
-  
-  # Add cookies if file exists
+  set -- yt-dlp --no-progress -f "$FORMAT_SELECTOR" --merge-output-format mp4
   if [ -f "$COOKIES_FILE" ]; then
     echo "Using cookies file: $COOKIES_FILE"
-    ytdlp_cmd="$ytdlp_cmd --cookies \\"$COOKIES_FILE\\""
+    set -- "$@" --cookies "$COOKIES_FILE"
   else
     echo "No cookies file found at $COOKIES_FILE - proceeding without cookies"
   fi
+  set -- "$@" -o "$ACTUAL_VIDEO_FILE" "$YOUTUBE_URL"
   
-  # Output directly to the determined path
-  ytdlp_cmd="$ytdlp_cmd -o \\"$ACTUAL_VIDEO_FILE\\" \\"$YOUTUBE_URL\\""
-  
-  echo "Running: $ytdlp_cmd"
-  if ! eval "$ytdlp_cmd"; then
+  echo "Running command: $@"
+  if ! "$@"; then
     echo "Download failed for $YOUTUBE_URL. Please check the URL and network." >&2
     rm -f "$ACTUAL_VIDEO_FILE" # Attempt to clean up partially downloaded file
     exit 1
