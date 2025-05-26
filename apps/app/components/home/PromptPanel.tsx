@@ -253,6 +253,33 @@ export function PromptPanel({
           <Separator orientation="horizontal" className="bg-[#CECECE]/40" />
         </div>
 
+        {/* Add a horizontally scrollable div for the trending prompts only for mobile view */}
+
+        <div
+          className={cn(
+            "flex flex-row gap-2 overflow-x-auto mb-4 px-4",
+            isMobile ? "flex" : "hidden",
+          )}
+        >
+          {trendingPrompts.map((item, index) => (
+            <TrackedButton
+              key={index}
+              variant="outline"
+              size="sm"
+              className="rounded-md text-xs flex-1 min-w-0"
+              onClick={() => handleTrendingPromptClick(item.prompt)}
+              trackingEvent="trending_prompt_clicked"
+              trackingProperties={{
+                prompt_text: item.prompt,
+                display_text: item.display,
+                index,
+              }}
+            >
+              <span className="truncate">{item.display}</span>
+            </TrackedButton>
+          ))}
+        </div>
+
         <PromptForm
           ref={promptFormRef}
           onSubmit={onSubmit}
