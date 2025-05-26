@@ -26,7 +26,7 @@ if [ ! -f "$LOCAL_VIDEO_PATH" ]; then
     # Use a unique temp filename to avoid conflicts
     temp_file="$LOCAL_VIDEO_PATH.tmp.$$"
     echo "Running: yt-dlp $YTDLP_OPTS -o \"$temp_file\" \"$YOUTUBE_URL\""
-    if yt-dlp --no-progress $YTDLP_OPTS -o "$temp_file" "$YOUTUBE_URL"; then
+    if yt-dlp --no-progress $YTDLP_OPTS -o '$temp_file' '$YOUTUBE_URL'; then
       if [ -f "$temp_file" ]; then
         mv "$temp_file" "$LOCAL_VIDEO_PATH" && \
         echo "Download success: $LOCAL_VIDEO_PATH" && \
