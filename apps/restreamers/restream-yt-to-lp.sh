@@ -1,10 +1,20 @@
 #!/bin/ash
 
+if [ -n "$YOUTUBE_COOKIES_BASE64" ]; then
+    echo "Creating cookies file from environment variable..."
+    echo "$YOUTUBE_COOKIES_BASE64" | base64 -d > /app/cookies.txt
+    echo "Cookies file created successfully"
+elif [ -n "$YOUTUBE_COOKIES" ]; then
+    echo "Creating cookies file from plain text environment variable..."
+    echo "$YOUTUBE_COOKIES" > /app/cookies.txt
+    echo "Cookies file created successfully"
+fi
+
 YOUTUBE_URL="${YOUTUBE_URL_STREAM1}"
 RTMP_TARGET="${RTMP_TARGET_STREAM1}"
 
 LOCAL_VIDEO_PATH="/app/data/youtube_video.mp4"
-COOKIES_FILE="/app/youtube_cookies.txt"
+COOKIES_FILE="/app/cookies.txt"
 USER_AGENT="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 FORMAT_SELECTOR="best[ext=mp4][protocol^=https]/best[protocol^=https]/best"
 FFMPEG_INPUT_OPTS="-re"
@@ -28,7 +38,6 @@ if [ ! -f "$LOCAL_VIDEO_PATH" ]; then
     # Use a unique temp filename to avoid conflicts
     temp_file="$LOCAL_VIDEO_PATH.tmp.$$"
     
-    # Build yt-dlp command with optional cookies
     ytdlp_cmd="yt-dlp --no-progress --user-agent \"$USER_AGENT\" --no-check-certificates --merge-output-format mp4 --no-playlist --format \"$FORMAT_SELECTOR\" --no-part --force-overwrites --no-continue --max-downloads 1"
     
     # Add cookies if file exists
