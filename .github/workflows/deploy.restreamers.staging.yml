@@ -76,9 +76,20 @@ jobs:
             echo "::group::Deploying app: $CURRENT_APP_NAME"
 
             echo "Checking if app '$CURRENT_APP_NAME' exists or creating it..."
-            # Assuming FLY_ORG is correctly set from inputs
-            flyctl status -a "$CURRENT_APP_NAME" --org "$FLY_ORG" || \
-              flyctl apps create "$CURRENT_APP_NAME" --org "$FLY_ORG" --machines
+            
+            if ! flyctl status -a "$CURRENT_APP_NAME" >/dev/null 2>&1; then
+              echo "App '$CURRENT_APP_NAME' does not exist. Creating..."
+              flyctl apps create "$CURRENT_APP_NAME" --org "$FLY_ORG" --machines || {
+                echo "Warning: Failed to create app '$CURRENT_APP_NAME'. It might already exist."
+                # Verify the app exists now
+                if ! flyctl status -a "$CURRENT_APP_NAME" >/dev/null 2>&1; then
+                  echo "Error: App '$CURRENT_APP_NAME' still does not exist after creation attempt."
+                  continue
+                fi
+              }
+            else
+              echo "App '$CURRENT_APP_NAME' already exists."
+            fi
 
             echo "Setting secrets for app '$CURRENT_APP_NAME'..."
             # Corrected secret names
