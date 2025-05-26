@@ -4,6 +4,7 @@ YOUTUBE_URL="${YOUTUBE_URL_STREAM1}"
 RTMP_TARGET="${RTMP_TARGET_STREAM1}"
 
 LOCAL_VIDEO_PATH="/app/data/youtube_video.mp4"
+COOKIES_FILE="/app/youtube_cookies.txt"
 USER_AGENT="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 FORMAT_SELECTOR="best[ext=mp4][protocol^=https]/best[protocol^=https]/best"
 FFMPEG_INPUT_OPTS="-re"
@@ -26,19 +27,22 @@ if [ ! -f "$LOCAL_VIDEO_PATH" ]; then
     rm -f "$LOCAL_VIDEO_PATH.tmp"*
     # Use a unique temp filename to avoid conflicts
     temp_file="$LOCAL_VIDEO_PATH.tmp.$$"
-    echo "Running: yt-dlp with user-agent and format options -o \"$temp_file\" \"$YOUTUBE_URL\""
-    if yt-dlp --no-progress \
-        --user-agent "$USER_AGENT" \
-        --no-check-certificates \
-        --merge-output-format mp4 \
-        --no-playlist \
-        --format "$FORMAT_SELECTOR" \
-        --no-part \
-        --force-overwrites \
-        --no-continue \
-        --max-downloads 1 \
-        -o "$temp_file" \
-        "$YOUTUBE_URL"; then
+    
+    # Build yt-dlp command with optional cookies
+    ytdlp_cmd="yt-dlp --no-progress --user-agent \"$USER_AGENT\" --no-check-certificates --merge-output-format mp4 --no-playlist --format \"$FORMAT_SELECTOR\" --no-part --force-overwrites --no-continue --max-downloads 1"
+    
+    # Add cookies if file exists
+    if [ -f "$COOKIES_FILE" ]; then
+      echo "Using cookies file: $COOKIES_FILE"
+      ytdlp_cmd="$ytdlp_cmd --cookies \"$COOKIES_FILE\""
+    else
+      echo "No cookies file found at $COOKIES_FILE - proceeding without cookies"
+    fi
+    
+    ytdlp_cmd="$ytdlp_cmd -o \"$temp_file\" \"$YOUTUBE_URL\""
+    
+    echo "Running: $ytdlp_cmd"
+    if eval $ytdlp_cmd; then
       if [ -f "$temp_file" ]; then
         mv "$temp_file" "$LOCAL_VIDEO_PATH" && \
         echo "Download success: $LOCAL_VIDEO_PATH" && \
