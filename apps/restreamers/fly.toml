@@ -8,4 +8,4 @@ primary_region = "lax"
 
 [processes]
   lp_to_dd = "/app/restream-lp_to_dd.sh"
-  yt_to_lp    = "/app/restream-yt_to_lp.sh"
+  yt_to_lp = "/app/restream-yt_to_lp.sh"

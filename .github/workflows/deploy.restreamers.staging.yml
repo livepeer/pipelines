@@ -1,41 +1,16 @@
 name: Deploy Fly Restreamers
 
 on:
-  workflow_dispatch:
-    inputs:
-      app_names_csv:
-        description: "Comma-separated list of Fly App Names. Must be valid and globally unique for Fly.io."
-        required: true
-        type: string
-      youtube_urls_csv:
-        description: 'Comma-separated list of YouTube URLs (e.g., "urlA,urlB,urlC")'
-        required: true
-        type: string
-      rtmp_targets1_csv:
-        description: "Comma-separated list of RTMP Target 1 URLs for Stream 1"
-        required: true
-        type: string
-      hls_urls_csv:
-        description: "Comma-separated list of HLS Source URLs for Stream 2"
-        required: true
-        type: string
-      rtmp_targets2_csv:
-        description: "Comma-separated list of RTMP Target 2 URLs for Stream 2"
-        required: true
-        type: string
-      fly_org_slug:
-        description: "Your Fly.io organization slug"
-        required: true
-        type: string
-      fly_primary_region:
-        description: "Primary Fly.io region for all deployments (e.g., sea, lhr, nrt)"
-        required: true
-        type: string
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
 
 jobs:
   deploy_batch:
     name: Deploy Batch of Restreamers to Fly.io
     runs-on: ubuntu-latest
+    environment: staging
 
     steps:
       - name: Checkout code
@@ -46,14 +21,14 @@ jobs:
 
       - name: Parse Inputs and Deploy in Loop
         env:
+          APP_NAMES_STR: ${{ secrets.RESTREAMER_APP_NAMES }}
+          YOUTUBE_URLS_STR: ${{ secrets.RESTREAMER_ORIGINAL_YOUTUBE_URLS }}
+          RTMP_TARGETS1_STR: ${{ secrets.RESTREAMER_ORIGINAL_RTMP_TARGETS }}
+          HLS_URLS_STR: ${{ secrets.RESTREAMER_TRANSFORMED_HLS_URLS }}
+          RTMP_TARGETS2_STR: ${{ secrets.RESTREAMER_TRANSFORMED_RTMP_TARGETS }}
+          FLY_ORG: livepeer-673
+          FLY_REGION: lax
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
-          APP_NAMES_STR: ${{ github.event.inputs.app_names_csv }}
-          YOUTUBE_URLS_STR: ${{ github.event.inputs.youtube_urls_csv }}
-          RTMP_TARGETS1_STR: ${{ github.event.inputs.rtmp_targets1_csv }}
-          HLS_URLS_STR: ${{ github.event.inputs.hls_urls_csv }}
-          RTMP_TARGETS2_STR: ${{ github.event.inputs.rtmp_targets2_csv }}
-          FLY_ORG: ${{ github.event.inputs.fly_org_slug }}
-          FLY_REGION: ${{ github.event.inputs.fly_primary_region }}
         run: |
           IFS=',' read -r -a APP_NAME_ARRAY <<< "$APP_NAMES_STR"
           IFS=',' read -r -a YOUTUBE_URL_ARRAY <<< "$YOUTUBE_URLS_STR"
@@ -76,6 +51,8 @@ jobs:
           fi
 
           echo "Found $num_app_names configurations to process."
+
+          cd apps/restreamers
 
           for i in "${!APP_NAME_ARRAY[@]}"; do
             CURRENT_APP_NAME="${APP_NAME_ARRAY[$i]}"
@@ -113,10 +90,11 @@ jobs:
               PYTHONUNBUFFERED="1"
 
             echo "Deploying app '$CURRENT_APP_NAME' to region '$FLY_REGION'..."
-            # Assuming FLY_REGION is correctly set from inputs
-            flyctl deploy -a "$CURRENT_APP_NAME" --region "$FLY_REGION" --ha=false --strategy immediate
-            
+            # Deploy from the restreamers directory where fly.toml is located
+            flyctl deploy -a "$CURRENT_APP_NAME" --region "$FLY_REGION" --ha=false --strategy immediate --config fly.toml --dockerfile Dockerfile
+
             echo "::endgroup::"
             # Optional: sleep 5 
+
           done
           echo "All $num_app_names configurations processed."
