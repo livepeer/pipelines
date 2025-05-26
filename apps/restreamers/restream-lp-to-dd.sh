@@ -6,7 +6,7 @@ RTMP_TARGET="${RTMP_TARGET_STREAM2}"
 RW_TIMEOUT="10000000"
 CONNECT_TIMEOUT="10000000"
 FFMPEG_INPUT_OPTS="-re -analyzeduration 2000000 -probesize 10000000 -fflags +genpts"
-FFMPEG_CODEC_OPTS="-c copy -avoid_negative_ts make_zero"
+FFMPEG_CODEC_OPTS="-c:v libx264 -preset ultrafast -crf 23 -vf scale=-2:720 -c:a aac -b:a 128k -avoid_negative_ts make_zero"
 FFMPEG_OUTPUT_OPTS="-f flv -flvflags no_duration_filesize"
 RESTART_DELAY="5"
 
