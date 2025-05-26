@@ -21,7 +21,7 @@ FORMAT_SELECTOR="best[ext=mp4][protocol^=https]/best[protocol^=https]/best"
 FFMPEG_INPUT_OPTS="-re"
 FFMPEG_CODEC_OPTS="-c copy"
 FFMPEG_OUTPUT_OPTS="-f flv"
-RESTART_DELAY="1"
+RESTART_DELAY="10"
 
 if [ -z "$YOUTUBE_URL" ]; then echo "Error: YOUTUBE_URL_STREAM1 environment variable is not set." >&2; exit 1; fi
 if [ -z "$RTMP_TARGET" ]; then echo "Error: RTMP_TARGET_STREAM1 environment variable is not set." >&2; exit 1; fi
