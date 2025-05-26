@@ -5,9 +5,9 @@ RTMP_TARGET="${RTMP_TARGET_STREAM2}"
 
 RW_TIMEOUT="10000000"
 CONNECT_TIMEOUT="10000000"
-FFMPEG_INPUT_OPTS="-re"
-FFMPEG_CODEC_OPTS="-c copy"
-FFMPEG_OUTPUT_OPTS="-f flv"
+FFMPEG_INPUT_OPTS="-re -analyzeduration 2000000 -probesize 10000000 -fflags +genpts"
+FFMPEG_CODEC_OPTS="-c copy -avoid_negative_ts make_zero"
+FFMPEG_OUTPUT_OPTS="-f flv -flvflags no_duration_filesize"
 RESTART_DELAY="5"
 
 if [ -z "$HLS_SOURCE_URL" ]; then echo "Error: HLS_URL_STREAM2 environment variable is not set." >&2; exit 1; fi
@@ -22,8 +22,11 @@ while true; do
     -timeout "$CONNECT_TIMEOUT" \
     $FFMPEG_INPUT_OPTS \
     -i "$HLS_SOURCE_URL" \
+    -map 0:v:0 -map 0:a:0 \
     $FFMPEG_CODEC_OPTS \
     $FFMPEG_OUTPUT_OPTS "$RTMP_TARGET"
-  echo "Stream 2 ffmpeg process terminated. Restarting in $RESTART_DELAY seconds..."
+  
+  exit_code=$?
+  echo "Stream 2 ffmpeg process terminated with exit code: $exit_code. Restarting in $RESTART_DELAY seconds..."
   sleep "$RESTART_DELAY"
 done
