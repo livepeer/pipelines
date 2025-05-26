@@ -15,6 +15,16 @@ RTMP_TARGET="${RTMP_TARGET_STREAM1}"
 
 LOCAL_VIDEO_PATH="/app/data/youtube_video.mp4"
 COOKIES_FILE="/app/cookies.txt"
+
+# Debug: Print cookies file content if it exists
+if [ -f "$COOKIES_FILE" ]; then
+    echo "=== DEBUG: Cookies file content ==="
+    cat "$COOKIES_FILE"
+    echo "=== End of cookies file content ==="
+else
+    echo "=== DEBUG: Cookies file not found at $COOKIES_FILE ==="
+fi
+
 USER_AGENT="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 FORMAT_SELECTOR="best[ext=mp4][protocol^=https]/best[protocol^=https]/best"
 FFMPEG_INPUT_OPTS="-re"
