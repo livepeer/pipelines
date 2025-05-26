@@ -2,6 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
+body {
+  height: -webkit-fill-available;
+}
+
+html {
+  height: -webkit-fill-available;
+}
+
 @layer base {
   :root {
     --background: 0 0% 93%;
@@ -239,7 +247,12 @@
   position: relative;
   overflow: visible;
   border: 1.5px solid transparent;
-  background: linear-gradient(90deg, #FFFFFF 0%, #EFF1F3 49%, #FDFDFD 100%) !important;
+  background: linear-gradient(
+    90deg,
+    #ffffff 0%,
+    #eff1f3 49%,
+    #fdfdfd 100%
+  ) !important;
   border-radius: 8px;
 }
 
@@ -255,7 +268,7 @@
     #9a9a9a 50deg,
     #333333 70deg,
     #9a9a9a 90deg,
-    #A3DAF3 210deg,
+    #a3daf3 210deg,
     #ffffff 240deg,
     #83a5b5 280deg
   );
@@ -404,7 +417,8 @@
 }
 
 .loading-gradient {
-  background: linear-gradient(40deg, 
+  background: linear-gradient(
+    40deg,
     #ffffff 0%,
     #f3f4f6 25%,
     #b2cad1 50%,

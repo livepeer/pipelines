@@ -13,10 +13,12 @@ import { VideoSection } from "@/components/home/VideoSection";
 import { PromptPanel } from "@/components/home/PromptPanel";
 import { HeroSection } from "@/components/home/HeroSection";
 import { Footer } from "@/components/home/Footer";
-import TutorialModal from "./components/TutorialModal";
 import track from "@/lib/track";
 import { PromptItem } from "@/app/api/prompts/types";
 import useMount from "@/hooks/useMount";
+import { HeaderSection } from "@/components/home/HeaderSection";
+import { cn } from "@repo/design-system/lib/utils";
+import useMobileStore from "@/hooks/useMobileStore";
 
 export default function MultiplayerHomepage({
   children,
@@ -29,14 +31,12 @@ export default function MultiplayerHomepage({
   const { setIsGuestUser } = useGuestUserStore();
   const [animationStarted, setAnimationStarted] = useState(false);
   const [showContent, setShowContent] = useState(false);
-  const [isTutorialModalOpen, setIsTutorialModalOpen] = useState(false);
-  const [isMounted, setIsMounted] = useState(false);
-  const [showFooter, setShowFooter] = useState(false);
   const promptFormRef = useRef<HTMLFormElement>(null);
   const [optimisticPrompts, setOptimisticPrompts] = useState<PromptItem[]>([]);
-  const [isMobile, setIsMobile] = useState(false);
   const searchParams = useSearchParams();
   const utmSource = searchParams.get("utm_source");
+
+  const { isMobile } = useMobileStore();
 
   useMount(() => {
     track("home_page_viewed", {
@@ -90,36 +90,6 @@ export default function MultiplayerHomepage({
       return () => clearTimeout(timer);
     }
   }, [ready]);
-
-  useEffect(() => {
-    setIsMounted(true);
-
-    // Check if device is mobile
-    const checkIsMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-
-    checkIsMobile();
-    window.addEventListener("resize", checkIsMobile);
-
-    return () => window.removeEventListener("resize", checkIsMobile);
-  }, []);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const mainContent = document.getElementById("player");
-      if (mainContent) {
-        const rect = mainContent.getBoundingClientRect();
-        setShowFooter(rect.top <= 56);
-      }
-    };
-
-    const container = containerRef.current;
-    if (container) {
-      container.addEventListener("scroll", handleScroll);
-      return () => container.removeEventListener("scroll", handleScroll);
-    }
-  }, [containerRef]);
 
   const handlePromptSubmit = getHandleSubmit(async value => {
     const sessionId = "optimistic-" + Date.now();
@@ -187,51 +157,44 @@ export default function MultiplayerHomepage({
             />
             <div
               id="player"
-              className={`relative flex flex-col md:flex-row gap-0 md:gap-8 w-full overflow-hidden pb-14 md:px-8 ${isMobile ? "h-[100dvh] bg-black" : ""}`}
-              style={{ height: isMobile ? "100vh" : "100vh" }}
+              className={`relative flex flex-col gap-0 md:gap-8 w-full overflow-hidden md:px-8 h-[100vh]`}
             >
-              <VideoSection
-                isMobile={isMobile}
-                onTryCameraClick={handleButtonClick}
-                buttonText={authenticated ? "Create" : "Use your camera"}
-              />
-
-              <PromptPanel
-                promptQueue={[...optimisticPrompts, ...promptState.promptQueue]}
-                displayedPrompts={promptState.displayedPrompts}
-                promptAvatarSeeds={promptState.promptAvatarSeeds}
-                userPromptIndices={promptState.userPromptIndices}
-                onSubmit={handlePromptSubmit}
-                promptValue={prompt}
-                onPromptChange={handlePromptChange}
-                setPromptValue={setPrompt}
-                isThrottled={isThrottled}
-                throttleTimeLeft={throttleTimeLeft}
-                onTryCameraClick={handleButtonClick}
-                buttonText={authenticated ? "Create" : "Use your camera"}
-                isAuthenticated={authenticated}
-                promptFormRef={promptFormRef}
-                isMobile={isMobile}
-              />
+              <div className="absolute inset-0 -z-10 opacity-50">
+                <CloudBackground
+                  animationStarted={animationStarted}
+                  getCloudTransform={getCloudTransform}
+                />
+              </div>
+              <HeaderSection onTryCameraClick={handleButtonClick} />
+              <div
+                className={cn(
+                  "relative flex flex-1 flex-row w-full gap-6 h-[calc(100%-10rem)]",
+                  isMobile && "flex-col gap-0",
+                )}
+              >
+                <VideoSection />
+                <PromptPanel
+                  promptQueue={[
+                    ...optimisticPrompts,
+                    ...promptState.promptQueue,
+                  ]}
+                  displayedPrompts={promptState.displayedPrompts}
+                  promptAvatarSeeds={promptState.promptAvatarSeeds}
+                  userPromptIndices={promptState.userPromptIndices}
+                  onSubmit={handlePromptSubmit}
+                  promptValue={prompt}
+                  onPromptChange={handlePromptChange}
+                  setPromptValue={setPrompt}
+                  isThrottled={isThrottled}
+                  throttleTimeLeft={throttleTimeLeft}
+                  promptFormRef={promptFormRef}
+                  isMobile={isMobile}
+                />
+              </div>
+              <Footer isMobile={isMobile} />
             </div>
           </div>
         </div>
-
-        <div
-          style={{ width: "calc(100vw - 15px)" }}
-          className="hidden md:block fixed bottom-0 left-0 z-20"
-        >
-          <Footer showFooter={true} />
-        </div>
-
-        <div className="md:hidden fixed bottom-0 left-0 w-full z-20">
-          <Footer showFooter={true} isMobile={true} />
-        </div>
-
-        <TutorialModal
-          isOpen={isTutorialModalOpen}
-          onClose={() => setIsTutorialModalOpen(false)}
-        />
       </div>
       {children}
     </>
