@@ -17,7 +17,7 @@ DOWNLOAD_DIR="/app/data" # Define download directory
 COOKIES_FILE="/app/cookies.txt"
 
 USER_AGENT="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-FORMAT_SELECTOR="bestvideo[height<=480][vcodec^=avc][ext=mp4]+bestaudio[acodec=aac][ext=m4a]/bestvideo[height<=480][vcodec^=avc][ext=mp4]+bestaudio/bestvideo[height<=480][ext=mp4]+bestaudio/best[ext=mp4][height<=480]/best[height<=480]"
+FORMAT_SELECTOR="bestvideo[height<=360][vcodec^=avc][ext=mp4]+bestaudio[acodec=aac][ext=m4a]/bestvideo[height<=360][vcodec^=avc][ext=mp4]+bestaudio/bestvideo[height<=360][ext=mp4]+bestaudio/best[ext=mp4][height<=360]/best[height<=360]"
 FFMPEG_INPUT_OPTS="-re"
 FFMPEG_CODEC_OPTS="-c:v copy -c:a aac -ar 44100 -b:a 128k"
 FFMPEG_OUTPUT_OPTS="-f flv"
