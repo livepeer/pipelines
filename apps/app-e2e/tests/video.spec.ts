@@ -2,7 +2,6 @@ import { expect, test } from "@playwright/test";
 import {
   assertVideoContentChanging,
   assertVideoPlaying,
-  selectWhipServer,
   BROADCAST_VIDEO_TEST_ID,
   MIN,
   NUM_SCREENSHOTS,
@@ -10,6 +9,7 @@ import {
   PLAYBACK_VIDEO_TEST_ID,
   SCREENSHOT_INTERVAL_MS,
   SEND_METRICS,
+  regionalPath,
 } from "./common";
 import {
   ENVIRONMENT,
@@ -41,83 +41,142 @@ if (!APP_URL) {
   );
 }
 
-test.describe("Daydream Page Tests", () => {
-  test.beforeEach(async ({ page, context }) => {
-    await context.grantPermissions(["camera", "microphone"]);
-    await page.goto(selectWhipServer("/create"));
-  });
+let RUN_COUNT = process.env.RUN_COUNT;
+if (!RUN_COUNT) {
+  RUN_COUNT = "1";
+}
 
-  test.afterEach(async ({}, testInfo) => {
-    if (SEND_METRICS) {
-      if (testInfo.status === "passed") {
-        testSuccessCounter.inc({
-          test_name: testInfo.title,
-          environment: ENVIRONMENT,
-        });
-      } else {
-        testFailureCounter.inc({
-          test_name: testInfo.title,
-          environment: ENVIRONMENT,
+const whipRegions = (process.env.WHIP_REGIONS || "").split(",");
+
+test.describe.parallel("Daydream Page Tests", () => {
+  whipRegions.forEach(region => {
+    test.describe.serial("Repeated runs", () => {
+      test.beforeEach(async ({ context }) => {
+        await context.grantPermissions(["camera", "microphone"]);
+      });
+
+      test.afterEach(async ({ page }, testInfo) => {
+        if (testInfo.status !== testInfo.expectedStatus) {
+          await page.screenshot({
+            path: `./screenshots/${testInfo.title}/error.png`,
+            fullPage: true,
+          });
+        }
+
+        if (SEND_METRICS) {
+          if (testInfo.status === "passed") {
+            testSuccessCounter.inc({
+              test_name: testInfo.title,
+              environment: ENVIRONMENT,
+            });
+          } else {
+            console.log(
+              `Test ${testInfo.title} failed, writing fail metric. Status: ${testInfo.status}`,
+            );
+            testFailureCounter.inc({
+              test_name: testInfo.title,
+              environment: ENVIRONMENT,
+            });
+          }
+
+          testDurationGauge.set(
+            { test_name: testInfo.title, environment: ENVIRONMENT },
+            testInfo.duration / 1000,
+          );
+
+          await pushMetrics();
+        }
+      });
+      for (let i = 0; i < parseInt(RUN_COUNT); i++) {
+        test(`video elements load and play correctly ${region}#${i + 1}`, async ({
+          page,
+        }) => {
+          try {
+            const path = regionalPath(region, "/create");
+            console.log(
+              `Running test ${i + 1} for region ${region} with path ${path}`,
+            );
+            await page.goto(path);
+            test.setTimeout(OVERALL_TEST_TIMEOUT_MS);
+            const testName = test.info().title;
+
+            const emailInput = page.getByTestId("email-input");
+            await expect(emailInput).toBeVisible({ timeout: 10 * MIN }); // Might still be building
+            await emailInput.fill(EMAIL);
+
+            await page.getByTestId("submit-email").click();
+
+            const otpForm = page.getByTestId("otp-form");
+            await expect(otpForm).toBeVisible({ timeout: MIN });
+            const otpInputElement = otpForm.locator("input");
+            await expect(otpInputElement).toBeAttached({ timeout: MIN });
+            await otpInputElement.fill(OTP_CODE);
+
+            const broadcast = page.getByTestId(BROADCAST_VIDEO_TEST_ID);
+            const playback = page.getByTestId(PLAYBACK_VIDEO_TEST_ID);
+
+            await page.locator('[title="Copy system info"]').click();
+            await page.waitForTimeout(10);
+            const clipboardText = await page.evaluate(async () => {
+              return await navigator.clipboard.readText();
+            });
+
+            console.log(`${region} Stream info: ${clipboardText}`);
+
+            await assertVideoPlaying(broadcast);
+            await assertVideoPlaying(playback);
+
+            const audioTracks = await playback.evaluate(
+              (video: HTMLVideoElement) => {
+                const stream = video.srcObject;
+                if (!(stream instanceof MediaStream)) return [];
+                return stream.getAudioTracks().map(t => ({
+                  kind: t.kind,
+                  label: t.label,
+                  enabled: t.enabled,
+                  muted: t.muted,
+                  readyState: t.readyState,
+                }));
+              },
+            );
+
+            expect(audioTracks.length).toBeGreaterThan(0);
+            expect(audioTracks[0].kind).toBe("audio");
+            expect(audioTracks[0].enabled).toBe(true);
+            expect(audioTracks[0].muted).toBe(false);
+            expect(audioTracks[0].readyState).toBe("live");
+
+            // sleep to leave the stream running for longer
+            console.log("Sleeping to allow the stream to run...");
+            await page.waitForTimeout(10 * 1000);
+
+            await assertVideoContentChanging(
+              broadcast,
+              testName,
+              "broadcast",
+              NUM_SCREENSHOTS,
+              SCREENSHOT_INTERVAL_MS,
+              100,
+              0.5,
+            );
+            await broadcast.evaluate(el => {
+              (el as HTMLElement).style.visibility = "hidden";
+            });
+            await assertVideoContentChanging(
+              playback,
+              testName,
+              "playback",
+              NUM_SCREENSHOTS,
+              SCREENSHOT_INTERVAL_MS,
+              2000,
+              3,
+            );
+          } catch (error) {
+            console.error("Error in test:", error);
+            throw error;
+          }
         });
       }
-
-      testDurationGauge.set(
-        { test_name: testInfo.title, environment: ENVIRONMENT },
-        testInfo.duration / 1000,
-      );
-
-      await pushMetrics();
-    }
-  });
-
-  test("video elements load and play correctly", async ({ page }) => {
-    test.setTimeout(OVERALL_TEST_TIMEOUT_MS);
-    const testName = test.info().title;
-
-    try {
-      const emailInput = page.getByTestId("email-input");
-      await expect(emailInput).toBeVisible({ timeout: 10 * MIN }); // Might still be building
-      await emailInput.fill(EMAIL);
-
-      await page.getByTestId("submit-email").click();
-
-      const otpForm = page.getByTestId("otp-form");
-      await expect(otpForm).toBeVisible({ timeout: MIN });
-      const otpInputElement = otpForm.locator("input");
-      await expect(otpInputElement).toBeAttached({ timeout: MIN });
-      await otpInputElement.fill(OTP_CODE);
-
-      const broadcast = page.getByTestId(BROADCAST_VIDEO_TEST_ID);
-      const playback = page.getByTestId(PLAYBACK_VIDEO_TEST_ID);
-
-      await assertVideoPlaying(broadcast);
-      await assertVideoPlaying(playback);
-
-      await assertVideoContentChanging(
-        broadcast,
-        testName,
-        "broadcast",
-        NUM_SCREENSHOTS,
-        SCREENSHOT_INTERVAL_MS,
-        100,
-        0.5,
-      );
-      await broadcast.evaluate(el => {
-        (el as HTMLElement).style.visibility = "hidden";
-      });
-      await assertVideoContentChanging(
-        playback,
-        testName,
-        "playback",
-        NUM_SCREENSHOTS,
-        SCREENSHOT_INTERVAL_MS,
-        3000,
-        3,
-      );
-    } catch (error) {
-      page.screenshot({ path: `./screenshots/error.png` });
-      console.error("Error in test:", error);
-      throw error;
-    }
+    });
   });
 });

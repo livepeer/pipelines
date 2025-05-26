@@ -49,6 +49,9 @@ export default defineConfig({
       name: "monitor",
       testIgnore: "*dev*",
       use: {
+        contextOptions: {
+          permissions: ["clipboard-read", "clipboard-write"],
+        },
         ...devices["Desktop Chrome"],
         channel: "chrome",
         headless: true,
