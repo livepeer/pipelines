@@ -174,7 +174,9 @@ export function extractSuggestions(response: string): {
 
   if (sectionMatch) {
     const rawSection = sectionMatch[0];
-    const suggestionItems = rawSection.matchAll(/(\d+)\.\s*(.+?)(?=\s*\d+\.\s*[A-Z]|$)/gs);
+    const suggestionItems = rawSection.matchAll(
+      /(\d+)\.\s*(.+?)(?=\s*\d+\.\s*[A-Z]|$)/gs,
+    );
     suggestions = Array.from(suggestionItems, m => m[2].trim());
     suggestions = suggestions.filter(
       (suggestion, index, arr) =>

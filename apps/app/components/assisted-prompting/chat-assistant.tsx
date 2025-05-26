@@ -55,14 +55,13 @@ export const ChatAssistant = ({
       if (container) {
         container.scrollTo({
           top: container.scrollHeight,
-          behavior: 'smooth'
+          behavior: "smooth",
         });
       }
     } else {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }
   }, [isMobile, messages]);
-
 
   useEffect(() => {
     const initialMessages: Message[] = [];

@@ -461,7 +461,6 @@ export const MobileInputPrompt = ({
                     onClick={e => {
                       e.preventDefault();
                       if (aiModeEnabled) {
-                        
                         generatePrompt();
                       } else {
                         submitPrompt();

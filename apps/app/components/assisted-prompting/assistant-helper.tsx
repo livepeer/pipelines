@@ -37,8 +37,8 @@ function AssistantHelper({ onClose, className }: AssistantHelperProps) {
         <h4 className="text-sm font-medium">Welcome to Daydream ⭐</h4>
 
         <p className="text-sm text-muted-foreground leading-relaxed">
-          New to prompting? Turn on the assisted mode to create
-          amazing transformations with plain English.
+          New to prompting? Turn on the assisted mode to create amazing
+          transformations with plain English.
         </p>
       </motion.div>
     </AnimatePresence>

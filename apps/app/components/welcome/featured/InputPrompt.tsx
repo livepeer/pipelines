@@ -471,7 +471,7 @@ export const InputPrompt = ({ onPromptSubmit }: InputPromptProps) => {
                     onClick={e => {
                       e.preventDefault();
                       if (aiModeEnabled) {
-                        setInputValue("")
+                        setInputValue("");
                         generatePrompt();
                       } else {
                         submitPrompt();
