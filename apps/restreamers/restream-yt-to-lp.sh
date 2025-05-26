@@ -17,7 +17,7 @@ LOCAL_VIDEO_PATH="/app/data/youtube_video.mp4"
 COOKIES_FILE="/app/cookies.txt"
 
 USER_AGENT="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-FORMAT_SELECTOR="best[ext=mp4][protocol^=https]/best[protocol^=https]/best"
+FORMAT_SELECTOR="bestvideo[vcodec^=avc][ext=mp4]+bestaudio[acodec=aac][ext=m4a]/bestvideo[vcodec^=avc][ext=mp4]+bestaudio/bestvideo[ext=mp4]+bestaudio/best[ext=mp4]/best"
 FFMPEG_INPUT_OPTS="-re"
 FFMPEG_CODEC_OPTS="-c copy"
 FFMPEG_OUTPUT_OPTS="-f flv"
@@ -31,7 +31,7 @@ mkdir -p "$(dirname "$LOCAL_VIDEO_PATH")"
 if [ ! -f "$LOCAL_VIDEO_PATH" ]; then
   echo "Local file '$LOCAL_VIDEO_PATH' not found. Downloading from YouTube: $YOUTUBE_URL"
   
-  ytdlp_cmd="yt-dlp --no-progress"
+  ytdlp_cmd="yt-dlp --no-progress -f \\"$FORMAT_SELECTOR\\" --merge-output-format mp4"
   
   # Add cookies if file exists
   if [ -f "$COOKIES_FILE" ]; then
