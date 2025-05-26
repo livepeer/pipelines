@@ -253,10 +253,9 @@ export const InputPrompt = ({ onPromptSubmit }: InputPromptProps) => {
     if (!isNewUser) return;
     const timer = setTimeout(() => {
       setIsNewUser(false);
-    },8000);
+    }, 15000);
     return () => clearTimeout(timer);
   }, [isNewUser]);
-  
 
   const generatePrompt = async () => {
     try {

@@ -56,18 +56,20 @@ The following keywords should be used in the prompt if provided: ${
     } 
 
 IMPORTANT FORMATTING INSTRUCTION:
-At the end of your response, include a section titled "What's New". For example:
+Include a section titled "What's New". For example:
 
 What's New:
 1. Created a Knowledge Base File
 2. Modular Code Structure
 
-After this section, end with a question to the user about potential changes and suggest 3 changes you feel would improve the current prompt. For example:
+After the What's New section, add a section titled "Would you like to improve the prompt further?" 
+IMPORTANT: This section MUST contain EXACTLY 3 suggestions in this format:
 
-Would you like to improve the prompt further? 
-1. Add a beautiful sunset background
-2. Add more details to appearance
-3. Reduce the creativity for more consistent character
+Would you like to improve the prompt further?
+1. First suggestion
+2. Second suggestion 
+3. Third suggestion
+
 
 
 Here's our conversation so far:
@@ -165,16 +167,21 @@ export function extractSuggestions(response: string): {
   suggestions: string[];
 } {
   const sectionRegex =
-    /Would you like to improve the prompt further\?([\s\S]*?)(?=\n\n|$)/i;
+    /Would you like to improve the prompt further\?[\s\S]*?(\d+\..*?)(?=\n\n|$)/gis;
   const sectionMatch = response.match(sectionRegex);
   let suggestions: string[] = [];
   let content = response;
 
   if (sectionMatch) {
     const rawSection = sectionMatch[0];
-    const lineRegex = /^\s*\d+\.\s*(.+)$/gm;
-    suggestions = Array.from(rawSection.matchAll(lineRegex), m => m[1].trim());
-    content = response.replace(sectionRegex, "").trim();
+
+    const suggestionItems = rawSection.matchAll(/\d+\.\s*(.+?)(?=\s*\d+\.|$)/g);
+    suggestions = Array.from(suggestionItems, m => m[1].trim());
+
+    content = response.replace(
+      rawSection,
+      "Would you like to improve the prompt further?",
+    );
   }
 
   // Split content into main prompt and "What's New" section
@@ -191,8 +198,7 @@ export function extractSuggestions(response: string): {
       .replace(/^\n/, "")
       .trim();
 
-    // Combine everything with proper spacing
-    const finalContent = `${processedMainPrompt}\n\nWhat's New:\n${formattedWhatsNew}`;
+    const finalContent = `${processedMainPrompt}\n\nWhat's New:\n${formattedWhatsNew}\n\nWould you like to improve the prompt further? you can`;
 
     return { content: finalContent, suggestions };
   } else {

@@ -111,6 +111,14 @@ export const MobileInputPrompt = ({
     }
   }, [lastSubmittedPrompt, restoreLastPrompt]);
 
+  useEffect(() => {
+    if (!isNewUser) return;
+    const timer = setTimeout(() => {
+      setIsNewUser(false);
+    }, 15000);
+    return () => clearTimeout(timer);
+  }, [isNewUser]);
+
   const {
     commandMenuOpen,
     filteredOptions,
@@ -535,6 +543,8 @@ export const MobileInputPrompt = ({
           onOpenChange={setChatAssistantOpen}
         />
       )}
+
+      {isNewUser && <AssistantHelper onClose={() => setIsNewUser(false)} />}
 
       {settingsOpened && (
         <SettingsMenu

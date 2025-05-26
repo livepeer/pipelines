@@ -64,13 +64,13 @@ export const ChatAssistant = ({
     if (initialPrompt) {
       initialMessages.push({
         role: "assistant",
-        content: `Hi 👋, I can help you enhance prompt:\n\n"${initialPrompt}"\n\nHow would you like to improve it?`,
+        content: `${initialPrompt}\n\nHow would you like to enhance your prompt?`,
       });
     } else {
       initialMessages.push({
         role: "assistant",
         content:
-          "Hi 👋, I can help you create amazing Daydream transformations! Just describe your desired character or scene, and I'll craft the perfect prompt. \n\nℹ️ Quick tip: minimize the assistant and use the generate button to explore randomly!",
+          "Hi! Tell me your vision and I'll create the perfect prompt. \n\nℹ️ Quick tip: minimize this window and use the generate button to explore randomly!",
       });
     }
 
@@ -140,7 +140,7 @@ export const ChatAssistant = ({
       {
         role: "assistant",
         content:
-          "Hi 👋 I can help you create amazing Daydream transformations! Just describe your desired character or scene and I'll craft the perfect prompt. \n\nℹ️ Quick tip: minimize the assistant and use the generate button to explore randomly!",
+        "Hi! Tell me your vision and I'll create the perfect prompt. \n\nℹ️ Quick tip: minimize this window and use the generate button to explore randomly!",
       },
     ]);
     setTimeout(() => inputRef.current?.focus(), 100);

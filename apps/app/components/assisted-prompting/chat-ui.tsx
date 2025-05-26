@@ -4,6 +4,7 @@ import { Send, Loader2, Settings, X, RotateCcw } from "lucide-react";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Separator } from "@repo/design-system/components/ui/separator";
 import { presets } from "@/lib/prompting/constants";
+import { cleanPromptParameters } from "@/lib/prompting/groq";
 
 interface Message {
   role: "user" | "assistant";
@@ -104,9 +105,9 @@ export const ChatUI = ({
           <Button
             onClick={handleReset}
             size={isMobile ? "sm" : "default"}
-            className="bg-zinc-800 text-xs cursor-pointer hover:bg-zinc-700 text-white sm:text-sm rounded-md px-2 sm:px-3 py-1"
+            className="bg-zinc-800 text-xs cursor-pointer hover:bg-zinc-700 text-white rounded-md px-2 sm:px-3 py-1"
           >
-            <RotateCcw /> Reset
+            <RotateCcw size={16} /> Reset
           </Button>
           <Separator orientation="vertical" className="bg-gray-400" />
           <button
@@ -124,55 +125,51 @@ export const ChatUI = ({
         >
           <div className="flex-1 overflow-y-auto no-scrollbar p-4 space-y-4 bg-gray-50">
             {messages.map((message, index) => {
+              const lastAssistantIndex = messages
+                .map(m => m.role)
+                .lastIndexOf("assistant");
               const isLastAssistant =
-                message.role === "assistant" &&
-                index ===
-                  [...messages].map(m => m.role).lastIndexOf("assistant");
+                message.role === "assistant" && index === lastAssistantIndex;
 
               return (
                 <div
                   key={index}
-                  className={`flex ${
-                    message.role === "user" ? "justify-end" : "justify-start"
-                  }`}
+                  className={`flex ${message.role === "user" ? "justify-end" : "justify-start"} mb-4`}
                 >
                   <div
-                    className={`max-w-[80%] p-3 rounded-xl ${
-                      message.role === "user"
-                        ? "bg-zinc-800 text-white"
-                        : "bg-gray-200 text-gray-800"
-                    }`}
+                    className={`max-w-[80%] ${message.role === "user" ? "text-right" : ""}`}
                   >
-                    <div className="whitespace-pre-wrap text-sm">
-                      {message.content}
+                    {/* Message Bubble */}
+                    <div
+                      className={`p-3 text-sm rounded-lg ${
+                        message.role === "user"
+                          ? "bg-zinc-800 text-white"
+                          : "bg-zinc-200 text-gray-800"
+                      }`}
+                    >
+                      {cleanPromptParameters(message.content)}
                     </div>
 
-                    {isLastAssistant &&
-                      suggestions.length > 0 &&
-                      (() => {
-                        console.log(
-                          `Rendering suggestions for last assistant message (index ${index})`,
-                        );
-                        console.log("Suggestions:", suggestions);
-                        return (
-                          <div className="mt-3 pt-2 border-t border-gray-300">
-                            <div className="text-xs text-gray-600 mb-2 font-medium">
-                              Try these suggestions:
-                            </div>
-                            <div className="flex flex-wrap gap-2">
-                              {suggestions.map((text, i) => (
-                                <button
-                                  key={i}
-                                  onClick={() => handleSuggestion(text)}
-                                  className="px-3 py-1.5 text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 hover:text-blue-800 rounded-full transition-all duration-200 border border-blue-200 hover:border-blue-300 cursor-pointer font-medium"
-                                >
-                                  {text}
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-                        );
-                      })()}
+                    {isLastAssistant && suggestions.length > 0 && (
+                      <div className="flex items-center gap-2 mt-2">
+                        {suggestions.map((text, i) => (
+                          <React.Fragment key={i}>
+                            <button
+                              onClick={() => handleSuggestion(text)}
+                              className="p-0 m-0 text-gray-500 text-xs cursor-pointer"
+                            >
+                              {text}
+                            </button>
+                            {i < suggestions.length - 1 && (
+                              <Separator
+                                orientation="vertical"
+                                className="h-6"
+                              />
+                            )}
+                          </React.Fragment>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               );
@@ -180,9 +177,9 @@ export const ChatUI = ({
 
             {isLoading && (
               <div className="flex justify-start">
-                <div className="max-w-[80%] p-3 rounded-xl bg-gray-200 text-gray-800 flex gap-2 text-sm">
+                <div className="max-w-[80%] p-3 rounded-xl bg-gray-200 text-gray-800 flex gap-1 text-sm">
                   <Loader2 className="h-5 w-5 animate-spin text-gray-500" />
-                  Thinking..
+                  thinking...
                 </div>
               </div>
             )}
