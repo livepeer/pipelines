@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/ash
 
 HLS_SOURCE_URL="${HLS_URL_STREAM2}"
 RTMP_TARGET="${RTMP_TARGET_STREAM2}"
