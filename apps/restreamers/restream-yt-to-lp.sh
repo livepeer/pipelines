@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/ash
 
 YOUTUBE_URL="${YOUTUBE_URL_STREAM1}"
 RTMP_TARGET="${RTMP_TARGET_STREAM1}"
