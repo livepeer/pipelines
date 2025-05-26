@@ -48,7 +48,7 @@ if [ ! -f "$LOCAL_VIDEO_PATH" ]; then
     # Use a unique temp filename to avoid conflicts
     temp_file="$LOCAL_VIDEO_PATH.tmp.$$"
     
-    ytdlp_cmd="yt-dlp --no-progress --user-agent \"$USER_AGENT\" --no-check-certificates --merge-output-format mp4 --no-playlist --format \"$FORMAT_SELECTOR\" --no-part --force-overwrites --no-continue --max-downloads 1"
+    ytdlp_cmd="yt-dlp --no-progress --user-agent \"$USER_AGENT\" --no-check-certificates --merge-output-format mp4 --no-playlist --format \"$FORMAT_SELECTOR\" --no-part --force-overwrites --no-continue"
     
     # Add cookies if file exists
     if [ -f "$COOKIES_FILE" ]; then
