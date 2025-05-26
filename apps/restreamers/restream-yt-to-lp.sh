@@ -4,7 +4,7 @@ YOUTUBE_URL="${YOUTUBE_URL_STREAM1}"
 RTMP_TARGET="${RTMP_TARGET_STREAM1}"
 
 LOCAL_VIDEO_PATH="/app/data/youtube_video.mp4"
-YTDLP_OPTS="--user-agent 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' --no-check-certificates --merge-output-format mp4 --no-playlist"
+YTDLP_OPTS="--user-agent 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' --no-check-certificates --merge-output-format mp4 --no-playlist --format 'best[ext=mp4]/best' --no-part"
 FFMPEG_INPUT_OPTS="-re"
 FFMPEG_CODEC_OPTS="-c copy"
 FFMPEG_OUTPUT_OPTS="-f flv"
@@ -21,16 +21,21 @@ if [ ! -f "$LOCAL_VIDEO_PATH" ]; then
   success=false
   for i in $(seq 1 "$DOWNLOAD_ATTEMPTS"); do
     echo "Download attempt $i/$DOWNLOAD_ATTEMPTS..."
-    yt-dlp --no-progress $YTDLP_OPTS  -o "$LOCAL_VIDEO_PATH.tmp" "$YOUTUBE_URL" && \
-    mv "$LOCAL_VIDEO_PATH.tmp" "$LOCAL_VIDEO_PATH" && \
+    # Clean up any existing temp files first
+    rm -f "$LOCAL_VIDEO_PATH.tmp"*
+    # Use a unique temp filename to avoid conflicts
+    temp_file="$LOCAL_VIDEO_PATH.tmp.$$"
+    yt-dlp --no-progress $YTDLP_OPTS -o "$temp_file" "$YOUTUBE_URL" && \
+    mv "$temp_file" "$LOCAL_VIDEO_PATH" && \
     echo "Download success: $LOCAL_VIDEO_PATH" && \
     success=true && break
     echo "Download failed (attempt $i). Retrying in 5 seconds..." >&2
+    rm -f "$temp_file"*
     sleep 5
   done
   if [ "$success" = false ]; then
     echo "Final download failed: $YOUTUBE_URL" >&2
-    rm -f "$LOCAL_VIDEO_PATH.tmp"
+    rm -f "$LOCAL_VIDEO_PATH.tmp"*
     exit 1
   fi
 else
