@@ -55,7 +55,7 @@ test.describe.parallel("Daydream Page Tests", () => {
         await context.grantPermissions(["camera", "microphone"]);
       });
 
-      test.afterEach(async ({  }, testInfo) => {
+      test.afterEach(async ({}, testInfo) => {
         // if (testInfo.status !== testInfo.expectedStatus) {
         //   await page.screenshot({
         //     path: `./screenshots/${testInfo.title}/error.png`,
