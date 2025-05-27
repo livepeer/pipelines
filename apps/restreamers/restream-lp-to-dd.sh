@@ -16,8 +16,7 @@ if [ -z "$RTMP_TARGET" ]; then echo "Error: RTMP_TARGET_STREAM2 environment vari
 echo "Stream 2 starting: HLS ($HLS_SOURCE_URL) -> AI Ingest ($RTMP_TARGET)"
 echo "FFMPEG options: -rw_timeout $RW_TIMEOUT -timeout $CONNECT_TIMEOUT $FFMPEG_INPUT_OPTS -i "$HLS_SOURCE_URL" $FFMPEG_CODEC_OPTS $FFMPEG_OUTPUT_OPTS"
 
-sleep 30
-
+sleep 90
 while true; do
   ffmpeg \
     -rw_timeout "$RW_TIMEOUT" \
