@@ -1,5 +1,8 @@
 primary_region = "fra"
 
+[deploy]
+  strategy = "immediate"
+
 [build]
   dockerfile = "Dockerfile"
 
