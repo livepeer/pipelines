@@ -43,13 +43,17 @@ export function VideoSection() {
 
   return (
     <div
-      className={cn("flex flex-col w-full", isMobile ? "h-fit" : "md:w-[70%]")}
+      className={cn(
+        "flex flex-col w-full relative",
+        isMobile ? "h-fit" : "md:w-[70%]",
+      )}
     >
+      <MultiplayerStreamSelector />
       <div
         className={cn(
           "w-full relative overflow-hidden bg-black/10 backdrop-blur-sm shadow-lg",
           isMobile
-            ? "aspect-video rounded-none min-h-[220px] h-[42%]"
+            ? "aspect-video rounded-none min-h-[220px] h-[50%]"
             : "md:rounded-xl md:aspect-video h-[calc(100%)]",
         )}
       >
@@ -113,8 +117,6 @@ export function VideoSection() {
               )}
             </div>
           )}
-
-          <MultiplayerStreamSelector />
         </div>
       </div>
     </div>
@@ -170,6 +172,7 @@ export const useMultiplayerStreamStore = create<MultiplayerStreamStore>(
 );
 
 const MultiplayerStreamSelector = () => {
+  const { isMobile } = useMobileStore();
   const { streams, currentStream, setCurrentStream } =
     useMultiplayerStreamStore();
 
@@ -180,15 +183,24 @@ const MultiplayerStreamSelector = () => {
   if (!streams || streams.length === 0) return null;
 
   return (
-    <div className="absolute flex justify-end w-full gap-3 p-4">
+    <div
+      className={cn(
+        "flex justify-start w-full gap-3 p-4 overflow-x-auto",
+        isMobile ? "flex px-4 py-2" : " absolute z-[9999] justify-end",
+      )}
+    >
       {streams.map((stream, index) => (
         <Button
           key={stream.streamKey}
+          variant="outline"
           className={cn(
-            `border rounded-lg bg-black`,
+            `rounded-md bg-white text-black text-xs `,
             currentStream?.streamKey === stream.streamKey
-              ? "border-indigo-600 ring-2 ring-indigo-600/50 shadow-md shadow-indigo-600/30"
-              : "border-neutral-600",
+              ? isMobile
+                ? "outline outline-2 outline-offset-1"
+                : "outline outline-2 outline-offset-2 outline-white"
+              : "",
+            isMobile ? "min-w-[calc(30%)]" : "",
           )}
           onClick={() => {
             if (currentStream?.streamKey === stream.streamKey) return;

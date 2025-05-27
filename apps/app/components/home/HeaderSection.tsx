@@ -19,7 +19,9 @@ export const HeaderSection = ({
     <div
       className={cn(
         "flex flex-row w-full justify-between items-center h-12 pt-4",
-        isMobile ? "px-4 pt-0" : "-mb-2",
+        isMobile
+          ? "px-4 pt-0 top-0 left-0 right-0 z-50 bg-transparent"
+          : "-mb-2",
       )}
     >
       <h1

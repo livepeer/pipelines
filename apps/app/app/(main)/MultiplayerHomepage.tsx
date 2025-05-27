@@ -133,16 +133,15 @@ export default function MultiplayerHomepage({
 
   return (
     <>
-      <div className="fixed inset-0 z-[1000] w-screen h-screen overflow-hidden">
+      <div className="fixed inset-0 w-screen h-screen overflow-hidden scrollbar-gutter-stable">
+        <CloudBackground
+          animationStarted={animationStarted}
+          getCloudTransform={getCloudTransform}
+        />
         <div
           ref={containerRef}
           className="w-full h-full flex flex-col justify-start relative overflow-y-auto scrollbar-gutter-stable"
         >
-          <CloudBackground
-            animationStarted={animationStarted}
-            getCloudTransform={getCloudTransform}
-          />
-
           <div
             className={`z-10 w-full p-0 md:px-4 md:pt-0 flex flex-col transition-all duration-1000 ease-in-out ${
               showContent ? "opacity-100 scale-100" : "opacity-0 scale-[0.98]"
