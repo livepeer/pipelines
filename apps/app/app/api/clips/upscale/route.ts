@@ -24,7 +24,10 @@ export async function POST(req: Request) {
     if (clipUrl.startsWith("blob:")) {
       console.error("Received blob URL, which is not supported on the server");
       return NextResponse.json(
-        { error: "Blob URLs are not supported. Please upload the file first and provide a direct URL." },
+        {
+          error:
+            "Blob URLs are not supported. Please upload the file first and provide a direct URL.",
+        },
         { status: 400 },
       );
     }
@@ -70,7 +73,7 @@ export async function POST(req: Request) {
         status: response.status,
         statusText: response.statusText,
         body: errorText,
-        headers: Object.fromEntries(response.headers.entries())
+        headers: Object.fromEntries(response.headers.entries()),
       });
       throw new Error(`Failed to upscale video: ${response.statusText}`);
     }
@@ -115,8 +118,8 @@ export async function POST(req: Request) {
   } catch (error: any) {
     console.error("Error in upscale endpoint:", {
       error,
-      errorMessage: error instanceof Error ? error.message : 'Unknown error',
-      errorStack: error instanceof Error ? error.stack : undefined
+      errorMessage: error instanceof Error ? error.message : "Unknown error",
+      errorStack: error instanceof Error ? error.stack : undefined,
     });
 
     // Update job status to failed if we have a jobId
@@ -126,7 +129,7 @@ export async function POST(req: Request) {
           .update(upscaleJobs)
           .set({
             status: "failed",
-            error: error instanceof Error ? error.message : 'Unknown error',
+            error: error instanceof Error ? error.message : "Unknown error",
           })
           .where(eq(upscaleJobs.id, jobId));
         console.log("Successfully updated job status to failed");

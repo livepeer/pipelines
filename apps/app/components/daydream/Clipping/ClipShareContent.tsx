@@ -67,17 +67,17 @@ export default function ClipShareContent({ clipData }: ClipShareContentProps) {
       console.log("Uploading to Supabase...");
       const supabase = createBrowserClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       );
       const timestamp = Date.now();
       const uniqueFileName = `upscale-inputs/${timestamp}-${nanoid()}.mp4`;
-      
+
       const { data, error } = await supabase.storage
         .from("assets")
         .upload(uniqueFileName, videoBlob, {
           contentType: "video/mp4",
           cacheControl: "3600",
-          upsert: true
+          upsert: true,
         });
 
       if (error) {
