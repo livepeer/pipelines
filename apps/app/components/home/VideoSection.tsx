@@ -122,6 +122,7 @@ export function VideoSection() {
 }
 
 interface MultiplayerStream {
+  name: string;
   originalPlaybackId: string;
   transformedPlaybackId: string;
   streamKey: string;
@@ -137,6 +138,14 @@ interface MultiplayerStreamStore {
 export const useMultiplayerStreamStore = create<MultiplayerStreamStore>(
   set => ({
     streams: (() => {
+      const names =
+        process.env.NEXT_PUBLIC_MULTIPLAYER_STREAM_NAME?.split(",").map(name =>
+          name
+            .split("-")
+            .map(word => word.trim())
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(" "),
+        ) || [];
       const originalIds =
         process.env.NEXT_PUBLIC_ORIGINAL_PLAYBACK_ID?.split(",") || [];
       const transformedIds =
@@ -145,6 +154,7 @@ export const useMultiplayerStreamStore = create<MultiplayerStreamStore>(
         process.env.NEXT_PUBLIC_MULTIPLAYER_STREAM_KEY?.split(",") || [];
 
       const minLength = Math.min(
+        names.length,
         originalIds.length,
         transformedIds.length,
         streamKeys.length,
@@ -153,6 +163,8 @@ export const useMultiplayerStreamStore = create<MultiplayerStreamStore>(
       if (minLength === 0) return [];
 
       return Array.from({ length: minLength }, (_, i) => ({
+        name: names[i].trim(),
+
         originalPlaybackId: originalIds[i].trim(),
         transformedPlaybackId: transformedIds[i].trim(),
         streamKey: streamKeys[i].trim(),
@@ -185,7 +197,7 @@ const MultiplayerStreamSelector = () => {
         <Button
           key={stream.streamKey}
           className={cn(
-            `border rounded-lg bg-black`,
+            `border rounded-xl bg-black text-neutral-300 py-4 px-5 flex items-center`,
             currentStream?.streamKey === stream.streamKey
               ? "border-indigo-600 ring-2 ring-indigo-600/50 shadow-md shadow-indigo-600/30"
               : "border-neutral-600",
@@ -195,7 +207,7 @@ const MultiplayerStreamSelector = () => {
             setCurrentStream(stream);
           }}
         >
-          Stream {index + 1}
+          {stream.name}
         </Button>
       ))}
     </div>
