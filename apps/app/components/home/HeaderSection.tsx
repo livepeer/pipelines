@@ -7,8 +7,10 @@ import { Camera } from "lucide-react";
 
 export const HeaderSection = ({
   onTryCameraClick,
+  className,
 }: {
   onTryCameraClick: () => void;
+  className?: string;
 }) => {
   const { authenticated } = usePrivy();
   const { isMobile } = useMobileStore();
@@ -18,10 +20,11 @@ export const HeaderSection = ({
   return (
     <div
       className={cn(
-        "flex flex-row w-full justify-between items-center h-12 pt-4",
+        "flex flex-row w-full justify-between items-center h-12 pt-4 z-[9999]",
         isMobile
           ? "px-4 pt-0 top-0 left-0 right-0 z-50 bg-transparent"
           : "-mb-2",
+        className,
       )}
     >
       <h1

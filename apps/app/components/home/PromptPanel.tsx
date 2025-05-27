@@ -229,7 +229,7 @@ export function PromptPanel({
           ></div>
           <div
             className={cn(
-              "flex justify-between items-center gap-2 h-12 px-6 py-2 z-[999]",
+              "flex justify-between items-center gap-2 h-12 px-6 py-3 z-[999]",
               !isMobile && "hidden",
             )}
           >

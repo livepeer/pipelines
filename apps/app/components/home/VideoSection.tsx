@@ -70,7 +70,10 @@ export function VideoSection() {
                 playbackId={currentStream?.transformedPlaybackId}
                 autoPlay={true}
                 muted={false}
-                className="w-[120%] h-[120%] absolute left-[-10%] top-[-10%]"
+                className={cn(
+                  "w-[120%] h-[120%] absolute left-[-10%] top-[-10%]",
+                  isMobile ? "w-[130%] h-[130%]" : "",
+                )}
                 objectFit="cover"
                 env="monster"
                 lowLatency="force"
@@ -81,7 +84,10 @@ export function VideoSection() {
                   playbackId: currentStream?.transformedPlaybackId,
                   lowLatency: true,
                 })}
-                className="absolute w-[120%] h-[120%] left-[-10%] top-[-10%] md:w-[120%] md:h-[120%] md:left-[-10%] md:top-[-10%]"
+                className={cn(
+                  "absolute w-[120%] h-[120%] left-[-10%] top-[-10%] md:w-[120%] md:h-[120%] md:left-[-10%] md:top-[-10%]",
+                  isMobile ? "w-[130%] h-[130%] left-[-15%] top-[-15%]" : "",
+                )}
                 style={{ overflow: "hidden" }}
                 allow="autoplay; fullscreen"
                 allowFullScreen

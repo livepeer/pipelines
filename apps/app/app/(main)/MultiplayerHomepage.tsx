@@ -138,6 +138,12 @@ export default function MultiplayerHomepage({
           animationStarted={animationStarted}
           getCloudTransform={getCloudTransform}
         />
+        {isMobile && (
+          <HeaderSection
+            onTryCameraClick={handleButtonClick}
+            className="fixed backdrop-blur-sm"
+          />
+        )}
         <div
           ref={containerRef}
           className="w-full h-full flex flex-col justify-start relative overflow-y-auto scrollbar-gutter-stable"
@@ -156,7 +162,10 @@ export default function MultiplayerHomepage({
             />
             <div
               id="player"
-              className={`relative flex flex-col gap-0 md:gap-8 w-full overflow-hidden md:px-8 h-[100vh]`}
+              className={cn(
+                "relative flex flex-col gap-0 md:gap-8 w-full overflow-hidden md:px-8 h-[100vh]",
+                isMobile && "h-[calc(100vh-4rem)]",
+              )}
             >
               <div className="absolute inset-0 -z-10 opacity-50">
                 <CloudBackground
@@ -164,7 +173,9 @@ export default function MultiplayerHomepage({
                   getCloudTransform={getCloudTransform}
                 />
               </div>
-              <HeaderSection onTryCameraClick={handleButtonClick} />
+              {!isMobile && (
+                <HeaderSection onTryCameraClick={handleButtonClick} />
+              )}
               <div
                 className={cn(
                   "relative flex flex-1 flex-row w-full gap-6 h-[calc(100%-10rem)]",
