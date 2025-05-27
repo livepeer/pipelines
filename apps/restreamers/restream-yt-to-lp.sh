@@ -22,8 +22,8 @@ FFMPEG_INPUT_OPTS="-re"
 FFMPEG_CODEC_OPTS="-c copy"
 FFMPEG_OUTPUT_OPTS="-f flv"
 
-KEYFRAME_GOP_SIZE="60" # Keyframe interval (GOP size). e.g., 60 for 2s at 30fps. Adjust as needed.
-PRE_ENCODE_VIDEO_OPTS="-c:v libx264 -g $KEYFRAME_GOP_SIZE -preset veryfast -tune zerolatency -pix_fmt yuv420p"
+KEYFRAME_GOP_SIZE="60"
+PRE_ENCODE_VIDEO_OPTS="-c:v libx264 -g $KEYFRAME_GOP_SIZE -preset veryfast -tune zerolatency -pix_fmt yuv420p -crf 30"
 PRE_ENCODE_AUDIO_OPTS="-c:a aac -ar 44100 -b:a 128k"
 
 RESTART_DELAY="10"
@@ -73,7 +73,6 @@ else
   echo "Using local file: $ACTUAL_VIDEO_FILE"
 fi
 
-# Prepare filename for the streamable version
 SOURCE_BASENAME=$(basename "$ACTUAL_VIDEO_FILE")
 SOURCE_EXTENSION="${SOURCE_BASENAME##*.}"
 SOURCE_FILENAME_NO_EXT="${SOURCE_BASENAME%.*}"
