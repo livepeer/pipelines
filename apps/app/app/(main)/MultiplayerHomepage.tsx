@@ -149,7 +149,7 @@ export default function MultiplayerHomepage({
           className="w-full h-full flex flex-col justify-start relative overflow-y-auto scrollbar-gutter-stable"
         >
           <div
-            className={`z-10 w-full p-0 md:px-4 md:pt-0 flex flex-col transition-all duration-1000 ease-in-out ${
+            className={`z-10 w-full p-0 md:pt-0 flex flex-col transition-all duration-1000 ease-in-out ${
               showContent ? "opacity-100 scale-100" : "opacity-0 scale-[0.98]"
             }`}
           >
@@ -163,8 +163,8 @@ export default function MultiplayerHomepage({
             <div
               id="player"
               className={cn(
-                "relative flex flex-col gap-0 md:gap-8 w-full overflow-hidden md:px-8 h-[100vh]",
-                isMobile && "h-[calc(100vh-4rem)]",
+                "relative flex flex-col gap-0 md:gap-8 w-full overflow-hidden h-[100vh]",
+                isMobile && "h-[calc(100vh-3rem)]",
               )}
             >
               <div className="absolute inset-0 -z-10 opacity-50">
@@ -174,11 +174,14 @@ export default function MultiplayerHomepage({
                 />
               </div>
               {!isMobile && (
-                <HeaderSection onTryCameraClick={handleButtonClick} />
+                <HeaderSection
+                  onTryCameraClick={handleButtonClick}
+                  className="md:px-12"
+                />
               )}
               <div
                 className={cn(
-                  "relative flex flex-1 flex-row w-full gap-6 h-[calc(100%-10rem)]",
+                  "relative flex flex-1 flex-row w-full gap-6 h-[calc(100%-10rem)] md:px-12",
                   isMobile && "flex-col gap-0",
                 )}
               >

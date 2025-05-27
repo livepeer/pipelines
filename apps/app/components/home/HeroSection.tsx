@@ -102,8 +102,8 @@ export const HeroSection = ({
   return (
     <section
       className={cn(
-        "relative w-full h-[100vh] flex flex-col",
-        isMobile && "h-[calc(100vh-4rem)] mt-12",
+        "relative w-full h-[100vh] flex flex-col md:px-4",
+        isMobile && "h-[calc(100vh-3rem)] mt-12",
       )}
     >
       {/* Header */}

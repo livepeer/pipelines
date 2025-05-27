@@ -44,7 +44,7 @@ export function VideoSection() {
   return (
     <div
       className={cn(
-        "flex flex-col w-full relative",
+        "flex flex-col w-full relative overflow-hidden",
         isMobile ? "h-fit" : "md:w-[70%]",
       )}
     >
@@ -53,7 +53,7 @@ export function VideoSection() {
         className={cn(
           "w-full relative overflow-hidden bg-black/10 backdrop-blur-sm shadow-lg",
           isMobile
-            ? "aspect-video rounded-none min-h-[220px] h-[50%]"
+            ? "aspect-video rounded-none h-[calc(100%)]"
             : "md:rounded-xl md:aspect-video h-[calc(100%)]",
         )}
       >
@@ -204,12 +204,13 @@ const MultiplayerStreamSelector = () => {
     <div
       className={cn(
         "flex justify-start w-full gap-3 p-4 overflow-x-auto",
-        isMobile ? "flex px-4 py-2" : " absolute z-[9999] justify-end",
+        isMobile ? "flex p-4" : " absolute z-[9999] justify-end",
       )}
     >
       {streams.map((stream, index) => (
         <Button
           key={stream.streamKey}
+          size="sm"
           variant="outline"
           className={cn(
             `rounded-md bg-white text-black text-xs `,

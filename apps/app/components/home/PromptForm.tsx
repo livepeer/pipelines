@@ -81,11 +81,6 @@ export const PromptForm = forwardRef<HTMLFormElement, PromptFormProps>(
       if (textareaRef.current) {
         textareaRef.current.style.height = "auto";
 
-        if (isMobile) {
-          textareaRef.current.style.height = "44px";
-          return;
-        }
-
         const scrollHeight = textareaRef.current.scrollHeight;
         const minHeight = 56;
         const maxHeight = 150;

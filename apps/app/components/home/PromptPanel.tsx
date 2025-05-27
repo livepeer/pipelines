@@ -91,6 +91,16 @@ const allTrendingPrompts = [
   },
 ];
 
+const getPromptQueueText = (length: number) => {
+  if (length === 0) {
+    return "No prompts in queue";
+  }
+  if (length === 1) {
+    return "1 prompt in queue";
+  }
+  return `${length} prompts in queue`;
+};
+
 interface PromptPanelProps {
   promptQueue: PromptItem[];
   displayedPrompts: string[];
@@ -235,7 +245,7 @@ export function PromptPanel({
           >
             <p className="text-sm font-bold">Live Prompting</p>
             <p className="text-xs font-light">
-              {promptQueue.length} prompts in queue
+              {getPromptQueueText(promptQueue.length)}
             </p>
           </div>
           <PromptDisplay
