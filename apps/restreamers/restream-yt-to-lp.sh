@@ -49,7 +49,7 @@ echo "Determined video file path: $ACTUAL_VIDEO_FILE"
 if [ ! -f "$ACTUAL_VIDEO_FILE" ]; then
   echo "Local file '$ACTUAL_VIDEO_FILE' not found. Downloading from YouTube: $YOUTUBE_URL"
   
-  set -- yt-dlp --no-progress -f "$FORMAT_SELECTOR" --merge-output-format mp4
+  set -- yt-dlp --no-progress -f "$FORMAT_SELECTOR" --merge-output-format mp4 --ppa "ffmpeg:-c:v copy -c:a aac -ar 44100 -b:a 128k"
   if [ -f "$COOKIES_FILE" ]; then
     echo "Using cookies file: $COOKIES_FILE"
     set -- "$@" --cookies "$COOKIES_FILE"
