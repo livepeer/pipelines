@@ -43,13 +43,17 @@ export function VideoSection() {
 
   return (
     <div
-      className={cn("flex flex-col w-full", isMobile ? "h-fit" : "md:w-[70%]")}
+      className={cn(
+        "flex flex-col w-full relative overflow-hidden",
+        isMobile ? "h-fit" : "md:w-[70%]",
+      )}
     >
+      <MultiplayerStreamSelector />
       <div
         className={cn(
           "w-full relative overflow-hidden bg-black/10 backdrop-blur-sm shadow-lg",
           isMobile
-            ? "aspect-video rounded-none min-h-[220px] h-[42%]"
+            ? "aspect-video rounded-none h-[calc(100%)]"
             : "md:rounded-xl md:aspect-video h-[calc(100%)]",
         )}
       >
@@ -66,7 +70,10 @@ export function VideoSection() {
                 playbackId={currentStream?.transformedPlaybackId}
                 autoPlay={true}
                 muted={false}
-                className="w-[120%] h-[120%] absolute left-[-10%] top-[-10%]"
+                className={cn(
+                  "w-[120%] h-[120%] absolute left-[-10%] top-[-10%]",
+                  isMobile ? "w-[130%] h-[130%]" : "",
+                )}
                 objectFit="cover"
                 env="monster"
                 lowLatency="force"
@@ -77,7 +84,10 @@ export function VideoSection() {
                   playbackId: currentStream?.transformedPlaybackId,
                   lowLatency: true,
                 })}
-                className="absolute w-[120%] h-[120%] left-[-10%] top-[-10%] md:w-[120%] md:h-[120%] md:left-[-10%] md:top-[-10%]"
+                className={cn(
+                  "absolute w-[120%] h-[120%] left-[-10%] top-[-10%] md:w-[120%] md:h-[120%] md:left-[-10%] md:top-[-10%]",
+                  isMobile ? "w-[130%] h-[130%] left-[-15%] top-[-15%]" : "",
+                )}
                 style={{ overflow: "hidden" }}
                 allow="autoplay; fullscreen"
                 allowFullScreen
@@ -113,8 +123,6 @@ export function VideoSection() {
               )}
             </div>
           )}
-
-          <MultiplayerStreamSelector />
         </div>
       </div>
     </div>
@@ -182,6 +190,7 @@ export const useMultiplayerStreamStore = create<MultiplayerStreamStore>(
 );
 
 const MultiplayerStreamSelector = () => {
+  const { isMobile } = useMobileStore();
   const { streams, currentStream, setCurrentStream } =
     useMultiplayerStreamStore();
 
@@ -192,15 +201,25 @@ const MultiplayerStreamSelector = () => {
   if (!streams || streams.length === 0) return null;
 
   return (
-    <div className="absolute flex justify-end w-full gap-3 p-4">
+    <div
+      className={cn(
+        "flex justify-start w-full gap-3 p-4 overflow-x-auto",
+        isMobile ? "flex p-4" : " absolute z-[9999] justify-end",
+      )}
+    >
       {streams.map((stream, index) => (
         <Button
           key={stream.streamKey}
+          size="sm"
+          variant="outline"
           className={cn(
-            `border rounded-xl bg-black text-neutral-300 py-4 px-5 flex items-center`,
+            `rounded-md bg-white text-black text-xs `,
             currentStream?.streamKey === stream.streamKey
-              ? "border-indigo-600 ring-2 ring-indigo-600/50 shadow-md shadow-indigo-600/30"
-              : "border-neutral-600",
+              ? isMobile
+                ? "outline outline-2 outline-offset-1"
+                : "outline outline-2 outline-offset-2 outline-white"
+              : "",
+            isMobile ? "min-w-[calc(30%)]" : "",
           )}
           onClick={() => {
             if (currentStream?.streamKey === stream.streamKey) return;

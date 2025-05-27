@@ -91,6 +91,16 @@ const allTrendingPrompts = [
   },
 ];
 
+const getPromptQueueText = (length: number) => {
+  if (length === 0) {
+    return "No prompts in queue";
+  }
+  if (length === 1) {
+    return "1 prompt in queue";
+  }
+  return `${length} prompts in queue`;
+};
+
 interface PromptPanelProps {
   promptQueue: PromptItem[];
   displayedPrompts: string[];
@@ -151,18 +161,6 @@ export function PromptPanel({
           : "md:w-[30%]",
       )}
     >
-      <div
-        className={cn(
-          "flex justify-between items-center gap-2 h-12 px-4 pt-2",
-          !isMobile && "hidden",
-        )}
-      >
-        <p className="text-sm font-bold">Live Prompting</p>
-        <p className="text-xs font-light">
-          {promptQueue.length} prompts in queue
-        </p>
-      </div>
-
       {/* Trending prompts section - completely separate box */}
       {!isMobile && (
         <div className="w-full mb-3">
@@ -218,14 +216,14 @@ export function PromptPanel({
             className="absolute top-0 left-0 right-0 h-[60%] pointer-events-none z-30"
             style={{
               background:
-                "linear-gradient(rgb(251, 251, 251) 0%, rgb(251, 251, 251) 3%, rgba(251, 251, 251, 0.9) 5%, rgba(251, 251, 251, 0.6) 38%, transparent 80%)",
+                "linear-gradient(rgb(251, 251, 251) 0%, rgba(251, 251, 251, 0.7) 3%, rgba(251, 251, 251, 0.5) 5%, rgba(251, 251, 251, 0.3) 38%, transparent 80%)",
             }}
           ></div>
           <div
             className="absolute top-0 left-0 right-0 h-[50%] pointer-events-none z-20"
             style={{
               background:
-                "linear-gradient(to bottom, var(--background, rgb(249, 250, 251)) 0%, var(--background, rgb(249, 250, 251)) 40%, var(--background, rgb(249, 250, 251)) 60%, rgba(249, 250, 251, 0.2) 80%, rgba(249, 250, 251, 0.05) 90%, rgba(249, 250, 251, 0) 100%)",
+                "linear-gradient(to bottom, rgba(206, 223, 228, 0.6) 0%, rgba(206, 223, 228, 0.5) 40%, rgba(206, 223, 228, 0.4) 60%, rgba(206, 223, 228, 0.2) 80%, rgba(254, 254, 254, 0.05) 90%, rgba(254, 254, 254, 0) 100%)",
             }}
           ></div>
           <div
@@ -239,6 +237,17 @@ export function PromptPanel({
                 "linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 40%, rgba(0,0,0,0.8) 60%, rgba(0,0,0,0.4) 80%, rgba(0,0,0,0.05) 90%, rgba(0,0,0,0) 100%)",
             }}
           ></div>
+          <div
+            className={cn(
+              "flex justify-between items-center gap-2 h-12 px-6 py-3 z-[999]",
+              !isMobile && "hidden",
+            )}
+          >
+            <p className="text-sm font-bold">Live Prompting</p>
+            <p className="text-xs font-light">
+              {getPromptQueueText(promptQueue.length)}
+            </p>
+          </div>
           <PromptDisplay
             promptQueue={promptQueue}
             displayedPrompts={displayedPrompts}
@@ -248,12 +257,6 @@ export function PromptPanel({
             isMobile={isMobile}
           />
         </div>
-
-        <div className="px-4 my-2 mb-4">
-          <Separator orientation="horizontal" className="bg-[#CECECE]/40" />
-        </div>
-
-        {/* Add a horizontally scrollable div for the trending prompts only for mobile view */}
 
         <div
           className={cn(

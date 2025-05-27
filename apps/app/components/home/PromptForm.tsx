@@ -81,11 +81,6 @@ export const PromptForm = forwardRef<HTMLFormElement, PromptFormProps>(
       if (textareaRef.current) {
         textareaRef.current.style.height = "auto";
 
-        if (isMobile) {
-          textareaRef.current.style.height = "44px";
-          return;
-        }
-
         const scrollHeight = textareaRef.current.scrollHeight;
         const minHeight = 56;
         const maxHeight = 150;
@@ -113,9 +108,9 @@ export const PromptForm = forwardRef<HTMLFormElement, PromptFormProps>(
             }
             className={`w-full ${
               isMobile
-                ? "text-black rounded-[18px] text-sm flex items-center "
+                ? "text-black rounded-[18px] text-sm flex items-center py-5"
                 : "md:bg-white/50 bg-white/80 border border-solid border-[#DFDEDE] py-5 rounded-[24px]"
-            } focus:ring-0 focus:border-[#DFDEDE] focus:outline-none pl-[25px] pr-16 bg-[#CECECE]  text-foreground ${
+            } focus:ring-0 focus:border-[#DFDEDE] focus:outline-none pl-[25px] pr-16 bg-[#F4F4F9]  text-foreground ${
               isThrottled ? "opacity-50" : ""
             } ${
               isMobile ? "" : "shadow-[8px_12px_24px_0px_#0D131E26]"
@@ -128,15 +123,15 @@ export const PromptForm = forwardRef<HTMLFormElement, PromptFormProps>(
             disabled={isThrottled || disabled}
             rows={1}
             style={{
-              height: isMobile ? "44px" : undefined,
-              minHeight: isMobile ? "44px" : "56px",
-              lineHeight: isMobile ? "1" : undefined,
-              paddingTop: isMobile ? "14px" : undefined,
+              height: isMobile ? "59px" : undefined,
+              minHeight: isMobile ? "59px" : "56px",
+              lineHeight: undefined,
+              paddingTop: undefined,
             }}
           />
 
           <div
-            className={`absolute right-4 ${isMobile ? "bottom-2" : "bottom-3"} flex items-center justify-center -mb-[2px]`}
+            className={`absolute right-4 ${isMobile ? "bottom-4" : "bottom-3"} flex items-center justify-center -mb-[2px]`}
           >
             <button
               type="submit"

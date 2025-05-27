@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { TrackedButton } from "../analytics/TrackedButton";
 import { cn } from "@repo/design-system/lib/utils";
 import { getIframeUrl, useMultiplayerStreamStore } from "./VideoSection";
+import useMobileStore from "@/hooks/useMobileStore";
 
 interface HeroSectionProps {
   handlePromptSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
@@ -28,6 +29,7 @@ export const HeroSection = ({
   const [isDeleting, setIsDeleting] = useState(false);
   const [typingSpeed, setTypingSpeed] = useState(100);
   const { currentStream } = useMultiplayerStreamStore();
+  const { isMobile } = useMobileStore();
 
   const placeholders = [
     "an art style",
@@ -99,12 +101,19 @@ export const HeroSection = ({
 
   return (
     <section
-      className="relative w-full flex flex-col"
-      style={{ height: "100vh" }}
+      className={cn(
+        "relative w-full h-[100vh] flex flex-col md:px-4",
+        isMobile && "h-[calc(100vh-3rem)] mt-12",
+      )}
     >
       {/* Header */}
       <header className="relative z-10 w-full px-6 py-4 flex justify-center sm:justify-between items-center">
-        <h1 className="text-2xl font-bold tracking-widest italic text-gray-800 text-center w-full sm:w-auto">
+        <h1
+          className={cn(
+            "text-2xl font-bold tracking-widest italic text-gray-800 text-center w-full sm:w-auto",
+            isMobile && "hidden",
+          )}
+        >
           DAYDREAM
         </h1>
         <div className="hidden sm:block ml-4">

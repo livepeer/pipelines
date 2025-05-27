@@ -189,7 +189,7 @@ export function PromptDisplay({
     itemCount = itemsToShow.length;
 
     return (
-      <div className="w-full flex flex-col p-4 overflow-hidden justify-end relative font-inter">
+      <div className="w-full flex flex-col p-4 overflow-hidden justify-end relative font-inter mt-3">
         <div className="flex flex-col gap-2 w-full h-full relative justify-end">
           {itemsToShow.map((item, index) => {
             const username = item.seed ? generateUsername(item.seed) : "User";
