@@ -22,6 +22,8 @@ FFMPEG_INPUT_OPTS="-re"
 FFMPEG_CODEC_OPTS="-c copy"
 FFMPEG_OUTPUT_OPTS="-f flv"
 
+YTDLP_FFMPEG_AUDIO_ARGS="-c:v copy -c:a aac -ar 44100 -b:a 128k"
+
 RESTART_DELAY="10"
 
 if [ -z "$YOUTUBE_URL" ]; then echo "Error: YOUTUBE_URL_STREAM1 environment variable is not set." >&2; exit 1; fi
@@ -49,7 +51,7 @@ echo "Determined video file path: $ACTUAL_VIDEO_FILE"
 if [ ! -f "$ACTUAL_VIDEO_FILE" ]; then
   echo "Local file '$ACTUAL_VIDEO_FILE' not found. Downloading from YouTube: $YOUTUBE_URL"
   
-  set -- yt-dlp --no-progress -f "$FORMAT_SELECTOR" --merge-output-format mp4 --ppa "ffmpeg:-c:v copy -c:a aac -ar 44100 -b:a 128k"
+  set -- yt-dlp --no-progress -f "$FORMAT_SELECTOR" --merge-output-format mp4 --ppa "ffmpeg:$YTDLP_FFMPEG_AUDIO_ARGS"
   if [ -f "$COOKIES_FILE" ]; then
     echo "Using cookies file: $COOKIES_FILE"
     set -- "$@" --cookies "$COOKIES_FILE"
