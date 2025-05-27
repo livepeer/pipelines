@@ -68,11 +68,11 @@ export async function assertVideoPlaying(
   let readyStateTime: number = 0;
   let playingStateTime: number = 0;
 
-  await test.step("Wait for video visibility", async () => {
+  // await test.step("Wait for video visibility", async () => {
     await video.waitFor({ state: "visible", timeout: visibleTimeout });
     videoVisibleTime = Date.now();
     console.log(`Video became visible after ${videoVisibleTime - startTime}ms`);
-  });
+  // });
 
   await test.step("Poll for readyState", async () => {
     await expect
