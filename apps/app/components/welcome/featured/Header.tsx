@@ -48,6 +48,7 @@ export const Header = ({
   const [guestModalReason, setGuestModalReason] = useState<
     "prompt_limit" | "record_clip" | "share" | null
   >(null);
+  const [publishOpen, setPublishOpen] = useState(false);
 
   const handleShare = () => {
     if (isGuestMode && onShareAttempt) {
@@ -184,6 +185,14 @@ export const Header = ({
                   <Share className="h-4 w-4" />
                   <span>Share</span>
                 </TrackedButton>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 gap-2 rounded-md"
+                  onClick={() => setPublishOpen(true)}
+                >
+                  Publish Experience
+                </Button>
                 <Link target="_blank" href="https://discord.gg/5sZu8xmn6U">
                   <TrackedButton
                     trackingEvent="daydream_join_community_clicked"
@@ -260,6 +269,10 @@ export const Header = ({
       )}
 
       <Dialog open={open} onOpenChange={setOpen}>
+        <ShareModalContent />
+      </Dialog>
+
+      <Dialog open={publishOpen} onOpenChange={setPublishOpen}>
         <ShareModalContent />
       </Dialog>
 

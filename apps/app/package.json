@@ -20,6 +20,7 @@
     "@ffmpeg/util": "^0.12.2",
     "@google-cloud/storage": "^7.16.0",
     "@headlessui/react": "^2.2.0",
+    "@heroicons/react": "^2.2.0",
     "@intercom/messenger-js-sdk": "^0.0.14",
     "@livepeer/react": "4.3.5",
     "@livepeer/webrtmp-sdk": "^0.2.5",

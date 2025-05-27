@@ -11,7 +11,7 @@ import {
   DialogTitle,
 } from "@repo/design-system/components/ui/dialog";
 import { Input } from "@repo/design-system/components/ui/input";
-import { Copy, Loader2 } from "lucide-react";
+import { Copy, Loader2, Share2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
@@ -36,6 +36,7 @@ export const ShareModalContent = () => {
   const { stream } = useDreamshaperStore();
   const { promptVersion } = usePromptVersionStore();
   const [isCreating, setIsCreating] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
   const { authenticated } = usePrivy();
   const [shareUrl, setShareUrl] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -66,6 +67,53 @@ export const ShareModalContent = () => {
     }
   };
 
+  const handlePublishExperience = async () => {
+    setIsPublishing(true);
+    try {
+      const result = await createShareLink();
+
+      if (result.error) {
+        toast.error(`Error publishing experience: ${result.error}`);
+      } else if (result.url) {
+        // Get the current prompt from the stream's pipeline parameters
+        const currentPrompt = stream?.pipeline_params?.prompt?.["5"]?.inputs?.text || '';
+        const encodedPrompt = btoa(currentPrompt);
+        
+        const experience = {
+          title: stream?.name || 'Untitled Experience',
+          description: 'A shared experience',
+          prompt: encodedPrompt,
+          image: stream?.output_playback_id ? `https://livepeercdn.studio/hls/${stream.output_playback_id}/index.m3u8` : '/placeholder-community-1.jpg',
+          author_id: stream?.author,
+          share_link: result.url,
+        };
+
+        const response = await fetch('/api/experiences/publish', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(experience),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to publish experience');
+        }
+
+        toast.success("Experience published successfully!");
+        track("daydream_experience_published", {
+          is_authenticated: authenticated,
+          stream_id: stream?.id,
+        });
+      }
+    } catch (error) {
+      toast.error("An unexpected error occurred while publishing the experience");
+      console.error(error);
+    } finally {
+      setIsPublishing(false);
+    }
+  };
+
   const handleCopyLink = () => {
     if (shareUrl && inputRef.current) {
       navigator.clipboard.writeText(shareUrl);
@@ -82,11 +130,12 @@ export const ShareModalContent = () => {
       <DialogHeader className="pb-2">
         <DialogTitle className="text-xl">Share your experience</DialogTitle>
         <DialogDescription className="pt-2 text-sm text-muted-foreground">
-          Your personalization, prompt, and parameters will be shared.
+          Choose how you want to share your experience:
           <br />
           <br />
-          Anyone with this link will see the exact same experience you&apos;ve
-          created.
+          <strong>Share Link:</strong> Create a private link to share with others.
+          <br />
+          <strong>Publish:</strong> Make your experience public in the community gallery.
         </DialogDescription>
       </DialogHeader>
       <div className="flex flex-col gap-4 mb-2 mt-3">
@@ -107,22 +156,43 @@ export const ShareModalContent = () => {
             </Button>
           </div>
         ) : (
-          <Button
-            onClick={handleCreateLink}
-            disabled={isCreating}
-            className="w-full rounded-md hover:bg-primary/90"
-          >
-            {isCreating ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Creating link...
-              </>
-            ) : (
-              "Create link"
-            )}
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              onClick={handleCreateLink}
+              disabled={isCreating}
+              className="flex-1 rounded-md hover:bg-primary/90"
+            >
+              {isCreating ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Creating link...
+                </>
+              ) : (
+                <>
+                  <Share2 className="mr-2 h-4 w-4" />
+                  Share Link
+                </>
+              )}
+            </Button>
+            <Button
+              onClick={handlePublishExperience}
+              disabled={isPublishing}
+              variant="outline"
+              className="flex-1 rounded-md"
+            >
+              {isPublishing ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Publishing...
+                </>
+              ) : (
+                "Publish Experience"
+              )}
+            </Button>
+          </div>
         )}
       </div>
     </DialogContent>
   );
 };
+

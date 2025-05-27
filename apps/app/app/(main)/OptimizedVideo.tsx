@@ -167,7 +167,7 @@ export default function OptimizedVideo({
       }
     } else {
       if (!isOverlayMode) {
-        router.push("/create");
+        router.push("/gallery");
       }
     }
   };
