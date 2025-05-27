@@ -51,9 +51,9 @@ const whipRegions = (process.env.WHIP_REGIONS || "").split(",");
 test.describe.parallel("Daydream Page Tests", () => {
   whipRegions.forEach(region => {
     test.describe.serial("Repeated runs", () => {
-      test.beforeEach(async ({ context }) => {
-        await context.grantPermissions(["camera", "microphone"]);
-      });
+      // test.beforeEach(async ({ context }) => {
+      //   await context.grantPermissions(["camera", "microphone"]);
+      // });
 
       test.afterEach(async ({}, testInfo) => {
         // if (testInfo.status !== testInfo.expectedStatus) {
