@@ -19,7 +19,8 @@ COOKIES_FILE="/app/cookies.txt"
 USER_AGENT="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 FORMAT_SELECTOR="bestvideo[height<=360][vcodec^=avc][ext=mp4]+bestaudio[acodec=aac][ext=m4a]/bestvideo[height<=360][vcodec^=avc][ext=mp4]+bestaudio/bestvideo[height<=360][ext=mp4]+bestaudio/best[ext=mp4][height<=360]/best[height<=360]"
 FFMPEG_INPUT_OPTS="-re"
-FFMPEG_CODEC_OPTS="-c:v libx264 -preset veryfast -tune zerolatency -g 60 -c:a aac -ar 44100 -b:a 128k"
+YTDLP_RECODE_OPTS="-c:v libx264 -preset veryfast -tune zerolatency -g 60 -c:a aac -ar 44100 -b:a 128k"
+FFMPEG_CODEC_OPTS="-c copy"
 FFMPEG_OUTPUT_OPTS="-f flv"
 RESTART_DELAY="10"
 
@@ -46,16 +47,17 @@ echo "Determined video file path: $ACTUAL_VIDEO_FILE"
 
 
 if [ ! -f "$ACTUAL_VIDEO_FILE" ]; then
-  echo "Local file '$ACTUAL_VIDEO_FILE' not found. Downloading from YouTube: $YOUTUBE_URL"
+  echo "Local file '$ACTUAL_VIDEO_FILE' not found. Downloading and recoding from YouTube: $YOUTUBE_URL"
   
-  set -- yt-dlp --no-progress -f "$FORMAT_SELECTOR" --merge-output-format mp4
+  set -- yt-dlp --no-progress -f "$FORMAT_SELECTOR" --merge-output-format mp4 --recode-video mp4
   if [ -f "$COOKIES_FILE" ]; then
     echo "Using cookies file: $COOKIES_FILE"
     set -- "$@" --cookies "$COOKIES_FILE"
   else
     echo "No cookies file found at $COOKIES_FILE - proceeding without cookies"
   fi
-  set -- "$@" -o "$ACTUAL_VIDEO_FILE" "$YOUTUBE_URL"
+  # Add PostProcessorArgs to pass ffmpeg options for recoding
+  set -- "$@" --ppa "FFmpegVideoConvertor:$YTDLP_RECODE_OPTS" -o "$ACTUAL_VIDEO_FILE" "$YOUTUBE_URL"
   
   echo "Running command: $@"
   if ! "$@"; then
