@@ -55,13 +55,13 @@ test.describe.parallel("Daydream Page Tests", () => {
         await context.grantPermissions(["camera", "microphone"]);
       });
 
-      test.afterEach(async ({ page }, testInfo) => {
-        if (testInfo.status !== testInfo.expectedStatus) {
-          await page.screenshot({
-            path: `./screenshots/${testInfo.title}/error.png`,
-            fullPage: true,
-          });
-        }
+      test.afterEach(async ({  }, testInfo) => {
+        // if (testInfo.status !== testInfo.expectedStatus) {
+        //   await page.screenshot({
+        //     path: `./screenshots/${testInfo.title}/error.png`,
+        //     fullPage: true,
+        //   });
+        // }
 
         if (SEND_METRICS) {
           if (testInfo.status === "passed") {
