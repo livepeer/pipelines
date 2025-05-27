@@ -186,7 +186,11 @@ test.describe.parallel("Daydream Page Tests", () => {
             throw error;
           } finally {
             // Close the context to ensure the HAR file is saved
-            await context.close();
+            try {
+              await context.close();
+            } catch (error) {
+              console.error("Error closing context:", error);
+            }
           }
         });
       }
