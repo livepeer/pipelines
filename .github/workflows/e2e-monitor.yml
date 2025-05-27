@@ -126,3 +126,23 @@ jobs:
         run: |
           echo "::error::Playwright tests failed for the ${{ matrix.env.name }} environment."
           exit 1
+
+  logs:
+    needs:
+      - prepare
+      - e2e
+    name: Dump workflow logs to loki instance
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Send Logs to Loki
+        uses: skroutz/action-send-logs-to-loki@v0.0.2
+        with:
+          loki_endpoint: "${{ secrets.LOKI_ENDPOINT }}"
+          labels: "job=github-actions,run_id=${{ github.run_id }},trigger=${{ github.event_name }},ref=${{ (github.event_name == 'pull_request' && github.head_ref) || github.ref_name }}"
+          github_token: "${{ secrets.CI_GITHUB_TOKEN }}"
