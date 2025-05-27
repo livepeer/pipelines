@@ -100,6 +100,7 @@ test.describe.parallel("Daydream Page Tests", () => {
               "clipboard-write",
             ],
           });
+          let testError: Error | null = null;
           try {
             const page = await context.newPage();
             const path = regionalPath(region, "/create");
@@ -183,15 +184,12 @@ test.describe.parallel("Daydream Page Tests", () => {
             );
           } catch (error) {
             console.error("Error in test:", error);
-            throw error;
+            testError = error as Error;
           } finally {
             // Close the context to ensure the HAR file is saved
-            try {
-              await context.close();
-            } catch (error) {
-              console.error("Error closing context:", error);
-            }
+            await context.close();
           }
+          if (testError) throw testError;
         });
       }
     });
