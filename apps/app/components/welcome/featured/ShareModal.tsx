@@ -76,28 +76,31 @@ export const ShareModalContent = () => {
         toast.error(`Error publishing experience: ${result.error}`);
       } else if (result.url) {
         // Get the current prompt from the stream's pipeline parameters
-        const currentPrompt = stream?.pipeline_params?.prompt?.["5"]?.inputs?.text || '';
+        const currentPrompt =
+          stream?.pipeline_params?.prompt?.["5"]?.inputs?.text || "";
         const encodedPrompt = btoa(currentPrompt);
-        
+
         const experience = {
-          title: stream?.name || 'Untitled Experience',
-          description: 'A shared experience',
+          title: stream?.name || "Untitled Experience",
+          description: "A shared experience",
           prompt: encodedPrompt,
-          image: stream?.output_playback_id ? `https://livepeercdn.studio/hls/${stream.output_playback_id}/index.m3u8` : '/placeholder-community-1.jpg',
+          image: stream?.output_playback_id
+            ? `https://livepeercdn.studio/hls/${stream.output_playback_id}/index.m3u8`
+            : "/placeholder-community-1.jpg",
           author_id: stream?.author,
           share_link: result.url,
         };
 
-        const response = await fetch('/api/experiences/publish', {
-          method: 'POST',
+        const response = await fetch("/api/experiences/publish", {
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           body: JSON.stringify(experience),
         });
 
         if (!response.ok) {
-          throw new Error('Failed to publish experience');
+          throw new Error("Failed to publish experience");
         }
 
         toast.success("Experience published successfully!");
@@ -107,7 +110,9 @@ export const ShareModalContent = () => {
         });
       }
     } catch (error) {
-      toast.error("An unexpected error occurred while publishing the experience");
+      toast.error(
+        "An unexpected error occurred while publishing the experience",
+      );
       console.error(error);
     } finally {
       setIsPublishing(false);
@@ -133,9 +138,11 @@ export const ShareModalContent = () => {
           Choose how you want to share your experience:
           <br />
           <br />
-          <strong>Share Link:</strong> Create a private link to share with others.
+          <strong>Share Link:</strong> Create a private link to share with
+          others.
           <br />
-          <strong>Publish:</strong> Make your experience public in the community gallery.
+          <strong>Publish:</strong> Make your experience public in the community
+          gallery.
         </DialogDescription>
       </DialogHeader>
       <div className="flex flex-col gap-4 mb-2 mt-3">
@@ -195,4 +202,3 @@ export const ShareModalContent = () => {
     </DialogContent>
   );
 };
-
