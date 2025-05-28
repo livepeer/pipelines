@@ -21,6 +21,7 @@ export function MobilePromptPanel({ streamId }: MobilePromptPanelProps) {
   const [isThrottled, setIsThrottled] = useState(false);
   const [throttleTimeLeft, setThrottleTimeLeft] = useState(0);
   const [streamData, setStreamData] = useState<any>(null);
+  const [optimisticPrompts, setOptimisticPrompts] = useState<PromptItem[]>([]);
   const appConfig = useAppConfig();
 
   useEffect(() => {
@@ -46,7 +47,18 @@ export function MobilePromptPanel({ streamId }: MobilePromptPanelProps) {
     e.preventDefault();
     if (!streamData?.gateway_host || !promptValue.trim()) return;
 
+    const sessionId = "optimistic-" + Date.now();
     try {
+      const optimisticPrompt: PromptItem = {
+        text: promptValue,
+        seed: Math.random().toString(),
+        isUser: true,
+        timestamp: Date.now(),
+        sessionId,
+        streamKey: streamData.stream_key,
+      };
+      setOptimisticPrompts(prev => [...prev, optimisticPrompt]);
+
       const response = await updateParams({
         body: { prompt: promptValue },
         host: streamData.gateway_host,
@@ -71,8 +83,10 @@ export function MobilePromptPanel({ streamId }: MobilePromptPanelProps) {
       } else {
         toast.error("Failed to send prompt");
       }
+      setOptimisticPrompts(prev => prev.filter(p => p.sessionId !== sessionId));
     } catch (error) {
       toast.error("Error sending prompt");
+      setOptimisticPrompts(prev => prev.filter(p => p.sessionId !== sessionId));
     }
   };
 
@@ -129,7 +143,7 @@ export function MobilePromptPanel({ streamId }: MobilePromptPanelProps) {
           </p>
         </div>
         <PromptDisplay
-          promptQueue={promptQueue}
+          promptQueue={[...promptQueue, ...optimisticPrompts]}
           displayedPrompts={displayedPrompts}
           promptAvatarSeeds={promptAvatarSeeds}
           userPromptIndices={userPromptIndices}
