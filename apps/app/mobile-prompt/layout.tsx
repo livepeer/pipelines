@@ -4,4 +4,4 @@ export default function MobilePromptLayout({
   children: React.ReactNode;
 }) {
   return <>{children}</>;
-}
+} 

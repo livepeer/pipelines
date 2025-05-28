@@ -4,4 +4,4 @@ export default function Loading() {
       <p className="text-lg">Loading mobile prompt interface...</p>
     </div>
   );
-} 
+}
