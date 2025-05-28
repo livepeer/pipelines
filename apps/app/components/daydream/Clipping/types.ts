@@ -1,6 +1,7 @@
 import { ClipRecordingMode } from "@/hooks/useVideoClip";
 
 type ClipData = {
+  id: string;
   clipUrl: string;
   clipFilename: string;
   serverClipUrl: string;
