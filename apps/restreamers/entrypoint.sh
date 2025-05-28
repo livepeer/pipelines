@@ -107,25 +107,13 @@ stream_to_livepeer() {
 
 check_hls_with_retry() {
     local url="$1"
-    local max_retries=60
+    local max_retries=30  # Reduced from 60
     local retry_count=0
     
     while [ $retry_count -lt $max_retries ]; do
-        local temp_playlist="/tmp/playlist_check.m3u8"
-        
-        if wget -q -O "$temp_playlist" --timeout=10 "$url" 2>/dev/null; then
-            if [ -f "$temp_playlist" ] && grep -q "#EXTM3U" "$temp_playlist"; then
-                if grep -q "#EXT-X-STREAM-INF" "$temp_playlist" || grep -q "#EXTINF" "$temp_playlist"; then
-                    echo "[HLS] Stream is available! Playlist type detected."
-                    rm -f "$temp_playlist"
-                    return 0
-                else
-                    echo "[HLS] Playlist downloaded but no valid segments found yet..."
-                fi
-            fi
-            rm -f "$temp_playlist"
-        else
-            echo "[HLS] Failed to download playlist (network error)"
+        if curl -s -L -f -o /dev/null --max-time 10 "$url"; then
+            echo "[HLS] Stream is available!"
+            return 0
         fi
         
         retry_count=$((retry_count + 1))
@@ -140,8 +128,8 @@ check_hls_with_retry() {
 stream_to_ai() {
     echo "=== Starting stream to AI ingest ==="
     
-    echo "[AI] Waiting 60s for Livepeer HLS to initialize..."
-    sleep 60
+    echo "[AI] Waiting 90s for Livepeer HLS to initialize..."
+    sleep 90
     
     while true; do
         echo "[AI] Checking HLS availability: $HLS_SOURCE_URL"
@@ -149,23 +137,15 @@ stream_to_ai() {
         if check_hls_with_retry "$HLS_SOURCE_URL"; then
             echo "[AI] Starting stream to: $RTMP_TARGET_AI"
             
-            ffmpeg \
-                -rw_timeout 30000000 \
-                -timeout 30000000 \
-                -reconnect 1 \
-                -reconnect_at_eof 1 \
-                -reconnect_streamed 1 \
-                -reconnect_delay_max 5 \
-                -max_reload 1000 \
-                -http_persistent 1 \
+            ffmpeg -rw_timeout 10000000 -timeout 10000000 \
                 -re \
                 -i "$HLS_SOURCE_URL" \
                 -c copy \
                 -f flv "$RTMP_TARGET_AI" \
                 2>&1 | while IFS= read -r line; do echo "[AI] $line"; done
             
-            echo "[AI] Stream ended, waiting 15s before retry..."
-            sleep 15
+            echo "[AI] Stream ended, waiting 5s before retry..."
+            sleep 5
         else
             echo "[AI] HLS not available, waiting 30s..."
             sleep 30
