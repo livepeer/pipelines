@@ -8,11 +8,9 @@ import { Camera } from "lucide-react";
 export const HeaderSection = ({
   onTryCameraClick,
   className,
-  onlyDiscord,
 }: {
   onTryCameraClick: () => void;
   className?: string;
-  onlyDiscord?: boolean;
 }) => {
   const { authenticated } = usePrivy();
   const { isMobile } = useMobileStore();
@@ -50,7 +48,6 @@ export const HeaderSection = ({
           {!isMobile && "Join Discord"}
         </TrackedButton>
 
-        {!onlyDiscord && (
           <TrackedButton
             className="rounded-lg bg-black text-white hover:bg-gray-800 flex items-center justify-center gap-2"
             onClick={onTryCameraClick}
@@ -60,7 +57,6 @@ export const HeaderSection = ({
             <Camera className="h-4 w-4" />
             Create
           </TrackedButton>
-        )}
       </div>
     </div>
   );
