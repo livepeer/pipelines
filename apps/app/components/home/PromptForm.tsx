@@ -96,7 +96,7 @@ export const PromptForm = forwardRef<HTMLFormElement, PromptFormProps>(
       <form
         ref={formRef}
         onSubmit={handleSubmit}
-        className={`pt-0 relative z-10 px-4 ${isMobile ? "px-0 bg-transparent py-2" : "md:border-b border-t md:border-t-0 border-gray-200/30"}`}
+        className={`pt-0 relative z-10 px-4 ${isMobile ? "px-0 bg-transparent py-2" : "pb-4 md:border-b border-t md:border-t-0 border-gray-200/30"}`}
       >
         <div className="relative">
           <Textarea
