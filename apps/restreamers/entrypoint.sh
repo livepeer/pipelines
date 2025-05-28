@@ -12,7 +12,7 @@ PID_FILE="/app/stream.pid"
 LOG_DIR="/app/logs"
 
 MAX_RETRIES=5
-INITIAL_RETRY_DELAY=5
+INITIAL_RETRY_DELAY=15
 MAX_RETRY_DELAY=300
 ERROR_LOG_LIMIT=10
 
@@ -155,12 +155,8 @@ check_hls_with_retry() {
     
     while [ $retry_count -lt $max_retries ]; do
         if curl -s -L -f -o /dev/null --max-time 10 "$url"; then
-            if ffprobe -v quiet -print_format json -show_streams -analyzeduration 10M -probesize 10M "$url" 2>/dev/null | grep -q '"codec_name"'; then
-                echo "[HLS] Stream is available with valid codec information!"
-                return 0
-            else
-                echo "[HLS] Stream accessible but codec info not ready yet..."
-            fi
+            echo "[HLS] Stream is available!"
+            return 0
         fi
         
         retry_count=$((retry_count + 1))
@@ -187,11 +183,11 @@ stream_to_ai() {
         if check_hls_with_retry "$HLS_SOURCE_URL"; then
             echo "[AI] Starting stream to: $RTMP_TARGET_AI (attempt $((retry_count + 1)))"
             
-            local error_file=$(mktemp)
             local error_count=0
             
-            ffmpeg -analyzeduration 10M -probesize 10M \
-                -rw_timeout 10000000 -timeout 10000000 \
+            ffmpeg -rw_timeout 10000000 -timeout 10000000 \
+                -reconnect 1 -reconnect_at_eof 1 -reconnect_streamed 1 \
+                -reconnect_delay_max 10 \
                 -re \
                 -i "$HLS_SOURCE_URL" \
                 -c copy \
@@ -200,8 +196,6 @@ stream_to_ai() {
                 2>&1 | while IFS= read -r line; do
                     if [[ "$line" =~ "Connection reset by peer" ]] || [[ "$line" =~ "Broken pipe" ]] || [[ "$line" =~ "Error writing trailer" ]]; then
                         echo "[AI] CRITICAL: $line"
-                    elif [[ "$line" =~ "Could not find codec parameters" ]]; then
-                        echo "[AI] WARNING: $line"
                     elif [[ "$line" =~ "HTTP error" ]] || [[ "$line" =~ "Failed to reload" ]]; then
                         if [ $error_count -lt $ERROR_LOG_LIMIT ]; then
                             echo "[AI] $line"
@@ -216,7 +210,6 @@ stream_to_ai() {
                 done
             
             local exit_code=${PIPESTATUS[0]}
-            rm -f "$error_file"
             
             if [ $exit_code -eq 0 ]; then
                 echo "[AI] Stream ended normally"
