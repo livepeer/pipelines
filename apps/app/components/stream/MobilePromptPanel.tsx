@@ -9,10 +9,10 @@ import { updateParams } from "@/app/api/streams/update-params";
 import { toast } from "sonner";
 
 interface MobilePromptPanelProps {
-  streamKey: string;
+  streamId: string;
 }
 
-export function MobilePromptPanel({ streamKey }: MobilePromptPanelProps) {
+export function MobilePromptPanel({ streamId }: MobilePromptPanelProps) {
   const [promptQueue, setPromptQueue] = useState<PromptItem[]>([]);
   const [displayedPrompts, setDisplayedPrompts] = useState<string[]>([]);
   const [promptAvatarSeeds, setPromptAvatarSeeds] = useState<string[]>([]);
@@ -26,7 +26,7 @@ export function MobilePromptPanel({ streamKey }: MobilePromptPanelProps) {
   useEffect(() => {
     const fetchStreamData = async () => {
       try {
-        const { data, error } = await getStream(streamKey);
+        const { data, error } = await getStream(streamId);
         if (error) {
           toast.error("Failed to fetch stream data");
           return;
@@ -37,10 +37,10 @@ export function MobilePromptPanel({ streamKey }: MobilePromptPanelProps) {
       }
     };
 
-    if (streamKey) {
+    if (streamId) {
       fetchStreamData();
     }
-  }, [streamKey]);
+  }, [streamId]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -50,7 +50,7 @@ export function MobilePromptPanel({ streamKey }: MobilePromptPanelProps) {
       const response = await updateParams({
         body: { prompt: promptValue },
         host: streamData.gateway_host,
-        streamKey: streamKey,
+        streamKey: streamData.stream_key,
       });
 
       if (response.status === 200 || response.status === 201) {
@@ -60,7 +60,7 @@ export function MobilePromptPanel({ streamKey }: MobilePromptPanelProps) {
           seed: Math.random().toString(),
           isUser: true,
           timestamp: Date.now(),
-          streamKey: streamKey,
+          streamKey: streamData.stream_key
         };
         setPromptQueue(prev => [...prev, newPrompt]);
         setDisplayedPrompts(prev => [...prev, promptValue]);
