@@ -2,10 +2,10 @@ import { useCallback, useEffect, useState } from "react";
 import { PromptState, AddPromptRequest } from "@/app/api/prompts/types";
 import { toast } from "sonner";
 
-const POLLING_INTERVAL = 3000; // Poll every second
+const POLLING_INTERVAL = 3000; // Poll every 3 seconds
 const SESSION_ID_KEY = "prompt_session_id";
 
-export function usePromptsApi() {
+export function usePromptsApi(streamKey?: string) {
   const [promptState, setPromptState] = useState<PromptState | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -26,8 +26,15 @@ export function usePromptsApi() {
   });
 
   const fetchPromptState = useCallback(async () => {
+    if (!streamKey) {
+      setLoading(false);
+      return;
+    }
+
     try {
-      const response = await fetch("/api/prompts");
+      const response = await fetch(
+        `/api/prompts?streamKey=${encodeURIComponent(streamKey)}`,
+      );
       if (!response.ok) {
         throw new Error(`Error fetching prompts: ${response.statusText}`);
       }
@@ -53,16 +60,22 @@ export function usePromptsApi() {
     } finally {
       setLoading(false);
     }
-  }, [sessionId]);
+  }, [sessionId, streamKey]);
 
   const addToPromptQueue = useCallback(
     async (promptText: string, seed: string, isUser: boolean) => {
+      if (!streamKey) {
+        console.error("No stream key provided");
+        return { wasCensored: false };
+      }
+
       try {
         const payload: AddPromptRequest = {
           text: promptText,
           seed,
           isUser,
           sessionId, // Send the session ID with the prompt
+          streamKey,
         };
 
         const response = await fetch("/api/prompts", {
@@ -95,14 +108,22 @@ export function usePromptsApi() {
         return { wasCensored: false };
       }
     },
-    [fetchPromptState, sessionId],
+    [fetchPromptState, sessionId, streamKey],
   );
 
   const addRandomPrompt = useCallback(async () => {
+    if (!streamKey) {
+      console.error("No stream key provided");
+      return false;
+    }
+
     try {
-      const response = await fetch("/api/prompts", {
-        method: "PATCH",
-      });
+      const response = await fetch(
+        `/api/prompts?streamKey=${encodeURIComponent(streamKey)}`,
+        {
+          method: "PUT",
+        },
+      );
 
       if (!response.ok) {
         throw new Error(`Error adding random prompt: ${response.statusText}`);
@@ -115,17 +136,19 @@ export function usePromptsApi() {
       setError("Failed to add random prompt");
       return false;
     }
-  }, [fetchPromptState]);
+  }, [fetchPromptState, streamKey]);
 
   useEffect(() => {
-    fetchPromptState();
-
-    const intervalId = setInterval(() => {
+    if (streamKey) {
       fetchPromptState();
-    }, POLLING_INTERVAL);
 
-    return () => clearInterval(intervalId);
-  }, [fetchPromptState]);
+      const intervalId = setInterval(() => {
+        fetchPromptState();
+      }, POLLING_INTERVAL);
+
+      return () => clearInterval(intervalId);
+    }
+  }, [fetchPromptState, streamKey]);
 
   return {
     promptState,

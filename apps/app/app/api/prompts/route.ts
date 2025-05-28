@@ -5,9 +5,19 @@ import {
   getRandomSafePrompt,
 } from "@/lib/nsfwCheck";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const promptState = await getPromptState();
+    const searchParams = request.nextUrl.searchParams;
+    const streamKey = searchParams.get("streamKey");
+
+    if (!streamKey) {
+      return NextResponse.json(
+        { error: "Missing streamKey parameter" },
+        { status: 400 },
+      );
+    }
+
+    const promptState = await getPromptState(streamKey);
     return NextResponse.json(promptState);
   } catch (error) {
     console.error("Error getting prompt state:", error);
@@ -21,7 +31,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { prompt, text, seed, isUser, sessionId } = body;
+    const { prompt, text, seed, isUser, sessionId, streamKey } = body;
 
     const promptText = prompt || text;
 
@@ -35,6 +45,13 @@ export async function POST(request: NextRequest) {
     if (!seed || typeof seed !== "string") {
       return NextResponse.json(
         { error: "Missing or invalid 'seed' in request body" },
+        { status: 400 },
+      );
+    }
+
+    if (!streamKey || typeof streamKey !== "string") {
+      return NextResponse.json(
+        { error: "Missing or invalid 'streamKey' in request body" },
         { status: 400 },
       );
     }
@@ -63,6 +80,7 @@ export async function POST(request: NextRequest) {
       seed,
       validatedIsUser,
       sessionId,
+      streamKey,
     );
 
     if (!result.success) {
@@ -88,9 +106,19 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function PUT() {
+export async function PUT(request: NextRequest) {
   try {
-    const result = await addRandomPrompt();
+    const searchParams = request.nextUrl.searchParams;
+    const streamKey = searchParams.get("streamKey");
+
+    if (!streamKey) {
+      return NextResponse.json(
+        { error: "Missing streamKey parameter" },
+        { status: 400 },
+      );
+    }
+
+    const result = await addRandomPrompt(streamKey);
 
     if (!result.success) {
       return NextResponse.json(
