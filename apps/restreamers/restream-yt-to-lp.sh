@@ -22,9 +22,7 @@ FFMPEG_INPUT_OPTS="-re"
 FFMPEG_CODEC_OPTS="-c copy"
 FFMPEG_OUTPUT_OPTS="-f flv"
 
-KEYFRAME_GOP_SIZE="60"
-PRE_ENCODE_VIDEO_OPTS="-c:v libx264 -g $KEYFRAME_GOP_SIZE -preset veryfast -tune zerolatency -pix_fmt yuv420p -crf 30"
-PRE_ENCODE_AUDIO_OPTS="-c:a aac -ar 44100 -b:a 128k"
+YTDLP_FFMPEG_AUDIO_ARGS="-c:v copy -c:a aac -ar 44100 -b:a 128k"
 
 RESTART_DELAY="10"
 
@@ -53,7 +51,7 @@ echo "Determined video file path: $ACTUAL_VIDEO_FILE"
 if [ ! -f "$ACTUAL_VIDEO_FILE" ]; then
   echo "Local file '$ACTUAL_VIDEO_FILE' not found. Downloading from YouTube: $YOUTUBE_URL"
   
-  set -- yt-dlp --no-progress -f "$FORMAT_SELECTOR" --merge-output-format mp4
+  set -- yt-dlp --no-progress -f "$FORMAT_SELECTOR" -S "vcodec:h264" --merge-output-format mp4 --ppa "ffmpeg:$YTDLP_FFMPEG_AUDIO_ARGS"
   if [ -f "$COOKIES_FILE" ]; then
     echo "Using cookies file: $COOKIES_FILE"
     set -- "$@" --cookies "$COOKIES_FILE"
@@ -73,27 +71,11 @@ else
   echo "Using local file: $ACTUAL_VIDEO_FILE"
 fi
 
-SOURCE_BASENAME=$(basename "$ACTUAL_VIDEO_FILE")
-SOURCE_EXTENSION="${SOURCE_BASENAME##*.}"
-SOURCE_FILENAME_NO_EXT="${SOURCE_BASENAME%.*}"
-STREAMING_VIDEO_FILE="${DOWNLOAD_DIR}/${SOURCE_FILENAME_NO_EXT}_streamable.${SOURCE_EXTENSION}"
-
-echo "Pre-processing video for streaming: $ACTUAL_VIDEO_FILE -> $STREAMING_VIDEO_FILE"
-echo "Pre-processing options: $PRE_ENCODE_VIDEO_OPTS $PRE_ENCODE_AUDIO_OPTS"
-
-ffmpeg -i "$ACTUAL_VIDEO_FILE" $PRE_ENCODE_VIDEO_OPTS $PRE_ENCODE_AUDIO_OPTS "$STREAMING_VIDEO_FILE"
-if [ $? -ne 0 ]; then
-  echo "Error: ffmpeg pre-processing failed for $ACTUAL_VIDEO_FILE." >&2
-  exit 1
-fi
-echo "Pre-processing complete: $STREAMING_VIDEO_FILE"
-
-
-echo "Stream 1 starting: processed local file ($STREAMING_VIDEO_FILE) -> $RTMP_TARGET"
-echo "FFMPEG options for streaming: $FFMPEG_INPUT_OPTS -i \\"$STREAMING_VIDEO_FILE\\" $FFMPEG_CODEC_OPTS $FFMPEG_OUTPUT_OPTS"
+echo "Stream 1 starting: local file ($ACTUAL_VIDEO_FILE) -> $RTMP_TARGET"
+echo "FFMPEG options for streaming: $FFMPEG_INPUT_OPTS -i \"$ACTUAL_VIDEO_FILE\" $FFMPEG_CODEC_OPTS $FFMPEG_OUTPUT_OPTS"
 
 while true; do
-  ffmpeg $FFMPEG_INPUT_OPTS -i "$STREAMING_VIDEO_FILE" $FFMPEG_CODEC_OPTS $FFMPEG_OUTPUT_OPTS "$RTMP_TARGET"
+  ffmpeg $FFMPEG_INPUT_OPTS -i "$ACTUAL_VIDEO_FILE" $FFMPEG_CODEC_OPTS $FFMPEG_OUTPUT_OPTS "$RTMP_TARGET"
   echo "Stream 1 ffmpeg process terminated. Restarting in $RESTART_DELAY seconds..."
   sleep "$RESTART_DELAY"
 done
