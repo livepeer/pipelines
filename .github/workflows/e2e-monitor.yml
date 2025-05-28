@@ -72,8 +72,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          ref: mh/region
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
@@ -110,6 +108,8 @@ jobs:
           LIVEPEER_PROMETHEUS_JOB_NAME: e2e
           LIVEPEER_PROMETHEUS_URL: ${{ secrets.LIVEPEER_PROMETHEUS_URL }}
           ENVIRONMENT: ${{ matrix.env.name }}
+          APP_QUERYPARAMS: ${{ vars.APP_QUERYPARAMS }}
+          RUN_COUNT: ${{ vars.RUN_COUNT }}
         run: pnpm --filter app-e2e monitor
         continue-on-error: true
 
@@ -122,7 +122,27 @@ jobs:
           retention-days: 14
 
       - name: Fail workflow if tests failed for ${{ matrix.env.name }}
-        if: steps.playwright.outcome == 'failure'
+        if: steps.playwright.outcome == 'failure' || steps.playwright.outcome == 'flaky'
         run: |
           echo "::error::Playwright tests failed for the ${{ matrix.env.name }} environment."
           exit 1
+
+  logs:
+    needs:
+      - prepare
+      - e2e
+    name: Dump workflow logs to loki instance
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Send Logs to Loki
+        uses: skroutz/action-send-logs-to-loki@v0.0.2
+        with:
+          loki_endpoint: "${{ secrets.LOKI_ENDPOINT }}"
+          labels: "job=github-actions,run_id=${{ github.run_id }},trigger=${{ github.event_name }},ref=${{ (github.event_name == 'pull_request' && github.head_ref) || github.ref_name }}"
+          github_token: "${{ secrets.CI_GITHUB_TOKEN }}"

@@ -9,7 +9,7 @@ import {
 } from "../../../lib/db/services/prompt-queue";
 import { db } from "../../../lib/db";
 import { streams } from "../../../lib/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 
 // Mock data - used for initializing the database
 const initialPrompts = [
@@ -67,8 +67,11 @@ const otherPeoplePrompts = [
 const HIGHLIGHT_DURATION = 10000;
 const MAX_QUEUE_SIZE = 100;
 const FRONTEND_DISPLAY_SIZE = 20;
-const TARGET_STREAM_KEY = process.env
-  .NEXT_PUBLIC_MULTIPLAYER_STREAM_KEY as string;
+const TARGET_STREAM_KEYS =
+  (process.env.NEXT_PUBLIC_MULTIPLAYER_STREAM_KEY as string)
+    ?.split(",")
+    ?.map(key => key.trim())
+    ?.filter(key => key.length > 0) || [];
 const RANDOM_PROMPT_INTERVAL = 20000;
 const REAPPLY_INTERVAL = 60000; // 1 minute
 
@@ -157,10 +160,15 @@ const applyPromptToStream = async (promptText: string) => {
     return;
   }
 
-  const MAX_RETRIES = 3;
-  let currentRetry = 0;
+  if (!TARGET_STREAM_KEYS || TARGET_STREAM_KEYS.length === 0) {
+    console.error("No target stream keys configured");
+    return;
+  }
 
-  const makeRequest = async (): Promise<boolean> => {
+  const MAX_RETRIES = 3;
+
+  // Apply prompt to all streams simultaneously
+  const applyToAllStreams = async (): Promise<boolean> => {
     try {
       if (
         !process.env.STREAM_STATUS_ENDPOINT_USER ||
@@ -170,21 +178,29 @@ const applyPromptToStream = async (promptText: string) => {
         return false;
       }
 
-      const stream = await db
-        .select({ gatewayHost: streams.gatewayHost })
+      // Get all stream information from database
+      const streams_data = await db
+        .select({
+          streamKey: streams.streamKey,
+          gatewayHost: streams.gatewayHost,
+        })
         .from(streams)
-        .where(eq(streams.streamKey, TARGET_STREAM_KEY))
-        .limit(1);
+        .where(inArray(streams.streamKey, TARGET_STREAM_KEYS))
+        .limit(TARGET_STREAM_KEYS.length);
 
-      if (!stream || stream.length === 0 || !stream[0].gatewayHost) {
+      console.log(">>", streams_data);
+
+      if (!streams_data || streams_data.length === 0) {
         console.error(
-          `Stream not found or missing gateway host for key: ${TARGET_STREAM_KEY}`,
+          `No streams found for keys: ${TARGET_STREAM_KEYS.join(", ")}`,
         );
         return false;
       }
 
-      const gatewayHost = stream[0].gatewayHost;
-      console.log(`Using gateway host from database: ${gatewayHost}`);
+      // Create a map of streamKey to gatewayHost for easy lookup
+      const streamMap = new Map(
+        streams_data.map(stream => [stream.streamKey, stream.gatewayHost]),
+      );
 
       let quality = 3;
       let creativity = 0.6;
@@ -222,7 +238,7 @@ const applyPromptToStream = async (promptText: string) => {
       }
 
       console.log(
-        `[${new Date().toISOString()}] Applying prompt with quality=${quality}, creativity=${creativity}`,
+        `[${new Date().toISOString()}] Applying prompt to ${TARGET_STREAM_KEYS.length} streams with quality=${quality}, creativity=${creativity}`,
       );
 
       const params = {
@@ -416,47 +432,94 @@ const applyPromptToStream = async (promptText: string) => {
         `${process.env.STREAM_STATUS_ENDPOINT_USER}:${process.env.STREAM_STATUS_ENDPOINT_PASSWORD}`,
       ).toString("base64");
 
-      console.log("Applying prompt to stream:", TARGET_STREAM_KEY);
-      console.log("Using gateway host from database:", gatewayHost);
+      console.log(">>", credentials);
 
-      const apiUrl = `https://${gatewayHost}/live/video-to-video/${TARGET_STREAM_KEY}/update`;
-      console.log("Making request to:", apiUrl);
+      const requests = TARGET_STREAM_KEYS.map(async streamKey => {
+        const gatewayHost = streamMap.get(streamKey);
 
-      const response = await fetch(apiUrl, {
-        method: "POST",
-        headers: {
-          Authorization: `Basic ${credentials}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(params),
+        if (!gatewayHost) {
+          console.error(`Gateway host not found for stream key: ${streamKey}`);
+          return { streamKey, success: false, error: "Gateway host not found" };
+        }
+
+        try {
+          console.log(`Applying prompt to stream: ${streamKey}`);
+          console.log(`Using gateway host: ${gatewayHost}`);
+
+          const apiUrl = `https://${gatewayHost}/live/video-to-video/${streamKey}/update`;
+          console.log(`Making request to: ${apiUrl}`);
+
+          const response = await fetch(apiUrl, {
+            method: "POST",
+            headers: {
+              Authorization: `Basic ${credentials}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(params),
+          });
+
+          console.log(`API Response status for ${streamKey}:`, response.status);
+
+          if (!response.ok) {
+            const errorText = await response
+              .text()
+              .catch(() => "Failed to read error response");
+            throw new Error(
+              `Failed with status ${response.status}: ${errorText}`,
+            );
+          }
+
+          console.log(`Successfully applied prompt to stream: ${streamKey}`);
+          return { streamKey, success: true };
+        } catch (error) {
+          console.error(`Error applying prompt to stream ${streamKey}:`, error);
+          return {
+            streamKey,
+            success: false,
+            error: error instanceof Error ? error.message : String(error),
+          };
+        }
       });
 
-      console.log("API Response status:", response.status);
+      const results = await Promise.all(requests);
 
-      if (!response.ok) {
-        const errorText = await response
-          .text()
-          .catch(() => "Failed to read error response");
-        throw new Error(`Failed with status ${response.status}: ${errorText}`);
+      const successCount = results.filter(r => r.success).length;
+      const totalCount = results.length;
+
+      console.log(
+        `Applied prompt to ${successCount}/${totalCount} streams successfully`,
+      );
+
+      if (successCount === 0) {
+        console.error("Failed to apply prompt to any streams");
+        return false;
       }
 
-      console.log("Successfully applied prompt to stream:", promptText);
+      if (successCount < totalCount) {
+        console.warn(
+          `Only applied prompt to ${successCount}/${totalCount} streams`,
+        );
+        results
+          .filter(r => !r.success)
+          .forEach(r => {
+            console.error(`Failed for stream ${r.streamKey}: ${r.error}`);
+          });
+      }
+
       return true;
     } catch (error) {
-      console.error(
-        `Attempt ${currentRetry + 1}/${MAX_RETRIES} failed:`,
-        error,
-      );
+      console.error("Error in applyToAllStreams:", error);
       return false;
     }
   };
 
+  let currentRetry = 0;
   while (currentRetry < MAX_RETRIES) {
     console.log(
       `[${new Date().toISOString()}] Prompt application attempt ${currentRetry + 1}/${MAX_RETRIES}`,
     );
 
-    const success = await makeRequest();
+    const success = await applyToAllStreams();
     if (success) {
       // Update last applied prompt tracking
       lastAppliedPrompt = promptText;

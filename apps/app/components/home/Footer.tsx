@@ -1,23 +1,18 @@
+import { cn } from "@repo/design-system/lib/utils";
 import { TrackedButton } from "../analytics/TrackedButton";
 import { SquareDashedBottomCode, Workflow } from "lucide-react";
 
 interface FooterProps {
-  showFooter: boolean;
   isMobile?: boolean;
 }
 
-export const Footer = ({ showFooter, isMobile = false }: FooterProps) => {
+export const Footer = ({ isMobile = false }: FooterProps) => {
   return (
     <div
-      style={{
-        width: isMobile ? "100%" : "calc(100vw - 15px)",
-        paddingBottom: isMobile
-          ? "env(safe-area-inset-bottom, 16px)"
-          : undefined,
-      }}
-      className={`fixed bottom-0 left-0 z-30 ${isMobile ? "bg-white" : "bg-white/20 backdrop-blur-md"} flex justify-center transition-opacity duration-300 ${
-        showFooter ? "opacity-100" : "opacity-0 pointer-events-none"
-      }`}
+      className={cn(
+        isMobile ? "bg-white" : "bg-white/20 backdrop-blur-md",
+        "flex justify-center transition-opacity duration-300 opacity-100 h-12 w-full",
+      )}
     >
       <div className="flex flex-row items-center gap-2 md:gap-6 py-2 px-4">
         <TrackedButton

@@ -1,0 +1,19 @@
+primary_region = "fra"
+
+[deploy]
+  strategy = "immediate"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  PYTHONUNBUFFERED = "1"
+
+[processes]
+  lp_to_dd = "/app/restream-lp-to-dd.sh"
+  yt_to_lp = "/app/restream-yt-to-lp.sh"
+
+[[vm]]
+  cpu_kind = "performance"
+  cpus = 1
+  memory_mb = 2048

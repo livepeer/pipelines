@@ -37,8 +37,9 @@ export default defineConfig({
     baseURL: APP_URL,
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: "on-first-retry",
+
     extraHTTPHeaders: {
-      Origin: APP_URL!,
+      Origin: new URL(APP_URL!).origin,
     },
   },
 
@@ -48,6 +49,9 @@ export default defineConfig({
       name: "monitor",
       testIgnore: "*dev*",
       use: {
+        contextOptions: {
+          permissions: ["clipboard-read", "clipboard-write"],
+        },
         ...devices["Desktop Chrome"],
         channel: "chrome",
         headless: true,

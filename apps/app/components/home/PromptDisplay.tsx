@@ -97,7 +97,7 @@ export function PromptDisplay({
   isMobile = false,
 }: PromptDisplayProps) {
   const MAX_QUEUE_SIZE = 5;
-  const MAX_MOBILE_PROMPTS = 4;
+  const MAX_MOBILE_PROMPTS = 25;
 
   const getFilledQueue = () => {
     const filledQueue = [...promptQueue];
@@ -189,8 +189,8 @@ export function PromptDisplay({
     itemCount = itemsToShow.length;
 
     return (
-      <div className="w-full flex flex-col justify-end p-4 overflow-y-auto overflow-x-hidden">
-        <div className="flex flex-col gap-2 w-full justify-end">
+      <div className="w-full flex flex-col p-4 overflow-hidden justify-end relative font-inter mt-3">
+        <div className="flex flex-col gap-2 w-full h-full relative justify-end">
           {itemsToShow.map((item, index) => {
             const username = item.seed ? generateUsername(item.seed) : "User";
             const color = getColorFromSeed(username);
@@ -201,8 +201,8 @@ export function PromptDisplay({
                 className={`p-2 px-3 text-sm rounded-xl w-full 
                   ${
                     item.type === "highlighted"
-                      ? "text-white font-bold border border-white/90 backdrop-blur-sm"
-                      : "text-white/80 italic"
+                      ? "text-black font-bold flex items-center animate-fadeSlideIn border alwaysAnimatedButton backdrop-blur-sm"
+                      : "text-[#282828] font-light italic text-xs"
                   }
                   ${item.isUser ? "font-medium" : ""}
                   ${onPastPromptClick ? "cursor-pointer" : ""}`}
@@ -241,7 +241,7 @@ export function PromptDisplay({
               return (
                 <div
                   key={`prompt-past-${index}-${prevPrompt.substring(0, 10)}`}
-                  className={`p-2 px-3 text-sm md:text-base text-gray-500 italic flex items-center rounded-xl w-full ${
+                  className={`p-2 px-3 text-sm text-[#282828] font-light italic flex items-center rounded-xl w-full ${
                     isUserPrompt ? "font-medium" : ""
                   } ${onPastPromptClick ? "cursor-pointer hover:bg-black/5 hover:backdrop-blur-[1px]" : ""}`}
                   style={{
@@ -298,7 +298,7 @@ export function PromptDisplay({
               return (
                 <div
                   key={`queue-${qIndex}-${queuedPrompt.text.substring(0, 10)}`}
-                  className={`rounded-xl text-gray-500 italic flex items-center text-sm md:text-base w-full ${
+                  className={`rounded-xl text-[#282828] font-light italic flex items-center text-sm w-full ${
                     queuedPrompt.isUser ? "font-medium" : ""
                   }`}
                   style={{
