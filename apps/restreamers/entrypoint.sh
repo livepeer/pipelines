@@ -46,33 +46,6 @@ calculate_backoff() {
     echo $delay
 }
 
-filter_errors() {
-    local prefix=$1
-    local error_count=0
-    local last_error=""
-    
-    while IFS= read -r line; do
-        if [[ "$line" =~ "HTTP error" ]] || [[ "$line" =~ "Failed to reload" ]] || [[ "$line" =~ "Failed to update" ]]; then
-            if [ $error_count -lt $ERROR_LOG_LIMIT ]; then
-                echo "[$prefix] $line"
-                error_count=$((error_count + 1))
-            elif [ $error_count -eq $ERROR_LOG_LIMIT ]; then
-                echo "[$prefix] [Suppressing further error messages...]"
-                error_count=$((error_count + 1))
-            fi
-            last_error="$line"
-        elif [[ "$line" =~ "Conversion failed" ]] || [[ "$line" =~ "Error writing trailer" ]] || [[ "$line" =~ "Broken pipe" ]]; then
-            echo "[$prefix] CRITICAL: $line"
-        else
-            echo "[$prefix] $line"
-        fi
-    done
-    
-    if [ $error_count -gt $ERROR_LOG_LIMIT ]; then
-        echo "[$prefix] [Suppressed $((error_count - ERROR_LOG_LIMIT)) similar error messages]"
-    fi
-}
-
 prepare_video() {
     echo "=== Preparing video from YouTube ==="
     
@@ -148,7 +121,8 @@ stream_to_livepeer() {
             -bufsize 3000k \
             -maxrate 1500k \
             -f flv "$RTMP_TARGET_LP" \
-            2>&1 | filter_errors "LP"
+            -loglevel error \
+            2>&1 | while IFS= read -r line; do echo "[LP] $line"; done
         
         local exit_code=${PIPESTATUS[0]}
         
@@ -208,18 +182,34 @@ stream_to_ai() {
         
         if check_hls_with_retry "$HLS_SOURCE_URL"; then
             echo "[AI] Starting stream to: $RTMP_TARGET_AI (attempt $((retry_count + 1)))"
-            echo "[AI] Using pre-processed 30fps SDR video, no re-encoding needed"
             
-            # Run ffmpeg with error suppression and better error handling
+            local error_file=$(mktemp)
+            local error_count=0
+            
             ffmpeg -rw_timeout 10000000 -timeout 10000000 \
                 -re \
                 -i "$HLS_SOURCE_URL" \
                 -c copy \
                 -f flv "$RTMP_TARGET_AI" \
-                -loglevel warning \
-                2>&1 | filter_errors "AI"
+                -loglevel error \
+                2>&1 | while IFS= read -r line; do
+                    if [[ "$line" =~ "Connection reset by peer" ]] || [[ "$line" =~ "Broken pipe" ]] || [[ "$line" =~ "Error writing trailer" ]]; then
+                        echo "[AI] CRITICAL: $line"
+                    elif [[ "$line" =~ "HTTP error" ]] || [[ "$line" =~ "Failed to reload" ]]; then
+                        if [ $error_count -lt $ERROR_LOG_LIMIT ]; then
+                            echo "[AI] $line"
+                            error_count=$((error_count + 1))
+                        elif [ $error_count -eq $ERROR_LOG_LIMIT ]; then
+                            echo "[AI] [Suppressing further HTTP/reload errors...]"
+                            error_count=$((error_count + 1))
+                        fi
+                    else
+                        echo "[AI] $line"
+                    fi
+                done
             
             local exit_code=${PIPESTATUS[0]}
+            rm -f "$error_file"
             
             if [ $exit_code -eq 0 ]; then
                 echo "[AI] Stream ended normally"
