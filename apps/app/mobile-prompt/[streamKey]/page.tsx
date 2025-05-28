@@ -13,4 +13,4 @@ export default function MobilePromptPage({
       <MobilePromptPanel streamKey={params.streamKey} />
     </div>
   );
-} 
+}

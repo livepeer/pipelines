@@ -60,7 +60,7 @@ export function MobilePromptPanel({ streamKey }: MobilePromptPanelProps) {
           seed: Math.random().toString(),
           isUser: true,
           timestamp: Date.now(),
-          streamKey: streamKey
+          streamKey: streamKey,
         };
         setPromptQueue(prev => [...prev, newPrompt]);
         setDisplayedPrompts(prev => [...prev, promptValue]);
@@ -95,22 +95,29 @@ export function MobilePromptPanel({ streamKey }: MobilePromptPanelProps) {
   return (
     <div className="flex flex-col h-screen bg-[#FBFBFB]">
       <div className="flex-1 overflow-hidden relative">
-        <div className="absolute top-0 left-0 right-0 h-[60%] pointer-events-none z-30"
+        <div
+          className="absolute top-0 left-0 right-0 h-[60%] pointer-events-none z-30"
           style={{
-            background: "linear-gradient(rgb(251, 251, 251) 0%, rgba(251, 251, 251, 0.7) 3%, rgba(251, 251, 251, 0.5) 5%, rgba(251, 251, 251, 0.3) 38%, transparent 80%)"
+            background:
+              "linear-gradient(rgb(251, 251, 251) 0%, rgba(251, 251, 251, 0.7) 3%, rgba(251, 251, 251, 0.5) 5%, rgba(251, 251, 251, 0.3) 38%, transparent 80%)",
           }}
         />
-        <div className="absolute top-0 left-0 right-0 h-[50%] pointer-events-none z-20"
+        <div
+          className="absolute top-0 left-0 right-0 h-[50%] pointer-events-none z-20"
           style={{
-            background: "linear-gradient(to bottom, rgba(206, 223, 228, 0.6) 0%, rgba(206, 223, 228, 0.5) 40%, rgba(206, 223, 228, 0.4) 60%, rgba(206, 223, 228, 0.2) 80%, rgba(254, 254, 254, 0.05) 90%, rgba(254, 254, 254, 0) 100%)"
+            background:
+              "linear-gradient(to bottom, rgba(206, 223, 228, 0.6) 0%, rgba(206, 223, 228, 0.5) 40%, rgba(206, 223, 228, 0.4) 60%, rgba(206, 223, 228, 0.2) 80%, rgba(254, 254, 254, 0.05) 90%, rgba(254, 254, 254, 0) 100%)",
           }}
         />
-        <div className="absolute top-0 left-0 right-0 h-[50%] pointer-events-none z-20"
+        <div
+          className="absolute top-0 left-0 right-0 h-[50%] pointer-events-none z-20"
           style={{
             backdropFilter: "blur(2px)",
             WebkitBackdropFilter: "blur(2px)",
-            maskImage: "linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 40%, rgba(0,0,0,0.8) 60%, rgba(0,0,0,0.4) 80%, rgba(0,0,0,0.05) 90%, rgba(0,0,0,0) 100%)",
-            WebkitMaskImage: "linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 40%, rgba(0,0,0,0.8) 60%, rgba(0,0,0,0.4) 80%, rgba(0,0,0,0.05) 90%, rgba(0,0,0,0) 100%)"
+            maskImage:
+              "linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 40%, rgba(0,0,0,0.8) 60%, rgba(0,0,0,0.4) 80%, rgba(0,0,0,0.05) 90%, rgba(0,0,0,0) 100%)",
+            WebkitMaskImage:
+              "linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 40%, rgba(0,0,0,0.8) 60%, rgba(0,0,0,0.4) 80%, rgba(0,0,0,0.05) 90%, rgba(0,0,0,0) 100%)",
           }}
         />
         <div className="flex justify-between items-center gap-2 h-12 px-6 py-3 z-[999]">
@@ -141,4 +148,4 @@ export function MobilePromptPanel({ streamKey }: MobilePromptPanelProps) {
       />
     </div>
   );
-} 
+}
