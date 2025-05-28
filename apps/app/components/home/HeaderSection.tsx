@@ -48,15 +48,15 @@ export const HeaderSection = ({
           {!isMobile && "Join Discord"}
         </TrackedButton>
 
-        <TrackedButton
-          className="rounded-lg bg-black text-white hover:bg-gray-800 flex items-center justify-center gap-2"
-          onClick={onTryCameraClick}
-          trackingEvent="explore_header_start_creating_clicked"
-          trackingProperties={{ location: "explore_header" }}
-        >
-          <Camera className="h-4 w-4" />
-          Create
-        </TrackedButton>
+          <TrackedButton
+            className="rounded-lg bg-black text-white hover:bg-gray-800 flex items-center justify-center gap-2"
+            onClick={onTryCameraClick}
+            trackingEvent="explore_header_start_creating_clicked"
+            trackingProperties={{ location: "explore_header" }}
+          >
+            <Camera className="h-4 w-4" />
+            Create
+          </TrackedButton>
       </div>
     </div>
   );
