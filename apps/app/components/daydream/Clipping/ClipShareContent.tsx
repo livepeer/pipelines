@@ -105,18 +105,52 @@ export default function ClipShareContent({ clipData }: ClipShareContentProps) {
     }
   };
 
-  const handleDownload = () => {
-    if (clipData.clipUrl && clipData.clipFilename) {
-      const downloadLink = document.createElement("a");
-      downloadLink.href = clipData.clipUrl;
-      downloadLink.download = clipData.clipFilename;
-      document.body.appendChild(downloadLink);
-      downloadLink.click();
+  const handleDownload = async () => {
+    if (!clipData.clipUrl || !clipData.clipFilename) return;
 
-      setTimeout(() => {
-        document.body.removeChild(downloadLink);
-      }, 100);
+    // Use native share on mobile devices (especially iOS) to allow saving to camera roll
+    if (navigator.share && isMobile) {
+      try {
+        // Fetch the video file as a blob
+        const response = await fetch(clipData.clipUrl);
+        const blob = await response.blob();
+
+        // Determine file type from filename or blob
+        const fileExtension = clipData.clipFilename
+          .split(".")
+          .pop()
+          ?.toLowerCase();
+        const mimeType =
+          fileExtension === "mp4" ? "video/mp4" : blob.type || "video/mp4";
+
+        // Create a File object for sharing
+        const file = new File([blob], clipData.clipFilename, {
+          type: mimeType,
+        });
+
+        await navigator.share({
+          title: "Daydream Creation",
+          text: "Check out my Daydream creation!",
+          files: [file],
+        });
+
+        return;
+      } catch (error) {
+        console.error("Error sharing file:", error);
+        // Fall back to traditional download if share fails
+      }
     }
+
+    // Traditional download for desktop or if share fails
+    const downloadLink = document.createElement("a");
+    downloadLink.href = clipData.clipUrl;
+    downloadLink.download = clipData.clipFilename;
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+
+    setTimeout(() => {
+      document.body.removeChild(downloadLink);
+    }, 100);
   };
 
   return (
