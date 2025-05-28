@@ -11,6 +11,11 @@ COOKIES_FILE="/app/cookies.txt"
 PID_FILE="/app/stream.pid"
 LOG_DIR="/app/logs"
 
+MAX_RETRIES=5
+INITIAL_RETRY_DELAY=5
+MAX_RETRY_DELAY=300
+ERROR_LOG_LIMIT=10
+
 mkdir -p "$DOWNLOAD_DIR" "$LOG_DIR"
 
 if [ -n "${YOUTUBE_COOKIES_BASE64:-}" ]; then
@@ -31,6 +36,42 @@ FORMAT_SELECTOR="bestvideo[height<=360][vcodec^=avc][dynamic_range!=HDR][ext=mp4
 KEYFRAME_GOP_SIZE="60"  # 2 seconds at 30fps
 PRE_ENCODE_VIDEO_OPTS="-c:v libx264 -g $KEYFRAME_GOP_SIZE -keyint_min $KEYFRAME_GOP_SIZE -preset veryfast -tune zerolatency -pix_fmt yuv420p -crf 28 -profile:v baseline -level 3.0 -sc_threshold 0 -r 30 -vsync cfr -vf scale=in_range=limited:out_range=limited"
 PRE_ENCODE_AUDIO_OPTS="-c:a aac -ar 44100 -b:a 128k"
+
+calculate_backoff() {
+    local retry_count=$1
+    local delay=$((INITIAL_RETRY_DELAY * (2 ** retry_count)))
+    if [ $delay -gt $MAX_RETRY_DELAY ]; then
+        delay=$MAX_RETRY_DELAY
+    fi
+    echo $delay
+}
+
+filter_errors() {
+    local prefix=$1
+    local error_count=0
+    local last_error=""
+    
+    while IFS= read -r line; do
+        if [[ "$line" =~ "HTTP error" ]] || [[ "$line" =~ "Failed to reload" ]] || [[ "$line" =~ "Failed to update" ]]; then
+            if [ $error_count -lt $ERROR_LOG_LIMIT ]; then
+                echo "[$prefix] $line"
+                error_count=$((error_count + 1))
+            elif [ $error_count -eq $ERROR_LOG_LIMIT ]; then
+                echo "[$prefix] [Suppressing further error messages...]"
+                error_count=$((error_count + 1))
+            fi
+            last_error="$line"
+        elif [[ "$line" =~ "Conversion failed" ]] || [[ "$line" =~ "Error writing trailer" ]] || [[ "$line" =~ "Broken pipe" ]]; then
+            echo "[$prefix] CRITICAL: $line"
+        else
+            echo "[$prefix] $line"
+        fi
+    done
+    
+    if [ $error_count -gt $ERROR_LOG_LIMIT ]; then
+        echo "[$prefix] [Suppressed $((error_count - ERROR_LOG_LIMIT)) similar error messages]"
+    fi
+}
 
 prepare_video() {
     echo "=== Preparing video from YouTube ==="
@@ -94,9 +135,11 @@ prepare_video() {
 
 stream_to_livepeer() {
     echo "=== Starting stream to Livepeer ==="
+    local retry_count=0
+    local retry_delay=$INITIAL_RETRY_DELAY
     
     while true; do
-        echo "[LP] Streaming to: $RTMP_TARGET_LP"
+        echo "[LP] Streaming to: $RTMP_TARGET_LP (attempt $((retry_count + 1)))"
         
         ffmpeg -re \
             -stream_loop -1 \
@@ -105,10 +148,29 @@ stream_to_livepeer() {
             -bufsize 3000k \
             -maxrate 1500k \
             -f flv "$RTMP_TARGET_LP" \
-            2>&1 | while IFS= read -r line; do echo "[LP] $line"; done
+            2>&1 | filter_errors "LP"
         
-        echo "[LP] Stream ended, restarting in 10s..."
-        sleep 10
+        local exit_code=${PIPESTATUS[0]}
+        
+        if [ $exit_code -eq 0 ]; then
+            echo "[LP] Stream ended normally"
+            retry_count=0
+            retry_delay=$INITIAL_RETRY_DELAY
+        else
+            echo "[LP] Stream failed with exit code: $exit_code"
+            retry_count=$((retry_count + 1))
+            
+            if [ $retry_count -ge $MAX_RETRIES ]; then
+                echo "[LP] Max retries reached, resetting counter but continuing..."
+                retry_count=0
+                retry_delay=$MAX_RETRY_DELAY
+            else
+                retry_delay=$(calculate_backoff $retry_count)
+            fi
+        fi
+        
+        echo "[LP] Waiting ${retry_delay}s before retry..."
+        sleep $retry_delay
     done
 }
 
@@ -134,6 +196,9 @@ check_hls_with_retry() {
 
 stream_to_ai() {
     echo "=== Starting stream to AI ingest ==="
+    local retry_count=0
+    local retry_delay=$INITIAL_RETRY_DELAY
+    local consecutive_failures=0
     
     echo "[AI] Waiting 90s for Livepeer HLS to initialize..."
     sleep 90
@@ -142,21 +207,73 @@ stream_to_ai() {
         echo "[AI] Checking HLS availability: $HLS_SOURCE_URL"
         
         if check_hls_with_retry "$HLS_SOURCE_URL"; then
-            echo "[AI] Starting stream to: $RTMP_TARGET_AI"
+            echo "[AI] Starting stream to: $RTMP_TARGET_AI (attempt $((retry_count + 1)))"
             echo "[AI] Using pre-processed 30fps SDR video, no re-encoding needed"
             
+            # Run ffmpeg with error suppression and better error handling
             ffmpeg -rw_timeout 10000000 -timeout 10000000 \
                 -re \
                 -i "$HLS_SOURCE_URL" \
                 -c copy \
                 -f flv "$RTMP_TARGET_AI" \
-                2>&1 | while IFS= read -r line; do echo "[AI] $line"; done
+                -loglevel warning \
+                2>&1 | filter_errors "AI"
             
-            echo "[AI] Stream ended, waiting 5s before retry..."
-            sleep 5
+            local exit_code=${PIPESTATUS[0]}
+            
+            if [ $exit_code -eq 0 ]; then
+                echo "[AI] Stream ended normally"
+                consecutive_failures=0
+                retry_count=0
+                retry_delay=$INITIAL_RETRY_DELAY
+            else
+                echo "[AI] Stream failed with exit code: $exit_code"
+                consecutive_failures=$((consecutive_failures + 1))
+                retry_count=$((retry_count + 1))
+                
+                if [ $consecutive_failures -ge 3 ]; then
+                    echo "[AI] Multiple consecutive failures detected, waiting longer..."
+                    retry_delay=$MAX_RETRY_DELAY
+                    consecutive_failures=0
+                elif [ $retry_count -ge $MAX_RETRIES ]; then
+                    echo "[AI] Max retries reached, resetting counter but continuing..."
+                    retry_count=0
+                    retry_delay=$MAX_RETRY_DELAY
+                else
+                    retry_delay=$(calculate_backoff $retry_count)
+                fi
+            fi
+            
+            echo "[AI] Waiting ${retry_delay}s before retry..."
+            sleep $retry_delay
         else
-            echo "[AI] HLS not available, waiting 30s..."
-            sleep 30
+            echo "[AI] HLS not available, waiting 60s..."
+            sleep 60
+            consecutive_failures=$((consecutive_failures + 1))
+            
+            if [ $consecutive_failures -ge 5 ]; then
+                echo "[AI] HLS has been unavailable for extended period, waiting 5 minutes..."
+                sleep 300
+                consecutive_failures=0
+            fi
+        fi
+    done
+}
+
+health_check() {
+    while true; do
+        sleep 300
+        
+        if ! kill -0 $LP_PID 2>/dev/null; then
+            echo "[HEALTH] Livepeer stream process died, restarting..."
+            stream_to_livepeer &
+            LP_PID=$!
+        fi
+        
+        if ! kill -0 $AI_PID 2>/dev/null; then
+            echo "[HEALTH] AI stream process died, restarting..."
+            stream_to_ai &
+            AI_PID=$!
         fi
     done
 }
@@ -191,5 +308,11 @@ stream_to_ai &
 AI_PID=$!
 echo "Started AI streaming (PID: $AI_PID)"
 
-echo "Monitoring both streams. Press Ctrl+C to stop."
+health_check &
+HEALTH_PID=$!
+echo "Started health checker (PID: $HEALTH_PID)"
+
+echo "All processes started. Monitoring streams for 24/7 operation."
+echo "Press Ctrl+C to stop."
+
 wait 
