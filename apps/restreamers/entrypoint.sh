@@ -87,7 +87,7 @@ prepare_video() {
         return 1
     fi
     
-    echo "Video prepared: $STREAMING_VIDEO_FILE"
+    echo "Video prepared: $STREAMING_VIDEO_FILE (30fps SDR)"
     export STREAMING_VIDEO_FILE
     return 0
 }
@@ -143,15 +143,12 @@ stream_to_ai() {
         
         if check_hls_with_retry "$HLS_SOURCE_URL"; then
             echo "[AI] Starting stream to: $RTMP_TARGET_AI"
+            echo "[AI] Using pre-processed 30fps SDR video, no re-encoding needed"
             
-            # Re-encode to ensure compatibility with AI ingest
             ffmpeg -rw_timeout 10000000 -timeout 10000000 \
                 -re \
                 -i "$HLS_SOURCE_URL" \
-                -c:v libx264 -preset veryfast -profile:v baseline -level 3.0 \
-                -g 60 -r 30 -pix_fmt yuv420p \
-                -vf "scale=in_range=limited:out_range=limited" \
-                -c:a aac -ar 44100 -b:a 128k \
+                -c copy \
                 -f flv "$RTMP_TARGET_AI" \
                 2>&1 | while IFS= read -r line; do echo "[AI] $line"; done
             
