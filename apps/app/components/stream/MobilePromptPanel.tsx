@@ -60,7 +60,7 @@ export function MobilePromptPanel({ streamId }: MobilePromptPanelProps) {
           seed: Math.random().toString(),
           isUser: true,
           timestamp: Date.now(),
-          streamKey: streamData.stream_key
+          streamKey: streamData.stream_key,
         };
         setPromptQueue(prev => [...prev, newPrompt]);
         setDisplayedPrompts(prev => [...prev, promptValue]);

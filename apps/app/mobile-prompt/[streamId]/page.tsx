@@ -13,4 +13,4 @@ export default function MobilePromptPage({
       <MobilePromptPanel streamId={params.streamId} />
     </div>
   );
-} 
+}
