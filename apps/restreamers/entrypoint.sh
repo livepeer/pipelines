@@ -189,7 +189,7 @@ stream_to_ai() {
                 -re \
                 -i "$HLS_SOURCE_URL" \
                 -c copy \
-                -an \
+                # -an \
                 -f flv "$RTMP_TARGET_AI" \
                 -loglevel info \
                 2>&1 | while IFS= read -r line; do
