@@ -26,10 +26,10 @@ if [ -z "$RTMP_TARGET_LP" ]; then echo "Error: RTMP_TARGET_STREAM1 not set." >&2
 if [ -z "$HLS_SOURCE_URL" ]; then echo "Error: HLS_URL_STREAM2 not set." >&2; exit 1; fi
 if [ -z "$RTMP_TARGET_AI" ]; then echo "Error: RTMP_TARGET_STREAM2 not set." >&2; exit 1; fi
 
-FORMAT_SELECTOR="bestvideo[height<=360][vcodec^=avc][ext=mp4]+bestaudio[acodec=aac][ext=m4a]/bestvideo[height<=360][vcodec^=avc][ext=mp4]+bestaudio/bestvideo[height<=360][ext=mp4]+bestaudio/best[ext=mp4][height<=360]/best[height<=360]"
+FORMAT_SELECTOR="bestvideo[height<=360][vcodec^=avc][dynamic_range!=HDR][ext=mp4]+bestaudio[acodec=aac][ext=m4a]/bestvideo[height<=360][vcodec^=avc][ext=mp4]+bestaudio[acodec=aac][ext=m4a]/bestvideo[height<=360][vcodec^=avc]+bestaudio/bestvideo[height<=360]+bestaudio/best[height<=360]"
 
 KEYFRAME_GOP_SIZE="60"  # 2 seconds at 30fps
-PRE_ENCODE_VIDEO_OPTS="-c:v libx264 -g $KEYFRAME_GOP_SIZE -keyint_min $KEYFRAME_GOP_SIZE -preset veryfast -tune zerolatency -pix_fmt yuv420p -crf 28 -profile:v baseline -level 3.0 -sc_threshold 0"
+PRE_ENCODE_VIDEO_OPTS="-c:v libx264 -g $KEYFRAME_GOP_SIZE -keyint_min $KEYFRAME_GOP_SIZE -preset veryfast -tune zerolatency -pix_fmt yuv420p -crf 28 -profile:v baseline -level 3.0 -sc_threshold 0 -r 30 -vsync cfr -vf scale=in_range=limited:out_range=limited"
 PRE_ENCODE_AUDIO_OPTS="-c:a aac -ar 44100 -b:a 128k"
 
 prepare_video() {
@@ -51,6 +51,7 @@ prepare_video() {
     
     if [ ! -f "$ACTUAL_VIDEO_FILE" ]; then
         echo "Downloading from YouTube: $YOUTUBE_URL"
+        echo "Note: Will download 60fps if no 30fps available, then convert to 30fps"
         
         set -- yt-dlp --no-progress -f "$FORMAT_SELECTOR" --merge-output-format mp4
         if [ -f "$COOKIES_FILE" ]; then
@@ -68,8 +69,14 @@ prepare_video() {
     SOURCE_FILENAME_NO_EXT="${SOURCE_BASENAME%.*}"
     STREAMING_VIDEO_FILE="${DOWNLOAD_DIR}/${SOURCE_FILENAME_NO_EXT}_streamable.mp4"
     
-    echo "Pre-processing video for streaming..."
+    echo "Pre-processing video for streaming (converting to 30fps SDR)..."
+    echo "This may take a while for 60fps HDR content..."
+    
     ffmpeg -i "$ACTUAL_VIDEO_FILE" \
+        -vf "scale=in_range=limited:out_range=limited,format=yuv420p" \
+        -color_primaries bt709 \
+        -color_trc bt709 \
+        -colorspace bt709 \
         $PRE_ENCODE_VIDEO_OPTS \
         $PRE_ENCODE_AUDIO_OPTS \
         -movflags +faststart \
@@ -107,7 +114,7 @@ stream_to_livepeer() {
 
 check_hls_with_retry() {
     local url="$1"
-    local max_retries=30  # Reduced from 60
+    local max_retries=30
     local retry_count=0
     
     while [ $retry_count -lt $max_retries ]; do
@@ -137,10 +144,14 @@ stream_to_ai() {
         if check_hls_with_retry "$HLS_SOURCE_URL"; then
             echo "[AI] Starting stream to: $RTMP_TARGET_AI"
             
+            # Re-encode to ensure compatibility with AI ingest
             ffmpeg -rw_timeout 10000000 -timeout 10000000 \
                 -re \
                 -i "$HLS_SOURCE_URL" \
-                -c copy \
+                -c:v libx264 -preset veryfast -profile:v baseline -level 3.0 \
+                -g 60 -r 30 -pix_fmt yuv420p \
+                -vf "scale=in_range=limited:out_range=limited" \
+                -c:a aac -ar 44100 -b:a 128k \
                 -f flv "$RTMP_TARGET_AI" \
                 2>&1 | while IFS= read -r line; do echo "[AI] $line"; done
             
