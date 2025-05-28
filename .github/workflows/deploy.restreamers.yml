@@ -1,0 +1,119 @@
+name: Deploy Fly Restreamers
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Environment to deploy to"
+        required: true
+        default: "staging"
+        type: choice
+        options:
+          - staging
+          - production
+
+jobs:
+  deploy_batch:
+    name: Deploy Batch of Restreamers to Fly.io
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup flyctl
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Parse Inputs and Deploy in Loop
+        env:
+          APP_NAMES_STR: ${{ vars.RESTREAMER_APP_NAMES }}
+          YOUTUBE_URLS_STR: ${{ vars.RESTREAMER_ORIGINAL_YOUTUBE_URLS }}
+          RTMP_TARGETS1_STR: ${{ vars.RESTREAMER_ORIGINAL_RTMP_TARGETS }}
+          HLS_URLS_STR: ${{ vars.RESTREAMER_TRANSFORMED_HLS_URLS }}
+          RTMP_TARGETS2_STR: ${{ vars.RESTREAMER_TRANSFORMED_RTMP_TARGETS }}
+          YOUTUBE_COOKIES_BASE64: ${{ secrets.YOUTUBE_COOKIES_BASE64 }}
+          FLY_ORG: livepeer-673
+          FLY_REGION: fra
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          IFS=',' read -r -a APP_NAME_ARRAY <<< "$APP_NAMES_STR"
+          IFS=',' read -r -a YOUTUBE_URL_ARRAY <<< "$YOUTUBE_URLS_STR"
+          IFS=',' read -r -a RTMP_TARGET1_ARRAY <<< "$RTMP_TARGETS1_STR"
+          IFS=',' read -r -a HLS_URL_ARRAY <<< "$HLS_URLS_STR"
+          IFS=',' read -r -a RTMP_TARGET2_ARRAY <<< "$RTMP_TARGETS2_STR"
+
+          num_app_names=${#APP_NAME_ARRAY[@]}
+          if [[ $num_app_names -ne ${#YOUTUBE_URL_ARRAY[@]} || \
+                $num_app_names -ne ${#RTMP_TARGET1_ARRAY[@]} || \
+                $num_app_names -ne ${#HLS_URL_ARRAY[@]} || \
+                $num_app_names -ne ${#RTMP_TARGET2_ARRAY[@]} ]]; then
+            echo "Error: Input CSV lists have mismatched lengths. Ensure all lists (including app_names_csv) have the same number of items."
+            exit 1
+          fi
+
+          if [[ $num_app_names -eq 0 || -z "${APP_NAME_ARRAY[0]}" ]]; then
+            echo "No configurations (app names) found to deploy."
+            exit 0
+          fi
+
+          echo "Found $num_app_names configurations to process."
+
+          cd apps/restreamers
+
+          for i in "${!APP_NAME_ARRAY[@]}"; do
+            CURRENT_APP_NAME="${APP_NAME_ARRAY[$i]}"
+            CURRENT_YOUTUBE_URL="${YOUTUBE_URL_ARRAY[$i]}"
+            CURRENT_RTMP_TARGET1="${RTMP_TARGET1_ARRAY[$i]}"
+            CURRENT_HLS_URL="${HLS_URL_ARRAY[$i]}"
+            CURRENT_RTMP_TARGET2="${RTMP_TARGET2_ARRAY[$i]}"
+
+            # Validate current app name (basic check, Fly will do the final validation)
+            if [[ -z "$CURRENT_APP_NAME" ]]; then
+              echo "Error: App name for configuration #$((i+1)) is empty. Skipping."
+              continue
+            fi
+
+            echo ""
+            echo "---------------------------------------------------------------------"
+            echo "Processing configuration #$((i+1)) for App: $CURRENT_APP_NAME"
+            echo "YouTube URL: $CURRENT_YOUTUBE_URL"
+            echo "---------------------------------------------------------------------"
+
+            echo "::group::Deploying app: $CURRENT_APP_NAME"
+
+            echo "Checking if app '$CURRENT_APP_NAME' exists or creating it..."
+            
+            if ! flyctl status -a "$CURRENT_APP_NAME" >/dev/null 2>&1; then
+              echo "App '$CURRENT_APP_NAME' does not exist. Creating..."
+              flyctl apps create "$CURRENT_APP_NAME" --org "$FLY_ORG" --machines || {
+                echo "Warning: Failed to create app '$CURRENT_APP_NAME'. It might already exist."
+                # Verify the app exists now
+                if ! flyctl status -a "$CURRENT_APP_NAME" >/dev/null 2>&1; then
+                  echo "Error: App '$CURRENT_APP_NAME' still does not exist after creation attempt."
+                  continue
+                fi
+              }
+            else
+              echo "App '$CURRENT_APP_NAME' already exists."
+            fi
+
+            echo "Setting secrets for app '$CURRENT_APP_NAME'..."
+            # Corrected secret names
+            flyctl secrets set -a "$CURRENT_APP_NAME" --stage \
+              YOUTUBE_URL_STREAM1="$CURRENT_YOUTUBE_URL" \
+              RTMP_TARGET_STREAM1="$CURRENT_RTMP_TARGET1" \
+              HLS_URL_STREAM2="$CURRENT_HLS_URL" \
+              RTMP_TARGET_STREAM2="$CURRENT_RTMP_TARGET2" \
+              YOUTUBE_COOKIES_BASE64="$YOUTUBE_COOKIES_BASE64" \
+              PYTHONUNBUFFERED="1"
+
+            echo "Deploying app '$CURRENT_APP_NAME' to region '$FLY_REGION'..."
+            # Deploy from the restreamers directory where fly.toml is located
+            flyctl deploy -a "$CURRENT_APP_NAME" --regions "$FLY_REGION" --ha=false --strategy immediate --config fly.toml --dockerfile Dockerfile
+
+            echo "::endgroup::"
+            # Optional: sleep 5 
+
+          done
+          echo "All $num_app_names configurations processed."
