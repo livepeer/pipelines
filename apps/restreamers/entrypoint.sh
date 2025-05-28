@@ -12,7 +12,7 @@ PID_FILE="/app/stream.pid"
 LOG_DIR="/app/logs"
 
 MAX_RETRIES=5
-INITIAL_RETRY_DELAY=15
+INITIAL_RETRY_DELAY=5
 MAX_RETRY_DELAY=300
 ERROR_LOG_LIMIT=10
 
@@ -186,8 +186,6 @@ stream_to_ai() {
             local error_count=0
             
             ffmpeg -rw_timeout 10000000 -timeout 10000000 \
-                -reconnect 1 -reconnect_at_eof 1 -reconnect_streamed 1 \
-                -reconnect_delay_max 10 \
                 -re \
                 -i "$HLS_SOURCE_URL" \
                 -c copy \
