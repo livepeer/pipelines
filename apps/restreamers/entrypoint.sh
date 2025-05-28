@@ -121,7 +121,7 @@ stream_to_livepeer() {
             -bufsize 3000k \
             -maxrate 1500k \
             -f flv "$RTMP_TARGET_LP" \
-            -loglevel error \
+            -loglevel info \
             2>&1 | while IFS= read -r line; do echo "[LP] $line"; done
         
         local exit_code=${PIPESTATUS[0]}
@@ -190,7 +190,7 @@ stream_to_ai() {
                 -i "$HLS_SOURCE_URL" \
                 -c copy \
                 -f flv "$RTMP_TARGET_AI" \
-                -loglevel error \
+                -loglevel info \
                 2>&1 | while IFS= read -r line; do
                     if [[ "$line" =~ "Connection reset by peer" ]] || [[ "$line" =~ "Broken pipe" ]] || [[ "$line" =~ "Error writing trailer" ]]; then
                         echo "[AI] CRITICAL: $line"
