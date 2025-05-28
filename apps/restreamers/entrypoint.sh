@@ -111,11 +111,21 @@ check_hls_with_retry() {
     local retry_count=0
     
     while [ $retry_count -lt $max_retries ]; do
-        if wget -q -O /dev/null --timeout=5 "$url"; then
-            if ffprobe -v quiet -print_format json -show_streams "$url" 2>/dev/null | grep -q "codec_type"; then
-                echo "[HLS] Stream is available!"
-                return 0
+        local temp_playlist="/tmp/playlist_check.m3u8"
+        
+        if wget -q -O "$temp_playlist" --timeout=10 "$url" 2>/dev/null; then
+            if [ -f "$temp_playlist" ] && grep -q "#EXTM3U" "$temp_playlist"; then
+                if grep -q "#EXT-X-STREAM-INF" "$temp_playlist" || grep -q "#EXTINF" "$temp_playlist"; then
+                    echo "[HLS] Stream is available! Playlist type detected."
+                    rm -f "$temp_playlist"
+                    return 0
+                else
+                    echo "[HLS] Playlist downloaded but no valid segments found yet..."
+                fi
             fi
+            rm -f "$temp_playlist"
+        else
+            echo "[HLS] Failed to download playlist (network error)"
         fi
         
         retry_count=$((retry_count + 1))
@@ -123,6 +133,7 @@ check_hls_with_retry() {
         sleep 5
     done
     
+    echo "[HLS] ERROR: Stream not available after $max_retries attempts"
     return 1
 }
 
@@ -139,12 +150,14 @@ stream_to_ai() {
             echo "[AI] Starting stream to: $RTMP_TARGET_AI"
             
             ffmpeg \
-                -rw_timeout 10000000 \
-                -timeout 10000000 \
+                -rw_timeout 30000000 \
+                -timeout 30000000 \
                 -reconnect 1 \
                 -reconnect_at_eof 1 \
                 -reconnect_streamed 1 \
                 -reconnect_delay_max 5 \
+                -max_reload 1000 \
+                -http_persistent 1 \
                 -re \
                 -i "$HLS_SOURCE_URL" \
                 -c copy \
