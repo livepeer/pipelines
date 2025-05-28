@@ -32,6 +32,8 @@ export const EXTENSION = "png";
 
 export const SEND_METRICS = process.env.SEND_METRICS === "true";
 
+type Logger = Pick<Console, "log">;
+
 /**
  * Randomly selects a WHIP region to communicate with, or fallback to default app behaviour
  * @param path - The path in app to fetch with custom query param including `whipServer`
@@ -61,7 +63,7 @@ export function regionalPath(region: string, path: string): string {
  */
 export async function assertVideoPlaying(
   video: Locator,
-  visibleTimeout = VIDEO_VISIBLE_TIMEOUT_MS,
+  logger: Logger = console,
 ) {
   const startTime = Date.now();
   let videoVisibleTime: number = 0;
@@ -69,9 +71,12 @@ export async function assertVideoPlaying(
   let playingStateTime: number = 0;
 
   await test.step("Wait for video visibility", async () => {
-    await video.waitFor({ state: "visible", timeout: visibleTimeout });
+    await video.waitFor({
+      state: "visible",
+      timeout: VIDEO_VISIBLE_TIMEOUT_MS,
+    });
     videoVisibleTime = Date.now();
-    console.log(`Video became visible after ${videoVisibleTime - startTime}ms`);
+    logger.log(`Video became visible after ${videoVisibleTime - startTime}ms`);
   });
 
   await test.step("Poll for readyState", async () => {
@@ -87,7 +92,7 @@ export async function assertVideoPlaying(
       )
       .toBeGreaterThanOrEqual(HAVE_ENOUGH_DATA);
     readyStateTime = Date.now();
-    console.log(
+    logger.log(
       `Video reached HAVE_ENOUGH_DATA after ${readyStateTime - startTime}ms`,
     );
   });
@@ -105,9 +110,7 @@ export async function assertVideoPlaying(
       )
       .toBeFalsy();
     playingStateTime = Date.now();
-    console.log(
-      `Video started playing after ${playingStateTime - startTime}ms`,
-    );
+    logger.log(`Video started playing after ${playingStateTime - startTime}ms`);
   });
 
   await test.step("Verify playback progression", async () => {
@@ -133,12 +136,12 @@ export async function assertVideoPlaying(
     ).toBeFalsy();
 
     const totalTime = Date.now() - startTime;
-    console.log(`Total time from start to verified playback: ${totalTime}ms`);
-    console.log("Video timing breakdown (ms):");
-    console.log(`- Visibility: ${videoVisibleTime - startTime}`);
-    console.log(`- ReadyState: ${readyStateTime - videoVisibleTime}`);
-    console.log(`- Playing: ${playingStateTime - readyStateTime}`);
-    console.log(`- Verified: ${totalTime - playingStateTime}`);
+    logger.log(`Total time from start to verified playback: ${totalTime}ms`);
+    logger.log("Video timing breakdown (ms):");
+    logger.log(`- Visibility: ${videoVisibleTime - startTime}`);
+    logger.log(`- ReadyState: ${readyStateTime - videoVisibleTime}`);
+    logger.log(`- Playing: ${playingStateTime - readyStateTime}`);
+    logger.log(`- Verified: ${totalTime - playingStateTime}`);
   });
 }
 
@@ -163,6 +166,7 @@ export async function assertVideoContentChanging(
   intervalMs = SCREENSHOT_INTERVAL_MS,
   varianceThreshold = MIN_VARIANCE_THRESHOLD,
   entropyThreshold = MIN_ENTROPY_THRESHOLD,
+  logger: Logger = console,
 ) {
   const frameBuffers: Buffer[] = [];
   const processedFrames: {
@@ -231,7 +235,7 @@ export async function assertVideoContentChanging(
         entropy,
       });
 
-      console.log(
+      logger.log(
         `Frame ${i} (${videoType}) - Center Square Entropy: ${entropy.toFixed(2)}, Variance: ${variance.toFixed(2)}`,
       );
       expect(
@@ -286,7 +290,7 @@ export async function assertVideoContentChanging(
     const avgEntropy = frameCount > 0 ? totalEntropy / frameCount : 0;
     const avgDiffRatio = pairCount > 0 ? totalDiffRatio / pairCount : 0;
 
-    console.log(
+    logger.log(
       `Averages for ${videoType}: Variance=${avgVariance.toFixed(2)}, Entropy=${avgEntropy.toFixed(2)}, DiffRatio=${(avgDiffRatio * 100).toFixed(2)}%`,
     );
 
