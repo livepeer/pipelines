@@ -9,7 +9,10 @@ import { usePromptsApi } from "@/hooks/usePromptsApi";
 import { useThrottledInput } from "@/hooks/useThrottledInput";
 import { useRandomPromptApiTimer } from "@/hooks/useRandomPromptApiTimer";
 import { CloudBackground } from "@/components/home/CloudBackground";
-import { VideoSection } from "@/components/home/VideoSection";
+import {
+  VideoSection,
+  useMultiplayerStreamStore,
+} from "@/components/home/VideoSection";
 import { PromptPanel } from "@/components/home/PromptPanel";
 import { HeroSection } from "@/components/home/HeroSection";
 import { Footer } from "@/components/home/Footer";
@@ -37,6 +40,7 @@ export default function MultiplayerHomepage({
   const utmSource = searchParams.get("utm_source");
 
   const { isMobile } = useMobileStore();
+  const { currentStream } = useMultiplayerStreamStore();
 
   useMount(() => {
     track("home_page_viewed", {
@@ -60,7 +64,7 @@ export default function MultiplayerHomepage({
     userAvatarSeed,
     addToPromptQueue,
     addRandomPrompt,
-  } = usePromptsApi();
+  } = usePromptsApi(currentStream?.streamKey);
 
   useRandomPromptApiTimer({
     authenticated,
@@ -92,6 +96,8 @@ export default function MultiplayerHomepage({
   }, [ready]);
 
   const handlePromptSubmit = getHandleSubmit(async value => {
+    if (!currentStream) return;
+
     const sessionId = "optimistic-" + Date.now();
     const optimisticPrompt: PromptItem = {
       text: value,
@@ -99,6 +105,7 @@ export default function MultiplayerHomepage({
       isUser: true,
       timestamp: Date.now(),
       sessionId,
+      streamKey: currentStream.streamKey,
     };
     setOptimisticPrompts(prev => [...prev, optimisticPrompt]);
     const result = await addToPromptQueue(value, userAvatarSeed, true);
@@ -108,6 +115,7 @@ export default function MultiplayerHomepage({
       is_authenticated: authenticated,
       prompt: value,
       nsfw: result.wasCensored || false,
+      stream_key: currentStream.streamKey,
     });
   });
 
@@ -119,11 +127,15 @@ export default function MultiplayerHomepage({
     promptFormRef.current?.requestSubmit();
   };
 
+  useEffect(() => {
+    setOptimisticPrompts([]);
+  }, [currentStream?.streamKey]);
+
   if (!ready || loading) {
     return <div className="flex items-center justify-center h-screen"></div>;
   }
 
-  if (!promptState) {
+  if (!promptState && currentStream) {
     return (
       <div className="flex items-center justify-center h-screen">
         Loading prompt state...
@@ -187,13 +199,19 @@ export default function MultiplayerHomepage({
               >
                 <VideoSection />
                 <PromptPanel
-                  promptQueue={[
-                    ...optimisticPrompts,
-                    ...promptState.promptQueue,
-                  ]}
-                  displayedPrompts={promptState.displayedPrompts}
-                  promptAvatarSeeds={promptState.promptAvatarSeeds}
-                  userPromptIndices={promptState.userPromptIndices}
+                  promptQueue={
+                    promptState
+                      ? [
+                          ...optimisticPrompts.filter(
+                            p => p.streamKey === currentStream?.streamKey,
+                          ),
+                          ...promptState.promptQueue,
+                        ]
+                      : []
+                  }
+                  displayedPrompts={promptState?.displayedPrompts || []}
+                  promptAvatarSeeds={promptState?.promptAvatarSeeds || []}
+                  userPromptIndices={promptState?.userPromptIndices || []}
                   onSubmit={handlePromptSubmit}
                   promptValue={prompt}
                   onPromptChange={handlePromptChange}

@@ -18,6 +18,7 @@ export const promptQueue = pgTable(
     seed: text().notNull(),
     isUser: boolean("is_user").default(false).notNull(),
     sessionId: text("session_id"),
+    streamKey: text("stream_key").notNull(),
     timestamp: timestamp("timestamp", { withTimezone: true })
       .defaultNow()
       .notNull(),
@@ -28,11 +29,13 @@ export const promptQueue = pgTable(
   table => ({
     positionIdx: index("prompt_queue_position_idx").on(table.position),
     processedIdx: index("prompt_queue_processed_idx").on(table.processed),
+    streamKeyIdx: index("prompt_queue_stream_key_idx").on(table.streamKey),
   }),
 );
 
 export const promptState = pgTable("prompt_state", {
-  id: text().primaryKey().default("main"),
+  id: text().primaryKey(),
+  streamKey: text("stream_key").notNull(),
   displayedPrompts: json("displayed_prompts").$type<string[]>().notNull(),
   promptAvatarSeeds: json("prompt_avatar_seeds").$type<string[]>().notNull(),
   userPromptIndices: json("user_prompt_indices").$type<boolean[]>().notNull(),

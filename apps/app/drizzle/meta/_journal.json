@@ -71,6 +71,13 @@
       "when": 1747051224388,
       "tag": "0009_tiny_puck",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1748432385584,
+      "tag": "0010_chemical_micromax",
+      "breakpoints": true
     }
   ]
 }

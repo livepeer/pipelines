@@ -81,10 +81,12 @@ let lastAppliedPrompt: string | null = null;
 
 const initializeDb = async () => {
   try {
-    await initializePromptState(initialPrompts);
-    console.log(
-      `[${new Date().toISOString()}] Database initialized with initial prompts`,
-    );
+    for (const streamKey of TARGET_STREAM_KEYS) {
+      await initializePromptState(initialPrompts, streamKey);
+      console.log(
+        `[${new Date().toISOString()}] Database initialized for stream ${streamKey} with initial prompts`,
+      );
+    }
   } catch (error) {
     console.error("Error initializing database:", error);
   }
@@ -152,7 +154,7 @@ if (typeof window === "undefined") {
   }, REAPPLY_INTERVAL); */
 }
 
-const applyPromptToStream = async (promptText: string) => {
+const applyPromptToStream = async (promptText: string, streamKey: string) => {
   if (typeof window !== "undefined") {
     console.log(
       "Client-side environment detected, skipping prompt application",
@@ -160,15 +162,14 @@ const applyPromptToStream = async (promptText: string) => {
     return;
   }
 
-  if (!TARGET_STREAM_KEYS || TARGET_STREAM_KEYS.length === 0) {
-    console.error("No target stream keys configured");
+  if (!streamKey) {
+    console.error("No stream key provided");
     return;
   }
 
   const MAX_RETRIES = 3;
 
-  // Apply prompt to all streams simultaneously
-  const applyToAllStreams = async (): Promise<boolean> => {
+  const applyToStream = async (): Promise<boolean> => {
     try {
       if (
         !process.env.STREAM_STATUS_ENDPOINT_USER ||
@@ -178,29 +179,23 @@ const applyPromptToStream = async (promptText: string) => {
         return false;
       }
 
-      // Get all stream information from database
-      const streams_data = await db
+      const stream_data = await db
         .select({
           streamKey: streams.streamKey,
           gatewayHost: streams.gatewayHost,
         })
         .from(streams)
-        .where(inArray(streams.streamKey, TARGET_STREAM_KEYS))
-        .limit(TARGET_STREAM_KEYS.length);
+        .where(eq(streams.streamKey, streamKey))
+        .limit(1);
 
-      console.log(">>", streams_data);
+      console.log(">>", stream_data);
 
-      if (!streams_data || streams_data.length === 0) {
-        console.error(
-          `No streams found for keys: ${TARGET_STREAM_KEYS.join(", ")}`,
-        );
+      if (!stream_data || stream_data.length === 0) {
+        console.error(`No stream found for key: ${streamKey}`);
         return false;
       }
 
-      // Create a map of streamKey to gatewayHost for easy lookup
-      const streamMap = new Map(
-        streams_data.map(stream => [stream.streamKey, stream.gatewayHost]),
-      );
+      const gatewayHost = stream_data[0].gatewayHost;
 
       let quality = 3;
       let creativity = 0.6;
@@ -238,7 +233,7 @@ const applyPromptToStream = async (promptText: string) => {
       }
 
       console.log(
-        `[${new Date().toISOString()}] Applying prompt to ${TARGET_STREAM_KEYS.length} streams with quality=${quality}, creativity=${creativity}`,
+        `[${new Date().toISOString()}] Applying prompt to stream ${streamKey} with quality=${quality}, creativity=${creativity}`,
       );
 
       const params = {
@@ -434,81 +429,31 @@ const applyPromptToStream = async (promptText: string) => {
 
       console.log(">>", credentials);
 
-      const requests = TARGET_STREAM_KEYS.map(async streamKey => {
-        const gatewayHost = streamMap.get(streamKey);
+      const apiUrl = `https://${gatewayHost}/live/video-to-video/${streamKey}/update`;
+      console.log(`Making request to: ${apiUrl}`);
 
-        if (!gatewayHost) {
-          console.error(`Gateway host not found for stream key: ${streamKey}`);
-          return { streamKey, success: false, error: "Gateway host not found" };
-        }
-
-        try {
-          console.log(`Applying prompt to stream: ${streamKey}`);
-          console.log(`Using gateway host: ${gatewayHost}`);
-
-          const apiUrl = `https://${gatewayHost}/live/video-to-video/${streamKey}/update`;
-          console.log(`Making request to: ${apiUrl}`);
-
-          const response = await fetch(apiUrl, {
-            method: "POST",
-            headers: {
-              Authorization: `Basic ${credentials}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(params),
-          });
-
-          console.log(`API Response status for ${streamKey}:`, response.status);
-
-          if (!response.ok) {
-            const errorText = await response
-              .text()
-              .catch(() => "Failed to read error response");
-            throw new Error(
-              `Failed with status ${response.status}: ${errorText}`,
-            );
-          }
-
-          console.log(`Successfully applied prompt to stream: ${streamKey}`);
-          return { streamKey, success: true };
-        } catch (error) {
-          console.error(`Error applying prompt to stream ${streamKey}:`, error);
-          return {
-            streamKey,
-            success: false,
-            error: error instanceof Error ? error.message : String(error),
-          };
-        }
+      const response = await fetch(apiUrl, {
+        method: "POST",
+        headers: {
+          Authorization: `Basic ${credentials}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(params),
       });
 
-      const results = await Promise.all(requests);
+      console.log(`API Response status for ${streamKey}:`, response.status);
 
-      const successCount = results.filter(r => r.success).length;
-      const totalCount = results.length;
-
-      console.log(
-        `Applied prompt to ${successCount}/${totalCount} streams successfully`,
-      );
-
-      if (successCount === 0) {
-        console.error("Failed to apply prompt to any streams");
-        return false;
+      if (!response.ok) {
+        const errorText = await response
+          .text()
+          .catch(() => "Failed to read error response");
+        throw new Error(`Failed with status ${response.status}: ${errorText}`);
       }
 
-      if (successCount < totalCount) {
-        console.warn(
-          `Only applied prompt to ${successCount}/${totalCount} streams`,
-        );
-        results
-          .filter(r => !r.success)
-          .forEach(r => {
-            console.error(`Failed for stream ${r.streamKey}: ${r.error}`);
-          });
-      }
-
+      console.log(`Successfully applied prompt to stream: ${streamKey}`);
       return true;
     } catch (error) {
-      console.error("Error in applyToAllStreams:", error);
+      console.error(`Error applying prompt to stream ${streamKey}:`, error);
       return false;
     }
   };
@@ -519,7 +464,7 @@ const applyPromptToStream = async (promptText: string) => {
       `[${new Date().toISOString()}] Prompt application attempt ${currentRetry + 1}/${MAX_RETRIES}`,
     );
 
-    const success = await applyToAllStreams();
+    const success = await applyToStream();
     if (success) {
       // Update last applied prompt tracking
       lastAppliedPrompt = promptText;
@@ -543,57 +488,71 @@ const applyPromptToStream = async (promptText: string) => {
   );
 };
 
-export const checkAndProcessQueue = async (): Promise<void> => {
+export const checkAndProcessQueue = async (
+  streamKey: string,
+): Promise<void> => {
   try {
-    console.log(`[${new Date().toISOString()}] Checking prompt queue`);
+    console.log(
+      `[${new Date().toISOString()}] Checking prompt queue for stream ${streamKey}`,
+    );
 
-    const result = await processNextPrompt(HIGHLIGHT_DURATION);
+    const result = await processNextPrompt(streamKey, HIGHLIGHT_DURATION);
 
     if (result.processed) {
-      console.log(`[${new Date().toISOString()}] Processed next prompt`);
+      console.log(
+        `[${new Date().toISOString()}] Processed next prompt for stream ${streamKey}`,
+      );
 
-      const currentState = await dbGetPromptState();
+      const currentState = await dbGetPromptState(
+        streamKey,
+        FRONTEND_DISPLAY_SIZE,
+      );
       if (currentState.displayedPrompts.length > 0) {
-        await applyPromptToStream(currentState.displayedPrompts[0]);
+        await applyPromptToStream(currentState.displayedPrompts[0], streamKey);
       }
 
       if (result.remainingItems > 0) {
         console.log(
-          `[${new Date().toISOString()}] ${result.remainingItems} items remaining in queue, scheduling next processing`,
+          `[${new Date().toISOString()}] ${result.remainingItems} items remaining in queue for stream ${streamKey}, scheduling next processing`,
         );
         setTimeout(() => {
-          checkAndProcessQueue().catch(console.error);
+          checkAndProcessQueue(streamKey).catch(console.error);
         }, HIGHLIGHT_DURATION + 500);
       }
     } else if (!result.success) {
       console.error(
-        `[${new Date().toISOString()}] Failed to process next prompt`,
+        `[${new Date().toISOString()}] Failed to process next prompt for stream ${streamKey}`,
       );
     } else {
       console.log(
-        `[${new Date().toISOString()}] No prompt ready to process (${result.remainingItems} in queue)`,
+        `[${new Date().toISOString()}] No prompt ready to process for stream ${streamKey} (${result.remainingItems} in queue)`,
       );
 
       if (result.remainingItems > 0) {
         console.log(
-          `[${new Date().toISOString()}] Scheduling next check for ${result.remainingItems} remaining items`,
+          `[${new Date().toISOString()}] Scheduling next check for ${result.remainingItems} remaining items in stream ${streamKey}`,
         );
         setTimeout(() => {
-          checkAndProcessQueue().catch(console.error);
+          checkAndProcessQueue(streamKey).catch(console.error);
         }, HIGHLIGHT_DURATION + 500);
       }
     }
   } catch (error) {
-    console.error("Error checking and processing queue:", error);
+    console.error(
+      `Error checking and processing queue for stream ${streamKey}:`,
+      error,
+    );
   }
 };
 
-export const getPromptState = async (): Promise<PromptState> => {
+export const getPromptState = async (
+  streamKey: string,
+): Promise<PromptState> => {
   try {
-    const state = await dbGetPromptState(FRONTEND_DISPLAY_SIZE);
-    return state;
+    const state = await dbGetPromptState(streamKey, FRONTEND_DISPLAY_SIZE);
+    return { ...state, streamKey };
   } catch (error) {
-    console.error("Error getting prompt state:", error);
+    console.error(`Error getting prompt state for stream ${streamKey}:`, error);
 
     return {
       promptQueue: [],
@@ -602,6 +561,7 @@ export const getPromptState = async (): Promise<PromptState> => {
       userPromptIndices: [],
       promptSessionIds: [],
       highlightedSince: Date.now(),
+      streamKey,
     };
   }
 };
@@ -610,7 +570,8 @@ export const addToPromptQueue = async (
   promptText: string,
   seed: string,
   isUser: boolean,
-  sessionId?: string,
+  sessionId: string | undefined,
+  streamKey: string,
 ): Promise<{ success: boolean; queuePosition?: number }> => {
   try {
     const result = await dbAddToPromptQueue(
@@ -618,27 +579,33 @@ export const addToPromptQueue = async (
       seed,
       isUser,
       sessionId,
+      streamKey,
       MAX_QUEUE_SIZE,
     );
 
     if (result.success) {
       console.log(
-        `[${new Date().toISOString()}] Added prompt to queue: ${promptText}`,
+        `[${new Date().toISOString()}] Added prompt to queue for stream ${streamKey}: ${promptText}`,
       );
 
       setTimeout(() => {
-        checkAndProcessQueue().catch(console.error);
+        checkAndProcessQueue(streamKey).catch(console.error);
       }, 0);
     }
 
     return result;
   } catch (error) {
-    console.error("Error adding to prompt queue:", error);
+    console.error(
+      `Error adding to prompt queue for stream ${streamKey}:`,
+      error,
+    );
     return { success: false };
   }
 };
 
-export const addRandomPrompt = async (): Promise<{
+export const addRandomPrompt = async (
+  streamKey: string,
+): Promise<{
   success: boolean;
   queuePosition?: number;
 }> => {
@@ -646,5 +613,11 @@ export const addRandomPrompt = async (): Promise<{
   const randomPrompt = otherPeoplePrompts[randomIndex];
   const randomSeed = `user-${Math.random().toString(36).substring(2, 8)}`;
 
-  return addToPromptQueue(randomPrompt, randomSeed, false);
+  return addToPromptQueue(
+    randomPrompt,
+    randomSeed,
+    false,
+    undefined,
+    streamKey,
+  );
 };

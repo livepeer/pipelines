@@ -8,6 +8,7 @@ import { promptQueue, promptState } from "../schema/prompt-queue";
 
 export const initializePromptState = async (
   initialPrompts: string[],
+  streamKey: string,
 ): Promise<void> => {
   const promptAvatarSeeds = initialPrompts.map(
     (_, i) => `user-${i}-${Math.random().toString(36).substring(2, 8)}`,
@@ -21,12 +22,13 @@ export const initializePromptState = async (
     const existingState = await dbClient
       .select()
       .from(promptState)
-      .where(eq(promptState.id, "main"))
+      .where(eq(promptState.id, streamKey))
       .limit(1);
 
     if (existingState.length === 0) {
       await dbClient.insert(promptState).values({
-        id: "main",
+        id: streamKey,
+        streamKey,
         displayedPrompts: initialPrompts,
         promptAvatarSeeds,
         userPromptIndices,
@@ -39,22 +41,37 @@ export const initializePromptState = async (
 };
 
 export const getPromptState = async (
+  streamKey: string,
   frontendDisplaySize: number = 5,
 ): Promise<PromptStateType> => {
   const currentState = await db
     .select()
     .from(promptState)
-    .where(eq(promptState.id, "main"))
+    .where(eq(promptState.id, streamKey))
     .limit(1);
 
   if (currentState.length === 0) {
-    throw new Error("Prompt state not initialized");
+    // Initialize state for new stream
+    await initializePromptState([], streamKey);
+    return {
+      displayedPrompts: [],
+      promptAvatarSeeds: [],
+      userPromptIndices: [],
+      promptSessionIds: [],
+      highlightedSince: Date.now(),
+      promptQueue: [],
+    };
   }
 
   const queueItems = await db
     .select()
     .from(promptQueue)
-    .where(eq(promptQueue.processed, false))
+    .where(
+      and(
+        eq(promptQueue.processed, false),
+        eq(promptQueue.streamKey, streamKey),
+      ),
+    )
     .orderBy(promptQueue.position)
     .limit(frontendDisplaySize);
 
@@ -64,6 +81,7 @@ export const getPromptState = async (
     isUser: item.isUser,
     timestamp: item.timestamp.getTime(),
     sessionId: item.sessionId || undefined,
+    streamKey: item.streamKey,
   }));
 
   return {
@@ -80,14 +98,20 @@ export const addToPromptQueue = async (
   promptText: string,
   seed: string,
   isUser: boolean,
-  sessionId?: string,
+  sessionId: string | undefined,
+  streamKey: string,
   maxQueueSize: number = 100,
 ): Promise<{ success: boolean; queuePosition?: number }> => {
   return await withDbClient(async dbClient => {
     const countResult = await dbClient
       .select({ count: sql<number>`count(*)` })
       .from(promptQueue)
-      .where(eq(promptQueue.processed, false));
+      .where(
+        and(
+          eq(promptQueue.processed, false),
+          eq(promptQueue.streamKey, streamKey),
+        ),
+      );
 
     const currentCount = countResult[0].count;
 
@@ -97,7 +121,8 @@ export const addToPromptQueue = async (
 
     const maxPositionResult = await dbClient
       .select({ maxPosition: sql<number>`max(position)` })
-      .from(promptQueue);
+      .from(promptQueue)
+      .where(eq(promptQueue.streamKey, streamKey));
 
     const nextPosition =
       maxPositionResult[0].maxPosition !== null
@@ -109,6 +134,7 @@ export const addToPromptQueue = async (
       seed,
       isUser,
       sessionId,
+      streamKey,
       position: nextPosition,
       timestamp: new Date(),
       processed: false,
@@ -122,6 +148,7 @@ export const addToPromptQueue = async (
 };
 
 export const processNextPrompt = async (
+  streamKey: string,
   highlightDuration: number = 10000,
 ): Promise<{
   success: boolean;
@@ -132,10 +159,12 @@ export const processNextPrompt = async (
     const currentState = await dbClient
       .select()
       .from(promptState)
-      .where(eq(promptState.id, "main"))
+      .where(eq(promptState.id, streamKey))
       .limit(1);
 
     if (currentState.length === 0) {
+      // Initialize state for new stream
+      await initializePromptState([], streamKey);
       return { success: false, processed: false, remainingItems: 0 };
     }
 
@@ -143,7 +172,12 @@ export const processNextPrompt = async (
       const countResult = await dbClient
         .select({ count: sql<number>`count(*)` })
         .from(promptQueue)
-        .where(eq(promptQueue.processed, false));
+        .where(
+          and(
+            eq(promptQueue.processed, false),
+            eq(promptQueue.streamKey, streamKey),
+          ),
+        );
 
       return {
         success: true,
@@ -160,7 +194,12 @@ export const processNextPrompt = async (
       const countResult = await dbClient
         .select({ count: sql<number>`count(*)` })
         .from(promptQueue)
-        .where(eq(promptQueue.processed, false));
+        .where(
+          and(
+            eq(promptQueue.processed, false),
+            eq(promptQueue.streamKey, streamKey),
+          ),
+        );
 
       return {
         success: true,
@@ -172,7 +211,12 @@ export const processNextPrompt = async (
     const nextPrompt = await dbClient
       .select()
       .from(promptQueue)
-      .where(eq(promptQueue.processed, false))
+      .where(
+        and(
+          eq(promptQueue.processed, false),
+          eq(promptQueue.streamKey, streamKey),
+        ),
+      )
       .orderBy(promptQueue.position)
       .limit(1);
 
@@ -186,7 +230,7 @@ export const processNextPrompt = async (
         isProcessing: true,
         lastUpdated: new Date(),
       })
-      .where(eq(promptState.id, "main"));
+      .where(eq(promptState.id, streamKey));
 
     try {
       const promptItem = nextPrompt[0];
@@ -223,7 +267,7 @@ export const processNextPrompt = async (
           isProcessing: false,
           lastUpdated: now,
         })
-        .where(eq(promptState.id, "main"));
+        .where(eq(promptState.id, streamKey));
 
       await dbClient
         .update(promptQueue)
@@ -236,7 +280,12 @@ export const processNextPrompt = async (
       const countResult = await dbClient
         .select({ count: sql<number>`count(*)` })
         .from(promptQueue)
-        .where(eq(promptQueue.processed, false));
+        .where(
+          and(
+            eq(promptQueue.processed, false),
+            eq(promptQueue.streamKey, streamKey),
+          ),
+        );
 
       return {
         success: true,
@@ -251,7 +300,7 @@ export const processNextPrompt = async (
           isProcessing: false,
           lastUpdated: new Date(),
         })
-        .where(eq(promptState.id, "main"));
+        .where(eq(promptState.id, streamKey));
 
       console.error("Error processing prompt:", error);
       return { success: false, processed: false, remainingItems: 0 };
@@ -287,30 +336,33 @@ export const resetProcessingFlag = async (
     const stateData = await dbClient
       .select()
       .from(promptState)
-      .where(eq(promptState.id, "main"))
-      .limit(1);
+      .where(eq(promptState.isProcessing, true))
+      .limit(100);
 
-    if (stateData.length === 0 || !stateData[0].isProcessing) {
+    if (stateData.length === 0) {
       return false;
     }
 
-    const lastUpdated = stateData[0].lastUpdated;
     const now = new Date();
-    const minutesSinceUpdate =
-      (now.getTime() - lastUpdated.getTime()) / (1000 * 60);
+    let resetCount = 0;
 
-    if (minutesSinceUpdate < stuckTimeoutMinutes) {
-      return false;
+    for (const state of stateData) {
+      const lastUpdated = state.lastUpdated;
+      const minutesSinceUpdate =
+        (now.getTime() - lastUpdated.getTime()) / (1000 * 60);
+
+      if (minutesSinceUpdate >= stuckTimeoutMinutes) {
+        await dbClient
+          .update(promptState)
+          .set({
+            isProcessing: false,
+            lastUpdated: now,
+          })
+          .where(eq(promptState.id, state.id));
+        resetCount++;
+      }
     }
 
-    await dbClient
-      .update(promptState)
-      .set({
-        isProcessing: false,
-        lastUpdated: now,
-      })
-      .where(eq(promptState.id, "main"));
-
-    return true;
+    return resetCount > 0;
   });
 };
