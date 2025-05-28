@@ -160,18 +160,10 @@ stream_to_ai() {
     done
 }
 
-# Cleanup function
 cleanup() {
     echo "Cleaning up..."
-    if [ -f "$PID_FILE" ]; then
-        local pid=$(cat "$PID_FILE" 2>/dev/null)
-        if [ -n "$pid" ]; then
-            kill "$pid" 2>/dev/null || true
-            # Also kill all child processes
-            pkill -P "$pid" 2>/dev/null || true
-        fi
-        rm -f "$PID_FILE"
-    fi
+    jobs -p | xargs -r kill 2>/dev/null || true
+    wait
     exit 0
 }
 
@@ -190,9 +182,13 @@ fi
 
 stream_to_livepeer &
 LP_PID=$!
-echo $LP_PID > "$PID_FILE"
 echo "Started Livepeer streaming (PID: $LP_PID)"
 
 sleep 10
 
-stream_to_ai 
+stream_to_ai &
+AI_PID=$!
+echo "Started AI streaming (PID: $AI_PID)"
+
+echo "Monitoring both streams. Press Ctrl+C to stop."
+wait 
