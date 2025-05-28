@@ -155,8 +155,12 @@ check_hls_with_retry() {
     
     while [ $retry_count -lt $max_retries ]; do
         if curl -s -L -f -o /dev/null --max-time 10 "$url"; then
-            echo "[HLS] Stream is available!"
-            return 0
+            if ffprobe -v quiet -print_format json -show_streams -analyzeduration 10M -probesize 10M "$url" 2>/dev/null | grep -q '"codec_name"'; then
+                echo "[HLS] Stream is available with valid codec information!"
+                return 0
+            else
+                echo "[HLS] Stream accessible but codec info not ready yet..."
+            fi
         fi
         
         retry_count=$((retry_count + 1))
@@ -186,7 +190,8 @@ stream_to_ai() {
             local error_file=$(mktemp)
             local error_count=0
             
-            ffmpeg -rw_timeout 10000000 -timeout 10000000 \
+            ffmpeg -analyzeduration 10M -probesize 10M \
+                -rw_timeout 10000000 -timeout 10000000 \
                 -re \
                 -i "$HLS_SOURCE_URL" \
                 -c copy \
@@ -195,6 +200,8 @@ stream_to_ai() {
                 2>&1 | while IFS= read -r line; do
                     if [[ "$line" =~ "Connection reset by peer" ]] || [[ "$line" =~ "Broken pipe" ]] || [[ "$line" =~ "Error writing trailer" ]]; then
                         echo "[AI] CRITICAL: $line"
+                    elif [[ "$line" =~ "Could not find codec parameters" ]]; then
+                        echo "[AI] WARNING: $line"
                     elif [[ "$line" =~ "HTTP error" ]] || [[ "$line" =~ "Failed to reload" ]]; then
                         if [ $error_count -lt $ERROR_LOG_LIMIT ]; then
                             echo "[AI] $line"
