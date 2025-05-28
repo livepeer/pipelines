@@ -189,6 +189,7 @@ stream_to_ai() {
                 -re \
                 -i "$HLS_SOURCE_URL" \
                 -c copy \
+                -an \
                 -f flv "$RTMP_TARGET_AI" \
                 -loglevel info \
                 2>&1 | while IFS= read -r line; do
@@ -300,7 +301,7 @@ health_check &
 HEALTH_PID=$!
 echo "Started health checker (PID: $HEALTH_PID)"
 
-echo "All processes started. Monitoring streams for 24/7 operation."
+echo "All processes started."
 echo "Press Ctrl+C to stop."
 
 wait 
