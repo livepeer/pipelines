@@ -1,11 +1,17 @@
 "use client";
 
 import { usePrivy } from "@/hooks/usePrivy";
-import { handleDistinctId, handleSessionId } from "@/lib/analytics/mixpanel";
+import {
+  handleDistinctId,
+  handleSessionId,
+  SESSION_ID_KEY,
+} from "@/lib/analytics/mixpanel";
 import { mixpanel as mixpanelConfig } from "@/lib/env";
 import track from "@/lib/track";
 import mixpanel from "mixpanel-browser";
 import { ReactNode, useEffect, useRef } from "react";
+
+const SESSION_START_KEY = "mixpanel_session_started";
 
 export function MixpanelProvider({ children }: { children: ReactNode }) {
   const hasTrackedSessionEnd = useRef(false);
@@ -13,13 +19,17 @@ export function MixpanelProvider({ children }: { children: ReactNode }) {
 
   const trackSessionEnd = () => {
     if (hasTrackedSessionEnd.current) return;
+
+    const sessionStarted = sessionStorage.getItem(SESSION_START_KEY);
+    if (!sessionStarted) return;
+
     hasTrackedSessionEnd.current = true;
 
     const sessionDuration = Math.floor(
       (Date.now() - sessionStartTime.current) / 1000,
     );
     const distinctId = handleDistinctId();
-    const sessionId = handleSessionId();
+    const sessionId = sessionStorage.getItem(SESSION_ID_KEY);
 
     if (!sessionId) {
       console.log("No sessionId found, skipping session_end tracking");
@@ -51,6 +61,8 @@ export function MixpanelProvider({ children }: { children: ReactNode }) {
         console.error("Failed to send session_end event:", error);
       }
     }
+
+    sessionStorage.removeItem(SESSION_START_KEY);
   };
 
   useEffect(() => {
@@ -70,11 +82,19 @@ export function MixpanelProvider({ children }: { children: ReactNode }) {
           sessionId,
         );
 
-        track("session_start", {
-          timestamp: new Date().toISOString(),
-          page_url: window.location.href,
-          page_path: window.location.pathname,
-        });
+        const sessionStarted = sessionStorage.getItem(SESSION_START_KEY);
+        const currentSessionId = sessionStorage.getItem(SESSION_ID_KEY);
+
+        if (!sessionStarted || currentSessionId !== sessionId) {
+          track("session_start", {
+            timestamp: new Date().toISOString(),
+            page_url: window.location.href,
+            page_path: window.location.pathname,
+          });
+
+          sessionStorage.setItem(SESSION_START_KEY, "true");
+          sessionStartTime.current = Date.now();
+        }
       } catch (error) {
         console.error("Error initializing Mixpanel:", error);
       }
