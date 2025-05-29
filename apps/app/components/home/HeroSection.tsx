@@ -1,11 +1,10 @@
 import { motion } from "framer-motion";
 import { WandSparkles, ChevronDown } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { TrackedButton } from "../analytics/TrackedButton";
 import { cn } from "@repo/design-system/lib/utils";
 import { useMultiplayerStreamStore } from "./VideoSection";
-import { TransitioningVideo } from "./TransitioningVideo";
 import useMobileStore from "@/hooks/useMobileStore";
 
 interface HeroSectionProps {
@@ -15,6 +14,8 @@ interface HeroSectionProps {
   submitPromptForm: () => void;
   isAuthenticated?: boolean;
   useLivepeerPlayer?: boolean;
+  onVideoClick?: () => void;
+  heroVideoRef: React.RefObject<HTMLDivElement>;
 }
 
 export const HeroSection = ({
@@ -24,6 +25,8 @@ export const HeroSection = ({
   submitPromptForm,
   isAuthenticated = false,
   useLivepeerPlayer = false,
+  onVideoClick,
+  heroVideoRef,
 }: HeroSectionProps) => {
   const router = useRouter();
   const [localPrompt, setLocalPrompt] = useState("");
@@ -86,13 +89,6 @@ export const HeroSection = ({
       e.preventDefault();
       handleSubmit();
     }
-  };
-
-  const handleVideoClick = () => {
-    document.getElementById("player")?.scrollIntoView({
-      behavior: "smooth",
-      block: "start",
-    });
   };
 
   useEffect(() => {
@@ -188,17 +184,30 @@ export const HeroSection = ({
         </div>
       </main>
 
-      {/* Footer with transitioning video and bouncing arrow */}
+      {/* Footer with video position reference and bouncing arrow */}
       <footer className="relative w-full flex flex-col items-center z-[1201] mb-24">
         <div className="mb-8">
-          <TransitioningVideo
-            useLivepeerPlayer={useLivepeerPlayer}
-            onVideoClick={handleVideoClick}
-          />
+          {/* Video position reference for transitioning video */}
+          <div
+            ref={heroVideoRef}
+            className="w-[190px] aspect-video rounded-lg shadow-lg cursor-pointer hover:shadow-xl transition-shadow relative"
+            onClick={onVideoClick}
+          >
+            {/* On mobile, show static video */}
+            {isMobile && (
+              <iframe
+                src={`https://${process.env.NEXT_PUBLIC_ENV === "production" ? "lvpr.tv" : "monster.lvpr.tv"}?v=${currentStream?.transformedPlaybackId}&lowLatency=true&backoffMax=1000&ingestPlayback=true&controls=true`}
+                className="w-full h-full rounded-lg"
+                allow="autoplay; fullscreen"
+                allowFullScreen
+                scrolling="no"
+              />
+            )}
+          </div>
         </div>
         <motion.button
           type="button"
-          onClick={handleVideoClick}
+          onClick={onVideoClick}
           animate={{
             y: [0, 10, 0],
           }}

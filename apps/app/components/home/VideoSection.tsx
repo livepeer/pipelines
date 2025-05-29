@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from "react";
 import { create } from "zustand";
 import { LivepeerPlayer } from "./LivepeerPlayer";
-import { TransitioningVideo } from "./TransitioningVideo";
 import { Button } from "@repo/design-system/components/ui/button";
 import { cn } from "@repo/design-system/lib/utils";
 import useMobileStore from "@/hooks/useMobileStore";
@@ -21,17 +20,14 @@ export function getIframeUrl({
   return `https://${baseUrl}?v=${playbackId}&lowLatency=${lowLatency}&backoffMax=1000&ingestPlayback=true&controls=true`;
 }
 
-export function VideoSection() {
-  const { isMobile } = useMobileStore();
-  const [useLivepeerPlayer, setUseLivepeerPlayer] = useState(false);
-  const { currentStream } = useMultiplayerStreamStore();
+interface VideoSectionProps {
+  mainVideoRef: React.RefObject<HTMLDivElement>;
+  useLivepeerPlayer?: boolean;
+}
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const urlParams = new URLSearchParams(window.location.search);
-      setUseLivepeerPlayer(urlParams.get("lpPlayer") === "true");
-    }
-  }, []);
+export function VideoSection({ mainVideoRef, useLivepeerPlayer = false }: VideoSectionProps) {
+  const { isMobile } = useMobileStore();
+  const { currentStream } = useMultiplayerStreamStore();
 
   if (!currentStream) return null;
 
@@ -43,7 +39,75 @@ export function VideoSection() {
       )}
     >
       <MultiplayerStreamSelector />
-      <TransitioningVideo useLivepeerPlayer={useLivepeerPlayer} />
+      {/* Video position reference for transitioning video */}
+      <div
+        ref={mainVideoRef}
+        className={cn(
+          "w-full relative overflow-hidden bg-black/10 backdrop-blur-sm shadow-lg",
+          isMobile
+            ? "aspect-video rounded-none h-[calc(100%)]"
+            : "md:rounded-xl md:aspect-video h-[calc(100%)]",
+        )}
+      >
+        {/* On mobile, show static video */}
+        {isMobile && (
+          <div className="w-full h-full relative overflow-hidden">
+            <div className="absolute inset-0 w-full h-full overflow-hidden">
+              {useLivepeerPlayer ? (
+                <LivepeerPlayer
+                  playbackId={currentStream?.transformedPlaybackId}
+                  autoPlay={true}
+                  muted={false}
+                  className={cn(
+                    "w-[130%] h-[130%] absolute left-[-15%] top-[-15%]"
+                  )}
+                  objectFit="cover"
+                  env="monster"
+                  lowLatency="force"
+                />
+              ) : (
+                <iframe
+                  src={getIframeUrl({
+                    playbackId: currentStream?.transformedPlaybackId,
+                    lowLatency: true,
+                  })}
+                  className="absolute w-[130%] h-[130%] left-[-15%] top-[-15%]"
+                  style={{ overflow: "hidden" }}
+                  allow="autoplay; fullscreen"
+                  allowFullScreen
+                  scrolling="no"
+                />
+              )}
+            </div>
+
+            {/* Picture-in-picture for original stream on mobile */}
+            <div className="absolute bottom-4 left-4 w-[25%] aspect-video z-30 rounded-xl overflow-hidden border-2 border-white/30 shadow-lg">
+              {useLivepeerPlayer ? (
+                <LivepeerPlayer
+                  playbackId={currentStream?.originalPlaybackId}
+                  autoPlay={true}
+                  muted={true}
+                  className="w-full h-full"
+                  env="studio"
+                  lowLatency="force"
+                />
+              ) : (
+                <iframe
+                  src={getIframeUrl({
+                    playbackId: currentStream?.originalPlaybackId,
+                    lowLatency: false,
+                  })}
+                  className="w-full h-full"
+                  style={{ overflow: "hidden" }}
+                  allow="autoplay; fullscreen"
+                  allowFullScreen
+                  scrolling="no"
+                />
+              )}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
