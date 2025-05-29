@@ -44,27 +44,32 @@ export function VideoSection() {
   return (
     <div
       className={cn(
-        "flex flex-col w-full relative overflow-hidden",
+        "flex flex-col w-full relative",
         isMobile ? "h-fit" : "md:w-[70%]",
       )}
     >
       <MultiplayerStreamSelector />
       <div
         className={cn(
-          "w-full relative overflow-hidden bg-black/10 backdrop-blur-sm shadow-lg",
+          "w-full relative bg-black/10 backdrop-blur-sm shadow-lg",
           isMobile
             ? "aspect-video rounded-none h-[calc(100%)]"
             : "md:rounded-xl md:aspect-video h-[calc(100%)]",
         )}
       >
-        <div className="w-full h-full relative overflow-hidden">
+        <div className="w-full h-full relative">
           {isLoading && (
             <div className="absolute inset-0 flex items-center justify-center bg-black z-10">
               <div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
             </div>
           )}
 
-          <div className="absolute inset-0 w-full h-full overflow-hidden">
+          <div
+            className={cn(
+              "absolute inset-0 w-full h-full overflow-hidden rounded-xl",
+              isMobile && "relative overflow-visible",
+            )}
+          >
             {useLivepeerPlayer ? (
               <LivepeerPlayer
                 playbackId={currentStream?.transformedPlaybackId}
@@ -86,9 +91,8 @@ export function VideoSection() {
                 })}
                 className={cn(
                   "absolute w-[120%] h-[120%] left-[-10%] top-[-10%] md:w-[120%] md:h-[120%] md:left-[-10%] md:top-[-10%]",
-                  isMobile ? "w-[130%] h-[130%] left-[-15%] top-[-15%]" : "",
+                  isMobile ? "w-[100%] h-[100%] left-[0%] top-[0%]" : "",
                 )}
-                style={{ overflow: "hidden" }}
                 allow="autoplay; fullscreen"
                 allowFullScreen
                 onLoad={() => setIsLoading(false)}
@@ -97,32 +101,43 @@ export function VideoSection() {
             )}
           </div>
 
-          {!isMobile && (
-            <div className="absolute bottom-4 left-4 w-[25%] aspect-video z-30 rounded-xl overflow-hidden border-2 border-white/30 shadow-lg hidden md:block">
-              {useLivepeerPlayer ? (
-                <LivepeerPlayer
-                  playbackId={currentStream?.originalPlaybackId}
-                  autoPlay={true}
-                  muted={true}
-                  className="w-full h-full"
-                  env="studio"
-                  lowLatency="force"
-                />
-              ) : (
-                <iframe
-                  src={getIframeUrl({
-                    playbackId: currentStream?.originalPlaybackId,
-                    lowLatency: false,
-                  })}
-                  className="w-full h-full"
-                  style={{ overflow: "hidden" }}
-                  allow="autoplay; fullscreen"
-                  allowFullScreen
-                  scrolling="no"
-                />
-              )}
-            </div>
-          )}
+          <div
+            className={cn(
+              isMobile
+                ? "relative inset-0 w-full h-full"
+                : "absolute bottom-4 left-4 w-[25%] aspect-video z-30 rounded-xl overflow-hidden border-2 border-white/30 shadow-lg hidden md:block",
+            )}
+          >
+            {useLivepeerPlayer ? (
+              <LivepeerPlayer
+                playbackId={currentStream?.originalPlaybackId}
+                autoPlay={true}
+                muted={true}
+                className={cn(
+                  "w-full h-full",
+                  isMobile ? "w-[130%] h-[130%] left-[-15%] top-[-15%]" : "",
+                )}
+                env="studio"
+                lowLatency="force"
+              />
+            ) : (
+              <iframe
+                src={getIframeUrl({
+                  playbackId: currentStream?.originalPlaybackId,
+                  lowLatency: false,
+                })}
+                className={cn(
+                  "w-full h-full",
+                  isMobile
+                    ? "absolute w-[100%] h-[100%] left-[0%] top-[0%]"
+                    : "",
+                )}
+                allow="autoplay; fullscreen"
+                allowFullScreen
+                scrolling="no"
+              />
+            )}
+          </div>
         </div>
       </div>
     </div>
@@ -226,7 +241,7 @@ const MultiplayerStreamSelector = () => {
             setCurrentStream(stream);
           }}
         >
-          {stream.name}
+          <span className="truncate">{stream.name}</span>
         </Button>
       ))}
     </div>

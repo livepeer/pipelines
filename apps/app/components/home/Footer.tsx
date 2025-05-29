@@ -7,6 +7,7 @@ interface FooterProps {
 }
 
 export const Footer = ({ isMobile = false }: FooterProps) => {
+  if (isMobile) return null;
   return (
     <div
       className={cn(

@@ -65,6 +65,19 @@ const generateUsername = (seed: string): string => {
   return username;
 };
 
+const getPromptQueueText = (index: number) => {
+  if (index === 1) {
+    return "1st in queue";
+  }
+  if (index === 2) {
+    return "2nd in queue";
+  }
+  if (index === 3) {
+    return "3rd in queue";
+  }
+  return `${index}th in queue`;
+};
+
 const getColorFromSeed = (seed: string): string => {
   if (colorCache.has(seed)) {
     return colorCache.get(seed)!;
@@ -188,39 +201,38 @@ export function PromptDisplay({
     itemsToShow = allPromptsChronological.slice(-maxItems);
     itemCount = itemsToShow.length;
 
+    const userSubmittedPromptsInQueue = nonEmptyQueueItems.filter(
+      item => item.isUser,
+    );
     return (
-      <div className="w-full flex flex-col p-4 overflow-hidden justify-end relative font-inter mt-3">
-        <div className="flex flex-col gap-2 w-full h-full relative justify-end">
-          {itemsToShow.map((item, index) => {
-            const username = item.seed ? generateUsername(item.seed) : "User";
-            const color = getColorFromSeed(username);
-
-            return (
-              <div
-                key={`mobile-item-${index}-${item.text.substring(0, 10)}`}
-                className={`p-2 px-3 text-sm rounded-xl w-full 
-                  ${
-                    item.type === "highlighted"
-                      ? "text-black font-bold flex items-center animate-fadeSlideIn border alwaysAnimatedButton backdrop-blur-sm"
-                      : "text-[#282828] font-light italic text-xs"
-                  }
-                  ${item.isUser ? "font-medium" : ""}
-                  ${onPastPromptClick ? "cursor-pointer" : ""}`}
-                style={{
-                  transition: "all 0.3s ease-out",
-                  borderRadius: "12px",
-                }}
-                onClick={() =>
-                  onPastPromptClick && onPastPromptClick(item.text)
-                }
-              >
-                <div className="min-w-0 flex-1">
-                  <span className="truncate block w-full">{item.text}</span>
-                </div>
-              </div>
-            );
-          })}
+      <div className="flex flex-col gap-1 px-4">
+        <div className="flex flex-col gap-1">
+          <label className="text-xs text-gray-500 font-light">
+            Current prompt:
+          </label>
+          <p className="text-sm text-foreground font-bold line-clamp-1">
+            {displayedPrompts[0]}
+          </p>
         </div>
+        {userSubmittedPromptsInQueue.length > 0 && (
+          <div className="flex flex-col gap-1">
+            <label className="text-xs text-gray-500 font-light">
+              Submitted prompt:
+            </label>
+            <div className="flex flex-row gap-2 line-clamp-1 align-bottom">
+              <p className="flex-1 text-sm text-foreground font-bold line-clamp-1">
+                {
+                  userSubmittedPromptsInQueue[
+                    userSubmittedPromptsInQueue.length - 1
+                  ].text
+                }
+              </p>
+              <p className="text-xs text-gray-500 font-light text-right">
+                {getPromptQueueText(userSubmittedPromptsInQueue.length)}
+              </p>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
