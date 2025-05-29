@@ -9,6 +9,7 @@ import { TrackedButton } from "@/components/analytics/TrackedButton";
 import { Button } from "@repo/design-system/components/ui/button";
 import { cn } from "@repo/design-system/lib/utils";
 import { Separator } from "@repo/design-system/components/ui/separator";
+import { L } from "vitest/dist/chunks/reporters.D7Jzd9GS.js";
 
 // Full list of trending prompts
 const allTrendingPrompts = [
@@ -144,21 +145,17 @@ export function PromptPanel({
     setPromptValue(prompt);
   };
 
-  // Calculate the height of the input container on mobile (approximately 76px)
-  // 44px input height + 2 * 16px padding (p-4) = 76px
-  const inputBoxHeight = 76;
-  const footerHeight = 56; // Footer height
-  const marginBottom = 15; // Margin between prompt panel and input box
-  const safeAreaBottom = 20; // Extra padding for browser home bars
-  const promptPanelBottom = footerHeight + inputBoxHeight + marginBottom;
-
+  const isSafari = /^((?!chrome|android|crios|fxios).)*safari/i.test(
+    navigator.userAgent,
+  );
   return (
     <div
       className={cn(
         "flex flex-col justify-end flex-1",
         isMobile
-          ? "w-full pb-8 overflow-hidden bg-transparent border-none"
+          ? `w-full pb-4 overflow-hidden bg-transparent border-none px-2`
           : "md:w-[30%]",
+        isMobile && isSafari && "pb-16",
       )}
     >
       {/* Trending prompts section - completely separate box */}
@@ -202,7 +199,7 @@ export function PromptPanel({
         className={cn(
           "w-full h-full flex flex-col bg-[#FBFBFB] rounded-xl",
           isMobile
-            ? "rounded-none bg-transparent overflow-hidden"
+            ? "bg-white h-fit overflow-hidden z-[999] border border-gray-200 py-4"
             : "md:rounded-xl overflow-hidden",
         )}
       >
@@ -213,21 +210,21 @@ export function PromptPanel({
           )}
         >
           <div
-            className="absolute top-0 left-0 right-0 h-[60%] pointer-events-none z-30"
+            className="md:block hidden absolute top-0 left-0 right-0 h-[60%] pointer-events-none z-30"
             style={{
               background:
                 "linear-gradient(rgb(251, 251, 251) 0%, rgba(251, 251, 251, 0.7) 3%, rgba(251, 251, 251, 0.5) 5%, rgba(251, 251, 251, 0.3) 38%, transparent 80%)",
             }}
           ></div>
           <div
-            className="absolute top-0 left-0 right-0 h-[50%] pointer-events-none z-20"
+            className="md:block hidden absolute top-0 left-0 right-0 h-[50%] pointer-events-none z-20"
             style={{
               background:
                 "linear-gradient(to bottom, rgba(206, 223, 228, 0.6) 0%, rgba(206, 223, 228, 0.5) 40%, rgba(206, 223, 228, 0.4) 60%, rgba(206, 223, 228, 0.2) 80%, rgba(254, 254, 254, 0.05) 90%, rgba(254, 254, 254, 0) 100%)",
             }}
           ></div>
           <div
-            className="absolute top-0 left-0 right-0 h-[50%] pointer-events-none z-20"
+            className="md:block hidden absolute top-0 left-0 right-0 h-[50%] pointer-events-none z-20"
             style={{
               backdropFilter: "blur(2px)",
               WebkitBackdropFilter: "blur(2px)",
@@ -237,17 +234,7 @@ export function PromptPanel({
                 "linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 40%, rgba(0,0,0,0.8) 60%, rgba(0,0,0,0.4) 80%, rgba(0,0,0,0.05) 90%, rgba(0,0,0,0) 100%)",
             }}
           ></div>
-          <div
-            className={cn(
-              "flex justify-between items-center gap-2 h-12 px-6 py-3 z-[999]",
-              !isMobile && "hidden",
-            )}
-          >
-            <p className="text-sm font-bold">Live Prompting</p>
-            <p className="text-xs font-light">
-              {getPromptQueueText(promptQueue.length)}
-            </p>
-          </div>
+
           <PromptDisplay
             promptQueue={promptQueue}
             displayedPrompts={displayedPrompts}
@@ -261,7 +248,7 @@ export function PromptPanel({
         <div
           className={cn(
             "flex flex-row gap-2 overflow-x-auto mb-4 px-4",
-            isMobile ? "flex" : "hidden",
+            isMobile ? "flex mt-4" : "hidden",
           )}
         >
           {trendingPrompts.map((item, index) => (
@@ -269,7 +256,7 @@ export function PromptPanel({
               key={index}
               variant="outline"
               size="sm"
-              className="rounded-md text-xs flex-1 min-w-0"
+              className="text-xs flex-1 min-w-0 bg-white rounded-full"
               onClick={() => handleTrendingPromptClick(item.prompt)}
               trackingEvent="trending_prompt_clicked"
               trackingProperties={{
