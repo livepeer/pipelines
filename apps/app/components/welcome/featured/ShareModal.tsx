@@ -179,7 +179,8 @@ export const ShareModalContent = () => {
         <div className="flex flex-col gap-3">
           <h3 className="text-sm font-medium text-foreground">QR Code</h3>
           <p className="text-xs text-muted-foreground">
-            Share this QR code to let others scan and submit prompts to modify your video stream in real-time.
+            Share this QR code to let others scan and submit prompts to modify
+            your video stream in real-time.
           </p>
           {qrCodeDataUrl ? (
             <div className="flex flex-col items-center gap-3">
