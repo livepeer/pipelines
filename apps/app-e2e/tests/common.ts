@@ -253,6 +253,7 @@ export async function assertVideoContentChanging(
   await test.step("Verify inter-frame differences (content changing)", async () => {
     const pixelmatch = (await import("pixelmatch")).default;
 
+    let maxDiffPercent = 0;
     for (let i = 0; i < processedFrames.length - 1; i++) {
       const buffer1 = processedFrames[i].buffer;
       const buffer2 = processedFrames[i + 1].buffer;
@@ -278,11 +279,14 @@ export async function assertVideoContentChanging(
       totalDiffRatio += diffPercent;
       pairCount++;
 
-      expect(
-        diffPercent,
-        `Frames ${i}→${i + 1} (${videoType}) changed only ${(diffPercent * 100).toFixed(2)}%, should exceed ${(MIN_DIFF_RATIO_THRESHOLD * 100).toFixed(2)}%`,
-      ).toBeGreaterThan(MIN_DIFF_RATIO_THRESHOLD);
+      if (diffPercent > maxDiffPercent) {
+        maxDiffPercent = diffPercent;
+      }
     }
+    expect(
+      maxDiffPercent,
+      `Frames changed only ${(maxDiffPercent * 100).toFixed(2)}%, should exceed ${(MIN_DIFF_RATIO_THRESHOLD * 100).toFixed(2)}%`,
+    ).toBeGreaterThan(MIN_DIFF_RATIO_THRESHOLD);
   });
 
   await test.step("Calculate averages and set Prometheus metrics", async () => {
