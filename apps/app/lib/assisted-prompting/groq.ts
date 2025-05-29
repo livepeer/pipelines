@@ -25,7 +25,7 @@ export const generateAIPrompt = async ({ keywords, message }: PromptParams) => {
     const intro = `Study this first ${kb}, then`;
     const body = isRandom
       ? `create a detailed character prompt influenced by: ${keywords.join(", ")}.`
-      : `create a detailed prompt based on this user description: "${trimmed}". Focus on the character or scene described.`;
+      : `create a detailed prompt based on this description: "${trimmed}". Focus on the character or scene described.`;
 
     const userPrompt = `${intro} ${body}`;
 
@@ -195,9 +195,9 @@ export function extractSuggestions(response: string): {
   if (whatsNewMatch) {
     let mainPrompt = whatsNewMatch[1].trim();
 
-    // Keep prompts under 300 characters
+    // keep prompts under 300 char because of input limit
     if (mainPrompt.length > 270) {
-      mainPrompt = mainPrompt.substring(0, 270).trim() + "...";
+      mainPrompt = mainPrompt.substring(0, 270).trim() + "";
     }
 
     const processedMainPrompt = processResponse(mainPrompt);
@@ -220,7 +220,7 @@ export function extractSuggestions(response: string): {
     // cases without "What's New" section
     let truncatedContent = processResponse(content);
     if (truncatedContent.length > 270) {
-      truncatedContent = truncatedContent.substring(0, 270).trim() + "...";
+      truncatedContent = truncatedContent.substring(0, 270).trim() + "";
     }
     return { content: truncatedContent, suggestions };
   }

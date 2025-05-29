@@ -29,9 +29,9 @@ import { Separator } from "@repo/design-system/components/ui/separator";
 import { usePrivy } from "@/hooks/usePrivy";
 import useAI from "@/hooks/useAI";
 import { ChatAssistant } from "@/components/assisted-prompting/chat-assistant";
-import { cleanDenoiseParam, generateAIPrompt } from "@/lib/prompting/groq";
+import { cleanDenoiseParam, generateAIPrompt } from "@/lib/assisted-prompting/groq";
 import { useWorldTrends } from "@/hooks/useWorldTrends";
-import AssistantHelper from "@/components/assisted-prompting/assistant-helper";
+import AssistantToast from "@/components/assisted-prompting/assistant-toast";
 
 type CommandOption = {
   id: string;
@@ -188,7 +188,7 @@ export const InputPrompt = ({ onPromptSubmit }: InputPromptProps) => {
             wordBreak: "break-word",
             lineHeight: "1.25rem",
             paddingBottom: "2.5rem", // add space for toggle
-            paddingRight: "9rem", // add space for main buttons
+            paddingRight: "9rem", // add space for buttons
           }}
         >
           {parts.map((part, i) => (
@@ -263,7 +263,7 @@ export const InputPrompt = ({ onPromptSubmit }: InputPromptProps) => {
       setIsLoading(true);
       setInputValue("thinking...");
 
-      // pick 4 trends from worldtrends to use as keywords
+      // when exploring randomly pick 4 trends from worldtrends to use as keywords
       const pick4Random = <T,>(arr: T[]): T[] => {
         const a = [...arr];
         for (let i = a.length - 1; i > 0; i--) {
@@ -279,11 +279,13 @@ export const InputPrompt = ({ onPromptSubmit }: InputPromptProps) => {
         keywords,
       });
 
-      // for some reason the Denoise param breaks the stream - remove when fixed
+      // for some reason the Denoise param breaks the stream - remove clean func. when fixed
       const prompt = cleanDenoiseParam(aiPrompt);
 
-      setInputValue(prompt);
       submitPrompt(prompt);
+      setTimeout(() => {
+        setInputValue(prompt);
+      }, 3000); // slight delay so prompt display and transformation happens at same time
     } catch {
       setInputValue("That didn't quite work out. Let's give it another spin!");
     } finally {
@@ -364,8 +366,8 @@ export const InputPrompt = ({ onPromptSubmit }: InputPromptProps) => {
               wordBreak: "break-word",
               overflow: "hidden",
               lineHeight: "1.25rem",
-              paddingBottom: "2.5rem", // add space for toggle
-              paddingRight: "9rem", // add space for main buttons
+              paddingBottom: "2.5rem", // space for toggle
+              paddingRight: "9rem", // space for main buttons
             }}
             value={inputValue}
             onChange={e => setInputValue(e.target.value)}
@@ -557,7 +559,7 @@ export const InputPrompt = ({ onPromptSubmit }: InputPromptProps) => {
       )}
 
       {isNewUser && !aiModeEnabled && (
-        <AssistantHelper onClose={() => setIsNewUser(false)} />
+        <AssistantToast onClose={() => setIsNewUser(false)} />
       )}
 
       {settingsOpened && (

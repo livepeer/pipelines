@@ -1,5 +1,5 @@
 # Prompt Guidelines
-
+ 
 ## Core Format
 - Format as double colon-separated elements: "ultra-realistic :: 4k :: high quality :: ((element)) :: ((element))"
 - Use double parentheses (( )) around 1-2 important elements to emphasize them
@@ -22,7 +22,7 @@
 
 ### Quality (--quality) 
 - Range: 1.0 to 5.0
-- Higher values (4.0-5.0): Ultra-high definition, extremely detailed
+- Higher values (4.0-5.0): Ultra-high definition, extremely detailed, realistic
 - Medium values (2.5-3.9): Balanced detail and artistic interpretation
 - Lower values (1.0-2.4): More artistic, less defined
 
@@ -31,7 +31,7 @@
 - Higher values (0.7-1.0): More artistic freedom, unique interpretations
 - Medium values (0.4-0.6): Balanced interpretation with creative elements
 - Lower values (0.1-0.3): Strictly follows prompt with minimal deviation
-- Ranges 0.3 and 0.5 makes for the best result use as default range unless otherwise requested.
+- Ranges 0.3 - 0.5 makes for the best result use as default range unless otherwise requested.
 
 ### Denoise (--denoise)
 - Range: 0.1 to 1.0

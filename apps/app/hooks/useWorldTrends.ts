@@ -2,7 +2,7 @@
 
 import { useCallback } from "react";
 import { useFetch } from "./useFetch";
-import { fallbackData, TrendsResponse } from "@/lib/prompting/constants";
+import { fallbackData, TrendsResponse } from "@/lib/assisted-prompting/constants";
 
 export function useWorldTrends() {
   const fetchTrends = useCallback(async (): Promise<TrendsResponse> => {

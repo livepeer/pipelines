@@ -3,12 +3,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
 import { cn } from "@repo/design-system/lib/utils";
 
-interface AssistantHelperProps {
+interface AssistantToastProps {
   onClose: () => void;
   className?: string;
 }
 
-function AssistantHelper({ onClose, className }: AssistantHelperProps) {
+function AssistantToast({ onClose, className }: AssistantToastProps) {
   return (
     <AnimatePresence>
       <motion.div
@@ -45,4 +45,4 @@ function AssistantHelper({ onClose, className }: AssistantHelperProps) {
   );
 }
 
-export default AssistantHelper;
+export default AssistantToast;

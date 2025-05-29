@@ -3,7 +3,7 @@ import {
   chatWithAI,
   cleanDenoiseParam,
   extractSuggestions,
-} from "@/lib/prompting/groq";
+} from "@/lib/assisted-prompting/groq";
 import {
   Dialog,
   DialogContent,
@@ -69,13 +69,13 @@ export const ChatAssistant = ({
     if (initialPrompt) {
       initialMessages.push({
         role: "assistant",
-        content: `${initialPrompt}\n\nHow would you like to enhance your prompt?`,
+        content: `${initialPrompt}\n\nHow would you like to improve your prompt?`,
       });
     } else {
       initialMessages.push({
         role: "assistant",
         content:
-          "Hi! Tell me what you like to create and I'll craft the perfect prompt. \n\nℹ️ Quick tip: minimize this window to explore randomly with the generate button!",
+          "Hi! What would you like to create? \n\nℹ️ Quick tip: minimize this window to explore randomly with the generate button!",
       });
     }
 
@@ -137,17 +137,18 @@ export const ChatAssistant = ({
         .split("What's New:")[0]
         .trim();
 
-      // for some reason the Denoise param breaks the stream - remove when fixed
+      // for some reason the Denoise param breaks the stream - remove clean func. when fixed
       onSavePrompt(cleanDenoiseParam(content));
     }
   };
 
   const handleReset = () => {
+    setSuggestions([]);
     setMessages([
       {
         role: "assistant",
         content:
-          "Hi! Tell me what you like to create and I'll craft the perfect prompt. \n\nℹ️ Quick tip: minimize this window to explore randomly with the generate button!",
+          "Hi! What would you like to create? \n\nℹ️ Quick tip: minimize this window to explore randomly with the generate button!",
       },
     ]);
     setTimeout(() => inputRef.current?.focus(), 100);
@@ -182,7 +183,7 @@ export const ChatAssistant = ({
           <DialogContent
             displayCloseButton={false}
             style={{ zIndex: 9999 }}
-            className="max-w-[100vw] md:max-w-[70vw] z-[250] p-0 border-0 shadow-2xl sm:rounded-t-lg rounded-t-lg sm:rounded-b-lg sm:mt-0 mt-12 h-[calc(100vh-300px)] fixed bottom-0 sm:bottom-auto animate-in slide-in-from-bottom duration-300"
+            className="max-w-[70vw] z-[250] p-0 border-0 shadow-2xl rounded-lg h-[calc(100vh-300px)]"
           >
             <ChatUI
               isMobile={isMobile}
