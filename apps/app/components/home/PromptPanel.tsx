@@ -182,7 +182,7 @@ export function PromptPanel({
                   onClick={() => handleTrendingPromptClick(item.prompt)}
                   trackingEvent="trending_prompt_clicked"
                   trackingProperties={{
-                    prompt_text: item.prompt,
+                    prompt: item.prompt,
                     display_text: item.display,
                     index,
                   }}
@@ -260,7 +260,7 @@ export function PromptPanel({
               onClick={() => handleTrendingPromptClick(item.prompt)}
               trackingEvent="trending_prompt_clicked"
               trackingProperties={{
-                prompt_text: item.prompt,
+                prompt: item.prompt,
                 display_text: item.display,
                 index,
               }}
