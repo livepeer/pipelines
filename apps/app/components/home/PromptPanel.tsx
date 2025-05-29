@@ -9,6 +9,7 @@ import { TrackedButton } from "@/components/analytics/TrackedButton";
 import { Button } from "@repo/design-system/components/ui/button";
 import { cn } from "@repo/design-system/lib/utils";
 import { Separator } from "@repo/design-system/components/ui/separator";
+import { L } from "vitest/dist/chunks/reporters.D7Jzd9GS.js";
 
 // Full list of trending prompts
 const allTrendingPrompts = [
@@ -144,21 +145,17 @@ export function PromptPanel({
     setPromptValue(prompt);
   };
 
-  // Calculate the height of the input container on mobile (approximately 76px)
-  // 44px input height + 2 * 16px padding (p-4) = 76px
-  const inputBoxHeight = 76;
-  const footerHeight = 56; // Footer height
-  const marginBottom = 15; // Margin between prompt panel and input box
-  const safeAreaBottom = 20; // Extra padding for browser home bars
-  const promptPanelBottom = footerHeight + inputBoxHeight + marginBottom;
-
+  const isSafari = /^((?!chrome|android|crios|fxios).)*safari/i.test(
+    navigator.userAgent,
+  );
   return (
     <div
       className={cn(
         "flex flex-col justify-end flex-1",
         isMobile
-          ? "w-full pb-10 overflow-hidden bg-transparent border-none px-2"
+          ? `w-full pb-4 overflow-hidden bg-transparent border-none px-2`
           : "md:w-[30%]",
+        isMobile && isSafari && "pb-16",
       )}
     >
       {/* Trending prompts section - completely separate box */}

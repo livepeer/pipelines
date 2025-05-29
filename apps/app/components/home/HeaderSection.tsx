@@ -1,7 +1,9 @@
 import { TrackedButton } from "@/components/analytics/TrackedButton";
 import useMobileStore from "@/hooks/useMobileStore";
 import { DiscordLogoIcon } from "@radix-ui/react-icons";
+import { Separator } from "@repo/design-system/components/ui/separator";
 import { cn } from "@repo/design-system/lib/utils";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   Camera,
   Menu,
@@ -48,7 +50,7 @@ export const HeaderSection = ({
   return (
     <div
       className={cn(
-        "flex flex-row w-full justify-between items-center h-12 pt-4 z-[9999] relative",
+        "flex flex-row w-full justify-between items-center h-12 pt-4 z-[9999]",
         isMobile
           ? "px-4 pr-2 pt-0 top-0 left-0 right-0 z-50 bg-transparent"
           : "-mb-2",
@@ -83,55 +85,74 @@ export const HeaderSection = ({
           </TrackedButton>
 
           {/* Mobile Dropdown Menu */}
-          {isMenuOpen && (
-            <div className="absolute top-full left-0 right-0 bg-white shadow-lg border-t border-gray-200 py-2 rounded-xl mx-4">
-              <TrackedButton
-                className="w-full py-4 px-4 text-black hover:bg-gray-50 flex items-center gap-3 justify-start transition-colors duration-200"
-                onClick={handleJoinDiscordClick}
-                trackingEvent="mobile_menu_join_discord_clicked"
-                trackingProperties={{ location: "mobile_menu" }}
-                variant="ghost"
+          <AnimatePresence mode="popLayout">
+            {isMenuOpen && (
+              <motion.div
+                layout="position"
+                initial={{ opacity: 0, x: 100 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 100 }}
+                transition={{ duration: 0.1 }}
+                className="fixed h-[calc(100dvh-3rem)] top-full left-0 right-0 bg-white shadow-lg border-t border-gray-200 py-2"
               >
-                <DiscordLogoIcon className="h-5 w-5" />
-                <span className="text-sm font-normal">Join Discord</span>
-              </TrackedButton>
+                <TrackedButton
+                  className="w-full py-4 px-4 text-black hover:bg-gray-50 flex items-center gap-3 justify-start transition-colors duration-200"
+                  onClick={handleJoinDiscordClick}
+                  trackingEvent="mobile_menu_join_discord_clicked"
+                  trackingProperties={{ location: "mobile_menu" }}
+                  variant="ghost"
+                >
+                  <DiscordLogoIcon className="h-5 w-5" />
+                  <span className="text-sm font-normal">Join Discord</span>
+                </TrackedButton>
 
-              <TrackedButton
-                className="w-full py-4 px-4 text-black hover:bg-gray-50 flex items-center gap-3 justify-start transition-colors duration-200"
-                onClick={handleCreateClick}
-                trackingEvent="mobile_menu_start_creating_clicked"
-                trackingProperties={{ location: "mobile_menu" }}
-                variant="ghost"
-              >
-                <Camera className="h-5 w-5" />
-                <span className="text-sm font-normal">Create</span>
-              </TrackedButton>
+                <Separator className="my-2" orientation="horizontal" />
 
-              <TrackedButton
-                className="w-full py-4 px-4 text-black hover:bg-gray-50 flex items-center gap-3 justify-start transition-colors duration-200"
-                onClick={handleRequestAPIClick}
-                trackingEvent="mobile_menu_request_api_access_clicked"
-                trackingProperties={{ location: "mobile_menu" }}
-                variant="ghost"
-              >
-                <SquareDashedBottomCode className="h-5 w-5" />
-                <span className="text-sm font-normal">Request API Access</span>
-              </TrackedButton>
+                <TrackedButton
+                  className="w-full py-4 px-4 text-black hover:bg-gray-50 flex items-center gap-3 justify-start transition-colors duration-200"
+                  onClick={handleCreateClick}
+                  trackingEvent="mobile_menu_start_creating_clicked"
+                  trackingProperties={{ location: "mobile_menu" }}
+                  variant="ghost"
+                >
+                  <Camera className="h-5 w-5" />
+                  <span className="text-sm font-normal">Create</span>
+                </TrackedButton>
 
-              <TrackedButton
-                className="w-full py-4 px-4 text-black hover:bg-gray-50 flex items-center gap-3 justify-start transition-colors duration-200"
-                onClick={handleBuildClick}
-                trackingEvent="mobile_menu_build_with_comfystream_clicked"
-                trackingProperties={{ location: "mobile_menu" }}
-                variant="ghost"
-              >
-                <Workflow className="h-5 w-5" />
-                <span className="text-sm font-normal">
-                  Build with ComfyStream
-                </span>
-              </TrackedButton>
-            </div>
-          )}
+                <Separator className="my-2" orientation="horizontal" />
+
+                <TrackedButton
+                  className="w-full py-4 px-4 text-black hover:bg-gray-50 flex items-center gap-3 justify-start transition-colors duration-200"
+                  onClick={handleRequestAPIClick}
+                  trackingEvent="mobile_menu_request_api_access_clicked"
+                  trackingProperties={{ location: "mobile_menu" }}
+                  variant="ghost"
+                >
+                  <SquareDashedBottomCode className="h-5 w-5" />
+                  <span className="text-sm font-normal">
+                    Request API Access
+                  </span>
+                </TrackedButton>
+
+                <Separator className="my-2" orientation="horizontal" />
+
+                <TrackedButton
+                  className="w-full py-4 px-4 text-black hover:bg-gray-50 flex items-center gap-3 justify-start transition-colors duration-200"
+                  onClick={handleBuildClick}
+                  trackingEvent="mobile_menu_build_with_comfystream_clicked"
+                  trackingProperties={{ location: "mobile_menu" }}
+                  variant="ghost"
+                >
+                  <Workflow className="h-5 w-5" />
+                  <span className="text-sm font-normal">
+                    Build with ComfyStream
+                  </span>
+                </TrackedButton>
+
+                <Separator className="my-2" orientation="horizontal" />
+              </motion.div>
+            )}
+          </AnimatePresence>
         </>
       ) : (
         // Desktop buttons (unchanged)
