@@ -219,7 +219,9 @@ const MultiplayerStreamSelector = () => {
     <div
       className={cn(
         "flex justify-start w-full gap-3 p-4 overflow-x-auto",
-        isMobile ? "flex p-4" : " absolute z-[9999] justify-end",
+        isMobile
+          ? "flex p-4 overflow-y-hidden"
+          : " absolute z-[9999] justify-end",
       )}
     >
       {streams.map((stream, index) => (
