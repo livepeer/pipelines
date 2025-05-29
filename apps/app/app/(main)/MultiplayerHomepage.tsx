@@ -38,6 +38,7 @@ export default function MultiplayerHomepage({
   const [optimisticPrompts, setOptimisticPrompts] = useState<PromptItem[]>([]);
   const searchParams = useSearchParams();
   const utmSource = searchParams.get("utm_source");
+  const [useLivepeerPlayer, setUseLivepeerPlayer] = useState(false);
 
   const { isMobile } = useMobileStore();
   const { currentStream } = useMultiplayerStreamStore();
@@ -47,6 +48,13 @@ export default function MultiplayerHomepage({
       utm_source: utmSource,
     });
   });
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const urlParams = new URLSearchParams(window.location.search);
+      setUseLivepeerPlayer(urlParams.get("lpPlayer") === "true");
+    }
+  }, []);
 
   const {
     value: prompt,
@@ -171,6 +179,7 @@ export default function MultiplayerHomepage({
               setPromptValue={setPrompt}
               submitPromptForm={submitPromptForm}
               isAuthenticated={authenticated}
+              useLivepeerPlayer={useLivepeerPlayer}
             />
             <div
               id="player"

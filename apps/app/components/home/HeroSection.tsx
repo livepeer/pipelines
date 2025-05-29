@@ -4,7 +4,8 @@ import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { TrackedButton } from "../analytics/TrackedButton";
 import { cn } from "@repo/design-system/lib/utils";
-import { getIframeUrl, useMultiplayerStreamStore } from "./VideoSection";
+import { useMultiplayerStreamStore } from "./VideoSection";
+import { TransitioningVideo } from "./TransitioningVideo";
 import useMobileStore from "@/hooks/useMobileStore";
 
 interface HeroSectionProps {
@@ -13,6 +14,7 @@ interface HeroSectionProps {
   setPromptValue: (value: string) => void;
   submitPromptForm: () => void;
   isAuthenticated?: boolean;
+  useLivepeerPlayer?: boolean;
 }
 
 export const HeroSection = ({
@@ -21,6 +23,7 @@ export const HeroSection = ({
   setPromptValue,
   submitPromptForm,
   isAuthenticated = false,
+  useLivepeerPlayer = false,
 }: HeroSectionProps) => {
   const router = useRouter();
   const [localPrompt, setLocalPrompt] = useState("");
@@ -83,6 +86,13 @@ export const HeroSection = ({
       e.preventDefault();
       handleSubmit();
     }
+  };
+
+  const handleVideoClick = () => {
+    document.getElementById("player")?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
   };
 
   useEffect(() => {
@@ -178,37 +188,17 @@ export const HeroSection = ({
         </div>
       </main>
 
-      {/* Footer with bouncing arrow */}
+      {/* Footer with transitioning video and bouncing arrow */}
       <footer className="relative w-full flex flex-col items-center z-[1201] mb-24">
-        <div
-          className="w-[190px] aspect-video rounded-lg overflow-hidden shadow-lg mb-8 cursor-pointer hover:shadow-xl transition-shadow relative"
-          onClick={() => {
-            document.getElementById("player")?.scrollIntoView({
-              behavior: "smooth",
-              block: "start",
-            });
-          }}
-        >
-          <iframe
-            src={getIframeUrl({
-              playbackId: currentStream?.transformedPlaybackId,
-              lowLatency: true,
-            })}
-            className="w-full h-full absolute inset-0"
-            allow="autoplay; fullscreen"
-            allowFullScreen
-            scrolling="no"
+        <div className="mb-8">
+          <TransitioningVideo
+            useLivepeerPlayer={useLivepeerPlayer}
+            onVideoClick={handleVideoClick}
           />
-          <div className="absolute inset-0 z-10 bg-transparent" />
         </div>
         <motion.button
           type="button"
-          onClick={() => {
-            document.getElementById("player")?.scrollIntoView({
-              behavior: "smooth",
-              block: "start",
-            });
-          }}
+          onClick={handleVideoClick}
           animate={{
             y: [0, 10, 0],
           }}

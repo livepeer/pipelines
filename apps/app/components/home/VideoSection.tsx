@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { create } from "zustand";
 import { LivepeerPlayer } from "./LivepeerPlayer";
+import { TransitioningVideo } from "./TransitioningVideo";
 import { Button } from "@repo/design-system/components/ui/button";
 import { cn } from "@repo/design-system/lib/utils";
 import useMobileStore from "@/hooks/useMobileStore";
@@ -22,7 +23,6 @@ export function getIframeUrl({
 
 export function VideoSection() {
   const { isMobile } = useMobileStore();
-  const [isLoading, setIsLoading] = useState(true);
   const [useLivepeerPlayer, setUseLivepeerPlayer] = useState(false);
   const { currentStream } = useMultiplayerStreamStore();
 
@@ -31,12 +31,6 @@ export function VideoSection() {
       const urlParams = new URLSearchParams(window.location.search);
       setUseLivepeerPlayer(urlParams.get("lpPlayer") === "true");
     }
-
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 2000);
-
-    return () => clearTimeout(timer);
   }, []);
 
   if (!currentStream) return null;
@@ -49,82 +43,7 @@ export function VideoSection() {
       )}
     >
       <MultiplayerStreamSelector />
-      <div
-        className={cn(
-          "w-full relative overflow-hidden bg-black/10 backdrop-blur-sm shadow-lg",
-          isMobile
-            ? "aspect-video rounded-none h-[calc(100%)]"
-            : "md:rounded-xl md:aspect-video h-[calc(100%)]",
-        )}
-      >
-        <div className="w-full h-full relative overflow-hidden">
-          {isLoading && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black z-10">
-              <div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
-            </div>
-          )}
-
-          <div className="absolute inset-0 w-full h-full overflow-hidden">
-            {useLivepeerPlayer ? (
-              <LivepeerPlayer
-                playbackId={currentStream?.transformedPlaybackId}
-                autoPlay={true}
-                muted={false}
-                className={cn(
-                  "w-[120%] h-[120%] absolute left-[-10%] top-[-10%]",
-                  isMobile ? "w-[130%] h-[130%]" : "",
-                )}
-                objectFit="cover"
-                env="monster"
-                lowLatency="force"
-              />
-            ) : (
-              <iframe
-                src={getIframeUrl({
-                  playbackId: currentStream?.transformedPlaybackId,
-                  lowLatency: true,
-                })}
-                className={cn(
-                  "absolute w-[120%] h-[120%] left-[-10%] top-[-10%] md:w-[120%] md:h-[120%] md:left-[-10%] md:top-[-10%]",
-                  isMobile ? "w-[130%] h-[130%] left-[-15%] top-[-15%]" : "",
-                )}
-                style={{ overflow: "hidden" }}
-                allow="autoplay; fullscreen"
-                allowFullScreen
-                onLoad={() => setIsLoading(false)}
-                scrolling="no"
-              />
-            )}
-          </div>
-
-          {!isMobile && (
-            <div className="absolute bottom-4 left-4 w-[25%] aspect-video z-30 rounded-xl overflow-hidden border-2 border-white/30 shadow-lg hidden md:block">
-              {useLivepeerPlayer ? (
-                <LivepeerPlayer
-                  playbackId={currentStream?.originalPlaybackId}
-                  autoPlay={true}
-                  muted={true}
-                  className="w-full h-full"
-                  env="studio"
-                  lowLatency="force"
-                />
-              ) : (
-                <iframe
-                  src={getIframeUrl({
-                    playbackId: currentStream?.originalPlaybackId,
-                    lowLatency: false,
-                  })}
-                  className="w-full h-full"
-                  style={{ overflow: "hidden" }}
-                  allow="autoplay; fullscreen"
-                  allowFullScreen
-                  scrolling="no"
-                />
-              )}
-            </div>
-          )}
-        </div>
-      </div>
+      <TransitioningVideo useLivepeerPlayer={useLivepeerPlayer} />
     </div>
   );
 }
