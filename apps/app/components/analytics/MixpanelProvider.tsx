@@ -86,26 +86,10 @@ export function MixpanelProvider({ children }: { children: ReactNode }) {
       trackSessionEnd();
     };
 
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === "hidden") {
-        trackSessionEnd();
-      } else if (document.visibilityState === "visible") {
-        hasTrackedSessionEnd.current = false;
-      }
-    };
-
-    const handlePageHide = () => {
-      trackSessionEnd();
-    };
-
     window.addEventListener("beforeunload", handleBeforeUnload);
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-    window.addEventListener("pagehide", handlePageHide);
 
     return () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-      window.removeEventListener("pagehide", handlePageHide);
     };
   }, []);
 
