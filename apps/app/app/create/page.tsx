@@ -1,11 +1,10 @@
 import Daydream from "@/components/daydream";
-import { getSharedParams } from "../api/streams/share-params";
-import { cache } from "react";
-import { headers } from "next/headers";
-import Link from "next/link";
-import TikTokFallback from "./TikTokFallback";
 import track from "@/lib/track";
 import { identifyTikTokInAppBrowser } from "@/lib/userAgentIdentify";
+import { headers } from "next/headers";
+import { cache } from "react";
+import { getSharedParams } from "../api/streams/share-params";
+import TikTokFallback from "./TikTokFallback";
 
 const getCachedSharedParams = cache(async (shareParamsId: string) => {
   const { data: sharedParams } = await getSharedParams(shareParamsId);
