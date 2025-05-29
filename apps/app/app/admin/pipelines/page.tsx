@@ -180,7 +180,7 @@ export default function PipelinesAdminPage() {
   };
 
   const handleTestPipeline = (pipelineId: string) => {
-    window.open(`/?pipeline_id=${pipelineId}`, "_blank");
+    window.open(`/create?pipeline_id=${pipelineId}`, "_blank");
   };
 
   const handleDuplicatePipeline = async (pipeline: Pipeline) => {
