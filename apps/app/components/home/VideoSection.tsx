@@ -25,7 +25,10 @@ interface VideoSectionProps {
   useLivepeerPlayer?: boolean;
 }
 
-export function VideoSection({ mainVideoRef, useLivepeerPlayer = false }: VideoSectionProps) {
+export function VideoSection({
+  mainVideoRef,
+  useLivepeerPlayer = false,
+}: VideoSectionProps) {
   const { isMobile } = useMobileStore();
   const { currentStream } = useMultiplayerStreamStore();
 
@@ -59,7 +62,7 @@ export function VideoSection({ mainVideoRef, useLivepeerPlayer = false }: VideoS
                   autoPlay={true}
                   muted={false}
                   className={cn(
-                    "w-[130%] h-[130%] absolute left-[-15%] top-[-15%]"
+                    "w-[130%] h-[130%] absolute left-[-15%] top-[-15%]",
                   )}
                   objectFit="cover"
                   env="monster"

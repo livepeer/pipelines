@@ -46,7 +46,8 @@ export function TransitioningVideo({
       const transitionDistance = transitionEnd - transitionStart;
 
       if (transitionDistance > 0) {
-        const currentProgress = Math.max(0, scrollY - transitionStart) / transitionDistance;
+        const currentProgress =
+          Math.max(0, scrollY - transitionStart) / transitionDistance;
         const progress = Math.min(1, Math.max(0, currentProgress));
         setScrollProgress(progress);
 
@@ -54,13 +55,17 @@ export function TransitioningVideo({
         const heroSize = { width: 190, height: 190 * (9 / 16) };
         const mainSize = { width: mainRect.width, height: mainRect.height };
 
-        const currentWidth = heroSize.width + (mainSize.width - heroSize.width) * progress;
-        const currentHeight = heroSize.height + (mainSize.height - heroSize.height) * progress;
-        
-        const currentTop = heroRect.top + (mainRect.top - heroRect.top) * progress;
-        const currentLeft = heroRect.left + (mainRect.left - heroRect.left) * progress;
-        
-        const currentBorderRadius = 8 + (4 * progress); // 8px to 12px
+        const currentWidth =
+          heroSize.width + (mainSize.width - heroSize.width) * progress;
+        const currentHeight =
+          heroSize.height + (mainSize.height - heroSize.height) * progress;
+
+        const currentTop =
+          heroRect.top + (mainRect.top - heroRect.top) * progress;
+        const currentLeft =
+          heroRect.left + (mainRect.left - heroRect.left) * progress;
+
+        const currentBorderRadius = 8 + 4 * progress; // 8px to 12px
 
         setVideoStyle({
           position: "fixed",
@@ -134,7 +139,9 @@ export function TransitioningVideo({
           autoPlay={true}
           muted={scrollProgress < 0.5}
           className={cn(
-            scrollProgress < 0.8 ? "w-full h-full" : "w-[120%] h-[120%] absolute left-[-10%] top-[-10%]"
+            scrollProgress < 0.8
+              ? "w-full h-full"
+              : "w-[120%] h-[120%] absolute left-[-10%] top-[-10%]",
           )}
           objectFit="cover"
           env="monster"
@@ -147,9 +154,9 @@ export function TransitioningVideo({
             lowLatency: true,
           })}
           className={cn(
-            scrollProgress < 0.8 
-              ? "w-full h-full" 
-              : "absolute w-[120%] h-[120%] left-[-10%] top-[-10%]"
+            scrollProgress < 0.8
+              ? "w-full h-full"
+              : "absolute w-[120%] h-[120%] left-[-10%] top-[-10%]",
           )}
           style={{ overflow: "hidden" }}
           allow="autoplay; fullscreen"

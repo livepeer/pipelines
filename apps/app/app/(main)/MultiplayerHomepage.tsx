@@ -220,7 +220,7 @@ export default function MultiplayerHomepage({
                   isMobile && "flex-col gap-0",
                 )}
               >
-                <VideoSection 
+                <VideoSection
                   mainVideoRef={mainVideoRef}
                   useLivepeerPlayer={useLivepeerPlayer}
                 />
