@@ -20,24 +20,17 @@ export function getIframeUrl({
   return `https://${baseUrl}?v=${playbackId}&lowLatency=${lowLatency}&backoffMax=1000&ingestPlayback=true&controls=true`;
 }
 
-export function VideoSection() {
+interface VideoSectionProps {
+  mainVideoRef: React.RefObject<HTMLDivElement>;
+  useLivepeerPlayer?: boolean;
+}
+
+export function VideoSection({
+  mainVideoRef,
+  useLivepeerPlayer = false,
+}: VideoSectionProps) {
   const { isMobile } = useMobileStore();
-  const [isLoading, setIsLoading] = useState(true);
-  const [useLivepeerPlayer, setUseLivepeerPlayer] = useState(false);
   const { currentStream } = useMultiplayerStreamStore();
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const urlParams = new URLSearchParams(window.location.search);
-      setUseLivepeerPlayer(urlParams.get("lpPlayer") === "true");
-    }
-
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 2000);
-
-    return () => clearTimeout(timer);
-  }, []);
 
   if (!currentStream) return null;
 
@@ -49,7 +42,9 @@ export function VideoSection() {
       )}
     >
       <MultiplayerStreamSelector />
+      {/* Video position reference for transitioning video */}
       <div
+        ref={mainVideoRef}
         className={cn(
           "w-full relative overflow-hidden bg-black/10 backdrop-blur-sm shadow-lg",
           isMobile
@@ -57,48 +52,39 @@ export function VideoSection() {
             : "md:rounded-xl md:aspect-video h-[calc(100%)]",
         )}
       >
-        <div className="w-full h-full relative overflow-hidden">
-          {isLoading && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black z-10">
-              <div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+        {/* On mobile, show static video */}
+        {isMobile && (
+          <div className="w-full h-full relative overflow-hidden">
+            <div className="absolute inset-0 w-full h-full overflow-hidden">
+              {useLivepeerPlayer ? (
+                <LivepeerPlayer
+                  playbackId={currentStream?.transformedPlaybackId}
+                  autoPlay={true}
+                  muted={false}
+                  className={cn(
+                    "w-[130%] h-[130%] absolute left-[-15%] top-[-15%]",
+                  )}
+                  objectFit="cover"
+                  env="monster"
+                  lowLatency="force"
+                />
+              ) : (
+                <iframe
+                  src={getIframeUrl({
+                    playbackId: currentStream?.transformedPlaybackId,
+                    lowLatency: true,
+                  })}
+                  className="absolute w-[130%] h-[130%] left-[-15%] top-[-15%]"
+                  style={{ overflow: "hidden" }}
+                  allow="autoplay; fullscreen"
+                  allowFullScreen
+                  scrolling="no"
+                />
+              )}
             </div>
-          )}
 
-          <div className="absolute inset-0 w-full h-full overflow-hidden">
-            {useLivepeerPlayer ? (
-              <LivepeerPlayer
-                playbackId={currentStream?.transformedPlaybackId}
-                autoPlay={true}
-                muted={false}
-                className={cn(
-                  "w-[120%] h-[120%] absolute left-[-10%] top-[-10%]",
-                  isMobile ? "w-[130%] h-[130%]" : "",
-                )}
-                objectFit="cover"
-                env="monster"
-                lowLatency="force"
-              />
-            ) : (
-              <iframe
-                src={getIframeUrl({
-                  playbackId: currentStream?.transformedPlaybackId,
-                  lowLatency: true,
-                })}
-                className={cn(
-                  "absolute w-[120%] h-[120%] left-[-10%] top-[-10%] md:w-[120%] md:h-[120%] md:left-[-10%] md:top-[-10%]",
-                  isMobile ? "w-[130%] h-[130%] left-[-15%] top-[-15%]" : "",
-                )}
-                style={{ overflow: "hidden" }}
-                allow="autoplay; fullscreen"
-                allowFullScreen
-                onLoad={() => setIsLoading(false)}
-                scrolling="no"
-              />
-            )}
-          </div>
-
-          {!isMobile && (
-            <div className="absolute bottom-4 left-4 w-[25%] aspect-video z-30 rounded-xl overflow-hidden border-2 border-white/30 shadow-lg hidden md:block">
+            {/* Picture-in-picture for original stream on mobile */}
+            <div className="absolute bottom-4 left-4 w-[25%] aspect-video z-30 rounded-xl overflow-hidden border-2 border-white/30 shadow-lg">
               {useLivepeerPlayer ? (
                 <LivepeerPlayer
                   playbackId={currentStream?.originalPlaybackId}
@@ -122,8 +108,8 @@ export function VideoSection() {
                 />
               )}
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );

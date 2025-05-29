@@ -1,10 +1,10 @@
 import { motion } from "framer-motion";
 import { WandSparkles, ChevronDown } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { TrackedButton } from "../analytics/TrackedButton";
 import { cn } from "@repo/design-system/lib/utils";
-import { getIframeUrl, useMultiplayerStreamStore } from "./VideoSection";
+import { useMultiplayerStreamStore } from "./VideoSection";
 import useMobileStore from "@/hooks/useMobileStore";
 
 interface HeroSectionProps {
@@ -13,6 +13,9 @@ interface HeroSectionProps {
   setPromptValue: (value: string) => void;
   submitPromptForm: () => void;
   isAuthenticated?: boolean;
+  useLivepeerPlayer?: boolean;
+  onVideoClick?: () => void;
+  heroVideoRef: React.RefObject<HTMLDivElement>;
 }
 
 export const HeroSection = ({
@@ -21,6 +24,9 @@ export const HeroSection = ({
   setPromptValue,
   submitPromptForm,
   isAuthenticated = false,
+  useLivepeerPlayer = false,
+  onVideoClick,
+  heroVideoRef,
 }: HeroSectionProps) => {
   const router = useRouter();
   const [localPrompt, setLocalPrompt] = useState("");
@@ -178,37 +184,30 @@ export const HeroSection = ({
         </div>
       </main>
 
-      {/* Footer with bouncing arrow */}
+      {/* Footer with video position reference and bouncing arrow */}
       <footer className="relative w-full flex flex-col items-center z-[1201] mb-24">
-        <div
-          className="w-[190px] aspect-video rounded-lg overflow-hidden shadow-lg mb-8 cursor-pointer hover:shadow-xl transition-shadow relative"
-          onClick={() => {
-            document.getElementById("player")?.scrollIntoView({
-              behavior: "smooth",
-              block: "start",
-            });
-          }}
-        >
-          <iframe
-            src={getIframeUrl({
-              playbackId: currentStream?.transformedPlaybackId,
-              lowLatency: true,
-            })}
-            className="w-full h-full absolute inset-0"
-            allow="autoplay; fullscreen"
-            allowFullScreen
-            scrolling="no"
-          />
-          <div className="absolute inset-0 z-10 bg-transparent" />
+        <div className="mb-8">
+          {/* Video position reference for transitioning video */}
+          <div
+            ref={heroVideoRef}
+            className="w-[190px] aspect-video rounded-lg shadow-lg cursor-pointer hover:shadow-xl transition-shadow relative"
+            onClick={onVideoClick}
+          >
+            {/* On mobile, show static video */}
+            {isMobile && (
+              <iframe
+                src={`https://${process.env.NEXT_PUBLIC_ENV === "production" ? "lvpr.tv" : "monster.lvpr.tv"}?v=${currentStream?.transformedPlaybackId}&lowLatency=true&backoffMax=1000&ingestPlayback=true&controls=true`}
+                className="w-full h-full rounded-lg"
+                allow="autoplay; fullscreen"
+                allowFullScreen
+                scrolling="no"
+              />
+            )}
+          </div>
         </div>
         <motion.button
           type="button"
-          onClick={() => {
-            document.getElementById("player")?.scrollIntoView({
-              behavior: "smooth",
-              block: "start",
-            });
-          }}
+          onClick={onVideoClick}
           animate={{
             y: [0, 10, 0],
           }}

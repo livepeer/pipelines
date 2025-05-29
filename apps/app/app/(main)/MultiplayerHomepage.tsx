@@ -22,6 +22,7 @@ import useMount from "@/hooks/useMount";
 import { HeaderSection } from "@/components/home/HeaderSection";
 import { cn } from "@repo/design-system/lib/utils";
 import useMobileStore from "@/hooks/useMobileStore";
+import { TransitioningVideo } from "@/components/home/TransitioningVideo";
 
 export default function MultiplayerHomepage({
   children,
@@ -38,6 +39,11 @@ export default function MultiplayerHomepage({
   const [optimisticPrompts, setOptimisticPrompts] = useState<PromptItem[]>([]);
   const searchParams = useSearchParams();
   const utmSource = searchParams.get("utm_source");
+  const [useLivepeerPlayer, setUseLivepeerPlayer] = useState(false);
+
+  // Refs for video transition positions
+  const heroVideoRef = useRef<HTMLDivElement>(null);
+  const mainVideoRef = useRef<HTMLDivElement>(null);
 
   const { isMobile } = useMobileStore();
   const { currentStream } = useMultiplayerStreamStore();
@@ -47,6 +53,13 @@ export default function MultiplayerHomepage({
       utm_source: utmSource,
     });
   });
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const urlParams = new URLSearchParams(window.location.search);
+      setUseLivepeerPlayer(urlParams.get("lpPlayer") === "true");
+    }
+  }, []);
 
   const {
     value: prompt,
@@ -131,6 +144,13 @@ export default function MultiplayerHomepage({
     setOptimisticPrompts([]);
   }, [currentStream?.streamKey]);
 
+  const handleVideoClick = () => {
+    document.getElementById("player")?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  };
+
   if (!ready || loading) {
     return <div className="flex items-center justify-center h-screen"></div>;
   }
@@ -171,6 +191,9 @@ export default function MultiplayerHomepage({
               setPromptValue={setPrompt}
               submitPromptForm={submitPromptForm}
               isAuthenticated={authenticated}
+              useLivepeerPlayer={useLivepeerPlayer}
+              onVideoClick={handleVideoClick}
+              heroVideoRef={heroVideoRef}
             />
             <div
               id="player"
@@ -197,7 +220,10 @@ export default function MultiplayerHomepage({
                   isMobile && "flex-col gap-0",
                 )}
               >
-                <VideoSection />
+                <VideoSection
+                  mainVideoRef={mainVideoRef}
+                  useLivepeerPlayer={useLivepeerPlayer}
+                />
                 <PromptPanel
                   promptQueue={
                     promptState
@@ -227,6 +253,15 @@ export default function MultiplayerHomepage({
           </div>
         </div>
       </div>
+
+      {/* Single transitioning video element */}
+      <TransitioningVideo
+        useLivepeerPlayer={useLivepeerPlayer}
+        onVideoClick={handleVideoClick}
+        heroPositionRef={heroVideoRef}
+        mainPositionRef={mainVideoRef}
+      />
+
       {children}
     </>
   );
