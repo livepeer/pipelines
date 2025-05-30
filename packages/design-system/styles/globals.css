@@ -433,6 +433,15 @@ html {
   border-radius: 8px;
 }
 
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
 /* styles for toast capacity */
 .capacity-toast-custom {
   width: 440px !important;

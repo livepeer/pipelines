@@ -12,7 +12,13 @@ import {
   TooltipTrigger,
 } from "@repo/design-system/components/ui/tooltip";
 import { cn } from "@repo/design-system/lib/utils";
-import { Loader2, SlidersHorizontal, WandSparkles } from "lucide-react";
+import {
+  Brain,
+  Expand,
+  Loader2,
+  SlidersHorizontal,
+  WandSparkles,
+} from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import TextareaAutosize from "react-textarea-autosize";
 import { useDreamshaperStore, useStreamUpdates } from "@/hooks/useDreamshaper";
@@ -20,8 +26,11 @@ import SettingsMenu from "./prompt-settings";
 import { MAX_PROMPT_LENGTH, useValidateInput } from "./useValidateInput";
 import { Separator } from "@repo/design-system/components/ui/separator";
 import { usePrivy } from "@/hooks/usePrivy";
-
-const PROMPT_PLACEHOLDER = "Enter your prompt...";
+import useAI from "@/hooks/useAI";
+import { cleanDenoiseParam, generateAIPrompt } from "@/lib/assisted-prompting/groq";
+import { useWorldTrends } from "@/hooks/useWorldTrends";
+import { ChatAssistant } from "@/components/assisted-prompting/chat-assistant";
+import AssistantToast from "@/components/assisted-prompting/assistant-toast";
 
 type CommandOption = {
   id: string;
@@ -49,15 +58,25 @@ export const MobileInputPrompt = ({
   const { lastSubmittedPrompt, setLastSubmittedPrompt, setHasSubmittedPrompt } =
     usePromptStore();
   const { promptVersion, incrementPromptVersion } = usePromptVersionStore();
-
+  const {
+    aiModeEnabled,
+    isChatAssistantOpen,
+    toggleAIMode,
+    setChatAssistantOpen,
+  } = useAI();
+  const { trends } = useWorldTrends();
   const { authenticated } = usePrivy();
-
   const [inputValue, setInputValue] = useState(lastSubmittedPrompt || "");
+  const [isLoading, setIsLoading] = useState(false);
+  const [isNewUser, setIsNewUser] = useState(true);
   const [settingsOpened, setSettingsOpened] = useState(false);
   const ref = useRef<HTMLTextAreaElement>(null);
   const [isFocused, setIsFocused] = useState(false);
-
   const { profanity, exceedsMaxLength } = useValidateInput(inputValue);
+
+  const PROMPT_PLACEHOLDER = aiModeEnabled
+    ? "Describe what you would like to create or click generate to explore randomly!"
+    : "Enter your prompt...";
 
   const commandOptions = useMemo<CommandOption[]>(() => {
     if (!pipeline?.prioritized_params) return [];
@@ -91,6 +110,15 @@ export const MobileInputPrompt = ({
       restoreLastPrompt();
     }
   }, [lastSubmittedPrompt, restoreLastPrompt]);
+
+  // uncomment to auto close the assistant toast after 15 secs
+  // useEffect(() => {
+  //   if (!isNewUser) return;
+  //   const timer = setTimeout(() => {
+  //     setIsNewUser(false);
+  //   }, 15000);
+  //   return () => clearTimeout(timer);
+  // }, [isNewUser]);
 
   const {
     commandMenuOpen,
@@ -165,11 +193,13 @@ export const MobileInputPrompt = ({
     return (
       <div className="absolute inset-0 pointer-events-none">
         <div
-          className="text-sm font-sans w-full h-full m-0 p-0 pl-3 py-3 break-all leading-tight"
+          className="text-sm font-sans w-full h-full m-0 p-0 px-4 py-3 break-all leading-tight"
           style={{
             whiteSpace: "pre-wrap",
             wordBreak: "break-word",
             lineHeight: "1.25rem",
+            paddingBottom: "2.5rem", // space for toggle
+            paddingRight: "6rem", // space for buttons
           }}
         >
           {parts.map((part, i) => (
@@ -206,28 +236,62 @@ export const MobileInputPrompt = ({
     }
   }, []);
 
-  const submitPrompt = () => {
-    if (inputValue) {
-      if (document.activeElement instanceof HTMLElement) {
-        document.activeElement.blur();
-      }
+  const submitPrompt = (aiPrompt?: string) => {
+    const prompt = aiPrompt ?? inputValue;
 
-      if (onPromptSubmit && onPromptSubmit()) {
-        return;
-      }
+    if (!prompt) {
+      console.error("No input value to submit");
+      return;
+    }
 
-      track("daydream_prompt_submitted", {
-        is_authenticated: authenticated,
-        prompt: inputValue,
-        stream_id: stream?.id,
+    if (onPromptSubmit && onPromptSubmit()) {
+      return;
+    }
+
+    track("daydream_prompt_submitted", {
+      is_authenticated: authenticated,
+      prompt: prompt,
+      stream_id: stream?.id,
+    });
+
+    handleStreamUpdate(prompt, { silent: true });
+    setLastSubmittedPrompt(prompt);
+    setHasSubmittedPrompt(true);
+    incrementPromptVersion();
+  };
+
+ const generatePrompt = async () => {
+    try {
+      setIsLoading(true);
+      setInputValue("thinking...");
+
+      // when exploring randomly pick 4 trends from worldtrends to use as keywords
+      const pick4Random = <T,>(arr: T[]): T[] => {
+        const a = [...arr];
+        for (let i = a.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a.slice(0, 4);
+      };
+
+      const keywords = pick4Random(trends).map(t => t.trend);
+      const aiPrompt = await generateAIPrompt({
+        message: inputValue,
+        keywords,
       });
 
-      handleStreamUpdate(inputValue, { silent: true });
-      setLastSubmittedPrompt(inputValue);
-      setHasSubmittedPrompt(true);
-      setInputValue("");
-    } else {
-      console.error("No input value to submit");
+      // for some reason the Denoise param breaks the stream - remove clean func. when fixed
+      const prompt = cleanDenoiseParam(aiPrompt);
+
+      submitPrompt(prompt);
+      setTimeout(() => {
+        setInputValue(prompt);
+      }, 3000); // slight delay so prompt display and transformation happens at same time
+    } catch {
+      setInputValue("That didn't quite work out. Let's give it another spin!");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -237,15 +301,16 @@ export const MobileInputPrompt = ({
       return;
     }
 
-    if (
-      !updating &&
-      !profanity &&
-      !exceedsMaxLength &&
-      e.key === "Enter" &&
-      !(e.metaKey || e.ctrlKey || e.shiftKey)
-    ) {
-      e.preventDefault();
+    if (e.key !== "Enter" || e.metaKey || e.ctrlKey || e.shiftKey) {
+      return;
+    }
+
+    e.preventDefault();
+
+    if (!updating && !profanity && !exceedsMaxLength && !aiModeEnabled) {
       submitPrompt();
+    } else {
+      generatePrompt();
     }
   };
 
@@ -263,16 +328,17 @@ export const MobileInputPrompt = ({
   return (
     <div
       className={cn(
-        "relative mx-auto flex justify-center items-start gap-2 h-auto min-h-14 md:h-auto md:min-h-14 md:gap-2 mt-7 mb-2 dark:bg-[#1A1A1A] bg-[#fefefe] md:rounded-xl py-2.5 px-3 md:py-1.5 md:px-3 w-[calc(100%-2rem)] md:w-[calc(min(100%,800px))] border-2 border-muted-foreground/10",
+        "relative mx-auto flex justify-center items-start gap-2 h-auto min-h-14 md:h-auto md:min-h-14 md:gap-2 mt-7 mb-2 dark:bg-[#1A1A1A] bg-[#fefefe] md:rounded-xl w-[calc(100%-2rem)] md:w-[calc(min(100%,800px))] border-2 border-muted-foreground/10",
         isFullscreen
-          ? "fixed left-1/2 bottom-[calc(env(safe-area-inset-bottom)+16px)] -translate-x-1/2 z-[10000] w-[600px] max-w-[calc(100%-2rem)] max-h-16 rounded-2xl"
+          ? "fixed left-1/2 bottom-[calc(env(safe-area-inset-bottom)+16px)] -translate-x-1/2 z-[10000] w-[600px] max-w-[calc(100%-2rem)] max-h-16 rounded-2xl "
           : "rounded-2xl shadow-[2px_6px_10px_0px_#37373F30]",
         (profanity || exceedsMaxLength) && "dark:border-red-700 border-red-600",
+        aiModeEnabled && !profanity && !exceedsMaxLength && "border-zinc-900",
       )}
     >
-      <div className="flex-1 relative flex items-center">
+      <div className="flex-1 relative flex items-center w-full">
         <div
-          className="relative w-full flex items-start overflow-hidden"
+          className="relative w-full flex items-start overflow-hidden rounded-[16px]"
           style={{
             minHeight: `${currentHeight}px!important`,
           }}
@@ -284,15 +350,17 @@ export const MobileInputPrompt = ({
             ref={ref}
             minRows={1}
             maxRows={15}
-            className="text-black w-full shadow-none border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-sm outline-none bg-transparent py-3 break-all font-sans pl-3"
+            className="text-black w-full shadow-none border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-sm outline-none bg-transparent py-3 px-4 break-all font-sans"
             style={{
               resize: "none",
-              color: inputValue ? "black" : "transparent",
+              color: "transparent",
               caretColor: "black",
               whiteSpace: "pre-wrap",
               wordBreak: "break-word",
               overflow: "hidden",
               lineHeight: "1.25rem",
+              paddingBottom: "2.5rem", // space for toggle
+              paddingRight: "6rem", // space for buttons
             }}
             value={inputValue}
             onChange={e => setInputValue(e.target.value)}
@@ -310,6 +378,121 @@ export const MobileInputPrompt = ({
             autoCorrect="off"
             placeholder={PROMPT_PLACEHOLDER}
           />
+
+          {/* Assisted toggle */}
+          <div className="absolute bottom-0 left-0 right-0 bg-white dark:bg-[#1A1A1A] w-full h-9 rounded-b-md">
+            <label className="absolute bottom-1 left-3 cursor-pointer flex gap-1.5 items-center">
+              <input
+                type="checkbox"
+                className="sr-only peer focus:ring-0 active:ring-0"
+                checked={aiModeEnabled}
+                onChange={toggleAIMode}
+              />
+              <div className="w-7 h-4 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:bg-zinc-800 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:after:translate-x-full peer-checked:after:border-white"></div>
+              <span className="text-gray-400 text-sm font-medium mr-1 flex gap-1.5 items-center">
+                <Brain
+                  size={16}
+                  className={cn(
+                    aiModeEnabled ? "text-gray-700" : "text-gray-400",
+                  )}
+                />
+              </span>
+            </label>
+          </div>
+
+          {/* Buttons */}
+          <div className="absolute top-4 right-3 flex items-center h-8">
+            {inputValue && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6 rounded-full"
+                onClick={e => {
+                  e.preventDefault();
+                  setInputValue("");
+                }}
+              >
+                <span className="text-muted-foreground text-lg">×</span>
+              </Button>
+            )}
+
+            <Tooltip delayDuration={50}>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6 rounded-full md:flex"
+                  onClick={e => {
+                    e.preventDefault();
+                    if (aiModeEnabled) {
+                      setChatAssistantOpen(true);
+                    } else {
+                      setSettingsOpened(!settingsOpened);
+                    }
+                  }}
+                >
+                  {aiModeEnabled ? (
+                    <Expand className="h-4 w-4 text-muted-foreground" />
+                  ) : (
+                    <SlidersHorizontal className="h-4 w-4 text-muted-foreground" />
+                  )}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent
+                side="top"
+                className="bg-white text-black border border-gray-200 shadow-md dark:bg-zinc-900 dark:text-white dark:border-zinc-700"
+              >
+                {aiModeEnabled ? "Open assistant" : "Adjustments"}
+              </TooltipContent>
+            </Tooltip>
+
+            <Separator orientation="vertical" className="h-6 mr-2" />
+
+            <Tooltip delayDuration={50}>
+              <TooltipTrigger asChild>
+                <div className="relative inline-block">
+                  <Button
+                    disabled={
+                      aiModeEnabled
+                        ? isLoading
+                        : updating ||
+                          !inputValue ||
+                          profanity ||
+                          exceedsMaxLength
+                    }
+                    onClick={e => {
+                      e.preventDefault();
+                      if (aiModeEnabled) {
+                        generatePrompt();
+                      } else {
+                        submitPrompt();
+                      }
+                    }}
+                    className={cn(
+                      "border-none items-center justify-center font-semibold text-xs bg-[#000000] flex",
+                      "disabled:bg-[#000000] disabled:opacity-80",
+                      "w-auto h-9 aspect-square rounded-md",
+                    )}
+                  >
+                    {updating || isLoading ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <WandSparkles className="h-4 w-4 stroke-[2]" />
+                    )}
+                  </Button>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent
+                side="top"
+                className="bg-white text-black border border-gray-200 shadow-md dark:bg-zinc-900 dark:text-white dark:border-zinc-700"
+              >
+                <span className="text-gray-400 dark:text-gray-500">
+                  {" "}
+                  {aiModeEnabled ? "Generate" : "Enter"}
+                </span>
+              </TooltipContent>
+            </Tooltip>
+          </div>
         </div>
 
         {commandMenuOpen && filteredOptions.length > 0 && (
@@ -352,91 +535,34 @@ export const MobileInputPrompt = ({
         )}
       </div>
 
-      <div className="flex items-center self-stretch">
-        {inputValue ? (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 rounded-full"
-            onClick={e => {
-              e.preventDefault();
-              setInputValue("");
-            }}
-          >
-            <span className="text-muted-foreground text-lg">×</span>
-          </Button>
-        ) : null}
+      {aiModeEnabled && (
+        <ChatAssistant
+          initialPrompt={inputValue}
+          onSavePrompt={newPrompt => {
+            setInputValue(newPrompt);
+            submitPrompt(newPrompt);
+          }}
+          open={isChatAssistantOpen}
+          onOpenChange={setChatAssistantOpen}
+        />
+      )}
 
-        <div className="relative">
-          <Tooltip delayDuration={50}>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 rounded-full"
-                onClick={e => {
-                  e.preventDefault();
-                  setSettingsOpened(!settingsOpened);
-                }}
-              >
-                <SlidersHorizontal className="h-4 w-4 text-muted-foreground" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent
-              side="top"
-              className="bg-white text-black border border-gray-200 shadow-md dark:bg-zinc-900 dark:text-white dark:border-zinc-700"
-            >
-              Adjustments
-            </TooltipContent>
-          </Tooltip>
+      {isNewUser && !aiModeEnabled && (
+        <AssistantToast onClose={() => setIsNewUser(false)} />
+      )}
 
-          {settingsOpened && (
-            <SettingsMenu
-              pipeline={pipeline}
-              inputValue={inputValue}
-              setInputValue={setInputValue}
-              onClose={() => setSettingsOpened(false)}
-              onSubmit={submitPrompt}
-              originalPrompt={lastSubmittedPrompt || undefined}
-            />
-          )}
-        </div>
+      {settingsOpened && (
+        <SettingsMenu
+          pipeline={pipeline}
+          inputValue={inputValue}
+          setInputValue={setInputValue}
+          onClose={() => setSettingsOpened(false)}
+          onSubmit={submitPrompt}
+          originalPrompt={lastSubmittedPrompt || undefined}
+        />
+      )}
 
-        <Separator orientation="vertical" className="h-6 mr-2" />
-
-        <Tooltip delayDuration={50}>
-          <TooltipTrigger asChild>
-            <div className="relative inline-block">
-              <Button
-                disabled={
-                  updating || !inputValue || profanity || exceedsMaxLength
-                }
-                onClick={e => {
-                  e.preventDefault();
-                  submitPrompt();
-                }}
-                className={cn(
-                  "border-none items-center justify-center font-semibold text-xs bg-[#000000] flex disabled:bg-[#000000] disabled:opacity-80",
-                  "w-auto h-9 aspect-square rounded-md",
-                )}
-              >
-                {updating ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <WandSparkles className="h-4 w-4 stroke-[2]" />
-                )}
-              </Button>
-            </div>
-          </TooltipTrigger>
-          <TooltipContent
-            side="top"
-            className="bg-white text-black border border-gray-200 shadow-md dark:bg-zinc-900 dark:text-white dark:border-zinc-700"
-          >
-            Prompt{" "}
-            <span className="text-gray-400 dark:text-gray-500">Enter</span>
-          </TooltipContent>
-        </Tooltip>
-      </div>
+      {isNewUser && <AssistantToast onClose={() => setIsNewUser(false)} />}
 
       {(profanity || exceedsMaxLength) && (
         <div className="absolute -top-10 left-0 mx-auto flex items-center justify-center gap-4 text-xs text-muted-foreground mt-4">
@@ -451,6 +577,16 @@ export const MobileInputPrompt = ({
           )}
         </div>
       )}
+
+      {/* helper text to show assisted on/off */}
+      <p
+        className={cn(
+          aiModeEnabled ? "text-gray-600" : "text-gray-400",
+          "absolute -bottom-6 left-0 mx-auto text-xs",
+        )}
+      >
+        {aiModeEnabled ? "Assisted mode is on " : "Assisted mode is off"}
+      </p>
     </div>
   );
 };
