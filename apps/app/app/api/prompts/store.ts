@@ -167,7 +167,7 @@ const applyPromptToStream = async (promptText: string, streamKey: string) => {
     return;
   }
 
-  const MAX_RETRIES = 3;
+  const MAX_RETRIES = 30;
 
   const applyToStream = async (): Promise<boolean> => {
     try {
@@ -475,8 +475,7 @@ const applyPromptToStream = async (promptText: string, streamKey: string) => {
     currentRetry++;
 
     if (currentRetry < MAX_RETRIES) {
-      // Exponential backoff with jitter: 2^retry * 500ms + random jitter
-      const delay = Math.floor(2 ** currentRetry * 500 + Math.random() * 300);
+      const delay = Math.floor(2000 * currentRetry + Math.random() * 300);
       console.log(`[${new Date().toISOString()}] Retrying in ${delay}ms...`);
       await new Promise(resolve => setTimeout(resolve, delay));
     }
