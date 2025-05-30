@@ -94,6 +94,7 @@ export const PromptForm = forwardRef<HTMLFormElement, PromptFormProps>(
 
     return (
       <form
+        id="prompt-form"
         ref={formRef}
         onSubmit={handleSubmit}
         className={`pt-0 relative z-10 px-4 ${isMobile ? "px-0 bg-transparent py-2" : "pb-4 md:border-b border-t md:border-t-0 border-gray-200/30"}`}

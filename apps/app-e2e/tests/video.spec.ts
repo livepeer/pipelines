@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, TestInfo } from "@playwright/test";
 import {
   assertVideoContentChanging,
   assertVideoPlaying,
@@ -46,6 +46,16 @@ if (!RUN_COUNT) {
   RUN_COUNT = "1";
 }
 
+function createTestLogger(testInfo: TestInfo) {
+  return {
+    log: (message: string) => {
+      console.log(
+        `[${new Date().toISOString()}] [${testInfo.title}] ${message}`,
+      );
+    },
+  };
+}
+
 const whipRegions = (process.env.WHIP_REGIONS || "").split(",");
 
 test.describe.parallel("Daydream Page Tests", () => {
@@ -91,90 +101,88 @@ test.describe.parallel("Daydream Page Tests", () => {
         test(`video elements load and play correctly ${region}#${i + 1}`, async ({
           page,
         }) => {
-          try {
-            const path = regionalPath(region, "/create");
-            console.log(
-              `Running test ${i + 1} for region ${region} with path ${path}`,
-            );
-            await page.goto(path);
-            test.setTimeout(OVERALL_TEST_TIMEOUT_MS);
-            const testName = test.info().title;
+          const logger = createTestLogger(test.info());
+          const path = regionalPath(region, "/create");
+          logger.log(
+            `Running test ${i + 1} for region ${region} with path ${path}`,
+          );
+          await page.goto(path);
+          test.setTimeout(OVERALL_TEST_TIMEOUT_MS);
+          const testName = test.info().title;
 
-            const emailInput = page.getByTestId("email-input");
-            await expect(emailInput).toBeVisible({ timeout: 10 * MIN }); // Might still be building
-            await emailInput.fill(EMAIL);
+          const emailInput = page.getByTestId("email-input");
+          await expect(emailInput).toBeVisible({ timeout: 10 * MIN }); // Might still be building
+          await emailInput.fill(EMAIL);
 
-            await page.getByTestId("submit-email").click();
+          await page.getByTestId("submit-email").click();
 
-            const otpForm = page.getByTestId("otp-form");
-            await expect(otpForm).toBeVisible({ timeout: MIN });
-            const otpInputElement = otpForm.locator("input");
-            await expect(otpInputElement).toBeAttached({ timeout: MIN });
-            await otpInputElement.fill(OTP_CODE);
+          const otpForm = page.getByTestId("otp-form");
+          await expect(otpForm).toBeVisible({ timeout: MIN });
+          const otpInputElement = otpForm.locator("input");
+          await expect(otpInputElement).toBeAttached({ timeout: MIN });
+          await otpInputElement.fill(OTP_CODE);
 
-            const broadcast = page.getByTestId(BROADCAST_VIDEO_TEST_ID);
-            const playback = page.getByTestId(PLAYBACK_VIDEO_TEST_ID);
+          const broadcast = page.getByTestId(BROADCAST_VIDEO_TEST_ID);
+          const playback = page.getByTestId(PLAYBACK_VIDEO_TEST_ID);
 
-            await page.locator('[title="Copy system info"]').click();
-            await page.waitForTimeout(10);
-            const clipboardText = await page.evaluate(async () => {
-              return await navigator.clipboard.readText();
-            });
+          await page.locator('[title="Copy system info"]').click();
+          await page.waitForTimeout(10);
+          const clipboardText = await page.evaluate(async () => {
+            return await navigator.clipboard.readText();
+          });
 
-            console.log(`${region} Stream info: ${clipboardText}`);
+          logger.log(`Stream info: ${clipboardText.replace(/[\r\n]+/g, "")}`);
 
-            await assertVideoPlaying(broadcast);
-            await assertVideoPlaying(playback);
+          await assertVideoPlaying(broadcast, logger);
+          await assertVideoPlaying(playback, logger);
 
-            const audioTracks = await playback.evaluate(
-              (video: HTMLVideoElement) => {
-                const stream = video.srcObject;
-                if (!(stream instanceof MediaStream)) return [];
-                return stream.getAudioTracks().map(t => ({
-                  kind: t.kind,
-                  label: t.label,
-                  enabled: t.enabled,
-                  muted: t.muted,
-                  readyState: t.readyState,
-                }));
-              },
-            );
+          const audioTracks = await playback.evaluate(
+            (video: HTMLVideoElement) => {
+              const stream = video.srcObject;
+              if (!(stream instanceof MediaStream)) return [];
+              return stream.getAudioTracks().map(t => ({
+                kind: t.kind,
+                label: t.label,
+                enabled: t.enabled,
+                muted: t.muted,
+                readyState: t.readyState,
+              }));
+            },
+          );
 
-            expect(audioTracks.length).toBeGreaterThan(0);
-            expect(audioTracks[0].kind).toBe("audio");
-            expect(audioTracks[0].enabled).toBe(true);
-            expect(audioTracks[0].muted).toBe(false);
-            expect(audioTracks[0].readyState).toBe("live");
+          expect(audioTracks.length).toBeGreaterThan(0);
+          expect(audioTracks[0].kind).toBe("audio");
+          expect(audioTracks[0].enabled).toBe(true);
+          expect(audioTracks[0].muted).toBe(false);
+          expect(audioTracks[0].readyState).toBe("live");
 
-            // sleep to leave the stream running for longer
-            console.log("Sleeping to allow the stream to run...");
-            await page.waitForTimeout(10 * 1000);
+          // sleep to leave the stream running for longer
+          logger.log("Sleeping to allow the stream to run...");
+          await page.waitForTimeout(10 * 1000);
 
-            await assertVideoContentChanging(
-              broadcast,
-              testName,
-              "broadcast",
-              NUM_SCREENSHOTS,
-              SCREENSHOT_INTERVAL_MS,
-              100,
-              0.5,
-            );
-            await broadcast.evaluate(el => {
-              (el as HTMLElement).style.visibility = "hidden";
-            });
-            await assertVideoContentChanging(
-              playback,
-              testName,
-              "playback",
-              NUM_SCREENSHOTS,
-              SCREENSHOT_INTERVAL_MS,
-              2000,
-              3,
-            );
-          } catch (error) {
-            console.error("Error in test:", error);
-            throw error;
-          }
+          await assertVideoContentChanging(
+            broadcast,
+            testName,
+            "broadcast",
+            NUM_SCREENSHOTS,
+            SCREENSHOT_INTERVAL_MS,
+            100,
+            0.5,
+            logger,
+          );
+          await broadcast.evaluate(el => {
+            (el as HTMLElement).style.visibility = "hidden";
+          });
+          await assertVideoContentChanging(
+            playback,
+            testName,
+            "playback",
+            NUM_SCREENSHOTS,
+            SCREENSHOT_INTERVAL_MS,
+            2000,
+            3,
+            logger,
+          );
         });
       }
     });

@@ -153,7 +153,7 @@ export default function MultiplayerHomepage({
         {isMobile && (
           <HeaderSection
             onTryCameraClick={handleButtonClick}
-            className="fixed backdrop-blur-sm"
+            className="fixed backdrop-blur-sm transition-all duration-1000 ease-in-out"
           />
         )}
         <div
@@ -179,12 +179,6 @@ export default function MultiplayerHomepage({
                 isMobile && "h-[calc(100vh-3rem)]",
               )}
             >
-              <div className="absolute inset-0 -z-10 opacity-50">
-                <CloudBackground
-                  animationStarted={animationStarted}
-                  getCloudTransform={getCloudTransform}
-                />
-              </div>
               {!isMobile && (
                 <HeaderSection
                   onTryCameraClick={handleButtonClick}
