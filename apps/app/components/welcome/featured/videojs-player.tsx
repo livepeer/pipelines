@@ -9,6 +9,7 @@ import videojs from "video.js";
 import type Player from "video.js/dist/types/player";
 import "video.js/dist/video-js.css";
 import "videojs-resolution-switcher/lib/videojs-resolution-switcher.css";
+import { usePlayerStore } from "./player";
 
 // @ts-ignore
 videojs.registerPlugin("MillicastWhepPlugin", MillicastWhepPlugin);
@@ -202,6 +203,7 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
   pipelineType,
 }) => {
   const videoRef = useRef<HTMLDivElement>(null);
+  const { setIsPlaying } = usePlayerStore();
   const playerRef = useRef<Player | null>(null);
   const [firstFrameTime, setFirstFrameTime] = useState<string | null>(null);
   const startTimeRef = useRef(Date.now());
@@ -293,7 +295,10 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
         }
       };
 
-      player.on("loadedmetadata", applyCustomStyles);
+      player.on("loadedmetadata", () => {
+        setIsPlaying(true);
+        applyCustomStyles();
+      });
       player.on("resize", applyCustomStyles);
 
       if (isWHEP) {
@@ -378,7 +383,9 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
   }, [src, isWHEP, playbackId, firstFrameTime]);
 
   return (
-    <div className={isMobile ? "w-full h-full" : "aspect-video"}>
+    <div
+      className={`h-full w-full transition-all object-contain relative z-0 ${!isMobile ? "-scale-x-100" : ""} bg-[#fefefe]`}
+    >
       <VideoJSStyles />
       <div
         ref={videoRef}

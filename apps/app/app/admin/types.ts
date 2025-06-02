@@ -1,3 +1,5 @@
+import { clipApprovalEnum } from "@/lib/db/schema";
+
 export interface Pipeline {
   id: string;
   name: string;
@@ -17,6 +19,7 @@ export interface Pipeline {
 export interface Clip {
   id: number;
   video_url: string;
+  video_title?: string;
   thumbnail_url?: string | null;
   author_user_id: string;
   source_clip_id?: number | null;
@@ -25,4 +28,6 @@ export interface Clip {
   created_at: string;
   deleted_at?: string | null;
   author?: string | { id: string; name: string };
+  approval_status: (typeof clipApprovalEnum.enumValues)[number];
+  is_tutorial: boolean;
 }

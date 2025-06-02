@@ -76,6 +76,28 @@ export default function ClipsAdminPage() {
   const handleSaveClip = async (
     updatedClip: Partial<Clip> & { id: number },
   ) => {
+    if (
+      updatedClip.priority !== null &&
+      updatedClip.priority !== undefined &&
+      updatedClip.priority > 0
+    ) {
+      const conflictingClip = clips.find(
+        c => c.id !== updatedClip.id && c.priority === updatedClip.priority,
+      );
+
+      if (conflictingClip) {
+        throw new Error(
+          `Priority ${updatedClip.priority} is already assigned to Clip #${conflictingClip.id} ("${conflictingClip.prompt?.substring(0, 30)}..."). Please choose a different priority or remove it from the other clip first.`,
+        );
+      }
+    } else if (
+      updatedClip.priority !== null &&
+      updatedClip.priority !== undefined &&
+      updatedClip.priority <= 0
+    ) {
+      throw new Error("Priority must be a positive number.");
+    }
+
     try {
       console.log("Received updatedClip:", updatedClip);
 
@@ -84,11 +106,14 @@ export default function ClipsAdminPage() {
 
       const allowedFields = [
         "video_url",
+        "video_title",
         "thumbnail_url",
         "author_user_id",
         "source_clip_id",
         "prompt",
         "priority",
+        "approval_status",
+        "is_tutorial",
       ];
 
       Object.keys(fieldsToUpdate).forEach(key => {
@@ -179,6 +204,8 @@ export default function ClipsAdminPage() {
       author_user_id: user?.id || "",
       prompt: "",
       created_at: new Date().toISOString(),
+      approval_status: "none",
+      is_tutorial: false,
     };
 
     setSelectedClip(newClip);

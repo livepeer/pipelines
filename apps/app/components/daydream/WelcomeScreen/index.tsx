@@ -10,10 +10,84 @@ import CameraAccess from "./CameraAccess";
 import Footer from "./Footer";
 import Personas from "./Personas";
 import SelectPrompt from "./SelectPrompt";
+import { usePrivy } from "@/hooks/usePrivy";
+import { updateUserNameAndDetails } from "@/app/actions/user";
+import { Separator } from "@repo/design-system/components/ui/separator";
+import track from "@/lib/track";
+import { useState, useEffect } from "react";
+import { Input } from "@repo/design-system/components/ui/input";
+import { GradientAvatar } from "@/components/GradientAvatar";
+import { RefreshCw } from "lucide-react";
+import {
+  uniqueNamesGenerator,
+  Config,
+  colors,
+  animals,
+  NumberDictionary,
+} from "unique-names-generator";
 
-export default function WelcomeScreen() {
-  const { currentStep, isFadingOut } = useOnboard();
+interface WelcomeScreenProps {
+  simplified?: boolean;
+}
+
+export default function WelcomeScreen({
+  simplified = false,
+}: WelcomeScreenProps) {
+  const {
+    currentStep,
+    isFadingOut,
+    setCurrentStep,
+    setFadingOut,
+    displayName,
+    displayNameError,
+    setDisplayName,
+    setDisplayNameError,
+    avatarSeed,
+    setAvatarSeed,
+    selectedPersonas,
+    customPersona,
+  } = useOnboard();
   const { setTheme } = useTheme();
+  const { user } = usePrivy();
+
+  const generateRandomSeed = () => {
+    const characters =
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    let result = "";
+    for (let i = 0; i < 8; i++) {
+      result += characters.charAt(
+        Math.floor(Math.random() * characters.length),
+      );
+    }
+    return result;
+  };
+
+  const generateUsernameFromId = (id: string) => {
+    const numberDictionary = NumberDictionary.generate({ min: 10, max: 68 });
+    const customConfig: Config = {
+      dictionaries: [colors, animals, numberDictionary],
+      separator: "",
+      length: 3,
+      style: "capital",
+      seed: id || Date.now().toString(),
+    };
+
+    return uniqueNamesGenerator(customConfig);
+  };
+
+  const handleDisplayNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setDisplayNameError(null);
+    const sanitizedValue = e.target.value.replace(/[^a-zA-Z0-9_.]/g, "");
+    setDisplayName(sanitizedValue);
+  };
+
+  useEffect(() => {
+    setAvatarSeed(generateRandomSeed());
+    if (user?.id) {
+      const generatedName = generateUsernameFromId(String(user.id));
+      setDisplayName(generatedName);
+    }
+  }, [user?.email, setAvatarSeed, setDisplayName]);
 
   useMount(() => {
     setTheme("light");
@@ -47,6 +121,29 @@ export default function WelcomeScreen() {
     return "transform 0.8s ease-out, opacity 0.7s ease-out";
   };
 
+  const handleContinueFromSimplifiedFlow = async () => {
+    track("daydream_simplified_continue_clicked", {
+      user_id: user?.id,
+    });
+
+    if (user) {
+      const { error } = await updateUserNameAndDetails(user, displayName, {
+        next_onboarding_step: "main",
+        avatar: avatarSeed,
+        personas: selectedPersonas,
+        custom_persona: customPersona,
+      });
+      if (error) {
+        setDisplayNameError(error);
+        return;
+      }
+    }
+
+    setFadingOut(true);
+    setCurrentStep("main");
+    window && window.scrollTo({ top: 0, behavior: "instant" });
+  };
+
   if (currentStep === "main") {
     return null;
   }
@@ -58,7 +155,7 @@ export default function WelcomeScreen() {
         <div
           className={cn(
             "cloud-container absolute inset-0 w-full h-full",
-            isFadingOut ? "opacity-0" : "opacity-100",
+            isFadingOut ? "opacity-0" : "opacity-50",
             "transition-opacity duration-1000",
           )}
           ref={containerRef}
@@ -111,51 +208,118 @@ export default function WelcomeScreen() {
               transition: getCloudTransition(5),
             }}
           ></div>
-          <div className="bg-gradient-to-b from-transparent to-[rgba(0,0,0,0.2)] absolute inset-0 z-[7] opacity-[55%]"></div>
+          <div className="bg-gradient-to-b from-transparent to-white absolute inset-0 z-[7] opacity-[55%]"></div>
         </div>
+        <div className="absolute inset-0 w-full h-full backdrop-blur-md z-[8]"></div>
       </div>
 
       <div className="min-h-screen flex flex-col items-center justify-center relative overflow-y-auto">
         <div
           className={cn(
-            "h-[fit-content] z-10 relative bg-[#EDEDED] p-[16px] sm:p-[24px] sm:pb-4 md:p-[56px] md:pb-6 rounded-[23px] w-[90%] sm:w-[80%] md:max-w-[812px]",
+            "h-[fit-content] z-10 relative bg-[#EDEDED] p-[12px] sm:p-[20px] md:p-[48px] md:pb-6 rounded-[23px] w-[90%] sm:w-[80%] md:max-w-[812px]",
             currentStep === "prompt" && "mb-[100px] mt-[100px]",
             isFadingOut && "hidden",
           )}
         >
-          <div className="flex flex-col gap-[24px] py-[12px]">
+          <div className="flex flex-col gap-[16px] sm:gap-[20px] py-[12px]">
             <div className="flex flex-col w-full gap-[8px]">
-              <h1 className="font-playfair font-bold text-[30px] sm:text-[45px] lg:text-[64px] leading-[1.2em] text-[#1C1C1C]">
+              <h1 className="font-playfair font-bold text-[28px] sm:text-[40px] lg:text-[60px] leading-[1.2em] text-[#1C1C1C]">
                 Welcome to Daydream
               </h1>
 
-              <p className="font-playfair font-semibold text-[18px] sm:text-xl md:text-2xl text-[#1C1C1C]">
-                ✨ Dream it. Build it. Share it.
+              <p className="font-playfair font-semibold text-base sm:text-lg md:text-xl text-[#1C1C1C]">
+                ✨ From imagination to creation — all in real time.
               </p>
             </div>
 
             <div className="w-full h-px bg-[#D2D2D2]"></div>
 
-            <div className="flex flex-col gap-[16px]">
-              <p className="font-open-sans text-base sm:text-lg leading-[1.35em] text-[#232323]">
-                Come experience the magic of Daydream 🎭
+            {!simplified ? (
+              <div className="flex flex-col gap-[12px] sm:gap-[14px]">
+                <p className="font-open-sans text-sm sm:text-base leading-[1.35em] text-[#232323]">
+                  Come experience the magic of Daydream 🎭
+                </p>
+                <p className="font-open-sans text-sm sm:text-base leading-[1.35em] text-[#232323]">
+                  Create without limits. Whether you&apos;re crafting stories,
+                  building experiences, or experimenting with something entirely
+                  new, this is your playground!
+                </p>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-[12px] sm:gap-[14px]">
+                <p className="font-playfair font-semibold text-base sm:text-lg md:text-xl text-[#1C1C1C]">
+                  Let&apos;s create your daydream profile
+                </p>
+                <p className="font-open-sans text-sm sm:text-base leading-[1.35em] text-[#232323]">
+                  Your creative journey starts with who you are. Tell us a bit
+                  about yourself so we can customize your experience
+                </p>
+              </div>
+            )}
+
+            <div className="flex flex-col gap-1 sm:gap-2">
+              <p className="font-playfair font-semibold text-base sm:text-lg md:text-xl text-[#1C1C1C]">
+                Choose a display name and avatar
               </p>
-              <p className="font-open-sans text-base sm:text-lg leading-[1.35em] text-[#232323]">
-                Create without limits. Whether you&apos;re crafting stories,
-                building experiences, or experimenting with something entirely
-                new, this is your playground!
-              </p>
+              <div className="flex items-center gap-2">
+                <Input
+                  type="text"
+                  placeholder="Enter your display name..."
+                  value={displayName}
+                  onChange={handleDisplayNameChange}
+                  className="flex-grow bg-white border border-[#D2D2D2] rounded-md h-10 px-3 py-2"
+                  disabled={currentStep !== "persona"}
+                />
+                <div className="flex items-center justify-between w-20 h-10 bg-white border border-[#D2D2D2] rounded-md pl-2 pr-1">
+                  <GradientAvatar seed={avatarSeed} size={28} />
+                  <button
+                    type="button"
+                    onClick={() => setAvatarSeed(generateRandomSeed())}
+                    className="p-1 text-gray-400 hover:text-gray-600 hover:disabled:text-gray-400 rounded-full focus:outline-none"
+                    aria-label="Generate random avatar"
+                    disabled={currentStep !== "persona"}
+                  >
+                    <RefreshCw size={16} />
+                  </button>
+                </div>
+              </div>
+              {displayNameError && (
+                <p className="text-red-500 text-sm">{displayNameError}</p>
+              )}
             </div>
 
-            <p className="font-playfair font-semibold text-[18px] sm:text-xl md:text-2xl text-[#1C1C1C]">
-              But first, let&apos;s get to know you!
+            <p className="font-playfair font-semibold text-base sm:text-lg md:text-xl text-[#1C1C1C]">
+              {!simplified
+                ? "But first, let's get to know you!"
+                : "What describes you best?"}
             </p>
 
-            <Personas />
+            <Personas simplified={simplified} />
 
-            <CameraAccess />
+            {!simplified && <CameraAccess />}
 
-            <SelectPrompt />
+            {!simplified && <SelectPrompt />}
+
+            {simplified && currentStep === "persona" && (
+              <>
+                <Separator className="bg-[#D2D2D2]" />
+                <div className="flex justify-end w-full">
+                  <button
+                    disabled={
+                      !displayName ||
+                      !!displayNameError ||
+                      selectedPersonas.length === 0 ||
+                      (selectedPersonas.includes("Other") &&
+                        !customPersona.trim())
+                    }
+                    onClick={handleContinueFromSimplifiedFlow}
+                    className="bg-[#161616] disabled:bg-opacity-50 w-full sm:max-w-[187px] text-[#EDEDED] px-6 py-3 rounded-md font-inter font-semibold text-[15px] hover:bg-[#2D2D2D] disabled:hover:bg-[#161616] disabled:hover:bg-opacity-50 transition-colors"
+                  >
+                    Continue
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
         <Footer isFadingOut={isFadingOut} />

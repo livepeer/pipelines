@@ -7,15 +7,29 @@ import { useOnboard } from "../OnboardContext";
 import { useMediaPermissions } from "../WelcomeScreen/CameraAccess";
 import Dreamshaper from "@/components/welcome/featured/Dreamshaper";
 import { usePrivy } from "@/hooks/usePrivy";
+import { useCapacityCheck } from "@/hooks/useCapacityCheck";
 
-export default function MainExperience() {
+interface MainExperienceProps {
+  isGuestMode?: boolean;
+  defaultPrompt?: string | null;
+}
+
+export default function MainExperience({
+  isGuestMode = false,
+  defaultPrompt = null,
+}: MainExperienceProps) {
   const { currentStep, cameraPermission, setCameraPermission } = useOnboard();
   const { user } = usePrivy();
   const [isVisible, setIsVisible] = useState(false);
   const { requestMediaPermissions } = useMediaPermissions();
+  const { hasCapacity, loading } = useCapacityCheck();
 
-  // Request camera permission if not granted
+  // Request camera permission if not granted (skip in guest mode)
   useEffect(() => {
+    if (isGuestMode) return;
+    if (loading) return;
+    if (!hasCapacity) return;
+
     const requestCameraPermission = async () => {
       const hasAllowedCamera = await requestMediaPermissions();
       if (!hasAllowedCamera) {
@@ -26,7 +40,7 @@ export default function MainExperience() {
     if (currentStep === "main" && cameraPermission === "prompt") {
       requestCameraPermission();
     }
-  }, [currentStep, cameraPermission, requestMediaPermissions]);
+  }, [currentStep, cameraPermission, requestMediaPermissions, isGuestMode]);
 
   useEffect(() => {
     if (currentStep === "main") {
@@ -50,7 +64,10 @@ export default function MainExperience() {
     >
       <GlobalSidebar>
         <div className="flex h-screen md:h-auto md:min-h-[calc(100vh-2rem)] flex-col px-2 md:px-6">
-          <Dreamshaper />
+          <Dreamshaper
+            isGuestMode={isGuestMode}
+            defaultPrompt={defaultPrompt}
+          />
           <ClientSideTracker eventName="home_page_view" />
         </div>
       </GlobalSidebar>

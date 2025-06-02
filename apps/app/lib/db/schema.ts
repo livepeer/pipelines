@@ -5,6 +5,7 @@ import {
   check,
   doublePrecision,
   foreignKey,
+  index,
   inet,
   integer,
   json,
@@ -66,18 +67,19 @@ export const users = pgTable(
   "users",
   {
     id: text().primaryKey().notNull(),
-    name: varchar({ length: 255 }),
-    email: varchar({ length: 255 }),
-    createdAt: timestamp("created_at", { mode: "string" }).default(
-      sql`CURRENT_TIMESTAMP`,
-    ),
-    lastLogin: timestamp("last_login", { mode: "string" }),
+    name: varchar(),
+    email: varchar(),
+    createdAt: timestamp("created_at", {
+      withTimezone: true,
+      mode: "string",
+    }).default(sql`CURRENT_TIMESTAMP`),
+    lastLogin: timestamp("last_login", { withTimezone: true, mode: "string" }),
     isActive: boolean("is_active").default(true),
-    provider: varchar({ length: 50 }),
+    provider: varchar("provider"),
     additionalDetails: jsonb("additional_details").default({}),
   },
   table => [
-    unique("users_email_key").on(table.email),
+    // unique("users_email_key").on(table.email), // ⛑️
     check(
       "users_provider_check",
       sql`(provider)::text = ANY (ARRAY[('discord'::character varying)::text, ('email'::character varying)::text, ('github'::character varying)::text, ('google'::character varying)::text])`,
@@ -89,26 +91,28 @@ export const pipelines = pgTable(
   "pipelines",
   {
     id: text().primaryKey().notNull(),
-    createdAt: timestamp("created_at", { mode: "string" }).default(
-      sql`CURRENT_TIMESTAMP`,
-    ),
-    updatedAt: timestamp("updated_at", { mode: "string" }).default(
-      sql`CURRENT_TIMESTAMP`,
-    ),
-    lastUsed: timestamp("last_used", { mode: "string" }),
-    name: varchar({ length: 255 }),
+    createdAt: timestamp("created_at", {
+      withTimezone: true,
+      mode: "string",
+    }).default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: timestamp("updated_at", {
+      withTimezone: true,
+      mode: "string",
+    }).default(sql`CURRENT_TIMESTAMP`),
+    lastUsed: timestamp("last_used", { withTimezone: true, mode: "string" }),
+    name: varchar(),
     description: text(),
     isPrivate: boolean("is_private").default(true),
-    coverImage: varchar("cover_image", { length: 255 }),
-    type: varchar({ length: 50 }).default("comfyUI"),
-    sampleCodeRepo: varchar("sample_code_repo", { length: 255 }),
+    coverImage: varchar("cover_image"),
+    type: varchar().default("comfyUI"),
+    sampleCodeRepo: varchar("sample_code_repo"),
     isFeatured: boolean("is_featured").default(false),
-    sampleInputVideo: varchar("sample_input_video", { length: 255 }),
+    sampleInputVideo: varchar("sample_input_video"),
     author: text(),
     modelCard: jsonb("model_card").default({}),
     key: text(),
     config: jsonb(),
-    comfyUiJson: jsonb("comfy_ui_json"),
+    comfyUiJson: json("comfy_ui_json"),
     version: text().default("1.0.0").notNull(),
     validationStatus: validationStatus("validation_status")
       .default("pending")
@@ -130,9 +134,9 @@ export const apiKeys = pgTable(
     id: uuid().defaultRandom().primaryKey().notNull(),
     userId: text("user_id"),
     apiKey: text("api_key").notNull(),
-    createdAt: timestamp("created_at", { mode: "string" }).default(
-      sql`CURRENT_TIMESTAMP`,
-    ),
+    createdAt: timestamp("created_at", {
+      mode: "string",
+    }).default(sql`CURRENT_TIMESTAMP`),
     lastUsed: timestamp("last_used", { mode: "string" }),
     isActive: boolean("is_active").default(true),
     name: varchar(),
@@ -143,7 +147,7 @@ export const apiKeys = pgTable(
       foreignColumns: [users.id],
       name: "api_keys_user_id_fkey",
     }),
-    unique("api_keys_api_key_key").on(table.apiKey),
+    // unique("api_keys_api_key_key").on(table.apiKey), // ⛑️
   ],
 );
 
@@ -157,7 +161,10 @@ export const jobs = pgTable(
     creditCost: numeric("credit_cost", { precision: 10, scale: 2 }).notNull(),
     ethFees: numeric("eth_fees", { precision: 10, scale: 2 }),
     status: varchar({ length: 50 }).notNull(),
-    createdAt: timestamp("created_at", { mode: "string" }).defaultNow(),
+    createdAt: timestamp("created_at", {
+      withTimezone: true,
+      mode: "string",
+    }).defaultNow(),
   },
   table => [
     foreignKey({
@@ -182,7 +189,10 @@ export const purchases = pgTable(
       scale: 2,
     }).notNull(),
     amountPaid: numeric("amount_paid", { precision: 10, scale: 2 }).notNull(),
-    createdAt: timestamp("created_at", { mode: "string" }).defaultNow(),
+    createdAt: timestamp("created_at", {
+      withTimezone: true,
+      mode: "string",
+    }).defaultNow(),
   },
   table => [
     foreignKey({
@@ -203,7 +213,10 @@ export const auditLogs = pgTable(
       scale: 2,
     }).notNull(),
     reason: varchar({ length: 255 }).notNull(),
-    createdAt: timestamp("created_at", { mode: "string" }).defaultNow(),
+    createdAt: timestamp("created_at", {
+      withTimezone: true,
+      mode: "string",
+    }).defaultNow(),
   },
   table => [
     foreignKey({
@@ -221,7 +234,10 @@ export const streams = pgTable(
     streamKey: text("stream_key").notNull(),
     outputStreamUrl: text("output_stream_url").notNull(),
     pipelineParams: jsonb("pipeline_params"),
-    createdAt: timestamp("created_at", { mode: "string" }).defaultNow(),
+    createdAt: timestamp("created_at", {
+      withTimezone: true,
+      mode: "string",
+    }).defaultNow(),
     pipelineId: text("pipeline_id"),
     outputPlaybackId: text("output_playback_id"),
     name: text(),
@@ -242,19 +258,43 @@ export const streams = pgTable(
       foreignColumns: [pipelines.id],
       name: "streams_pipeline_id_fkey",
     }).onDelete("cascade"),
+    index("streams_stream_key_idx").using("hash", table.streamKey),
   ],
 );
+
+export const clipStatusEnum = pgEnum("clip_status", [
+  "uploading",
+  "completed",
+  "failed",
+]);
+
+export const clipApprovalEnum = pgEnum("clip_approval_status", [
+  "none",
+  "pending",
+  "approved",
+  "rejected",
+]);
 
 export const clips = pgTable(
   "clips",
   {
     id: serial("id").primaryKey(),
     video_url: text("video_url").notNull(),
+    video_title: text("video_title"),
     thumbnail_url: text("thumbnail_url"),
     author_user_id: text("author_user_id").notNull(),
     source_clip_id: integer("source_clip_id"),
+    remix_count: integer("remix_count").default(0),
     prompt: text("prompt").notNull(),
     priority: integer("priority"),
+    status: clipStatusEnum("status").default("uploading").notNull(),
+    is_tutorial: boolean("is_tutorial").default(false),
+    approval_status: clipApprovalEnum("approval_status")
+      .default("none")
+      .notNull(),
+    approved_by: text("approved_by"),
+    approved_at: timestamp("approved_at", { withTimezone: true }),
+
     created_at: timestamp("created_at", { withTimezone: true })
       .defaultNow()
       .notNull(),
@@ -273,6 +313,14 @@ export const clips = pgTable(
       columns: [table.source_clip_id],
       foreignColumns: [table.id],
       name: "clips_source_clip_id_fkey",
+    })
+      .onUpdate("cascade")
+      .onDelete("set null"),
+
+    foreignKey({
+      columns: [table.approved_by],
+      foreignColumns: [users.id],
+      name: "clips_approved_by_fkey",
     })
       .onUpdate("cascade")
       .onDelete("set null"),
@@ -307,6 +355,26 @@ export const clipViews = pgTable(
     })
       .onUpdate("cascade")
       .onDelete("set null"),
+  ],
+);
+
+export const clipSlugs = pgTable(
+  "clip_slugs",
+  {
+    slug: text("slug").primaryKey(),
+
+    clip_id: integer("clip_id")
+      .notNull()
+      .references(() => clips.id, { onDelete: "cascade", onUpdate: "cascade" }),
+
+    created_at: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  },
+  table => [
+    {
+      clipIdUniqueConstraint: unique("unq_clip_slugs_clip_id").on(
+        table.clip_id,
+      ),
+    },
   ],
 );
 
@@ -408,3 +476,5 @@ export const pgStatMonitor = pgView("pg_stat_monitor", {
 }).as(
   sql`SELECT pg_stat_monitor_internal.bucket, pg_stat_monitor_internal.bucket_start_time, pg_stat_monitor_internal.userid, pg_stat_monitor_internal.username, pg_stat_monitor_internal.dbid, pg_stat_monitor_internal.datname, '0.0.0.0'::inet + pg_stat_monitor_internal.client_ip AS client_ip, pg_stat_monitor_internal.pgsm_query_id, pg_stat_monitor_internal.queryid, pg_stat_monitor_internal.toplevel, pg_stat_monitor_internal.top_queryid, pg_stat_monitor_internal.query, pg_stat_monitor_internal.comments, pg_stat_monitor_internal.planid, pg_stat_monitor_internal.query_plan, pg_stat_monitor_internal.top_query, pg_stat_monitor_internal.application_name, string_to_array(pg_stat_monitor_internal.relations, ','::text) AS relations, pg_stat_monitor_internal.cmd_type, get_cmd_type(pg_stat_monitor_internal.cmd_type) AS cmd_type_text, pg_stat_monitor_internal.elevel, pg_stat_monitor_internal.sqlcode, pg_stat_monitor_internal.message, pg_stat_monitor_internal.calls, pg_stat_monitor_internal.total_exec_time, pg_stat_monitor_internal.min_exec_time, pg_stat_monitor_internal.max_exec_time, pg_stat_monitor_internal.mean_exec_time, pg_stat_monitor_internal.stddev_exec_time, pg_stat_monitor_internal.rows, pg_stat_monitor_internal.shared_blks_hit, pg_stat_monitor_internal.shared_blks_read, pg_stat_monitor_internal.shared_blks_dirtied, pg_stat_monitor_internal.shared_blks_written, pg_stat_monitor_internal.local_blks_hit, pg_stat_monitor_internal.local_blks_read, pg_stat_monitor_internal.local_blks_dirtied, pg_stat_monitor_internal.local_blks_written, pg_stat_monitor_internal.temp_blks_read, pg_stat_monitor_internal.temp_blks_written, pg_stat_monitor_internal.shared_blk_read_time AS blk_read_time, pg_stat_monitor_internal.shared_blk_write_time AS blk_write_time, pg_stat_monitor_internal.temp_blk_read_time, pg_stat_monitor_internal.temp_blk_write_time, string_to_array(pg_stat_monitor_internal.resp_calls, ','::text) AS resp_calls, pg_stat_monitor_internal.cpu_user_time, pg_stat_monitor_internal.cpu_sys_time, pg_stat_monitor_internal.wal_records, pg_stat_monitor_internal.wal_fpi, pg_stat_monitor_internal.wal_bytes, pg_stat_monitor_internal.bucket_done, pg_stat_monitor_internal.plans, pg_stat_monitor_internal.total_plan_time, pg_stat_monitor_internal.min_plan_time, pg_stat_monitor_internal.max_plan_time, pg_stat_monitor_internal.mean_plan_time, pg_stat_monitor_internal.stddev_plan_time, pg_stat_monitor_internal.jit_functions, pg_stat_monitor_internal.jit_generation_time, pg_stat_monitor_internal.jit_inlining_count, pg_stat_monitor_internal.jit_inlining_time, pg_stat_monitor_internal.jit_optimization_count, pg_stat_monitor_internal.jit_optimization_time, pg_stat_monitor_internal.jit_emission_count, pg_stat_monitor_internal.jit_emission_time FROM pg_stat_monitor_internal(true) pg_stat_monitor_internal(bucket, userid, username, dbid, datname, client_ip, queryid, planid, query, query_plan, pgsm_query_id, top_queryid, top_query, application_name, relations, cmd_type, elevel, sqlcode, message, bucket_start_time, calls, total_exec_time, min_exec_time, max_exec_time, mean_exec_time, stddev_exec_time, rows, plans, total_plan_time, min_plan_time, max_plan_time, mean_plan_time, stddev_plan_time, shared_blks_hit, shared_blks_read, shared_blks_dirtied, shared_blks_written, local_blks_hit, local_blks_read, local_blks_dirtied, local_blks_written, temp_blks_read, temp_blks_written, shared_blk_read_time, shared_blk_write_time, local_blk_read_time, local_blk_write_time, temp_blk_read_time, temp_blk_write_time, resp_calls, cpu_user_time, cpu_sys_time, wal_records, wal_fpi, wal_bytes, comments, jit_functions, jit_generation_time, jit_inlining_count, jit_inlining_time, jit_optimization_count, jit_optimization_time, jit_emission_count, jit_emission_time, jit_deform_count, jit_deform_time, stats_since, minmax_stats_since, toplevel, bucket_done) ORDER BY pg_stat_monitor_internal.bucket_start_time`,
 );
+
+export * from "./schema/prompt-queue";

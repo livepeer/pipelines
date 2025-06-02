@@ -8,5 +8,11 @@
       "source": "/docs/:match*",
       "destination": "https://livepeer-ai.mintlify.dev/docs/:match*"
     }
+  ],
+  "crons": [
+    {
+      "path": "/api/cron/process-queue",
+      "schedule": "* * * * *"
+    }
   ]
 }

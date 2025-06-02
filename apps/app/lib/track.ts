@@ -6,9 +6,6 @@ interface TrackProperties {
   [key: string]: any;
 }
 
-let lastTrackedEvents: { [key: string]: number } = {};
-const DEBOUNCE_TIME = 1000; // 1000ms debounce
-
 // Cache for shared params data
 let sharedParamsCache: { [key: string]: any } = {};
 
@@ -34,6 +31,8 @@ function getStoredIds() {
 }
 
 const getSharedParamsInfo = async (): Promise<SharedInfo> => {
+  if (typeof window === "undefined") return {};
+
   const urlParams = new URLSearchParams(window.location.search);
   const sharedParam = urlParams.get("shared");
 
@@ -90,34 +89,35 @@ const track = async (
   eventName: string,
   eventProperties?: TrackProperties,
   user?: User,
-) => {
-  const now = Date.now();
-  const lastTracked = lastTrackedEvents[eventName] || 0;
-
-  if (process.env.DISABLE_ANALYTICS === "true") {
-    return;
+): Promise<boolean> => {
+  if (navigator) {
+    if (navigator.webdriver) {
+      return false;
+    }
   }
 
-  // Skip if event was tracked less than DEBOUNCE_TIME ago
-  if (now - lastTracked < DEBOUNCE_TIME) {
-    console.log(
-      `Debouncing ${eventName}, last tracked ${now - lastTracked}ms ago`,
-    );
+  if (process.env.DISABLE_ANALYTICS === "true") {
+    console.log("Analytics disabled, skipping event tracking.");
     return false;
   }
 
   const { distinctId, sessionId, userId } = getStoredIds();
-  const browserInfo = await getBrowserInfo();
-  const sharedInfo = await getSharedParamsInfo();
-  const referrerType = sharedInfo.shared_id
-    ? "shared_link"
-    : document.referrer
-      ? "external"
-      : "direct";
+
   if (!sessionId) {
     console.log("No sessionId found, skipping event tracking");
-    return;
+    return false;
   }
+
+  const [browserInfo, sharedInfo] = await Promise.all([
+    getBrowserInfo(),
+    getSharedParamsInfo(),
+  ]);
+
+  const referrerType = sharedInfo.shared_id
+    ? "shared_link"
+    : typeof document !== "undefined" && document.referrer
+      ? "external"
+      : "direct";
 
   const data = {
     event: eventName,
@@ -140,13 +140,20 @@ const track = async (
       },
       body: JSON.stringify(data),
     });
-
     if (!response.ok) {
+      try {
+        const errorBody = await response.text();
+        console.error(
+          `HTTP error! status: ${response.status}, body: ${errorBody}`,
+        );
+      } catch (e) {
+        console.error(
+          `HTTP error! status: ${response.status}. Failed to read error body.`,
+        );
+      }
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    // Update last tracked time after successful tracking
-    lastTrackedEvents[eventName] = now;
     return true;
   } catch (error) {
     console.error("Error tracking event:", error);

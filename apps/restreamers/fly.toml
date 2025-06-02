@@ -1,0 +1,18 @@
+primary_region = "fra"
+
+[deploy]
+  strategy = "immediate"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  PYTHONUNBUFFERED = "1"
+
+[processes]
+  app = "/app/entrypoint.sh"
+
+[[vm]]
+  cpu_kind = "performance"
+  cpus = 2
+  memory_mb = 4096 

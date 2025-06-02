@@ -24,6 +24,8 @@ import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
 import * as React from "react";
 import { useEffect, useRef, useState } from "react";
+import { create } from "zustand";
+import { usePlaybackUrlStore } from "@/hooks/usePlaybackUrlStore";
 
 const VideoJSPlayer = dynamic(() => import("./videojs-player"), {
   ssr: false,
@@ -37,17 +39,64 @@ const VideoJSPlayer = dynamic(() => import("./videojs-player"), {
   ),
 });
 
+interface PlayerState {
+  isPlaying: boolean;
+  setIsPlaying: (value: boolean) => void;
+}
+
+export const usePlayerStore = create<PlayerState>(set => ({
+  isPlaying: false,
+  setIsPlaying: (value: boolean) => set({ isPlaying: value }),
+}));
+
+const initialDelay = 1500;
+const linearPhaseDelay = 100;
+const linearPhaseEndCount = 20;
+
+const calculateDelay = (count: number): number => {
+  const baseExponentialDelay = 200;
+  const maxExponentialDelay = 60 * 1000;
+  const exponentFactor = 2;
+
+  if (count === 0) {
+    return initialDelay;
+  }
+
+  if (count > 0 && count <= linearPhaseEndCount) {
+    return linearPhaseDelay;
+  }
+
+  const exponentialAttemptNumber = count - linearPhaseEndCount;
+
+  const delay =
+    baseExponentialDelay *
+    Math.pow(exponentFactor, exponentialAttemptNumber - 1);
+
+  return Math.min(delay, maxExponentialDelay);
+};
+
 export const LivepeerPlayer = () => {
   const { stream, pipeline } = useDreamshaperStore();
   const { isMobile } = useMobileStore();
-  const { isFullscreen } = useFullscreenStore();
   const appConfig = useAppConfig();
+  const { isFullscreen } = useFullscreenStore();
+  const { setIsPlaying } = usePlayerStore();
   const [playbackInfo, setPlaybackInfo] = useState<PlaybackInfo | null>(null);
+  const { playbackUrl, setPlaybackUrl, setLoading, loading } =
+    usePlaybackUrlStore();
 
   const { useFallbackPlayer: useFallbackVideoJSPlayer, handleError } =
     useFallbackDetection(stream?.output_playback_id!);
 
-  const playerUrl = `${appConfig.whipUrl}${appConfig?.whipUrl?.endsWith("/") ? "" : "/"}${stream?.stream_key}-out/whep`;
+  useEffect(() => {
+    setIsPlaying(false);
+    setLoading(true);
+
+    return () => {
+      setPlaybackUrl(null);
+      setLoading(false);
+    };
+  }, []);
 
   const searchParams = useSearchParams();
   const useMediamtx =
@@ -75,6 +124,10 @@ export const LivepeerPlayer = () => {
     stream?.output_playback_id,
   ]);
 
+  if (loading || !playbackUrl) {
+    return <PlayerLoading />;
+  }
+
   if (iframePlayerFallback) {
     return (
       <LPPLayer
@@ -88,7 +141,7 @@ export const LivepeerPlayer = () => {
   if (useVideoJS && pipeline) {
     return (
       <VideoJSPlayer
-        src={playerUrl}
+        src={playbackUrl}
         isMobile={isMobile}
         playbackId={stream?.output_playback_id!}
         streamId={stream?.id!}
@@ -98,7 +151,7 @@ export const LivepeerPlayer = () => {
     );
   }
 
-  const src = getSrc(useMediamtx ? playerUrl : playbackInfo);
+  const src = getSrc(useMediamtx ? playbackUrl : playbackInfo);
 
   if (!src) {
     return (
@@ -112,14 +165,14 @@ export const LivepeerPlayer = () => {
   }
 
   return (
-    <div className={isMobile ? "w-full h-full" : "aspect-video"}>
+    <div className="w-full h-full" key={playbackUrl}>
       <Player.Root
         autoPlay
         aspectRatio={16 / 9}
         clipLength={30}
         src={src}
         jwt={null}
-        backoffMax={1000}
+        calculateDelay={calculateDelay}
         timeout={300000}
         lowLatency="force"
         {...({
@@ -133,7 +186,6 @@ export const LivepeerPlayer = () => {
         } as any)}
         onError={handleError}
       >
-        {/* TODO: What is this */}
         <div
           className="absolute inset-0 z-[5]"
           onClick={e => e.stopPropagation()}
@@ -142,7 +194,10 @@ export const LivepeerPlayer = () => {
         <Player.Video
           title="Live stream"
           data-testid="playback-video"
-          className="h-full w-full transition-all object-contain relative z-0"
+          className={`h-full w-full transition-all object-contain relative z-0 ${!isMobile ? "-scale-x-100" : ""} bg-[#fefefe]`}
+          onLoadedMetadata={() => {
+            setIsPlaying(true);
+          }}
         />
 
         <Player.LoadingIndicator className="w-full relative h-full bg-black/50 backdrop-blur data-[visible=true]:animate-in data-[visible=false]:animate-out data-[visible=false]:fade-out-0 data-[visible=true]:fade-in-0 z-[6]">
@@ -210,16 +265,7 @@ export const LivepeerPlayer = () => {
                 <Player.Thumb className="block transition-all group-hover:scale-110 w-3 h-3 bg-white rounded-full" />
               </Player.Volume>
             </div>
-            <div className="flex sm:flex-1 md:flex-[1.5] justify-end items-center gap-2.5">
-              <Player.FullscreenTrigger className="w-6 h-6 hover:scale-110 transition-all flex-shrink-0">
-                <Player.FullscreenIndicator asChild>
-                  <ExitFullscreenIcon className="w-full h-full text-white" />
-                </Player.FullscreenIndicator>
-                <Player.FullscreenIndicator matcher={false} asChild>
-                  <EnterFullscreenIcon className="w-full h-full text-white" />
-                </Player.FullscreenIndicator>
-              </Player.FullscreenTrigger>
-            </div>
+            <div className="flex sm:flex-1 md:flex-[1.5] justify-end items-center gap-2.5"></div>
           </div>
         </Player.Controls>
 

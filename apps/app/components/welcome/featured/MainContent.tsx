@@ -3,7 +3,7 @@
 import { TrackedButton } from "@/components/analytics/TrackedButton";
 import useFullscreenStore from "@/hooks/useFullscreenStore";
 import useMobileStore from "@/hooks/useMobileStore";
-import { useStreamStatus } from "@/hooks/useStreamStatus";
+import { usePrivy } from "@/hooks/usePrivy";
 import { useTrialTimer } from "@/hooks/useTrialTimer";
 import {
   Tooltip,
@@ -11,33 +11,17 @@ import {
   TooltipTrigger,
 } from "@repo/design-system/components/ui/tooltip";
 import { Loader2, Maximize, Minimize } from "lucide-react";
-import { useEffect, useState } from "react";
 import { useDreamshaperStore } from "../../../hooks/useDreamshaper";
-import { LivepeerPlayer } from "./player";
-import { usePrivy } from "@/hooks/usePrivy";
-import { Logo } from "@/components/sidebar";
 import Overlay from "./Overlay";
+import { LivepeerPlayer, usePlayerStore } from "./player";
 
 export const MainContent = () => {
   const { stream, loading } = useDreamshaperStore();
-  const { live, statusMessage } = useStreamStatus(stream?.id, false);
   const { isMobile } = useMobileStore();
   const { authenticated } = usePrivy();
   const { timeRemaining, formattedTime } = useTrialTimer();
+  const { isPlaying } = usePlayerStore();
   const { isFullscreen, toggleFullscreen } = useFullscreenStore();
-
-  const [showOverlay, setShowOverlay] = useState(true);
-
-  useEffect(() => {
-    if (live) {
-      const timer = setTimeout(() => {
-        setShowOverlay(false);
-      }, 1000);
-      return () => clearTimeout(timer);
-    } else {
-      setShowOverlay(true);
-    }
-  }, [live]);
 
   return (
     <>
@@ -79,16 +63,15 @@ export const MainContent = () => {
       </Tooltip>
 
       {/* Live indicator*/}
-      {live && (
+      {isPlaying && (
         <div className="absolute top-4 left-4 bg-neutral-800 text-gray-400 px-5 py-1 text-xs rounded-full border border-gray-500">
           <span className="inline-block w-2 h-2 bg-red-500 rounded-full mr-2"></span>
           <span className="text-white font-bold">Live</span>
         </div>
       )}
 
-      {/* Timer overlay */}
       {!authenticated && timeRemaining !== null && (
-        <div className="absolute top-5 right-16 bg-neutral-800/30 text-gray-400 px-5 py-1 text-xs rounded-full border border-gray-500 z-50">
+        <div className="hidden absolute top-5 right-16 bg-neutral-800/30 text-gray-400 px-5 py-1 text-xs rounded-full border border-gray-500 z-50">
           <span className="text-[10px] mr-2">left</span> {formattedTime}
         </div>
       )}
@@ -102,7 +85,7 @@ export const MainContent = () => {
           <div className="relative w-full h-full">
             <LivepeerPlayer />
           </div>
-          {(!live || showOverlay) && <Overlay statusMessage={statusMessage} />}
+          {!isPlaying && <Overlay />}
         </>
       ) : (
         <div className="w-full h-full flex items-center justify-center text-muted-foreground">

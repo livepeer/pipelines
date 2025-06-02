@@ -1,4 +1,4 @@
-import { updateUserAdditionalDetails } from "@/app/actions/user";
+import { updateUserNameAndDetails } from "@/app/actions/user";
 import useMobileStore from "@/hooks/useMobileStore";
 import track from "@/lib/track";
 import { cn } from "@repo/design-system/lib/utils";
@@ -85,8 +85,14 @@ export const useMediaPermissions = () => {
 export default function CameraAccess() {
   const { isMobile } = useMobileStore();
   const { user } = usePrivy();
-  const { currentStep, cameraPermission, setCurrentStep, hasSharedPrompt } =
-    useOnboard();
+  const {
+    currentStep,
+    cameraPermission,
+    setCurrentStep,
+    hasSharedPrompt,
+    displayName,
+    avatarSeed,
+  } = useOnboard();
   const { requestMediaPermissions } = useMediaPermissions();
 
   if (currentStep === "persona") {
@@ -97,8 +103,9 @@ export default function CameraAccess() {
     const hasPermissions = await requestMediaPermissions();
     if (hasPermissions) {
       setCurrentStep(hasSharedPrompt ? "main" : "prompt");
-      await updateUserAdditionalDetails(user!, {
+      await updateUserNameAndDetails(user!, displayName, {
         next_onboarding_step: hasSharedPrompt ? "main" : "prompt",
+        avatar: avatarSeed,
       });
     }
   };
@@ -115,9 +122,7 @@ export default function CameraAccess() {
           currentStep === "camera" && "cursor-pointer",
         )}
         onClick={
-          cameraPermission !== "granted"
-            ? handleRequestMediaPermissions
-            : undefined
+          currentStep === "camera" ? handleRequestMediaPermissions : undefined
         }
       >
         <div
@@ -142,7 +147,7 @@ export default function CameraAccess() {
               you click &quot;record&quot;
             </p>
           </div>
-          {cameraPermission === "granted" ? (
+          {cameraPermission === "granted" || currentStep === "prompt" ? (
             <div className="bg-[#95B4BE] shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] rounded-md px-2 py-2 text-black font-inter text-[13px] leading-[1.21] flex items-center justify-center gap-2 animate-[bounce_0.5s_ease-in-out]">
               <CheckIcon className="w-4 h-4 stroke-[3px]" />
             </div>

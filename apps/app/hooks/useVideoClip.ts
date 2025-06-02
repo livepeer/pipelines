@@ -10,9 +10,10 @@ declare global {
   }
 }
 
+// Note: "horizontal" mode is deprecated and will be removed
 export type ClipRecordingMode = "horizontal" | "vertical" | "output-only";
 
-export const CLIP_DURATION = 30000;
+export const CLIP_DURATION = 60000;
 
 const FRAME_RATE = 30;
 const INPUT_DELAY = 1000;
@@ -23,7 +24,10 @@ export const useVideoClip = () => {
   const [progress, setProgress] = useState(0);
   const [clipUrl, setClipUrl] = useState<string | null>(null);
   const [clipFilename, setClipFilename] = useState<string | null>(null);
+  const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
   const [showClipModal, setShowClipModal] = useState(false);
+  const [recordingMode, setRecordingMode] =
+    useState<ClipRecordingMode>("output-only");
 
   const [showOptionsModal, setShowOptionsModal] = useState(false);
 
@@ -155,12 +159,17 @@ export const useVideoClip = () => {
     setRecordingResources({});
   }, [isRecording, recordingResources]);
 
-  const recordClip = async (mode: ClipRecordingMode = "horizontal") => {
+  const recordClip = async (
+    mode: ClipRecordingMode = "output-only",
+    thumbnailUrl: string | null = null,
+  ) => {
     if (isRecording) {
       stopRecording();
       return;
     }
     setShowOptionsModal(false);
+
+    setRecordingMode(mode);
 
     const videos = document.querySelectorAll("video");
     if (videos.length < 2) {
@@ -222,7 +231,9 @@ export const useVideoClip = () => {
 
     const chunks: Blob[] = [];
     mediaRecorder.ondataavailable = e => {
-      if (e.data.size > 0) chunks.push(e.data);
+      if (e.data.size > 0) {
+        chunks.push(e.data);
+      }
     };
 
     mediaRecorder.onstop = () => {
@@ -243,9 +254,9 @@ export const useVideoClip = () => {
       setIsRecording(false);
       setProgress(0);
 
-      toast("Clip created successfully", {
+      /*toast("Clip created successfully", {
         description: "Your clip is ready to preview",
-      });
+      });*/
     };
 
     let isDrawing = true;
@@ -433,6 +444,11 @@ export const useVideoClip = () => {
       isDrawing: true,
       animationFrameId,
     });
+
+    // Save the thumbnail URL if provided
+    if (thumbnailUrl) {
+      setThumbnailUrl(thumbnailUrl);
+    }
   };
 
   return {
@@ -443,10 +459,12 @@ export const useVideoClip = () => {
     progress,
     clipUrl,
     clipFilename,
+    thumbnailUrl,
     showClipModal,
     closeClipModal,
     cleanupClipUrl,
     showOptionsModal,
     closeOptionsModal,
+    recordingMode,
   };
 };

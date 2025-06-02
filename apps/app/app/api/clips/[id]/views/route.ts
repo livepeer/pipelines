@@ -1,14 +1,8 @@
-import { PrivyClient } from "@privy-io/server-auth";
-
+import { getPrivyUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { clipViews } from "@/lib/db/schema";
 import { getAppConfig } from "@/lib/env";
 import { NextRequest } from "next/server";
-
-const privy = new PrivyClient(
-  process.env.NEXT_PUBLIC_PRIVY_APP_ID!,
-  process.env.PRIVY_APP_SECRET!,
-);
 
 export async function POST(
   request: NextRequest,
@@ -36,19 +30,13 @@ export async function POST(
           : "127.0.0.1";
 
     // Parse User Id
-    const accessToken = request.headers
-      .get("Authorization")
-      ?.replace(/^Bearer /, "");
-
-    const userId = accessToken
-      ? (await privy.verifyAuthToken(accessToken)).userId
-      : null;
+    const userId = (await getPrivyUser())?.userId;
 
     // Log the clip view
     await db.insert(clipViews).values({
       clip_id: Number(id),
       session_id: sessionId,
-      ...(userId && { user_id: userId }),
+      ...(userId && { viewer_user_id: userId }),
       ip_address: ip,
     });
 

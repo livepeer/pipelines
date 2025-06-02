@@ -673,7 +673,7 @@ export default function Try({
           open={true}
           onOpenChange={open => {
             if (!open) {
-              router.push("/explore");
+              router.push("/");
             }
           }}
         />

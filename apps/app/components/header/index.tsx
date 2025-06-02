@@ -14,7 +14,7 @@ export default function Header() {
   const menuItems = [
     {
       label: "Explore",
-      href: "/explore",
+      href: "/",
     },
     {
       label: "Learn",
@@ -24,7 +24,7 @@ export default function Header() {
     {
       label: "Community",
       external: true,
-      href: "https://discord.com/invite/hxyNHeSzCK",
+      href: "https://discord.gg/5sZu8xmn6U",
     },
   ];
 

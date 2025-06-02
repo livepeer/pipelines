@@ -1,6 +1,9 @@
 import { Dialog, Transition } from "@headlessui/react";
 import { Fragment, useState, useEffect } from "react";
 import { Clip } from "../../types";
+import { usePrivy } from "@/hooks/usePrivy";
+import { useAdmin } from "@/hooks/useAdmin";
+import { clipApprovalEnum } from "@/lib/db/schema";
 
 interface EditClipModalProps {
   clip: Clip | null;
@@ -15,23 +18,32 @@ export default function EditClipModal({
   onClose,
   onSave,
 }: EditClipModalProps) {
+  const { user } = usePrivy();
+  const { email } = useAdmin();
   const [formData, setFormData] = useState<Partial<Clip>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isLoadingLivepeerUser, setIsLoadingLivepeerUser] = useState(false);
+  const [selectedUserName, setSelectedUserName] = useState<string | null>(null);
 
   useEffect(() => {
     if (clip) {
       setFormData({
         id: clip.id,
         video_url: clip.video_url,
+        video_title: clip.video_title,
         thumbnail_url: clip.thumbnail_url,
         author_user_id: clip.author_user_id,
         source_clip_id: clip.source_clip_id,
         prompt: clip.prompt,
         priority: clip.priority,
+        approval_status: clip.approval_status,
+        is_tutorial: clip.is_tutorial,
       });
+      setSelectedUserName(null);
     } else {
       setFormData({});
+      setSelectedUserName(null);
     }
     setError(null);
   }, [clip]);
@@ -49,11 +61,60 @@ export default function EditClipModal({
         ...prev,
         [name]: numValue,
       }));
+    } else if (name === "author_user_id") {
+      setSelectedUserName(null);
+      setFormData(prev => ({
+        ...prev,
+        [name]: value,
+      }));
+    } else if (name === "is_tutorial") {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value === "true",
+      }));
     } else {
       setFormData(prev => ({
         ...prev,
         [name]: value,
       }));
+    }
+  };
+
+  const handleRandomLivepeerUser = async () => {
+    setIsLoadingLivepeerUser(true);
+    try {
+      const headers = new Headers();
+      if (user && email) {
+        const userData = {
+          id: user.id,
+          email: { address: email },
+        };
+        headers.append("x-privy-user", JSON.stringify(userData));
+      }
+
+      const response = await fetch("/api/admin/users/random-livepeer", {
+        headers,
+      });
+      if (!response.ok) {
+        throw new Error("Failed to fetch random Livepeer user");
+      }
+      const randomUser = await response.json();
+
+      setSelectedUserName(randomUser.name || "Unknown");
+
+      setFormData(prev => ({
+        ...prev,
+        author_user_id: randomUser.id,
+      }));
+    } catch (err) {
+      console.error("Error fetching random Livepeer user:", err);
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to fetch random Livepeer user",
+      );
+    } finally {
+      setIsLoadingLivepeerUser(false);
     }
   };
 
@@ -67,7 +128,7 @@ export default function EditClipModal({
 
       const updatedClip = {
         ...formData,
-        id: clip.id,
+        id: clip.id || 0,
       } as Partial<Clip> & { id: number };
 
       await onSave(updatedClip);
@@ -124,7 +185,58 @@ export default function EditClipModal({
 
                 <form onSubmit={handleSubmit} className="mt-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="col-span-1 md:col-span-2">
+                    <div className="flex flex-col md:flex-row items-center col-span-2 space-y-2 md:space-y-0 md:space-x-4">
+                      <label className="block text-sm font-medium text-gray-700">
+                        Is Tutorial Video
+                      </label>
+                      <div className="flex space-x-4">
+                        <label className="flex items-center gap-2">
+                          <input
+                            type="radio"
+                            name="is_tutorial"
+                            value="true"
+                            checked={formData.is_tutorial === true}
+                            onChange={handleChange}
+                            className="form-radio h-5 w-5 text-blue-600"
+                          />
+                          <span className="text-sm">True</span>
+                        </label>
+                      </div>
+                      <div className="flex space-x-4">
+                        <label className="flex items-center gap-2">
+                          <input
+                            type="radio"
+                            name="is_tutorial"
+                            value="false"
+                            checked={formData.is_tutorial === false}
+                            onChange={handleChange}
+                            className="form-radio h-5 w-5 text-blue-600"
+                          />
+                          <span className="text-sm">False</span>
+                        </label>
+                      </div>
+                    </div>
+
+                    <div className="col-span-1">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Approval Status
+                      </label>
+                      <select
+                        name="approval_status"
+                        value={formData.approval_status || "none"}
+                        onChange={handleChange}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        required
+                      >
+                        {clipApprovalEnum.enumValues.map(status => (
+                          <option key={status} value={status}>
+                            {status}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="col-span-1">
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Video URL *
                       </label>
@@ -155,14 +267,56 @@ export default function EditClipModal({
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Author User ID *
                       </label>
-                      <input
-                        type="text"
-                        name="author_user_id"
-                        value={formData.author_user_id || ""}
-                        onChange={handleChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                        required
-                      />
+                      <div className="flex space-x-2">
+                        {selectedUserName ? (
+                          <div className="relative flex-1">
+                            <input
+                              type="text"
+                              value={selectedUserName}
+                              readOnly
+                              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50 focus:outline-none"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedUserName(null);
+                                setFormData(prev => ({
+                                  ...prev,
+                                  author_user_id: "",
+                                }));
+                              }}
+                              className="absolute right-3 top-2.5 text-gray-500 hover:text-gray-700"
+                            >
+                              ×
+                            </button>
+                            <input
+                              type="hidden"
+                              name="author_user_id"
+                              value={formData.author_user_id || ""}
+                              required
+                            />
+                          </div>
+                        ) : (
+                          <input
+                            type="text"
+                            name="author_user_id"
+                            value={formData.author_user_id || ""}
+                            onChange={handleChange}
+                            className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                            required
+                          />
+                        )}
+                        <button
+                          type="button"
+                          onClick={handleRandomLivepeerUser}
+                          disabled={isLoadingLivepeerUser}
+                          className="px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                        >
+                          {isLoadingLivepeerUser
+                            ? "Loading..."
+                            : "Random @livepeer"}
+                        </button>
+                      </div>
                     </div>
 
                     <div>

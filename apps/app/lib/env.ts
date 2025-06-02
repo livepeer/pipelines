@@ -16,6 +16,7 @@ const IntercomConfig = z.object({
 const HubspotConfig = z.object({
   portalId: z.string().min(1),
   formId: z.string().min(1),
+  capacityFormId: z.string().min(1),
 });
 
 const MixpanelConfig = z.object({
@@ -67,13 +68,14 @@ const envConfig = {
       process.env.NEXT_PUBLIC_RTMP_URL_SECONDARY ||
       process.env.NEXT_PUBLIC_RTMP_URL,
     newWhipUrl:
-      process.env.NEXT_PUBLIC_WHIP_URL_SECONDARY ||
-      process.env.NEXT_PUBLIC_AI_GATEWAY_API_BASE_URL,
+      process.env.NEXT_PUBLIC_AI_GATEWAY_API_BASE_URL_SECONDARY ||
+      process.env.NEXT_PUBLIC_WHIP_URL_SECONDARY,
     environment: process.env.NEXT_PUBLIC_ENV as Environment,
   },
   hubspot: {
     portalId: process.env.NEXT_PUBLIC_HUBSPOT_PORTAL_ID,
     formId: process.env.NEXT_PUBLIC_HUBSPOT_FORM_ID,
+    capacityFormId: process.env.NEXT_PUBLIC_HUBSPOT_FORM_ID_CAPACITY,
   },
 } as const;
 

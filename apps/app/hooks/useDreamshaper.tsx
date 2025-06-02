@@ -6,22 +6,26 @@ import {
 } from "@/app/api/streams/share-params";
 import { updateParams } from "@/app/api/streams/update-params";
 import { Stream, upsertStream } from "@/app/api/streams/upsert";
+import { useCapacityCheck } from "@/hooks/useCapacityCheck";
 import { useGatewayHost } from "@/hooks/useGatewayHost";
+import { usePrivy } from "@/hooks/usePrivy";
+import { usePromptStore } from "@/hooks/usePromptStore";
 import { getAppConfig } from "@/lib/env";
+import track from "@/lib/track";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { create } from "zustand";
+import { usePromptVersionStore } from "./usePromptVersionStore";
 import { useStreamStatus } from "./useStreamStatus";
-import track from "@/lib/track";
-import { usePrivy } from "@/hooks/usePrivy";
+import { usePlayerStore } from "@/components/welcome/featured/player";
 
 export const DEFAULT_PIPELINE_ID = "pip_DRQREDnSei4HQyC8"; // Staging Dreamshaper ID
 export const DUMMY_USER_ID_FOR_NON_AUTHENTICATED_USERS =
   "did:privy:cm4x2cuiw007lh8fcj34919fu"; // Infra Email User ID
 
-const DREAMSHAPER_PARAMS_STORAGE_KEY = "dreamshaper_latest_params";
-const DREAMSHAPER_PARAMS_VERSION_KEY = "dreamshaper_params_version";
+export const DREAMSHAPER_PARAMS_STORAGE_KEY = "dreamshaper_latest_params";
+export const DREAMSHAPER_PARAMS_VERSION_KEY = "dreamshaper_params_version";
 
 const createDefaultValues = (pipeline: any) => {
   const inputs = pipeline.config.inputs;
@@ -40,17 +44,39 @@ export const getStreamUrl = (
   storedWhipUrl?: string | null,
 ): string => {
   const customWhipServer = searchParams.get("whipServer");
+  const customOrchestrator = searchParams.get("orchestrator");
 
   const app = getAppConfig(searchParams);
 
   if (customWhipServer) {
     if (customWhipServer.includes("<STREAM_KEY>")) {
-      return customWhipServer.replace("<STREAM_KEY>", streamKey);
+      return addOrchestratorParam(
+        customWhipServer.replace("<STREAM_KEY>", streamKey),
+        customOrchestrator,
+      );
     }
-    return `${customWhipServer}${streamKey}/whip`;
+    return addOrchestratorParam(
+      `${customWhipServer}${streamKey}/whip`,
+      customOrchestrator,
+    );
   }
 
-  return `${app.newWhipUrl}${streamKey}/whip`;
+  return addOrchestratorParam(
+    `${app.newWhipUrl}${streamKey}/whip`,
+    customOrchestrator,
+  );
+};
+
+const addOrchestratorParam = (
+  url: string,
+  orchestrator: string | null,
+): string => {
+  if (orchestrator) {
+    const urlObj = new URL(url);
+    urlObj.searchParams.set("orchestrator", orchestrator);
+    return urlObj.toString();
+  }
+  return url;
 };
 
 const processInputValues = (inputValues: any) => {
@@ -142,6 +168,7 @@ interface DreamshaperStore {
   pipeline: any | null;
   sharedParamsApplied: boolean;
   sharedPrompt: string | null;
+  errorState: boolean;
 
   setLoading: (loading: boolean) => void;
   setUpdating: (updating: boolean) => void;
@@ -150,9 +177,12 @@ interface DreamshaperStore {
   setPipeline: (pipeline: any) => void;
   setSharedParamsApplied: (applied: boolean) => void;
   setSharedPrompt: (prompt: string | null) => void;
+  setErrorState: (error: boolean) => void;
+
+  reset: () => void;
 }
 
-export const useDreamshaperStore = create<DreamshaperStore>(set => ({
+const initialState = {
   loading: true,
   updating: false,
   stream: null,
@@ -160,6 +190,11 @@ export const useDreamshaperStore = create<DreamshaperStore>(set => ({
   pipeline: null,
   sharedParamsApplied: false,
   sharedPrompt: null,
+  errorState: false,
+};
+
+export const useDreamshaperStore = create<DreamshaperStore>(set => ({
+  ...initialState,
 
   setLoading: loading => set({ loading }),
   setUpdating: updating => set({ updating }),
@@ -168,7 +203,61 @@ export const useDreamshaperStore = create<DreamshaperStore>(set => ({
   setPipeline: pipeline => set({ pipeline }),
   setSharedParamsApplied: applied => set({ sharedParamsApplied: applied }),
   setSharedPrompt: prompt => set({ sharedPrompt: prompt }),
+  setErrorState: error => set({ errorState: error }),
+
+  reset: () => set(initialState),
 }));
+
+export function useInputPromptHandling() {
+  const searchParams = useSearchParams();
+  const { stream, pipeline } = useDreamshaperStore();
+  const { setLastSubmittedPrompt, setHasSubmittedPrompt } = usePromptStore();
+  const [inputPromptApplied, setInputPromptApplied] = useState(false);
+  const { gatewayHost, ready: gatewayHostReady } = useGatewayHost(
+    stream?.id || null,
+  );
+  const { handleStreamUpdate } = useStreamUpdates();
+
+  useEffect(() => {
+    const applyInputPrompt = async () => {
+      const inputPromptB64 = searchParams.get("inputPrompt");
+
+      if (
+        !inputPromptB64 ||
+        inputPromptApplied ||
+        !stream ||
+        !gatewayHostReady
+      ) {
+        return;
+      }
+
+      try {
+        const decodedPrompt = atob(inputPromptB64);
+
+        setLastSubmittedPrompt(decodedPrompt);
+        setHasSubmittedPrompt(true);
+
+        await handleStreamUpdate(decodedPrompt, { silent: true });
+
+        setInputPromptApplied(true);
+      } catch (error) {
+        console.error("Error applying input prompt:", error);
+      }
+    };
+
+    applyInputPrompt();
+  }, [
+    searchParams,
+    stream,
+    inputPromptApplied,
+    gatewayHostReady,
+    handleStreamUpdate,
+    setLastSubmittedPrompt,
+    setHasSubmittedPrompt,
+  ]);
+
+  return { inputPromptApplied };
+}
 
 export function useParamsHandling() {
   const searchParams = useSearchParams();
@@ -184,7 +273,7 @@ export function useParamsHandling() {
     stream?.id || null,
   );
 
-  // Shared params handling
+  useInputPromptHandling();
   useEffect(() => {
     const applySharedParams = async () => {
       const sharedId = searchParams.get("shared");
@@ -324,7 +413,9 @@ export function useParamsHandling() {
 }
 
 export function useStreamUpdates() {
+  const searchParams = useSearchParams();
   const { stream, pipeline, setUpdating } = useDreamshaperStore();
+  const { incrementPromptVersion } = usePromptVersionStore();
 
   const handleStreamUpdate = useCallback(
     async (prompt: string, options?: { silent?: boolean }) => {
@@ -371,14 +462,22 @@ export function useStreamUpdates() {
         if (!updatedInputValues.prompt) {
           updatedInputValues.prompt = {};
         }
-        if (!updatedInputValues.prompt["5"]) {
-          updatedInputValues.prompt["5"] = { inputs: {} };
-        }
-        if (!updatedInputValues.prompt["5"].inputs) {
-          updatedInputValues.prompt["5"].inputs = {};
-        }
 
-        updatedInputValues.prompt["5"].inputs.text = cleanedPrompt;
+        /**
+         * TODO: Remove once we have a better way to handle this
+         * Hack to get around not attaching the prompt to pipelines which are not dreamshaper
+         * Pass /?isDreamshaper=false to the stream to disable this
+         */
+        if (searchParams.get("isDreamshaper") !== "false") {
+          if (!updatedInputValues.prompt["5"]) {
+            updatedInputValues.prompt["5"] = { inputs: {} };
+          }
+          if (!updatedInputValues.prompt["5"].inputs) {
+            updatedInputValues.prompt["5"].inputs = {};
+          }
+
+          updatedInputValues.prompt["5"].inputs.text = cleanedPrompt;
+        }
 
         if (
           freshPipeline?.prioritized_params &&
@@ -453,6 +552,7 @@ export function useStreamUpdates() {
           if (!options?.silent) {
             toast.success("Stream updated successfully", { id: toastId });
           }
+          incrementPromptVersion();
         } else {
           if (!options?.silent) {
             toast.error("Error updating stream with prompt", { id: toastId });
@@ -476,6 +576,7 @@ export function useStreamUpdates() {
 }
 
 export function useInitialization() {
+  const { loading: capacityLoading, hasCapacity } = useCapacityCheck();
   const { user, ready } = usePrivy();
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -489,6 +590,16 @@ export function useInitialization() {
     DEFAULT_PIPELINE_ID;
 
   useEffect(() => {
+    // Skip initialization entirely if we don't have capacity
+    if (capacityLoading) {
+      return; // Wait until capacity check is complete
+    }
+
+    if (!hasCapacity) {
+      setLoading(false); // Make sure to set loading to false when at capacity
+      return;
+    }
+
     if (!ready) return;
 
     let isMounted = true;
@@ -564,7 +675,7 @@ export function useInitialization() {
     return () => {
       isMounted = false;
     };
-  }, [pathname, ready, user, searchParams]);
+  }, [pathname, ready, user, searchParams, capacityLoading, hasCapacity]);
 
   useEffect(() => {
     if (!stream || !stream.stream_key) {
@@ -574,6 +685,8 @@ export function useInitialization() {
       getStreamUrl(stream?.stream_key, searchParams, stream.whip_url),
     );
   }, [stream]);
+
+  return { capacityLoading, hasCapacity };
 }
 
 export const useShareLink = () => {
@@ -606,6 +719,8 @@ export const useShareLink = () => {
       }
 
       const shareUrl = new URL(window.location.href);
+      shareUrl.searchParams.delete("inputPrompt");
+      shareUrl.searchParams.delete("sourceClipId");
       shareUrl.searchParams.set("shared", data.id);
 
       return { error: null, url: shareUrl.toString() };
@@ -620,72 +735,70 @@ export const useShareLink = () => {
 
 const MAX_STREAM_TIMEOUT_MS = 300000; // 5 minutes
 
-export const useCapacityMonitor = () => {
+export const useErrorMonitor = () => {
   const { authenticated } = usePrivy();
-  const { stream } = useDreamshaperStore();
-  const { live, capacityReached } = useStreamStatus(stream?.id, false);
+  const { stream, setErrorState } = useDreamshaperStore();
+  const { capacityReached } = useStreamStatus(stream?.id, false);
+  const { isPlaying } = usePlayerStore();
 
   const [timeoutReached, setTimeoutReached] = useState(false);
-  const toastShownRef = useRef(false);
-
-  const showCapacityToast = () => {
-    track("capacity_reached", {
-      is_authenticated: authenticated,
-      stream_id: stream?.id,
-    });
-    toast("Platform at full capacity", {
-      description: (
-        <div className="flex flex-col gap-2">
-          <p>
-            We are currently at capacity, join the waitlist to use the platform
-            in the future
-          </p>
-          <a
-            href="https://www.livepeer.org/daydream-waitlist"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-primary hover:underline font-medium"
-          >
-            Join the waitlist
-          </a>
-        </div>
-      ),
-      duration: 1000000,
-    });
-  };
+  const errorDetectedRef = useRef(false);
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (!live) {
+      if (!isPlaying) {
         setTimeoutReached(true);
       }
     }, MAX_STREAM_TIMEOUT_MS);
 
     return () => clearTimeout(timer);
-  }, [live]);
+  }, [isPlaying]);
 
   useEffect(() => {
     if (
-      (capacityReached || (timeoutReached && !live)) &&
-      !toastShownRef.current
+      (capacityReached || (timeoutReached && !isPlaying)) &&
+      !errorDetectedRef.current
     ) {
       const reason = capacityReached
-        ? "capacity_reached"
+        ? "no_orch_available"
         : "timeout_reached_not_live";
 
       console.error("Capacity reached, reason:", reason, {
         capacityReached,
         timeoutReached,
-        live,
+        isPlaying,
       });
 
-      track("daydream_capacity_reached", {
+      track("daydream_error_overlay_shown", {
         is_authenticated: authenticated,
         reason,
         stream_id: stream?.id,
       });
-      showCapacityToast();
-      toastShownRef.current = true;
+
+      setErrorState(true);
+      errorDetectedRef.current = true;
     }
-  }, [capacityReached, timeoutReached, live, stream]);
+  }, [
+    capacityReached,
+    timeoutReached,
+    isPlaying,
+    stream,
+    authenticated,
+    setErrorState,
+  ]);
 };
+
+export function useDreamshaper() {
+  useInitialization();
+  useParamsHandling();
+  useErrorMonitor();
+  const { handleStreamUpdate } = useStreamUpdates();
+  const { createShareLink } = useShareLink();
+  const store = useDreamshaperStore();
+
+  return {
+    ...store,
+    handleStreamUpdate,
+    createShareLink,
+  };
+}
