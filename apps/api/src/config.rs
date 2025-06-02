@@ -28,7 +28,7 @@ impl Config {
             .parse::<u64>()
             .context("Failed to parse PROMPT_MIN_DURATION_SECS")?;
 
-        let stream_keys: Vec<String> = env::var("NEXT_PUBLIC_MULTIPLAYER_STREAM_KEY")
+        let stream_keys: Vec<String> = env::var("MULTIPLAYER_STREAM_KEY")
             .unwrap_or_else(|_| "default-stream".to_string())
             .split(',')
             .map(|s| s.trim().to_string())

@@ -21,10 +21,10 @@ pub async fn apply_prompt_to_stream(
     {
         Ok(_) => {
             info!("Successfully applied prompt to stream: {}", stream_key);
-            return Ok(());
+            Ok(())
         }
         Err(e) => {
-            return Err(anyhow::anyhow!("Failed to apply prompt: {}", e));
+            Err(anyhow::anyhow!("Failed to apply prompt: {}", e))
         }
     }
 }

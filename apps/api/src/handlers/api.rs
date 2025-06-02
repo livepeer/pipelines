@@ -117,8 +117,7 @@ pub async fn add_random_prompt(
         return Err(StatusCode::BAD_REQUEST);
     }
 
-    let random_prompts = vec![
-        "A serene landscape with mountains and a lake",
+    let random_prompts = ["A serene landscape with mountains and a lake",
         "A futuristic city with flying cars",
         "A magical forest with glowing mushrooms",
         "An underwater scene with colorful coral reefs",
@@ -127,8 +126,7 @@ pub async fn add_random_prompt(
         "A vibrant sunset over the ocean",
         "A mystical castle floating in the clouds",
         "A bustling marketplace in an ancient city",
-        "A peaceful zen garden with cherry blossoms",
-    ];
+        "A peaceful zen garden with cherry blossoms"];
 
     let random_index = rand::random::<usize>() % random_prompts.len();
     let prompt_text = random_prompts[random_index];

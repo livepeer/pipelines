@@ -1,0 +1,89 @@
+name: Deploy Staging API
+
+on:
+  workflow_dispatch:
+
+env:
+  FLY_APP_NAME: pipelines-api-staging
+  FLY_ORG: ${{ secrets.FLY_ORG }}
+
+jobs:
+  deploy-api:
+    name: Deploy API to Fly.io
+    runs-on: ubuntu-latest
+    environment: staging
+    concurrency:
+      group: api-deploy-staging
+      cancel-in-progress: false
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Fly.io CLI
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Create Fly.io app if not exists
+        run: |
+          echo "Checking if app '$FLY_APP_NAME' exists..."
+          if ! flyctl status --app "$FLY_APP_NAME" > /dev/null 2>&1; then
+            echo "Creating new app: $FLY_APP_NAME"
+            flyctl apps create "$FLY_APP_NAME" --org "$FLY_ORG"
+            echo "✅ App created successfully"
+            sleep 5
+          else
+            echo "✅ App already exists"
+          fi
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+      - name: Configure IP addresses
+        run: |
+          echo "Configuring IP addresses for $FLY_APP_NAME..."
+
+          # Configure IPv4
+          if ! flyctl ips list --app "$FLY_APP_NAME" | grep -q "v4"; then
+            echo "Allocating IPv4 address..."
+            flyctl ips allocate-v4 --app "$FLY_APP_NAME" --shared --yes
+            echo "✅ IPv4 allocated"
+          else
+            echo "✅ IPv4 already configured"
+          fi
+
+          # Configure IPv6
+          if ! flyctl ips list --app "$FLY_APP_NAME" | grep -q "v6"; then
+            echo "Allocating IPv6 address..."
+            flyctl ips allocate-v6 --app "$FLY_APP_NAME"
+            echo "✅ IPv6 allocated"
+          else
+            echo "✅ IPv6 already configured"
+          fi
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+      - name: Configure application secrets
+        run: |
+          echo "Setting application secrets..."
+          flyctl secrets set --stage --app "$FLY_APP_NAME" \
+            REDIS_URL="${{ secrets.REDIS_URL }}" \
+            SERVER_PORT="${{ secrets.SERVER_PORT }}" \
+            MAX_CHAT_MESSAGES="${{ secrets.MAX_CHAT_MESSAGES }}" \
+            PROMPT_MIN_DURATION_SECS="${{ secrets.PROMPT_MIN_DURATION_SECS }}" \
+            NEXT_PUBLIC_MULTIPLAYER_STREAM_KEY="${{ secrets.NEXT_PUBLIC_MULTIPLAYER_STREAM_KEY }}" \
+            GATEWAY_HOST="${{ secrets.GATEWAY_HOST }}" \
+            STREAM_STATUS_ENDPOINT_USER="${{ secrets.STREAM_STATUS_ENDPOINT_USER }}" \
+            STREAM_STATUS_ENDPOINT_PASSWORD="${{ secrets.STREAM_STATUS_ENDPOINT_PASSWORD }}"
+          echo "✅ Secrets configured"
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+      - name: Deploy to Fly.io
+        run: |
+          echo "Deploying $FLY_APP_NAME..."
+          cd apps/api
+          flyctl deploy --config ./fly.toml --remote-only --app "$FLY_APP_NAME"
+          echo "🚀 Deployment completed"
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
