@@ -284,7 +284,7 @@ export default function ClipShareContent({ clipData }: ClipShareContentProps) {
             method: "download",
           }}
           onClick={() => handleDownload()}
-          className="bg-black text-white px-6 py-3 rounded-lg hover:bg-gray-800 transition-colors"
+          className="w-full bg-black text-white px-6 py-3 rounded-lg hover:bg-gray-800 transition-colors"
         >
           Download clip
         </TrackedButton>
