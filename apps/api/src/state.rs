@@ -1,3 +1,4 @@
+use crate::config::Config;
 use crate::models::WsMessage;
 use crate::services::redis::RedisClient;
 use tokio::sync::broadcast;
@@ -5,15 +6,17 @@ use tokio::sync::broadcast;
 pub struct AppState {
     pub redis: RedisClient,
     pub broadcast_tx: broadcast::Sender<WsMessage>,
+    pub config: Config,
 }
 
 impl AppState {
-    pub fn new(redis: RedisClient) -> Self {
-        let (broadcast_tx, _) = broadcast::channel(100);
+    pub fn new(redis: RedisClient, config: Config) -> Self {
+        let (broadcast_tx, _) = broadcast::channel(1000);
 
         Self {
             redis,
             broadcast_tx,
+            config,
         }
     }
 

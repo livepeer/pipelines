@@ -131,7 +131,9 @@ export function PromptDisplay({
   const filledQueue = getFilledQueue();
   const nonHighlightedPrompts = displayedPrompts.slice(1);
   const highlightedPrompt = displayedPrompts[0];
-  const nonEmptyQueueItems = filledQueue.filter(item => item.text !== "");
+  const nonEmptyQueueItems = filledQueue.filter(
+    item => item && item.text && item.text.trim() !== "",
+  );
 
   useMemo(() => {
     promptAvatarSeeds.forEach(seed => {
@@ -188,12 +190,20 @@ export function PromptDisplay({
     // Add queue items first, before limiting the display size
     if (nonEmptyQueueItems.length > 0) {
       nonEmptyQueueItems.forEach(item => {
-        allPromptsChronological.push({
-          type: "queue",
-          text: item.text,
-          isUser: item.isUser,
-          seed: item.seed,
-        });
+        // Safe access with fallbacks
+        const itemText = item?.text || "";
+        const itemSeed = item?.seed || "fallback";
+        const itemIsUser = item?.isUser || false;
+
+        // Only add if text exists
+        if (itemText.trim()) {
+          allPromptsChronological.push({
+            type: "queue",
+            text: itemText,
+            isUser: itemIsUser,
+            seed: itemSeed,
+          });
+        }
       });
     }
 
@@ -202,7 +212,7 @@ export function PromptDisplay({
     itemCount = itemsToShow.length;
 
     const userSubmittedPromptsInQueue = nonEmptyQueueItems.filter(
-      item => item.isUser,
+      item => item && item.isUser && item.text && item.text.trim(),
     );
     return (
       <div className="flex flex-col gap-1 px-4">
@@ -221,11 +231,9 @@ export function PromptDisplay({
             </label>
             <div className="flex flex-row gap-2 line-clamp-1 align-bottom">
               <p className="flex-1 text-sm text-foreground font-bold line-clamp-1">
-                {
-                  userSubmittedPromptsInQueue[
-                    userSubmittedPromptsInQueue.length - 1
-                  ].text
-                }
+                {userSubmittedPromptsInQueue[
+                  userSubmittedPromptsInQueue.length - 1
+                ]?.text || "Loading..."}
               </p>
               <p className="text-xs text-gray-500 font-light text-right">
                 {getPromptQueueText(userSubmittedPromptsInQueue.length)}
@@ -302,16 +310,24 @@ export function PromptDisplay({
         {nonEmptyQueueItems.length > 0 && (
           <div className="hidden md:flex flex-col gap-2 w-full">
             {nonEmptyQueueItems.map((queuedPrompt, qIndex) => {
-              const username = queuedPrompt.seed
-                ? generateUsername(queuedPrompt.seed)
+              const promptText = queuedPrompt?.text || "";
+              const promptSeed = queuedPrompt?.seed || `fallback-${qIndex}`;
+              const isUserPrompt = queuedPrompt?.isUser || false;
+
+              const username = promptSeed
+                ? generateUsername(promptSeed)
                 : "User";
               const color = getColorFromSeed(username);
 
+              if (!promptText) {
+                return null;
+              }
+
               return (
                 <div
-                  key={`queue-${qIndex}-${queuedPrompt.text.substring(0, 10)}`}
+                  key={`queue-${qIndex}-${promptText.substring(0, 10)}`}
                   className={`rounded-xl text-[#282828] font-light italic flex items-center text-sm w-full ${
-                    queuedPrompt.isUser ? "font-medium" : ""
+                    isUserPrompt ? "font-medium" : ""
                   }`}
                   style={{
                     padding: "0.5rem 0.75rem",
@@ -322,9 +338,7 @@ export function PromptDisplay({
                     {username.substring(0, 6)}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <span className="truncate block w-full">
-                      {queuedPrompt.text}
-                    </span>
+                    <span className="truncate block w-full">{promptText}</span>
                   </div>
                 </div>
               );

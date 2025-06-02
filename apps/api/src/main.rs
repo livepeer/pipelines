@@ -1,12 +1,12 @@
 use anyhow::Result;
 use axum::{
+    routing::{get, post, put},
     Router,
-    routing::{get, post},
 };
 use std::net::SocketAddr;
 use std::sync::Arc;
 use tower_http::cors::CorsLayer;
-use tracing::info;
+use tracing::{info, error};
 
 mod config;
 mod handlers;
@@ -19,6 +19,62 @@ use handlers::{api, ws};
 use services::{prompt_manager, redis::RedisClient};
 use state::AppState;
 
+async fn initialize_redis_with_default_prompts(redis: &RedisClient, stream_keys: &[String]) -> Result<()> {
+    let initial_prompts = vec![
+        "cyberpunk cityscape with neon lights --quality 3",
+        "underwater scene with ((bioluminescent)) creatures --creativity 0.8",
+        "forest with magical creatures and (((glowing plants))) --quality 2",
+        "cosmic nebula with vibrant colors --creativity 0.7",
+        "futuristic landscape with floating islands --quality 3",
+        "post-apocalyptic desert with abandoned technology --quality 2.5",
+        "steampunk airship battle in stormy skies --creativity 0.9",
+        "crystalline cave with ((magical)) light reflections --quality 3",
+        "ancient library with impossible architecture --creativity 0.8",
+        "digital realm with data visualized as (((geometric structures))) --quality 2.5",
+        "northern lights over snow-covered mountains --creativity 0.7",
+        "microscopic view of exotic (((alien cells))) --quality 3",
+        "ancient temple in a jungle with mystical fog --quality 2.8",
+        "futuristic city with hovering vehicles and holographic ads --creativity 0.9",
+        "magical underwater kingdom with merfolk architecture --quality 3",
+        "cosmic gateway with swirling energy patterns --creativity 0.85",
+        "crystal forest with rainbow light refractions --quality 2.7",
+        "surreal dreamscape with floating islands and impossible physics --creativity 0.95",
+        "ancient mechanical clockwork city --quality 3",
+        "bioluminescent deep sea creatures in the abyss --creativity 0.8",
+        "floating islands with waterfalls cascading into the void --quality 2.9",
+        "enchanted forest with magical creatures and fairy lights --creativity 0.75",
+        "cybernetic dragon with glowing circuit patterns --quality 3",
+    ];
+
+    use crate::models::Prompt;
+    use uuid::Uuid;
+    
+    for stream_key in stream_keys {
+        let queue_length = redis.get_queue_length(stream_key).await?;
+        if queue_length == 0 {
+            info!("Initializing empty queue for stream {} with default prompts", stream_key);
+            
+            for prompt_text in &initial_prompts {
+                let prompt = Prompt::new(
+                    prompt_text.to_string(),
+                    "system".to_string(),
+                    format!("system-{}", Uuid::new_v4()),
+                    format!("bot-{}", rand::random::<u32>()),
+                    stream_key.clone(),
+                );
+                
+                redis.add_prompt_to_queue(prompt).await?;
+            }
+            
+            info!("Added {} initial prompts to stream {}", initial_prompts.len(), stream_key);
+        } else {
+            info!("Stream {} already has {} prompts in queue", stream_key, queue_length);
+        }
+    }
+    
+    Ok(())
+}
+
 #[tokio::main]
 async fn main() -> Result<()> {
     tracing_subscriber::fmt::init();
@@ -29,7 +85,11 @@ async fn main() -> Result<()> {
     let redis_client = RedisClient::new(&config.redis_url).await?;
     info!("Connected to Redis");
 
-    let app_state = Arc::new(AppState::new(redis_client));
+    if let Err(e) = initialize_redis_with_default_prompts(&redis_client, &config.stream_keys).await {
+        error!("Failed to initialize Redis with default prompts: {}", e);
+    }
+
+    let app_state = Arc::new(AppState::new(redis_client, config));
 
     let prompt_manager_state = app_state.clone();
     tokio::spawn(async move {
@@ -40,13 +100,14 @@ async fn main() -> Result<()> {
 
     let app = Router::new()
         .route("/health", get(|| async { "OK" }))
-        .route("/prompt", post(api::submit_prompt))
-        .route("/chat/initial-data", get(api::get_initial_data))
+        .route("/prompts", post(api::submit_prompt))
+        .route("/prompts", get(api::get_prompt_state))
+        .route("/prompts", put(api::add_random_prompt))
         .route("/ws", get(ws::websocket_handler))
         .layer(CorsLayer::permissive())
-        .with_state(app_state);
+        .with_state(app_state.clone());
 
-    let addr = SocketAddr::from(([0, 0, 0, 0], config.server_port));
+    let addr = SocketAddr::from(([0, 0, 0, 0], app_state.config.server_port));
     info!("Server listening on {}", addr);
 
     let listener = tokio::net::TcpListener::bind(addr).await?;
