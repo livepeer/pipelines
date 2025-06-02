@@ -16,7 +16,7 @@
     "@google-cloud/storage": "^7.16.0"
   },
   "devDependencies": {
-    "@types/node": "^22.14.1",
+    "@types/node": "^22.15.29",
     "typescript": "^5.6.3"
   }
 }
