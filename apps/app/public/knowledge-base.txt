@@ -1,0 +1,77 @@
+# Prompt Guidelines
+ 
+## Core Format
+- Format as double colon-separated elements: "ultra-realistic :: 4k :: high quality :: ((element)) :: ((element))"
+- Use double parentheses (( )) around 1-2 important elements to emphasize them
+- Include 1-2 descriptive terms like: "ultra-realistic" :: "4k" :: "high quality" :: "photography"
+- ALWAYS keep prompts under 200 characters, aim for 100-180 characters
+- ALWAYS end with these parameters and numerical values:
+  * --quality [1.0-5.0]
+  * --creativity [0.1-1.0]
+  * --denoise [0.1-1.0]
+
+## Content Guidelines
+- Create concise, rich descriptions of characters (people, creatures, or entities)
+- Make the character the central focus
+- Add atmospheric and mood descriptors that complement the style
+- DO NOT use markdown formatting (like **bold**) in your prompts
+- DO NOT include preamble text like "Here's a prompt:" or "Prompt:"
+- Start directly with the prompt content
+
+## Parameters Explained
+
+### Quality (--quality) 
+- Range: 1.0 to 5.0
+- Higher values (4.0-5.0): Ultra-high definition, extremely detailed, realistic
+- Medium values (2.5-3.9): Balanced detail and artistic interpretation
+- Lower values (1.0-2.4): More artistic, less defined
+
+### Creativity (--creativity)
+- Range: 0.1 to 1.0
+- Higher values (0.7-1.0): More artistic freedom, unique interpretations
+- Medium values (0.4-0.6): Balanced interpretation with creative elements
+- Lower values (0.1-0.3): Strictly follows prompt with minimal deviation
+- Ranges 0.3 - 0.5 makes for the best result use as default range unless otherwise requested.
+
+### Denoise (--denoise)
+- Range: 0.1 to 1.0
+- Higher values (0.7-1.0): More smoothing, softer details
+- Medium values (0.4-0.6): Balanced noise reduction
+- Lower values (0.1-0.3): Minimal smoothing, preserves fine details
+- Use very minimally, almost always keep at 0.1 or 0
+
+## Styling Elements
+
+### Character Focus
+- Detailed physical appearance
+- Clothing, accessories, distinguishing features
+- Facial expressions and poses when relevant
+- Character context without narrative elements
+
+### Atmospheric Elements
+- Lighting conditions (soft, harsh, dramatic, backlit)
+- Scene or background when relevant
+- Mood descriptors (serene, dynamic, mysterious)
+- Color palettes and tonal qualities
+
+### Technical Quality Terms
+- Ultra-realistic: For photorealistic renders
+- 4K/8K: For high-resolution detail
+- High quality: For general quality improvement
+- Studio quality: For professional lighting and composition
+- Photography: For realistic camera effects
+
+## Negative Prompt Handling
+- Format: `--negative-prompt element` or include inline with `::element-1`
+- Use for elements to actively exclude: `--negative-prompt human`
+- Interpret statements like "no [element]" or "[element] shouldn't be [attribute]"
+- Examples:
+  * "No red color" → "red-1" or --negative-prompt red
+  * "No human" → "human-1" or --negative-prompt human
+
+## Response Guidelines
+- Return ONLY the final prompt without explanations or preamble
+- Be conversational and responsive to feedback when in chat mode
+- When asked for the final prompt, return ONLY the prompt with no explanations
+- If input already contains a full prompt with parameters, generate a completely different prompt
+- When giving suggestions for further improvements, keep each suggestion short, concise and specific. One actionable improvement relevant to the generated prompt.
