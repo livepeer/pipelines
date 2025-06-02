@@ -1,4 +1,6 @@
-use crate::models::{Prompt, SubmitPromptRequest, SubmitPromptResponse, WsMessage};
+use crate::models::{
+    Prompt, RecentPromptItem, SubmitPromptRequest, SubmitPromptResponse, WsMessage,
+};
 use crate::state::AppState;
 use axum::{
     extract::{Json, Query, State},
@@ -8,7 +10,6 @@ use axum::{
 use serde::Deserialize;
 use std::sync::Arc;
 use tracing::info;
-use uuid::Uuid;
 
 #[derive(Deserialize)]
 pub struct PromptQuery {
@@ -28,22 +29,7 @@ pub async fn submit_prompt(
         return Err(StatusCode::BAD_REQUEST);
     }
 
-    // TODO: Add NSFW Filter
-
-    let was_censored = false;
-
-    let prompt = Prompt::new(
-        req.text,
-        if req.is_user {
-            "user".to_string()
-        } else {
-            "bot".to_string()
-        },
-        req.session_id,
-        req.seed,
-        req.stream_key.clone(),
-    );
-
+    let prompt = Prompt::new(req.text, req.stream_key.clone());
     let prompt_id = prompt.id.clone();
 
     let queue_position = state.redis.add_prompt_to_queue(prompt).await.map_err(|e| {
@@ -56,88 +42,28 @@ pub async fn submit_prompt(
         prompt_id, queue_position
     );
 
-    let queue_entries = state
-        .redis
-        .get_prompt_queue(&req.stream_key, 20)
-        .await
-        .map_err(|e| {
-            tracing::error!("Failed to get updated prompt queue: {}", e);
-            StatusCode::INTERNAL_SERVER_ERROR
-        })?;
-
-    let prompt_queue: Vec<serde_json::Value> = queue_entries
-        .iter()
-        .map(|entry| {
-            serde_json::json!({
-                "text": entry.prompt.content,
-                "seed": entry.prompt.avatar_seed,
-                "isUser": entry.prompt.submitted_by == "user",
-                "timestamp": entry.added_at.timestamp_millis(),
-                "sessionId": entry.prompt.session_id,
-                "streamKey": req.stream_key
+    if let Ok(recent_entries) = state.redis.get_recent_prompts(&req.stream_key, 20).await {
+        let recent_prompts: Vec<RecentPromptItem> = recent_entries
+            .iter()
+            .map(|entry| RecentPromptItem {
+                id: entry.prompt.id.clone(),
+                text: entry.prompt.content.clone(),
+                timestamp: entry.added_at.timestamp_millis(),
             })
-        })
-        .collect();
+            .collect();
 
-    // Get current state for broadcast
-    let current_prompt = state
-        .redis
-        .get_current_prompt(&req.stream_key)
-        .await
-        .ok()
-        .flatten();
+        let ws_msg = WsMessage::RecentPromptsUpdate {
+            recent_prompts,
+            stream_key: req.stream_key.clone(),
+        };
 
-    let displayed_prompts = if let Some(ref current) = current_prompt {
-        vec![current.prompt.content.clone()]
-    } else {
-        vec![]
-    };
-
-    let prompt_avatar_seeds: Vec<String> = if let Some(ref current) = current_prompt {
-        vec![current.prompt.avatar_seed.clone()]
-    } else {
-        vec![]
-    };
-
-    let user_prompt_indices: Vec<bool> = if let Some(ref current) = current_prompt {
-        vec![current.prompt.submitted_by == "user"]
-    } else {
-        vec![]
-    };
-
-    let prompt_session_ids: Vec<String> = if let Some(ref current) = current_prompt {
-        vec![current.prompt.session_id.clone()]
-    } else {
-        vec![]
-    };
-
-    let highlighted_since = if let Some(ref current) = current_prompt {
-        current.started_at.timestamp_millis()
-    } else {
-        0
-    };
-
-    let prompt_state = serde_json::json!({
-        "promptQueue": prompt_queue,
-        "displayedPrompts": displayed_prompts,
-        "promptAvatarSeeds": prompt_avatar_seeds,
-        "userPromptIndices": user_prompt_indices,
-        "promptSessionIds": prompt_session_ids,
-        "highlightedSince": highlighted_since,
-        "streamKey": req.stream_key,
-    });
-
-    let ws_msg = WsMessage::StateUpdate {
-        prompt_state,
-        stream_key: req.stream_key.clone(),
-    };
-
-    state.broadcast_message(ws_msg).await;
+        state.broadcast_message(ws_msg).await;
+    }
 
     Ok(Json(SubmitPromptResponse {
         id: prompt_id,
         message: "Prompt submitted successfully".to_string(),
-        was_censored,
+        queue_position,
     }))
 }
 
@@ -158,57 +84,27 @@ pub async fn get_prompt_state(
             StatusCode::INTERNAL_SERVER_ERROR
         })?;
 
-    let queue_entries = state
+    let recent_entries = state
         .redis
-        .get_prompt_queue(&params.stream_key, 20)
+        .get_recent_prompts(&params.stream_key, 20)
         .await
         .map_err(|e| {
-            tracing::error!("Failed to get prompt queue: {}", e);
+            tracing::error!("Failed to get recent prompts: {}", e);
             StatusCode::INTERNAL_SERVER_ERROR
         })?;
 
-    let prompt_queue: Vec<String> = queue_entries
+    let recent_prompts: Vec<RecentPromptItem> = recent_entries
         .iter()
-        .map(|entry| entry.prompt.content.clone())
+        .map(|entry| RecentPromptItem {
+            id: entry.prompt.id.clone(),
+            text: entry.prompt.content.clone(),
+            timestamp: entry.added_at.timestamp_millis(),
+        })
         .collect();
 
-    let displayed_prompts = if let Some(ref current) = current_prompt {
-        vec![current.prompt.content.clone()]
-    } else {
-        vec![]
-    };
-
-    let prompt_avatar_seeds: Vec<String> = if let Some(ref current) = current_prompt {
-        vec![current.prompt.avatar_seed.clone()]
-    } else {
-        vec![]
-    };
-
-    let user_prompt_indices: Vec<bool> = if let Some(ref current) = current_prompt {
-        vec![current.prompt.submitted_by == "user"]
-    } else {
-        vec![]
-    };
-
-    let prompt_session_ids: Vec<String> = if let Some(ref current) = current_prompt {
-        vec![current.prompt.session_id.clone()]
-    } else {
-        vec![]
-    };
-
-    let highlighted_since = if let Some(ref current) = current_prompt {
-        current.started_at.timestamp_millis()
-    } else {
-        0
-    };
-
     Ok(Json(serde_json::json!({
-        "promptQueue": prompt_queue,
-        "displayedPrompts": displayed_prompts,
-        "promptAvatarSeeds": prompt_avatar_seeds,
-        "userPromptIndices": user_prompt_indices,
-        "promptSessionIds": prompt_session_ids,
-        "highlightedSince": highlighted_since,
+        "currentPrompt": current_prompt,
+        "recentPrompts": recent_prompts,
         "streamKey": params.stream_key,
     })))
 }
@@ -237,14 +133,7 @@ pub async fn add_random_prompt(
     let random_index = rand::random::<usize>() % random_prompts.len();
     let prompt_text = random_prompts[random_index];
 
-    let prompt = Prompt::new(
-        prompt_text.to_string(),
-        "bot".to_string(),
-        format!("bot-{}", Uuid::new_v4()),
-        format!("bot-{}", rand::random::<u32>()),
-        params.stream_key.clone(),
-    );
-
+    let prompt = Prompt::new(prompt_text.to_string(), params.stream_key.clone());
     let prompt_id = prompt.id.clone();
 
     let queue_position = state.redis.add_prompt_to_queue(prompt).await.map_err(|e| {
@@ -257,82 +146,23 @@ pub async fn add_random_prompt(
         prompt_id, queue_position
     );
 
-    let queue_entries = state
-        .redis
-        .get_prompt_queue(&params.stream_key, 20)
-        .await
-        .map_err(|e| {
-            tracing::error!("Failed to get updated prompt queue: {}", e);
-            StatusCode::INTERNAL_SERVER_ERROR
-        })?;
-
-    let prompt_queue: Vec<serde_json::Value> = queue_entries
-        .iter()
-        .map(|entry| {
-            serde_json::json!({
-                "text": entry.prompt.content,
-                "seed": entry.prompt.avatar_seed,
-                "isUser": entry.prompt.submitted_by == "user",
-                "timestamp": entry.added_at.timestamp_millis(),
-                "sessionId": entry.prompt.session_id,
-                "streamKey": params.stream_key
+    if let Ok(recent_entries) = state.redis.get_recent_prompts(&params.stream_key, 20).await {
+        let recent_prompts: Vec<RecentPromptItem> = recent_entries
+            .iter()
+            .map(|entry| RecentPromptItem {
+                id: entry.prompt.id.clone(),
+                text: entry.prompt.content.clone(),
+                timestamp: entry.added_at.timestamp_millis(),
             })
-        })
-        .collect();
+            .collect();
 
-    let current_prompt = state
-        .redis
-        .get_current_prompt(&params.stream_key)
-        .await
-        .ok()
-        .flatten();
+        let ws_msg = WsMessage::RecentPromptsUpdate {
+            recent_prompts,
+            stream_key: params.stream_key.clone(),
+        };
 
-    let displayed_prompts = if let Some(ref current) = current_prompt {
-        vec![current.prompt.content.clone()]
-    } else {
-        vec![]
-    };
-
-    let prompt_avatar_seeds: Vec<String> = if let Some(ref current) = current_prompt {
-        vec![current.prompt.avatar_seed.clone()]
-    } else {
-        vec![]
-    };
-
-    let user_prompt_indices: Vec<bool> = if let Some(ref current) = current_prompt {
-        vec![current.prompt.submitted_by == "user"]
-    } else {
-        vec![]
-    };
-
-    let prompt_session_ids: Vec<String> = if let Some(ref current) = current_prompt {
-        vec![current.prompt.session_id.clone()]
-    } else {
-        vec![]
-    };
-
-    let highlighted_since = if let Some(ref current) = current_prompt {
-        current.started_at.timestamp_millis()
-    } else {
-        0
-    };
-
-    let prompt_state = serde_json::json!({
-        "promptQueue": prompt_queue,
-        "displayedPrompts": displayed_prompts,
-        "promptAvatarSeeds": prompt_avatar_seeds,
-        "userPromptIndices": user_prompt_indices,
-        "promptSessionIds": prompt_session_ids,
-        "highlightedSince": highlighted_since,
-        "streamKey": params.stream_key,
-    });
-
-    let ws_msg = WsMessage::StateUpdate {
-        prompt_state,
-        stream_key: params.stream_key.clone(),
-    };
-
-    state.broadcast_message(ws_msg).await;
+        state.broadcast_message(ws_msg).await;
+    }
 
     Ok(Json(serde_json::json!({
         "id": prompt_id,

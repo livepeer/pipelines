@@ -13,7 +13,6 @@ import {
   VideoSection,
   useMultiplayerStreamStore,
 } from "@/components/home/VideoSection";
-import { PromptPanel } from "@/components/home/PromptPanel";
 import { HeroSection } from "@/components/home/HeroSection";
 import { Footer } from "@/components/home/Footer";
 import track from "@/lib/track";
@@ -22,6 +21,7 @@ import useMount from "@/hooks/useMount";
 import { HeaderSection } from "@/components/home/HeaderSection";
 import { cn } from "@repo/design-system/lib/utils";
 import useMobileStore from "@/hooks/useMobileStore";
+import NewPromptPanel from "../NewPromptPanel";
 
 export default function MultiplayerHomepage({
   children,
@@ -48,38 +48,12 @@ export default function MultiplayerHomepage({
     });
   });
 
-  const {
-    value: prompt,
-    setValue: setPrompt,
-    handleChange: handlePromptChange,
-    handleSubmit: getHandleSubmit,
-    isThrottled,
-    throttleTimeLeft,
-  } = useThrottledInput();
-
-  const {
-    promptState,
-    loading,
-    error,
-    userAvatarSeed,
-    addToPromptQueue,
-    addRandomPrompt,
-  } = usePromptsApi(currentStream?.streamKey);
-
-  useRandomPromptApiTimer({
-    authenticated,
-    ready,
-    showContent,
-    addRandomPrompt,
-  });
-
   const redirectToCreate = () => {
     if (!authenticated) {
       setIsGuestUser(true);
     }
     let b64Prompt = btoa(
-      prompt ||
-        "((cubism)) tesseract ((flat colors)) --creativity 0.6 --quality 3",
+      "((cubism)) tesseract ((flat colors)) --creativity 0.6 --quality 3",
     );
     router.push(`/create?inputPrompt=${b64Prompt}`);
   };
@@ -95,29 +69,13 @@ export default function MultiplayerHomepage({
     }
   }, [ready]);
 
-  const handlePromptSubmit = getHandleSubmit(async value => {
-    if (!currentStream) return;
-
-    const sessionId = "optimistic-" + Date.now();
-    const optimisticPrompt: PromptItem = {
-      text: value,
-      seed: userAvatarSeed || "optimistic",
-      isUser: true,
-      timestamp: Date.now(),
-      sessionId,
-      streamKey: currentStream.streamKey,
-    };
-    setOptimisticPrompts(prev => [...prev, optimisticPrompt]);
-    const result = await addToPromptQueue(value, userAvatarSeed, true);
-    setOptimisticPrompts(prev => prev.filter(p => p.sessionId !== sessionId));
-
-    track("daydream_landing_page_prompt_submitted", {
-      is_authenticated: authenticated,
-      prompt: value,
-      nsfw: result.wasCensored || false,
-      stream_key: currentStream.streamKey,
-    });
-  });
+  //   track("daydream_landing_page_prompt_submitted", {
+  //     is_authenticated: authenticated,
+  //     prompt: value,
+  //     nsfw: result.wasCensored || false,
+  //     stream_key: currentStream.streamKey,
+  //   });
+  // });
 
   const handleButtonClick = () => {
     redirectToCreate();
@@ -131,11 +89,11 @@ export default function MultiplayerHomepage({
     setOptimisticPrompts([]);
   }, [currentStream?.streamKey]);
 
-  if (!ready || loading) {
+  if (!ready) {
     return <div className="flex items-center justify-center h-screen"></div>;
   }
 
-  if (!promptState && currentStream) {
+  if (!currentStream) {
     return (
       <div className="flex items-center justify-center h-screen">
         Loading prompt state...
@@ -156,6 +114,7 @@ export default function MultiplayerHomepage({
             className="fixed backdrop-blur-sm transition-all duration-1000 ease-in-out"
           />
         )}
+
         <div
           ref={containerRef}
           className="w-full h-full flex flex-col justify-start relative overflow-y-auto scrollbar-gutter-stable"
@@ -165,13 +124,7 @@ export default function MultiplayerHomepage({
               showContent ? "opacity-100 scale-100" : "opacity-0 scale-[0.98]"
             }`}
           >
-            <HeroSection
-              handlePromptSubmit={handlePromptSubmit}
-              promptValue={prompt}
-              setPromptValue={setPrompt}
-              submitPromptForm={submitPromptForm}
-              isAuthenticated={authenticated}
-            />
+            <HeroSection isAuthenticated={authenticated} />
             <div
               id="player"
               className={cn(
@@ -192,7 +145,9 @@ export default function MultiplayerHomepage({
                 )}
               >
                 <VideoSection />
-                <PromptPanel
+                <NewPromptPanel />
+
+                {/* <PromptPanel
                   promptQueue={
                     promptState
                       ? [
@@ -214,7 +169,7 @@ export default function MultiplayerHomepage({
                   throttleTimeLeft={throttleTimeLeft}
                   promptFormRef={promptFormRef}
                   isMobile={isMobile}
-                />
+                /> */}
               </div>
               <Footer isMobile={isMobile} />
             </div>

@@ -4,7 +4,6 @@ use std::env;
 pub struct Config {
     pub redis_url: String,
     pub server_port: u16,
-    pub max_chat_messages: usize,
     pub prompt_min_duration_secs: u64,
     pub stream_keys: Vec<String>,
     pub gateway_hosts: Vec<String>,
@@ -23,11 +22,6 @@ impl Config {
             .unwrap_or_else(|_| "8080".to_string())
             .parse::<u16>()
             .context("Failed to parse SERVER_PORT")?;
-
-        let max_chat_messages = env::var("MAX_CHAT_MESSAGES")
-            .unwrap_or_else(|_| "100".to_string())
-            .parse::<usize>()
-            .context("Failed to parse MAX_CHAT_MESSAGES")?;
 
         let prompt_min_duration_secs = env::var("PROMPT_MIN_DURATION_SECS")
             .unwrap_or_else(|_| "10".to_string())
@@ -65,7 +59,6 @@ impl Config {
         Ok(Config {
             redis_url,
             server_port,
-            max_chat_messages,
             prompt_min_duration_secs,
             stream_keys,
             gateway_hosts,

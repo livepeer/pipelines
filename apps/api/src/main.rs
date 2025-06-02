@@ -1,12 +1,13 @@
 use anyhow::Result;
 use axum::{
-    routing::{get, post, put},
     Router,
+    routing::{get, post, put},
 };
+use rand::seq::SliceRandom;
 use std::net::SocketAddr;
 use std::sync::Arc;
 use tower_http::cors::CorsLayer;
-use tracing::{info, error};
+use tracing::{error, info};
 
 mod config;
 mod handlers;
@@ -19,8 +20,11 @@ use handlers::{api, ws};
 use services::{prompt_manager, redis::RedisClient};
 use state::AppState;
 
-async fn initialize_redis_with_default_prompts(redis: &RedisClient, stream_keys: &[String]) -> Result<()> {
-    let initial_prompts = vec![
+async fn initialize_redis_with_default_prompts(
+    redis: &RedisClient,
+    stream_keys: &[String],
+) -> Result<()> {
+    let mut initial_prompts = vec![
         "cyberpunk cityscape with neon lights --quality 3",
         "underwater scene with ((bioluminescent)) creatures --creativity 0.8",
         "forest with magical creatures and (((glowing plants))) --quality 2",
@@ -47,31 +51,37 @@ async fn initialize_redis_with_default_prompts(redis: &RedisClient, stream_keys:
     ];
 
     use crate::models::Prompt;
-    use uuid::Uuid;
-    
+
     for stream_key in stream_keys {
         let queue_length = redis.get_queue_length(stream_key).await?;
         if queue_length == 0 {
-            info!("Initializing empty queue for stream {} with default prompts", stream_key);
-            
+            info!(
+                "Initializing empty queue for stream {} with default prompts",
+                stream_key
+            );
+
+            let mut rng = rand::thread_rng();
+            initial_prompts.shuffle(&mut rng);
+
             for prompt_text in &initial_prompts {
-                let prompt = Prompt::new(
-                    prompt_text.to_string(),
-                    "system".to_string(),
-                    format!("system-{}", Uuid::new_v4()),
-                    format!("bot-{}", rand::random::<u32>()),
-                    stream_key.clone(),
-                );
-                
+                let prompt = Prompt::new(prompt_text.to_string(), stream_key.clone());
+
                 redis.add_prompt_to_queue(prompt).await?;
             }
-            
-            info!("Added {} initial prompts to stream {}", initial_prompts.len(), stream_key);
+
+            info!(
+                "Added {} shuffled initial prompts to stream {}",
+                initial_prompts.len(),
+                stream_key
+            );
         } else {
-            info!("Stream {} already has {} prompts in queue", stream_key, queue_length);
+            info!(
+                "Stream {} already has {} prompts in queue",
+                stream_key, queue_length
+            );
         }
     }
-    
+
     Ok(())
 }
 
@@ -85,7 +95,8 @@ async fn main() -> Result<()> {
     let redis_client = RedisClient::new(&config.redis_url).await?;
     info!("Connected to Redis");
 
-    if let Err(e) = initialize_redis_with_default_prompts(&redis_client, &config.stream_keys).await {
+    if let Err(e) = initialize_redis_with_default_prompts(&redis_client, &config.stream_keys).await
+    {
         error!("Failed to initialize Redis with default prompts: {}", e);
     }
 
