@@ -24,6 +24,10 @@ export const useVideoClip = () => {
   const [progress, setProgress] = useState(0);
   const [clipUrl, setClipUrl] = useState<string | null>(null);
   const [clipFilename, setClipFilename] = useState<string | null>(null);
+  const [inputClipUrl, setInputClipUrl] = useState<string | null>(null);
+  const [inputClipFilename, setInputClipFilename] = useState<string | null>(
+    null,
+  );
   const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
   const [showClipModal, setShowClipModal] = useState(false);
   const [recordingMode, setRecordingMode] =
@@ -33,6 +37,7 @@ export const useVideoClip = () => {
 
   const [recordingResources, setRecordingResources] = useState<{
     mediaRecorder?: MediaRecorder;
+    inputMediaRecorder?: MediaRecorder;
     progressInterval?: NodeJS.Timeout;
     timeoutId?: NodeJS.Timeout;
     isDrawing?: boolean;
@@ -44,6 +49,11 @@ export const useVideoClip = () => {
       URL.revokeObjectURL(clipUrl);
       setClipUrl(null);
       setClipFilename(null);
+    }
+    if (inputClipUrl) {
+      URL.revokeObjectURL(inputClipUrl);
+      setInputClipUrl(null);
+      setInputClipFilename(null);
     }
   };
 
@@ -141,6 +151,7 @@ export const useVideoClip = () => {
 
     const {
       mediaRecorder,
+      inputMediaRecorder,
       progressInterval,
       timeoutId,
       isDrawing,
@@ -154,6 +165,10 @@ export const useVideoClip = () => {
 
     if (mediaRecorder && mediaRecorder.state !== "inactive") {
       mediaRecorder.stop();
+    }
+
+    if (inputMediaRecorder && inputMediaRecorder.state !== "inactive") {
+      inputMediaRecorder.stop();
     }
 
     setRecordingResources({});
@@ -203,10 +218,34 @@ export const useVideoClip = () => {
     const { mimeType, extension } = getSupportedVideoFormat();
     const mediaRecorder = new MediaRecorder(canvasStream, { mimeType });
 
+    // Always record the input video separately
+    const inputVideoStream = inputVideo.captureStream();
+    const inputMediaRecorder = new MediaRecorder(inputVideoStream, {
+      mimeType,
+    });
+
     const chunks: Blob[] = [];
+    const inputChunks: Blob[] = [];
+
     mediaRecorder.ondataavailable = e => {
       if (e.data.size > 0) {
         chunks.push(e.data);
+      }
+    };
+
+    inputMediaRecorder.ondataavailable = e => {
+      if (e.data.size > 0) {
+        inputChunks.push(e.data);
+      }
+    };
+
+    let recordingComplete = 0;
+    const checkComplete = () => {
+      recordingComplete++;
+      if (recordingComplete === 2) {
+        setShowClipModal(true);
+        setIsRecording(false);
+        setProgress(0);
       }
     };
 
@@ -217,13 +256,17 @@ export const useVideoClip = () => {
 
       setClipUrl(url);
       setClipFilename(filename);
-      setShowClipModal(true);
-      setIsRecording(false);
-      setProgress(0);
+      checkComplete();
+    };
 
-      /*toast("Clip created successfully", {
-        description: "Your clip is ready to preview",
-      });*/
+    inputMediaRecorder.onstop = () => {
+      const blob = new Blob(inputChunks, { type: mimeType });
+      const url = URL.createObjectURL(blob);
+      const filename = `daydream-input-clip-${new Date().toISOString()}.${extension}`;
+
+      setInputClipUrl(url);
+      setInputClipFilename(filename);
+      checkComplete();
     };
 
     let isDrawing = true;
@@ -383,6 +426,7 @@ export const useVideoClip = () => {
     setIsRecording(true);
     setProgress(0);
     mediaRecorder.start(1000);
+    inputMediaRecorder.start(1000);
     drawFrame();
 
     const startTime = Date.now();
@@ -402,10 +446,12 @@ export const useVideoClip = () => {
       cancelAnimationFrame(animationFrameId);
       clearInterval(progressInterval);
       mediaRecorder.stop();
+      inputMediaRecorder.stop();
     }, CLIP_DURATION);
 
     setRecordingResources({
       mediaRecorder,
+      inputMediaRecorder,
       progressInterval,
       timeoutId,
       isDrawing: true,
@@ -426,6 +472,8 @@ export const useVideoClip = () => {
     progress,
     clipUrl,
     clipFilename,
+    inputClipUrl,
+    inputClipFilename,
     thumbnailUrl,
     showClipModal,
     closeClipModal,

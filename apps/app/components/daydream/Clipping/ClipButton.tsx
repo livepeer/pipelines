@@ -53,6 +53,8 @@ export const ClipButton = ({
     progress,
     clipUrl,
     clipFilename,
+    inputClipUrl,
+    inputClipFilename,
     thumbnailUrl,
     showClipModal,
     closeClipModal,
@@ -145,6 +147,8 @@ export const ClipButton = ({
         onClose={closeClipModal}
         clipUrl={clipUrl}
         clipFilename={clipFilename}
+        inputClipUrl={inputClipUrl}
+        inputClipFilename={inputClipFilename}
         thumbnailUrl={thumbnailUrl}
         lastSubmittedPrompt={lastSubmittedPrompt}
         isGuestMode={isGuestMode}

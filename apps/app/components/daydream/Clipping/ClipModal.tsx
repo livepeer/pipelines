@@ -12,6 +12,8 @@ interface ClipModalProps {
   onClose: () => void;
   clipUrl: string | null;
   clipFilename: string | null;
+  inputClipUrl?: string | null;
+  inputClipFilename?: string | null;
   thumbnailUrl?: string | null;
   lastSubmittedPrompt?: string | null;
   isGuestMode?: boolean;
@@ -25,6 +27,8 @@ export function ClipModal({
   onClose,
   clipUrl,
   clipFilename,
+  inputClipUrl = null,
+  inputClipFilename = null,
   thumbnailUrl = null,
   lastSubmittedPrompt = null,
   isGuestMode = false,
@@ -35,6 +39,8 @@ export function ClipModal({
   const [clipData, setClipData] = useState<ClipData>({
     clipUrl: clipUrl || "",
     clipFilename: clipFilename || "",
+    inputClipUrl: inputClipUrl || undefined,
+    inputClipFilename: inputClipFilename || undefined,
     serverClipUrl: "",
     thumbnailUrl: thumbnailUrl || null,
     lastSubmittedPrompt: lastSubmittedPrompt || undefined,
@@ -48,12 +54,22 @@ export function ClipModal({
         ...state,
         clipUrl,
         clipFilename,
+        inputClipUrl: inputClipUrl || undefined,
+        inputClipFilename: inputClipFilename || undefined,
         thumbnailUrl,
         lastSubmittedPrompt: lastSubmittedPrompt || undefined,
         recordingMode,
       }));
     }
-  }, [clipUrl, clipFilename, thumbnailUrl, lastSubmittedPrompt, recordingMode]);
+  }, [
+    clipUrl,
+    clipFilename,
+    inputClipUrl,
+    inputClipFilename,
+    thumbnailUrl,
+    lastSubmittedPrompt,
+    recordingMode,
+  ]);
 
   const handleOpenChange = (open: boolean) => {
     if (!open && !isRotating) {
