@@ -1,15 +1,15 @@
-import { useMultiplayerStreamStore } from "@/components/home/VideoSection";
-import { usePromptQueue } from "./hooks/usePromptQueue";
-import { useMemo, useState, useRef, useEffect } from "react";
-import { Flame, ArrowRight } from "lucide-react";
 import { TrackedButton } from "@/components/analytics/TrackedButton";
-import { cn } from "@repo/design-system/lib/utils";
+import { useMultiplayerStreamStore } from "@/components/home/VideoSection";
 import {
-  useValidateInput,
   MAX_PROMPT_LENGTH,
+  useValidateInput,
 } from "@/components/welcome/featured/useValidateInput";
-import { Textarea } from "@repo/design-system/components/ui/textarea";
 import useMobileStore from "@/hooks/useMobileStore";
+import { Textarea } from "@repo/design-system/components/ui/textarea";
+import { cn } from "@repo/design-system/lib/utils";
+import { ArrowRight, Flame } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { usePromptQueue } from "./hooks/usePromptQueue";
 
 const allTrendingPrompts = [
   {

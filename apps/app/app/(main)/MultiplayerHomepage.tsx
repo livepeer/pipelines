@@ -1,26 +1,23 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState, useRef } from "react";
-import { usePrivy } from "@/hooks/usePrivy";
-import { useGuestUserStore } from "@/hooks/useGuestUser";
-import useCloudAnimation from "@/hooks/useCloudAnimation";
-import { usePromptsApi } from "@/hooks/usePromptsApi";
-import { useThrottledInput } from "@/hooks/useThrottledInput";
-import { useRandomPromptApiTimer } from "@/hooks/useRandomPromptApiTimer";
+import { PromptItem } from "@/app/api/prompts/types";
 import { CloudBackground } from "@/components/home/CloudBackground";
+import { Footer } from "@/components/home/Footer";
+import { HeaderSection } from "@/components/home/HeaderSection";
+import { HeroSection } from "@/components/home/HeroSection";
 import {
   VideoSection,
   useMultiplayerStreamStore,
 } from "@/components/home/VideoSection";
-import { HeroSection } from "@/components/home/HeroSection";
-import { Footer } from "@/components/home/Footer";
-import track from "@/lib/track";
-import { PromptItem } from "@/app/api/prompts/types";
-import useMount from "@/hooks/useMount";
-import { HeaderSection } from "@/components/home/HeaderSection";
-import { cn } from "@repo/design-system/lib/utils";
+import useCloudAnimation from "@/hooks/useCloudAnimation";
+import { useGuestUserStore } from "@/hooks/useGuestUser";
 import useMobileStore from "@/hooks/useMobileStore";
+import useMount from "@/hooks/useMount";
+import { usePrivy } from "@/hooks/usePrivy";
+import track from "@/lib/track";
+import { cn } from "@repo/design-system/lib/utils";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import NewPromptPanel from "../NewPromptPanel";
 
 export default function MultiplayerHomepage({
