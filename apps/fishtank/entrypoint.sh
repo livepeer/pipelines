@@ -1,6 +1,6 @@
 #!/bin/bash
 
-STREAM_URL="https://some-s3-bucket/index.m3u8"
+STREAM_URL="https://storage.googleapis.com/thom-vod-testing/fishtank_director.mp4"
 RTMP_TARGET="rtmp://ai.livepeer.com/stk_*****"
 
 while true; do
