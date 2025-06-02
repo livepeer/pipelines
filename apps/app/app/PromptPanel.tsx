@@ -43,20 +43,13 @@ const allTrendingPrompts = [
   },
 ];
 
-export default function NewPromptPanel() {
+export default function PromptPanel() {
   const { isMobile } = useMobileStore();
   const { currentStream } = useMultiplayerStreamStore();
   const [promptValue, setPromptValue] = useState("");
 
-  const {
-    currentPrompt,
-    recentPrompts,
-    isSubmitting,
-    wsRef,
-    getHighlightedIndex,
-    submitPrompt,
-    addRandomPrompt,
-  } = usePromptQueue(currentStream?.streamKey);
+  const { currentPrompt, recentPrompts, isSubmitting, submitPrompt } =
+    usePromptQueue(currentStream?.streamKey);
 
   const trendingPrompts = useMemo(() => {
     const shuffled = [...allTrendingPrompts].sort(() => Math.random() - 0.5);

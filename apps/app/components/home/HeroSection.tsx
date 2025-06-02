@@ -7,12 +7,9 @@ import { cn } from "@repo/design-system/lib/utils";
 import { getIframeUrl, useMultiplayerStreamStore } from "./VideoSection";
 import useMobileStore from "@/hooks/useMobileStore";
 import { usePromptQueue } from "@/app/hooks/usePromptQueue";
+import { usePrivy } from "@/hooks/usePrivy";
 
-interface HeroSectionProps {
-  isAuthenticated?: boolean;
-}
-
-export const HeroSection = ({ isAuthenticated = false }: HeroSectionProps) => {
+export const HeroSection = () => {
   const router = useRouter();
   const [localPrompt, setLocalPrompt] = useState("");
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
@@ -24,6 +21,7 @@ export const HeroSection = ({ isAuthenticated = false }: HeroSectionProps) => {
   const { submitPrompt, isSubmitting } = usePromptQueue(
     currentStream?.streamKey,
   );
+  const { authenticated } = usePrivy();
 
   const placeholders = [
     "an art style",
@@ -119,7 +117,7 @@ export const HeroSection = ({ isAuthenticated = false }: HeroSectionProps) => {
             variant="default"
             className={cn("px-8 py-2 h-10 rounded-lg")}
           >
-            {isAuthenticated ? "Create" : "Sign in"}
+            {authenticated ? "Create" : "Sign in"}
           </TrackedButton>
         </div>
       </header>

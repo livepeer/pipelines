@@ -1,4 +1,6 @@
-import { useState, useEffect, useRef } from "react";
+import track from "@/lib/track";
+import { usePrivy } from "@privy-io/react-auth";
+import { useEffect, useRef, useState } from "react";
 
 export interface CurrentPrompt {
   prompt: {
@@ -24,6 +26,7 @@ export function usePromptQueue(streamKey: string | undefined) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const wsRef = useRef<WebSocket | null>(null);
   const currentStreamKeyRef = useRef<string | undefined>(streamKey);
+  const { authenticated } = usePrivy();
 
   useEffect(() => {
     if (currentStreamKeyRef.current !== streamKey) {
@@ -172,6 +175,13 @@ export function usePromptQueue(streamKey: string | undefined) {
       }
 
       const result = await response.json();
+
+      track("daydream_landing_page_prompt_submitted", {
+        is_authenticated: authenticated,
+        prompt: text,
+        nsfw: result?.wasCensored || false,
+        stream_key: streamKey,
+      });
 
       return true;
     } catch (error) {

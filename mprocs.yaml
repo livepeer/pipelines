@@ -1,0 +1,21 @@
+procs:
+  api:
+    shell: "cd apps/api && cargo watch -x run"
+    autostart: false
+    stop:
+      "send-keys": ["<C-c>"]
+  web:
+    shell: "cd apps/app && pnpm dev"
+    autostart: false
+    stop:
+      "send-keys": ["<C-c>"]
+  redis:
+    shell: "docker compose -f docker-compose.dev.yaml up redis"
+    autostart: false
+    stop:
+      "send-keys": ["<C-c>"]
+  clear-cache:
+    shell: "docker compose -f docker-compose.dev.yml exec redis redis-cli flushall"
+    autostart: false
+    stop:
+      "send-keys": ["<C-c>"]

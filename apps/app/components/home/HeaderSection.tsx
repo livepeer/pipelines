@@ -1,5 +1,7 @@
 import { TrackedButton } from "@/components/analytics/TrackedButton";
+import { useGuestUserStore } from "@/hooks/useGuestUser";
 import useMobileStore from "@/hooks/useMobileStore";
+import { usePrivy } from "@/hooks/usePrivy";
 import { DiscordLogoIcon } from "@radix-ui/react-icons";
 import { Separator } from "@repo/design-system/components/ui/separator";
 import { cn } from "@repo/design-system/lib/utils";
@@ -7,25 +9,33 @@ import { AnimatePresence, motion } from "framer-motion";
 import {
   Camera,
   Menu,
-  X,
   SquareDashedBottomCode,
   Workflow,
+  X,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-export const HeaderSection = ({
-  onTryCameraClick,
-  className,
-}: {
-  onTryCameraClick: () => void;
-  className?: string;
-}) => {
+export const HeaderSection = ({ className }: { className?: string }) => {
   const { isMobile } = useMobileStore();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { authenticated } = usePrivy();
+  const { isGuestUser, setIsGuestUser } = useGuestUserStore();
+  const router = useRouter();
 
   const handleJoinDiscordClick = () => {
     window.open("https://discord.gg/5sZu8xmn6U", "_blank");
     setIsMenuOpen(false);
+  };
+
+  const onTryCameraClick = () => {
+    if (!authenticated) {
+      setIsGuestUser(true);
+    }
+    let b64Prompt = btoa(
+      "((cubism)) tesseract ((flat colors)) --creativity 0.6 --quality 3",
+    );
+    router.push(`/create?inputPrompt=${b64Prompt}`);
   };
 
   const handleCreateClick = () => {
