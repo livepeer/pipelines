@@ -10,6 +10,7 @@ import { useCapacityCheck } from "@/hooks/useCapacityCheck";
 import { useGatewayHost } from "@/hooks/useGatewayHost";
 import { usePrivy } from "@/hooks/usePrivy";
 import { usePromptStore } from "@/hooks/usePromptStore";
+import useMobileStore from "@/hooks/useMobileStore";
 import { getAppConfig } from "@/lib/env";
 import track from "@/lib/track";
 import { usePathname, useSearchParams } from "next/navigation";
@@ -21,6 +22,8 @@ import { useStreamStatus } from "./useStreamStatus";
 import { usePlayerStore } from "@/components/welcome/featured/player";
 
 export const DEFAULT_PIPELINE_ID = "pip_DRQREDnSei4HQyC8"; // Staging Dreamshaper ID
+export const DEFAULT_MOBILE_PIPELINE_ID =
+  "pip_00527Gdb247b202591d-classic-portrait"; // Default Mobile Pipeline ID
 export const DUMMY_USER_ID_FOR_NON_AUTHENTICATED_USERS =
   "did:privy:cm4x2cuiw007lh8fcj34919fu"; // Infra Email User ID
 
@@ -186,6 +189,7 @@ interface DreamshaperStore {
   sharedParamsApplied: boolean;
   sharedPrompt: string | null;
   errorState: boolean;
+  initialIsMobile: boolean | null;
 
   setLoading: (loading: boolean) => void;
   setUpdating: (updating: boolean) => void;
@@ -195,6 +199,7 @@ interface DreamshaperStore {
   setSharedParamsApplied: (applied: boolean) => void;
   setSharedPrompt: (prompt: string | null) => void;
   setErrorState: (error: boolean) => void;
+  setInitialIsMobile: (isMobile: boolean | null) => void;
 
   reset: () => void;
 }
@@ -208,6 +213,7 @@ const initialState = {
   sharedParamsApplied: false,
   sharedPrompt: null,
   errorState: false,
+  initialIsMobile: null,
 };
 
 export const useDreamshaperStore = create<DreamshaperStore>(set => ({
@@ -221,6 +227,7 @@ export const useDreamshaperStore = create<DreamshaperStore>(set => ({
   setSharedParamsApplied: applied => set({ sharedParamsApplied: applied }),
   setSharedPrompt: prompt => set({ sharedPrompt: prompt }),
   setErrorState: error => set({ errorState: error }),
+  setInitialIsMobile: initialIsMobile => set({ initialIsMobile }),
 
   reset: () => set(initialState),
 }));
@@ -455,7 +462,8 @@ export function useParamsHandling() {
 
 export function useStreamUpdates() {
   const searchParams = useSearchParams();
-  const { stream, pipeline, setUpdating } = useDreamshaperStore();
+  const { stream, pipeline, setUpdating, initialIsMobile } =
+    useDreamshaperStore();
   const { incrementPromptVersion } = usePromptVersionStore();
 
   const handleStreamUpdate = useCallback(
@@ -518,6 +526,33 @@ export function useStreamUpdates() {
           }
 
           updatedInputValues.prompt["5"].inputs.text = cleanedPrompt;
+        }
+
+        if (initialIsMobile) {
+          if (!updatedInputValues.prompt["16"]) {
+            updatedInputValues.prompt["16"] = { inputs: {} };
+          }
+          if (!updatedInputValues.prompt["16"].inputs) {
+            updatedInputValues.prompt["16"].inputs = {};
+          }
+
+          updatedInputValues.prompt["16"].inputs.width = 384;
+          updatedInputValues.prompt["16"].inputs.height = 704;
+          updatedInputValues.prompt["16"].inputs.batch_size = 1;
+
+          if (commands["width"]) {
+            const widthValue = parseFloat(commands["width"]);
+            if (!isNaN(widthValue) && widthValue > 0) {
+              updatedInputValues.prompt["16"].inputs.width = widthValue;
+            }
+          }
+
+          if (commands["height"]) {
+            const heightValue = parseFloat(commands["height"]);
+            if (!isNaN(heightValue) && heightValue > 0) {
+              updatedInputValues.prompt["16"].inputs.height = heightValue;
+            }
+          }
         }
 
         if (
@@ -614,7 +649,7 @@ export function useStreamUpdates() {
         setUpdating(false);
       }
     },
-    [stream, setUpdating],
+    [stream, setUpdating, initialIsMobile],
   );
 
   return { handleStreamUpdate };
@@ -625,14 +660,30 @@ export function useInitialization() {
   const { user, ready } = usePrivy();
   const searchParams = useSearchParams();
   const pathname = usePathname();
+  const { isMobile } = useMobileStore();
 
-  const { stream, setStreamUrl, setLoading, setStream, setPipeline } =
-    useDreamshaperStore();
+  const {
+    stream,
+    setStreamUrl,
+    setLoading,
+    setStream,
+    setPipeline,
+    initialIsMobile,
+    setInitialIsMobile,
+  } = useDreamshaperStore();
+
+  useEffect(() => {
+    if (initialIsMobile === null) {
+      setInitialIsMobile(isMobile);
+    }
+  }, [isMobile, initialIsMobile, setInitialIsMobile]);
 
   const pipelineId =
     searchParams.get("pipeline_id") ||
-    process.env.NEXT_PUBLIC_SHOWCASE_PIPELINE_ID ||
-    DEFAULT_PIPELINE_ID;
+    (initialIsMobile
+      ? process.env.NEXT_PUBLIC_SHOWCASE_MOBILE_PIPELINE_ID ||
+        DEFAULT_MOBILE_PIPELINE_ID
+      : process.env.NEXT_PUBLIC_SHOWCASE_PIPELINE_ID || DEFAULT_PIPELINE_ID);
 
   useEffect(() => {
     // Skip initialization entirely if we don't have capacity
@@ -646,6 +697,8 @@ export function useInitialization() {
     }
 
     if (!ready) return;
+
+    if (initialIsMobile === null) return;
 
     let isMounted = true;
 
@@ -720,7 +773,19 @@ export function useInitialization() {
     return () => {
       isMounted = false;
     };
-  }, [pathname, ready, user, searchParams, capacityLoading, hasCapacity]);
+  }, [
+    pathname,
+    ready,
+    user,
+    searchParams,
+    capacityLoading,
+    hasCapacity,
+    initialIsMobile,
+    pipelineId,
+    setLoading,
+    setStream,
+    setPipeline,
+  ]);
 
   useEffect(() => {
     if (!stream || !stream.stream_key) {
