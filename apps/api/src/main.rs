@@ -53,10 +53,10 @@ async fn initialize_redis_with_default_prompts(
     use crate::models::Prompt;
 
     for stream_key in stream_keys {
-        let queue_length = redis.get_queue_length(stream_key).await?;
-        if queue_length == 0 {
+        let recent_prompts = redis.get_recent_prompts(stream_key, 1).await?;
+        if recent_prompts.is_empty() {
             info!(
-                "Initializing empty queue for stream {} with default prompts",
+                "No chat history found for stream {}, initializing with default prompts",
                 stream_key
             );
 
@@ -75,10 +75,7 @@ async fn initialize_redis_with_default_prompts(
                 stream_key
             );
         } else {
-            info!(
-                "Stream {} already has {} prompts in queue",
-                stream_key, queue_length
-            );
+            info!("Stream {} already has chat history", stream_key);
         }
     }
 

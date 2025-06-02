@@ -8,10 +8,12 @@ use std::sync::Arc;
 use tokio::time;
 use tracing::{error, info};
 
+
+
 pub async fn run(state: Arc<AppState>) -> Result<()> {
     info!("Prompt manager started");
 
-    let mut interval = time::interval(time::Duration::from_secs(2));
+    let mut interval = time::interval(time::Duration::from_secs(1));
     let failure_tracker: Arc<DashMap<String, DateTime<Utc>>> = Arc::new(DashMap::new());
 
     loop {
