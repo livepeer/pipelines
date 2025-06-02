@@ -8,6 +8,7 @@ anyhow = "1.0.98"
 axum = { version = "0.8.4", features = ["ws"] }
 base64 = "0.22.1"
 chrono = { version = "0.4.41", features = ["serde"] }
+dashmap = "6.1.0"
 dotenvy = "0.15.7"
 futures = "0.3.31"
 rand = "0.8"

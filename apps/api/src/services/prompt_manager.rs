@@ -2,7 +2,8 @@ use crate::models::WsMessage;
 use crate::services::stream_api;
 use crate::state::AppState;
 use anyhow::Result;
-use chrono::{Duration, Utc};
+use chrono::{DateTime, Duration, Utc};
+use dashmap::DashMap;
 use std::sync::Arc;
 use tokio::time;
 use tracing::{error, info};
@@ -11,19 +12,32 @@ pub async fn run(state: Arc<AppState>) -> Result<()> {
     info!("Prompt manager started");
 
     let mut interval = time::interval(time::Duration::from_secs(2));
+    let failure_tracker: Arc<DashMap<String, DateTime<Utc>>> = Arc::new(DashMap::new());
 
     loop {
         interval.tick().await;
 
         for stream_key in &state.config.stream_keys {
+            {
+                if let Some(last_failure_entry) = failure_tracker.get(stream_key) {
+                    let last_failure = *last_failure_entry;
+                    let cooldown_duration = Duration::seconds(20);
+                    if Utc::now() - last_failure < cooldown_duration {
+                        continue;
+                    }
+                }
+            }
+
             match check_and_update_prompt(&state, stream_key).await {
                 Ok(updated) => {
                     if updated {
                         info!("Prompt updated for stream: {}", stream_key);
                     }
+                    failure_tracker.remove(stream_key);
                 }
                 Err(e) => {
                     error!("Error in prompt manager for stream {}: {}", stream_key, e);
+                    failure_tracker.insert(stream_key.to_string(), Utc::now());
                 }
             }
         }

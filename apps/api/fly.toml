@@ -16,52 +16,14 @@ primary_region = "fra"
   auto_stop_machines = false
   auto_start_machines = true
   min_machines_running = 1
+  max_machines_running = 1
   
   [http_service.concurrency]
     type = "connections"
     hard_limit = 500
     soft_limit = 250
 
-[[services]]
-  protocol = "tcp"
-  internal_port = 8080
-  processes = ["app"]
-
-  [[services.ports]]
-    port = 80
-    handlers = ["http"]
-    force_https = true
-
-  [[services.ports]]
-    port = 443
-    handlers = ["tls", "http"]
-
-  [services.concurrency]
-    type = "connections"
-    hard_limit = 500
-    soft_limit = 250
-
-  [[services.tcp_checks]]
-    interval = "15s"
-    timeout = "2s"
-    grace_period = "5s"
-
-  [[services.http_checks]]
-    interval = "30s"
-    timeout = "2s"
-    grace_period = "5s"
-    method = "get"
-    path = "/health"
-    protocol = "http"
-    tls_skip_verify = false
-
 [[vm]]
   cpu_kind = "performance"
   cpus = 2
   memory_mb = 4096
-
-[processes]
-  app = "./api"
-
-[restart]
-  policy = "on-failure"
