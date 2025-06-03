@@ -121,7 +121,7 @@ export const PromptForm = forwardRef<HTMLFormElement, PromptFormProps>(
               profanity || exceedsMaxLength ? "border-red-500" : ""
             } ${
               highlight
-                ? "animate-attention-pulse border-blue-400 animate-glow-pulse"
+                ? "border-blue-400 animate-glow-pulse transition-all duration-300"
                 : ""
             }`}
             value={value}
@@ -142,9 +142,9 @@ export const PromptForm = forwardRef<HTMLFormElement, PromptFormProps>(
           >
             <button
               type="submit"
-              className={`bg-black text-white rounded-full ${isMobile ? "w-8 h-8" : "w-10 h-10"} flex items-center justify-center ${
+              className={`bg-black text-white rounded-full ${isMobile ? "w-8 h-8" : "w-10 h-10"} flex items-center justify-center transition-all duration-300 ${
                 highlight
-                  ? "animate-wiggle ring-2 ring-blue-400 ring-offset-2"
+                  ? "ring-2 ring-blue-400 ring-offset-2 transform scale-110"
                   : ""
               }`}
               disabled={
@@ -155,7 +155,9 @@ export const PromptForm = forwardRef<HTMLFormElement, PromptFormProps>(
                 exceedsMaxLength
               }
             >
-              <ArrowRight className={`${isMobile ? "h-4 w-4" : "h-5 w-5"}`} />
+              <ArrowRight
+                className={`${isMobile ? "h-4 w-4" : "h-5 w-5"} ${highlight ? "animate-wiggle" : ""}`}
+              />
             </button>
           </div>
         </div>

@@ -147,11 +147,20 @@ export function PromptPanel({
     setPromptValue(prompt);
     // Add highlight effect when a trending prompt is clicked
     setHighlightInput(true);
+  };
 
-    // Reset the highlight effect after animation completes
-    setTimeout(() => {
-      setHighlightInput(false);
-    }, 2400); // Increased time to match our animations
+  // Clear highlight on prompt change
+  const handlePromptChangeWithReset = (
+    e: React.ChangeEvent<HTMLTextAreaElement>,
+  ) => {
+    setHighlightInput(false);
+    onPromptChange(e);
+  };
+
+  // Clear highlight on submit
+  const handleSubmitWithReset = (e: React.FormEvent<HTMLFormElement>) => {
+    setHighlightInput(false);
+    onSubmit(e);
   };
 
   const isSafari = /^((?!chrome|android|crios|fxios).)*safari/i.test(
@@ -281,9 +290,9 @@ export function PromptPanel({
 
         <PromptForm
           ref={promptFormRef}
-          onSubmit={onSubmit}
+          onSubmit={handleSubmitWithReset}
           value={promptValue}
-          onChange={onPromptChange}
+          onChange={handlePromptChangeWithReset}
           isThrottled={isThrottled}
           throttleTimeLeft={throttleTimeLeft}
           isMobile={isMobile}
