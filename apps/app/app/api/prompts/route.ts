@@ -13,15 +13,29 @@ const ERROR_MESSAGES = {
   QUEUE_FULL: "Queue is full, try again later",
 } as const;
 
+const ALLOWED_HOSTS = JSON.parse(
+  process.env.MULTIPLAYER_PROMPT_ENDPOINT_WHITELIST ?? "[]",
+);
+
 function createErrorResponse(status: number, message: unknown) {
   return NextResponse.json({ success: false, error: message }, { status });
 }
 
+function isAllowedHost(request: NextRequest) {
+  const requestHost = request.headers.get("host");
+  const serverHost = process.env.VERCEL_ENV;
+  return serverHost
+    ? [...ALLOWED_HOSTS, serverHost].includes(requestHost ?? "")
+    : ALLOWED_HOSTS.includes(requestHost ?? "");
+}
+
 export async function GET(request: NextRequest) {
   try {
-    const user = await getPrivyUser();
-    if (!user) {
-      return createErrorResponse(401, ERROR_MESSAGES.UNAUTHORIZED);
+    if (!isAllowedHost(request)) {
+      const user = await getPrivyUser();
+      if (!user) {
+        return createErrorResponse(401, ERROR_MESSAGES.UNAUTHORIZED);
+      }
     }
 
     const searchParams = request.nextUrl.searchParams;
@@ -41,9 +55,11 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const user = await getPrivyUser();
-    if (!user) {
-      return createErrorResponse(401, ERROR_MESSAGES.UNAUTHORIZED);
+    if (!isAllowedHost(request)) {
+      const user = await getPrivyUser();
+      if (!user) {
+        return createErrorResponse(401, ERROR_MESSAGES.UNAUTHORIZED);
+      }
     }
 
     const body = await request.json();
@@ -118,9 +134,11 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    const user = await getPrivyUser();
-    if (!user) {
-      return createErrorResponse(401, ERROR_MESSAGES.UNAUTHORIZED);
+    if (!isAllowedHost(request)) {
+      const user = await getPrivyUser();
+      if (!user) {
+        return createErrorResponse(401, ERROR_MESSAGES.UNAUTHORIZED);
+      }
     }
 
     const searchParams = request.nextUrl.searchParams;

@@ -1,7 +1,6 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { PromptState, AddPromptRequest } from "@/app/api/prompts/types";
 import { toast } from "sonner";
-import { getAccessToken } from "@privy-io/react-auth";
 
 const POLLING_INTERVAL = 3000; // Poll every 3 seconds
 const SESSION_ID_KEY = "prompt_session_id";
@@ -25,9 +24,6 @@ export function usePromptsApi(streamKey?: string) {
     }
     return "";
   });
-  const accessToken = useMemo(() => {
-    return getAccessToken();
-  }, []);
 
   const fetchPromptState = useCallback(async () => {
     if (!streamKey) {
@@ -38,12 +34,6 @@ export function usePromptsApi(streamKey?: string) {
     try {
       const response = await fetch(
         `/api/prompts?streamKey=${encodeURIComponent(streamKey)}`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        },
       );
       if (!response.ok) {
         throw new Error(`Error fetching prompts: ${response.statusText}`);
@@ -92,7 +82,6 @@ export function usePromptsApi(streamKey?: string) {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`,
           },
           body: JSON.stringify(payload),
         });
@@ -133,9 +122,6 @@ export function usePromptsApi(streamKey?: string) {
         `/api/prompts?streamKey=${encodeURIComponent(streamKey)}`,
         {
           method: "PUT",
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
         },
       );
 
