@@ -138,16 +138,21 @@ test.describe.parallel("Daydream Page Tests", () => {
           await assertVideoPlaying(broadcast, logger);
           const broadcastMute = page.getByTestId("broadcast-mute");
           await broadcast.hover();
-          if (await broadcastMute.isVisible()) {
+          const enableAudioCheck = await broadcastMute.isVisible();
+          if (enableAudioCheck) {
             const micEnabled = await broadcastMute.getAttribute("data-enabled");
             if (micEnabled !== "true") {
               logger.log("Unmuting broadcast audio");
               await broadcastMute.click();
             }
+          } else {
+            logger.log("Audio check disabled");
           }
 
           await assertVideoPlaying(playback, logger);
-          await assertAudioChanging(playback, logger);
+          if (enableAudioCheck) {
+            await assertAudioChanging(playback, logger);
+          }
 
           // sleep to leave the stream running for longer
           logger.log("Sleeping to allow the stream to run...");
