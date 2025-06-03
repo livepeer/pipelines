@@ -1,10 +1,13 @@
 import Daydream from "@/components/daydream";
 import track from "@/lib/track";
-import { identifyTikTokInAppBrowser } from "@/lib/userAgentIdentify";
+import {
+  identifyTikTokInAppBrowser,
+  identifyInstagramInAppBrowser,
+} from "@/lib/userAgentIdentify";
 import { headers } from "next/headers";
 import { cache } from "react";
 import { getSharedParams } from "../api/streams/share-params";
-import TikTokFallback from "./TikTokFallback";
+import BrowserFallback from "./BrowserFallback";
 
 const getCachedSharedParams = cache(async (shareParamsId: string) => {
   const { data: sharedParams } = await getSharedParams(shareParamsId);
@@ -50,9 +53,16 @@ export default async function HomePage({
   const { shared, privy_oauth_code, inputPrompt } = searchParams;
   const isGuestAccess = !!inputPrompt; // If there's an inputPrompt, the user is coming from "Try this prompt"
 
-  if (userAgent && identifyTikTokInAppBrowser(userAgent)) {
-    track("tiktok_browser_fallback_shown");
-    return <TikTokFallback />;
+  if (userAgent) {
+    if (identifyTikTokInAppBrowser(userAgent)) {
+      track("tiktok_browser_fallback_shown");
+      return <BrowserFallback platform="tiktok" />;
+    }
+
+    if (identifyInstagramInAppBrowser(userAgent)) {
+      track("instagram_browser_fallback_shown");
+      return <BrowserFallback platform="instagram" />;
+    }
   }
 
   return (
