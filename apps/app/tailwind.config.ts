@@ -37,6 +37,20 @@ const config: Config = {
             boxShadow: "0 0 2px 1px rgba(59, 130, 246, 0.2)",
           },
         },
+        zoomToInput: {
+          "0%": {
+            opacity: "1",
+            transform: "scale(1) translate(0, 0)",
+          },
+          "60%": {
+            opacity: "0.7",
+            transform: "scale(0.8) translate(0, 80%)",
+          },
+          "100%": {
+            opacity: "0",
+            transform: "scale(0.5) translate(0, 150%)",
+          },
+        },
       },
       animation: {
         blink: "blink 1s step-end infinite",
@@ -45,6 +59,7 @@ const config: Config = {
         "shimmer-slow": "shimmer 3s linear infinite",
         "attention-pulse": "pulse 3s ease-in-out infinite",
         "highlight-effect": "pulseAndGlow 3s ease-in-out infinite",
+        "zoom-to-input": "zoomToInput 0.8s forwards ease-in-out",
       },
     },
   },

@@ -1,4 +1,4 @@
-import React, { RefObject, useMemo, useState, useEffect } from "react";
+import React, { RefObject, useMemo, useState, useEffect, useRef } from "react";
 import { Camera, Flame, TrendingUp } from "lucide-react";
 import { DiscordLogoIcon } from "@radix-ui/react-icons";
 import { PromptForm } from "./PromptForm";
@@ -132,6 +132,13 @@ export function PromptPanel({
   isMobile = false,
 }: PromptPanelProps) {
   const [highlightInput, setHighlightInput] = useState(false);
+  const [animationActive, setAnimationActive] = useState(false);
+  const [animationPosition, setAnimationPosition] = useState({
+    top: 0,
+    left: 0,
+    width: 0,
+    text: "",
+  });
 
   const handlePastPromptClick = (prompt: string) => {
     setPromptValue(prompt);
@@ -143,15 +150,39 @@ export function PromptPanel({
     return shuffled.slice(0, 3);
   }, []);
 
-  const handleTrendingPromptClick = (prompt: string) => {
+  const handleTrendingPromptClick = (
+    prompt: string,
+    index: number,
+    event: React.MouseEvent<HTMLButtonElement>,
+  ) => {
     setPromptValue(prompt);
     // Add highlight effect when a trending prompt is clicked
     setHighlightInput(true);
+
+    // Get position of clicked button for animation
+    const button = event.currentTarget;
+    const rect = button.getBoundingClientRect();
+
+    // Set animation properties based on the button position
+    setAnimationPosition({
+      top: rect.top,
+      left: rect.left,
+      width: rect.width,
+      text: button.innerText,
+    });
+
+    // Start animation
+    setAnimationActive(true);
 
     // Clear highlight after 5 seconds
     setTimeout(() => {
       setHighlightInput(false);
     }, 5000);
+
+    // End animation
+    setTimeout(() => {
+      setAnimationActive(false);
+    }, 800);
   };
 
   // Clear highlight on prompt change
@@ -181,6 +212,20 @@ export function PromptPanel({
         isMobile && isSafari && "pb-16",
       )}
     >
+      {/* Animation element */}
+      {animationActive && (
+        <div
+          className="fixed pointer-events-none z-50 animate-zoom-to-input flex items-center justify-center bg-blue-100 text-xs rounded-full px-2 py-1 whitespace-nowrap overflow-hidden border border-blue-300"
+          style={{
+            top: `${animationPosition.top}px`,
+            left: `${animationPosition.left}px`,
+            width: `${animationPosition.width}px`,
+          }}
+        >
+          <span className="truncate">{animationPosition.text}</span>
+        </div>
+      )}
+
       {/* Trending prompts section - completely separate box */}
       {!isMobile && (
         <div className="w-full mb-3">
@@ -202,7 +247,9 @@ export function PromptPanel({
                   variant="outline"
                   size="sm"
                   className="alwaysAnimatedButton rounded-md text-xs flex-1 min-w-0"
-                  onClick={() => handleTrendingPromptClick(item.prompt)}
+                  onClick={e =>
+                    handleTrendingPromptClick(item.prompt, index, e)
+                  }
                   trackingEvent="trending_prompt_clicked"
                   trackingProperties={{
                     prompt: item.prompt,
@@ -280,7 +327,7 @@ export function PromptPanel({
               variant="outline"
               size="sm"
               className="text-xs flex-1 min-w-0 bg-white rounded-full"
-              onClick={() => handleTrendingPromptClick(item.prompt)}
+              onClick={e => handleTrendingPromptClick(item.prompt, index, e)}
               trackingEvent="trending_prompt_clicked"
               trackingProperties={{
                 prompt: item.prompt,
