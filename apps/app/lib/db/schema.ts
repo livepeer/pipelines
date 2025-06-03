@@ -478,3 +478,28 @@ export const pgStatMonitor = pgView("pg_stat_monitor", {
 );
 
 export * from "./schema/prompt-queue";
+
+export const upscaleJobs = pgTable(
+  "upscale_jobs",
+  {
+    id: text().primaryKey().notNull(),
+    status: varchar({ length: 50 }).notNull().default("processing"),
+    clipUrl: text().notNull(),
+    upscaledUrl: text(),
+    error: text(),
+    createdAt: timestamp("created_at", {
+      withTimezone: true,
+      mode: "string",
+    }).defaultNow(),
+    updatedAt: timestamp("updated_at", {
+      withTimezone: true,
+      mode: "string",
+    }).defaultNow(),
+  },
+  table => [
+    check(
+      "upscale_jobs_status_check",
+      sql`(status)::text = ANY ((ARRAY['processing'::character varying, 'completed'::character varying, 'failed'::character varying])::text[])`,
+    ),
+  ],
+);

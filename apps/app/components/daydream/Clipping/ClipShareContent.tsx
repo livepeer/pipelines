@@ -7,11 +7,13 @@ import {
 } from "@repo/design-system/components/ui/dialog";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Input } from "@repo/design-system/components/ui/input";
-import { CheckIcon, CopyIcon, DownloadIcon } from "lucide-react";
+import { CheckIcon, CopyIcon, DownloadIcon, MailIcon } from "lucide-react";
 import { ClipData } from "./types";
 import { toast } from "sonner";
 import useMobileStore from "@/hooks/useMobileStore";
 import { TrackedButton } from "@/components/analytics/TrackedButton";
+import { createBrowserClient } from "@supabase/ssr";
+import { nanoid } from "nanoid";
 
 interface ClipShareContentProps {
   clipData: ClipData;
@@ -20,6 +22,8 @@ interface ClipShareContentProps {
 export default function ClipShareContent({ clipData }: ClipShareContentProps) {
   const { isMobile } = useMobileStore();
   const [copied, setCopied] = React.useState(false);
+  const [email, setEmail] = React.useState("");
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
 
   // Create shareable URL with slug if available - if not fallback to storage url // TODO: remove storage url
   const shareableUrl = React.useMemo(() => {
@@ -40,6 +44,83 @@ export default function ClipShareContent({ clipData }: ClipShareContentProps) {
       setTimeout(() => setCopied(false), 2000);
     } catch (error) {
       console.error("Failed to copy text: ", error);
+    }
+  };
+
+  const handleUpscaleRequest = async () => {
+    if (!email) {
+      toast.error("Please enter an email address");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      // First, fetch the blob data
+      console.log("Fetching video blob...");
+      const response = await fetch(clipData.clipUrl);
+      if (!response.ok) {
+        throw new Error("Failed to fetch video");
+      }
+      const videoBlob = await response.blob();
+
+      // Upload to Supabase
+      console.log("Uploading to Supabase...");
+      const supabase = createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      );
+      const timestamp = Date.now();
+      const uniqueFileName = `upscale-inputs/${timestamp}-${nanoid()}.mp4`;
+
+      const { data, error } = await supabase.storage
+        .from("assets")
+        .upload(uniqueFileName, videoBlob, {
+          contentType: "video/mp4",
+          cacheControl: "3600",
+          upsert: true,
+        });
+
+      if (error) {
+        console.error("Error uploading to Supabase:", error);
+        throw new Error("Failed to upload video");
+      }
+
+      // Get the public URL
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+      const bucketName = "assets";
+      const publicUrl = `${supabaseUrl}/storage/v1/object/public/${bucketName}/${data.path}`;
+      console.log("Video uploaded successfully:", publicUrl);
+
+      // Now call the upscale endpoint with the public URL
+      const requestData = {
+        email,
+        clipUrl: publicUrl,
+      };
+      console.log("Sending upscale request with data:", requestData);
+
+      const upscaleResponse = await fetch("/api/clips/upscale", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestData),
+      });
+
+      if (!upscaleResponse.ok) {
+        const errorData = await upscaleResponse.json();
+        console.error("Upscale request failed:", errorData);
+        throw new Error(errorData.error || "Failed to request upscaling");
+      }
+
+      toast.success(
+        "Upscaling request submitted! We'll email you when it's ready.",
+      );
+      setEmail("");
+    } catch (error) {
+      console.error("Error requesting upscale:", error);
+      toast.error("Failed to submit upscaling request. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -183,6 +264,38 @@ export default function ClipShareContent({ clipData }: ClipShareContentProps) {
           {copied ? <CheckIcon /> : <CopyIcon />}
         </TrackedButton>
       </div>
+
+      <div className="w-full border-t border-gray-200 my-4" />
+
+      <p className="text-sm font-light">Get Upscaled Version:</p>
+      <div className="flex flex-col gap-4 w-full">
+        <div className="flex gap-2 items-center">
+          <Input
+            type="email"
+            placeholder="Enter your email"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            className="flex-1 rounded-full py-6 px-8"
+          />
+          <TrackedButton
+            trackingEvent="daydream_clip_modal_upscale_clicked"
+            trackingProperties={{
+              method: "email",
+            }}
+            onClick={handleUpscaleRequest}
+            disabled={isSubmitting}
+            className="w-12 h-12 rounded-full flex items-center justify-center bg-black"
+          >
+            <MailIcon className="w-6 h-6 text-white" />
+          </TrackedButton>
+        </div>
+        <p className="text-xs text-gray-500 text-center">
+          We&apos;ll email you both the original and upscaled versions of your
+          clip
+        </p>
+      </div>
+
+      <div className="w-full border-t border-gray-200 my-4" />
 
       <p className="text-sm font-light">Share Directly to:</p>
 
