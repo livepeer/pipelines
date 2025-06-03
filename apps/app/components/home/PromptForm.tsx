@@ -121,7 +121,7 @@ export const PromptForm = forwardRef<HTMLFormElement, PromptFormProps>(
               profanity || exceedsMaxLength ? "border-red-500" : ""
             } ${
               highlight
-                ? "border-blue-300 !animate-attention-pulse transition-all duration-500"
+                ? "border-blue-300 animate-highlight-effect transition-all duration-500"
                 : ""
             }`}
             value={value}

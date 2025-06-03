@@ -23,6 +23,20 @@ const config: Config = {
           "75%": { transform: "scale(1.01)" },
           "100%": { transform: "scale(1)" },
         },
+        pulseAndGlow: {
+          "0%": {
+            transform: "scale(1)",
+            boxShadow: "0 0 2px 1px rgba(59, 130, 246, 0.2)",
+          },
+          "50%": {
+            transform: "scale(1.02)",
+            boxShadow: "0 0 5px 2px rgba(59, 130, 246, 0.3)",
+          },
+          "100%": {
+            transform: "scale(1)",
+            boxShadow: "0 0 2px 1px rgba(59, 130, 246, 0.2)",
+          },
+        },
       },
       animation: {
         blink: "blink 1s step-end infinite",
@@ -30,6 +44,7 @@ const config: Config = {
         "shimmer-fast": "shimmer 1s linear infinite",
         "shimmer-slow": "shimmer 3s linear infinite",
         "attention-pulse": "pulse 3s ease-in-out infinite",
+        "highlight-effect": "pulseAndGlow 3s ease-in-out infinite",
       },
     },
   },
