@@ -29,7 +29,7 @@ const config: Config = {
         shimmer: "shimmer 2s linear infinite",
         "shimmer-fast": "shimmer 1s linear infinite",
         "shimmer-slow": "shimmer 3s linear infinite",
-        "attention-pulse": "pulse 5s ease-in-out infinite",
+        "attention-pulse": "pulse 3s ease-in-out infinite",
       },
     },
   },
