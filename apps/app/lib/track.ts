@@ -63,7 +63,8 @@ const getSharedParamsInfo = async (): Promise<SharedInfo> => {
 };
 
 const getBrowserInfo = async () => {
-  if (typeof window === "undefined" || typeof navigator === "undefined") return {};
+  if (typeof window === "undefined" || typeof navigator === "undefined")
+    return {};
 
   const urlParams = new URLSearchParams(window.location.search);
 
