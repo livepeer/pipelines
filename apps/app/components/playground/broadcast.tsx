@@ -291,7 +291,10 @@ export function BroadcastWithControls({ className }: { className?: string }) {
                 </div>
 
                 <div className="flex sm:flex-1 md:flex-[1.5] justify-end items-center gap-2.5">
-                  <Broadcast.AudioEnabledTrigger className="w-6 h-6 hover:scale-110 transition flex-shrink-0">
+                  <Broadcast.AudioEnabledTrigger
+                    className="w-6 h-6 hover:scale-110 transition flex-shrink-0"
+                    data-testid="broadcast-mute"
+                  >
                     <Broadcast.AudioEnabledIndicator asChild matcher={false}>
                       <DisableAudioIcon className="w-full h-full text-white/50" />
                     </Broadcast.AudioEnabledIndicator>

@@ -57,6 +57,7 @@ export default defineConfig({
           args: [
             "--disable-web-security",
             "--use-fake-device-for-media-stream",
+            "--use-file-for-fake-audio-capture=./test-audio.wav",
           ],
         },
       },
