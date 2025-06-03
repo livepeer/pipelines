@@ -23,13 +23,18 @@ function createErrorResponse(status: number, message: unknown) {
 
 function isAllowedHost(request: NextRequest) {
   const requestHost = request.headers.get("host");
-  const serverHost = process.env.VERCEL_ENV;
   console.log("requestHost", requestHost);
-  console.log("serverHost", serverHost);
   console.log("ALLOWED_HOSTS", ALLOWED_HOSTS);
-  return serverHost
-    ? [...ALLOWED_HOSTS, serverHost].includes(requestHost ?? "")
-    : ALLOWED_HOSTS.includes(requestHost ?? "");
+  console.log("VERCEL_URL", process.env.VERCEL_URL);
+  console.log("VERCEL_BRANCH_URL", process.env.VERCEL_BRANCH_URL);
+
+  return [
+    ...ALLOWED_HOSTS,
+    process.env.VERCEL_URL,
+    process.env.VERCEL_BRANCH_URL,
+  ]
+    .filter(Boolean)
+    .includes(requestHost ?? "");
 }
 
 export async function GET(request: NextRequest) {
