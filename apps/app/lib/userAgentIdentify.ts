@@ -56,3 +56,10 @@ export const identifyTikTokInAppBrowser = (userAgent: string) => {
 
   return isTikTok && isIphone;
 };
+
+export const identifyInstagramInAppBrowser = (userAgent: string) => {
+  const isInstagram = /Instagram/i.test(userAgent);
+  const isIphone = /iphone/i.test(userAgent);
+
+  return isInstagram && isIphone;
+};

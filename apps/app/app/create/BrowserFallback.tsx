@@ -2,13 +2,16 @@
 
 import { Button } from "@repo/design-system/components/ui/button";
 import { Separator } from "@repo/design-system/components/ui/separator";
-import LivepeerLogo from "../../components/daydream/LivepeerLogo";
 import { Logo } from "@/components/sidebar";
 import Link from "next/link";
 import { useState } from "react";
 import { TrackedButton } from "@/components/analytics/TrackedButton";
 
-export default function TikTokFallback() {
+interface BrowserFallbackProps {
+  platform: "tiktok" | "instagram";
+}
+
+export default function BrowserFallback({ platform }: BrowserFallbackProps) {
   const linkToCopy = "https://daydream.live/";
   const [isCopied, setIsCopied] = useState(false);
 
@@ -46,7 +49,7 @@ export default function TikTokFallback() {
             className="rounded-full"
             onClick={handleCopyLink}
             disabled={isCopied}
-            trackingEvent="tiktok_browser_fallback_link_copy"
+            trackingEvent={`${platform}_browser_fallback_link_copy`}
           >
             {isCopied ? "Copied!" : "Copy link"}
           </TrackedButton>
