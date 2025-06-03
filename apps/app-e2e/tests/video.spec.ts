@@ -138,10 +138,12 @@ test.describe.parallel("Daydream Page Tests", () => {
           await assertVideoPlaying(broadcast, logger);
           const broadcastMute = page.getByTestId("broadcast-mute");
           await broadcast.hover();
-          const micEnabled = await broadcastMute.getAttribute("data-enabled");
-          if (micEnabled !== "true") {
-            logger.log("Unmuting broadcast audio");
-            await broadcastMute.click();
+          if (await broadcastMute.isVisible()) {
+            const micEnabled = await broadcastMute.getAttribute("data-enabled");
+            if (micEnabled !== "true") {
+              logger.log("Unmuting broadcast audio");
+              await broadcastMute.click();
+            }
           }
 
           await assertVideoPlaying(playback, logger);
