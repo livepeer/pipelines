@@ -23,11 +23,6 @@ function createErrorResponse(status: number, message: unknown) {
 
 function isAllowedHost(request: NextRequest) {
   const requestHost = request.headers.get("host");
-  console.log("requestHost", requestHost);
-  console.log("ALLOWED_HOSTS", ALLOWED_HOSTS);
-  console.log("VERCEL_URL", process.env.VERCEL_URL);
-  console.log("VERCEL_BRANCH_URL", process.env.VERCEL_BRANCH_URL);
-
   return [
     ...ALLOWED_HOSTS,
     process.env.VERCEL_URL,
