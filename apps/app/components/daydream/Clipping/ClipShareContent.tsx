@@ -44,6 +44,11 @@ export default function ClipShareContent({ clipData }: ClipShareContentProps) {
   };
 
   const handleAppBasedShare = async (platform: string) => {
+    if (typeof navigator === "undefined") {
+      console.error("Navigator API not available");
+      return;
+    }
+
     const appData =
       platform === "tiktok"
         ? {
