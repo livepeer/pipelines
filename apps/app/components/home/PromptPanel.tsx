@@ -132,7 +132,7 @@ export function PromptPanel({
   isMobile = false,
 }: PromptPanelProps) {
   const [highlightInput, setHighlightInput] = useState(false);
-  
+
   const handlePastPromptClick = (prompt: string) => {
     setPromptValue(prompt);
   };
@@ -147,7 +147,7 @@ export function PromptPanel({
     setPromptValue(prompt);
     // Add highlight effect when a trending prompt is clicked
     setHighlightInput(true);
-    
+
     // Reset the highlight effect after animation completes
     setTimeout(() => {
       setHighlightInput(false);

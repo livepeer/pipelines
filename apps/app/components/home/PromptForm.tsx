@@ -120,7 +120,9 @@ export const PromptForm = forwardRef<HTMLFormElement, PromptFormProps>(
             } resize-none overflow-hidden ${
               profanity || exceedsMaxLength ? "border-red-500" : ""
             } ${
-              highlight ? "animate-attention-pulse border-blue-400 animate-glow-pulse" : ""
+              highlight
+                ? "animate-attention-pulse border-blue-400 animate-glow-pulse"
+                : ""
             }`}
             value={value}
             onChange={onChange}
@@ -141,7 +143,9 @@ export const PromptForm = forwardRef<HTMLFormElement, PromptFormProps>(
             <button
               type="submit"
               className={`bg-black text-white rounded-full ${isMobile ? "w-8 h-8" : "w-10 h-10"} flex items-center justify-center ${
-                highlight ? "animate-wiggle ring-2 ring-blue-400 ring-offset-2" : ""
+                highlight
+                  ? "animate-wiggle ring-2 ring-blue-400 ring-offset-2"
+                  : ""
               }`}
               disabled={
                 isThrottled ||
