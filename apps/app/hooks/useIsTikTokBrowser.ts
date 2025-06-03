@@ -5,7 +5,7 @@ export function useIsTikTokBrowser(): boolean {
   const [isTikTokBrowser, setIsTikTokBrowser] = useState<boolean>(false);
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
+    if (typeof window !== "undefined" && typeof navigator !== "undefined") {
       const userAgent = window.navigator.userAgent.toLowerCase();
       setIsTikTokBrowser(identifyTikTokInAppBrowser(userAgent));
     }

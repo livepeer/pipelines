@@ -63,7 +63,7 @@ const getSharedParamsInfo = async (): Promise<SharedInfo> => {
 };
 
 const getBrowserInfo = async () => {
-  if (typeof window === "undefined") return {};
+  if (typeof window === "undefined" || typeof navigator === "undefined") return {};
 
   const urlParams = new URLSearchParams(window.location.search);
 
@@ -90,10 +90,12 @@ const track = async (
   eventProperties?: TrackProperties,
   user?: User,
 ): Promise<boolean> => {
-  if (navigator) {
-    if (navigator.webdriver) {
-      return false;
-    }
+  if (typeof window === "undefined" || typeof navigator === "undefined") {
+    return false;
+  }
+
+  if (navigator.webdriver) {
+    return false;
   }
 
   if (process.env.DISABLE_ANALYTICS === "true") {
