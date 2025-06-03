@@ -147,6 +147,11 @@ export function PromptPanel({
     setPromptValue(prompt);
     // Add highlight effect when a trending prompt is clicked
     setHighlightInput(true);
+
+    // Clear highlight after 5 seconds
+    setTimeout(() => {
+      setHighlightInput(false);
+    }, 5000);
   };
 
   // Clear highlight on prompt change

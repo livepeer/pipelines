@@ -16,15 +16,6 @@ const config: Config = {
           "0%": { backgroundPosition: "0% 50%" },
           "100%": { backgroundPosition: "100% 50%" },
         },
-        glow: {
-          "0%": { boxShadow: "0 0 2px 1px rgba(59, 130, 246, 0.2)" },
-          "50%": { boxShadow: "0 0 5px 2px rgba(59, 130, 246, 0.3)" },
-          "100%": { boxShadow: "0 0 2px 1px rgba(59, 130, 246, 0.2)" },
-        },
-        wiggle: {
-          "0%, 100%": { transform: "rotate(-3deg)" },
-          "50%": { transform: "rotate(3deg)" },
-        },
         pulse: {
           "0%": { transform: "scale(1)" },
           "50%": { transform: "scale(1.02)" },
@@ -36,8 +27,6 @@ const config: Config = {
         shimmer: "shimmer 2s linear infinite",
         "shimmer-fast": "shimmer 1s linear infinite",
         "shimmer-slow": "shimmer 3s linear infinite",
-        "glow-pulse": "glow 3s ease-in-out infinite",
-        wiggle: "wiggle 0.5s ease-in-out 2",
         "attention-pulse": "pulse 3s ease-in-out infinite",
       },
     },
