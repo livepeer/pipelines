@@ -20,6 +20,7 @@ interface PromptFormProps {
   throttleTimeLeft: number;
   disabled?: boolean;
   isMobile?: boolean;
+  highlight?: boolean;
 }
 
 export const PromptForm = forwardRef<HTMLFormElement, PromptFormProps>(
@@ -32,6 +33,7 @@ export const PromptForm = forwardRef<HTMLFormElement, PromptFormProps>(
       throttleTimeLeft,
       disabled = false,
       isMobile = false,
+      highlight = false,
     },
     ref,
   ) {
@@ -117,6 +119,8 @@ export const PromptForm = forwardRef<HTMLFormElement, PromptFormProps>(
               isMobile ? "" : "shadow-[8px_12px_24px_0px_#0D131E26]"
             } resize-none overflow-hidden ${
               profanity || exceedsMaxLength ? "border-red-500" : ""
+            } ${
+              highlight ? "animate-attention-pulse border-blue-400 animate-glow-pulse" : ""
             }`}
             value={value}
             onChange={onChange}
@@ -136,7 +140,9 @@ export const PromptForm = forwardRef<HTMLFormElement, PromptFormProps>(
           >
             <button
               type="submit"
-              className={`bg-black text-white rounded-full ${isMobile ? "w-8 h-8" : "w-10 h-10"} flex items-center justify-center`}
+              className={`bg-black text-white rounded-full ${isMobile ? "w-8 h-8" : "w-10 h-10"} flex items-center justify-center ${
+                highlight ? "animate-wiggle ring-2 ring-blue-400 ring-offset-2" : ""
+              }`}
               disabled={
                 isThrottled ||
                 disabled ||
