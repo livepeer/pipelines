@@ -1,4 +1,4 @@
-import React, { RefObject, useMemo } from "react";
+import React, { RefObject, useMemo, useState, useEffect } from "react";
 import { Camera, Flame, TrendingUp } from "lucide-react";
 import { DiscordLogoIcon } from "@radix-ui/react-icons";
 import { PromptForm } from "./PromptForm";
@@ -131,6 +131,8 @@ export function PromptPanel({
   promptFormRef,
   isMobile = false,
 }: PromptPanelProps) {
+  const [highlightInput, setHighlightInput] = useState(false);
+
   const handlePastPromptClick = (prompt: string) => {
     setPromptValue(prompt);
   };
@@ -143,6 +145,27 @@ export function PromptPanel({
 
   const handleTrendingPromptClick = (prompt: string) => {
     setPromptValue(prompt);
+    // Add highlight effect when a trending prompt is clicked
+    setHighlightInput(true);
+
+    // Clear highlight after 5 seconds
+    setTimeout(() => {
+      setHighlightInput(false);
+    }, 5000);
+  };
+
+  // Clear highlight on prompt change
+  const handlePromptChangeWithReset = (
+    e: React.ChangeEvent<HTMLTextAreaElement>,
+  ) => {
+    setHighlightInput(false);
+    onPromptChange(e);
+  };
+
+  // Clear highlight on submit
+  const handleSubmitWithReset = (e: React.FormEvent<HTMLFormElement>) => {
+    setHighlightInput(false);
+    onSubmit(e);
   };
 
   const isSafari = /^((?!chrome|android|crios|fxios).)*safari/i.test(
@@ -272,12 +295,13 @@ export function PromptPanel({
 
         <PromptForm
           ref={promptFormRef}
-          onSubmit={onSubmit}
+          onSubmit={handleSubmitWithReset}
           value={promptValue}
-          onChange={onPromptChange}
+          onChange={handlePromptChangeWithReset}
           isThrottled={isThrottled}
           throttleTimeLeft={throttleTimeLeft}
           isMobile={isMobile}
+          highlight={highlightInput}
         />
       </div>
     </div>
