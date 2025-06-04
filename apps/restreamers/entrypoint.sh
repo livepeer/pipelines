@@ -1,9 +1,9 @@
 #!/bin/bash
 set -euo pipefail
 
-YOUTUBE_URL="${YOUTUBE_URL_STREAM1}"
-RTMP_TARGET_LP="${RTMP_TARGET_STREAM1}"
-RTMP_TARGET_AI="${RTMP_TARGET_STREAM2}"
+SOURCE_URL="${SOURCE_URL}"
+RTMP_TARGET_LP="${RTMP_TARGET_LP}"
+RTMP_TARGET_AI="${RTMP_TARGET_AI}"
 
 DOWNLOAD_DIR="/app/data"
 COOKIES_FILE="/app/cookies.txt"
@@ -25,7 +25,7 @@ elif [ -n "${YOUTUBE_COOKIES:-}" ]; then
     echo "$YOUTUBE_COOKIES" > "$COOKIES_FILE"
 fi
 
-if [ -z "$YOUTUBE_URL" ]; then echo "Error: YOUTUBE_URL_STREAM1 not set." >&2; exit 1; fi
+if [ -z "$SOURCE_URL" ]; then echo "Error: YOUTUBE_URL_STREAM1 not set." >&2; exit 1; fi
 if [ -z "$RTMP_TARGET_LP" ]; then echo "Error: RTMP_TARGET_STREAM1 not set." >&2; exit 1; fi
 if [ -z "$RTMP_TARGET_AI" ]; then echo "Error: RTMP_TARGET_STREAM2 not set." >&2; exit 1; fi
 
@@ -44,14 +44,33 @@ calculate_backoff() {
     echo $delay
 }
 
+is_youtube_url() {
+    local url="$1"
+    if [[ "$url" =~ ^https?://(www\.)?(youtube\.com|youtu\.be|m\.youtube\.com) ]]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
 prepare_video() {
-    echo "=== Preparing video from YouTube ==="
+    echo "=== Preparing video from source ==="
     
+    if is_youtube_url "$SOURCE_URL"; then
+        echo "Detected YouTube URL, using yt-dlp..."
+        prepare_video_youtube
+    else
+        echo "Detected direct video URL, downloading directly..."
+        prepare_video_direct
+    fi
+}
+
+prepare_video_youtube() {
     set -- yt-dlp --no-progress --get-filename -f "$FORMAT_SELECTOR" --merge-output-format mp4
     if [ -f "$COOKIES_FILE" ]; then
         set -- "$@" --cookies "$COOKIES_FILE"
     fi
-    set -- "$@" -o "${DOWNLOAD_DIR}/%(title)s.%(ext)s" "$YOUTUBE_URL"
+    set -- "$@" -o "${DOWNLOAD_DIR}/%(title)s.%(ext)s" "$SOURCE_URL"
     
     echo "Determining filename..."
     ACTUAL_VIDEO_FILE=$("$@")
@@ -62,14 +81,14 @@ prepare_video() {
     fi
     
     if [ ! -f "$ACTUAL_VIDEO_FILE" ]; then
-        echo "Downloading from YouTube: $YOUTUBE_URL"
+        echo "Downloading from YouTube: $SOURCE_URL"
         echo "Note: Will download 60fps if no 30fps available, then convert to 30fps"
         
         set -- yt-dlp --no-progress -f "$FORMAT_SELECTOR" --merge-output-format mp4
         if [ -f "$COOKIES_FILE" ]; then
             set -- "$@" --cookies "$COOKIES_FILE"
         fi
-        set -- "$@" -o "$ACTUAL_VIDEO_FILE" "$YOUTUBE_URL"
+        set -- "$@" -o "$ACTUAL_VIDEO_FILE" "$SOURCE_URL"
         
         if ! "$@"; then
             echo "Download failed" >&2
@@ -80,6 +99,58 @@ prepare_video() {
     SOURCE_BASENAME=$(basename "$ACTUAL_VIDEO_FILE")
     SOURCE_FILENAME_NO_EXT="${SOURCE_BASENAME%.*}"
     STREAMING_VIDEO_FILE="${DOWNLOAD_DIR}/${SOURCE_FILENAME_NO_EXT}_streamable.mp4"
+    
+    echo "Pre-processing video for streaming (converting to 30fps SDR)..."
+    echo "This may take a while for 60fps HDR content..."
+    
+    ffmpeg -i "$ACTUAL_VIDEO_FILE" \
+        -vf "scale=in_range=limited:out_range=limited,format=yuv420p" \
+        -color_primaries bt709 \
+        -color_trc bt709 \
+        -colorspace bt709 \
+        $PRE_ENCODE_VIDEO_OPTS \
+        $PRE_ENCODE_AUDIO_OPTS \
+        -movflags +faststart \
+        -y "$STREAMING_VIDEO_FILE"
+    
+    if [ $? -ne 0 ]; then
+        echo "Error: Pre-processing failed" >&2
+        return 1
+    fi
+    
+    echo "Video prepared: $STREAMING_VIDEO_FILE (30fps SDR)"
+    export STREAMING_VIDEO_FILE
+    return 0
+}
+
+prepare_video_direct() {
+    # Extract filename from URL
+    FILENAME=$(basename "$SOURCE_URL" | cut -d'?' -f1)
+    if [ -z "$FILENAME" ] || [[ "$FILENAME" != *.* ]]; then
+        FILENAME="video.mp4"
+    fi
+    
+    ACTUAL_VIDEO_FILE="${DOWNLOAD_DIR}/${FILENAME}"
+    SOURCE_FILENAME_NO_EXT="${FILENAME%.*}"
+    STREAMING_VIDEO_FILE="${DOWNLOAD_DIR}/${SOURCE_FILENAME_NO_EXT}_streamable.mp4"
+    
+    if [ ! -f "$ACTUAL_VIDEO_FILE" ]; then
+        echo "Downloading from direct URL: $SOURCE_URL"
+        
+        # Use wget to download the file
+        if ! wget -O "$ACTUAL_VIDEO_FILE" "$SOURCE_URL"; then
+            echo "Direct download failed, trying with curl..." >&2
+            if ! curl -L -o "$ACTUAL_VIDEO_FILE" "$SOURCE_URL"; then
+                echo "Download failed with both wget and curl" >&2
+                return 1
+            fi
+        fi
+        
+        if [ ! -f "$ACTUAL_VIDEO_FILE" ] || [ ! -s "$ACTUAL_VIDEO_FILE" ]; then
+            echo "Error: Downloaded file is empty or doesn't exist" >&2
+            return 1
+        fi
+    fi
     
     echo "Pre-processing video for streaming (converting to 30fps SDR)..."
     echo "This may take a while for 60fps HDR content..."
@@ -280,8 +351,8 @@ cleanup() {
 
 trap cleanup INT TERM EXIT
 
-echo "=== YouTube to Dual RTMP Streaming ==="
-echo "YouTube URL: $YOUTUBE_URL"
+echo "=== Source to Dual RTMP Streaming ==="
+echo "Source URL: $SOURCE_URL"
 echo "Livepeer RTMP: $RTMP_TARGET_LP"
 echo "AI RTMP: $RTMP_TARGET_AI"
 
