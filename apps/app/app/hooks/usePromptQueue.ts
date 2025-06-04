@@ -30,12 +30,6 @@ export function usePromptQueue(streamKey: string | undefined) {
 
   useEffect(() => {
     if (currentStreamKeyRef.current !== streamKey) {
-      console.log(
-        "StreamKey changed, resetting state:",
-        currentStreamKeyRef.current,
-        "->",
-        streamKey,
-      );
       setCurrentPrompt(null);
       setRecentPrompts([]);
       setIsSubmitting(false);
@@ -63,30 +57,21 @@ export function usePromptQueue(streamKey: string | undefined) {
       );
 
       ws.onopen = () => {
-        console.log("WebSocket connected for streamKey:", streamKey);
         if (currentStreamKeyRef.current === streamKey) {
           wsRef.current = ws;
         } else {
-          console.log("StreamKey changed during connection, closing WebSocket");
           ws.close();
         }
       };
 
       ws.onmessage = event => {
         if (wsRef.current !== ws || currentStreamKeyRef.current !== streamKey) {
-          console.log("Ignoring message from outdated WebSocket connection");
           return;
         }
 
         try {
           const message = JSON.parse(event.data);
-          console.log(
-            "WebSocket message received for streamKey:",
-            streamKey,
-            message,
-          );
 
-          console.log("MT", message.type);
           switch (message.type) {
             case "initial":
               setCurrentPrompt(message.payload.currentPrompt);
@@ -102,7 +87,6 @@ export function usePromptQueue(streamKey: string | undefined) {
               break;
 
             default:
-              console.log("Unknown message type:", message.type);
           }
         } catch (error) {
           console.error("Error parsing WebSocket message:", error);
@@ -110,13 +94,6 @@ export function usePromptQueue(streamKey: string | undefined) {
       };
 
       ws.onclose = event => {
-        console.log(
-          "WebSocket disconnected for streamKey:",
-          streamKey,
-          "Code:",
-          event.code,
-        );
-
         if (wsRef.current !== ws || currentStreamKeyRef.current !== streamKey) {
           return;
         }
@@ -143,7 +120,6 @@ export function usePromptQueue(streamKey: string | undefined) {
     connectWebsocket();
 
     return () => {
-      console.log("Cleaning up WebSocket for streamKey:", streamKey);
       if (wsRef.current) {
         wsRef.current.close();
         wsRef.current = null;
