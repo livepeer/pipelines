@@ -31,8 +31,7 @@ if [ -z "$RTMP_TARGET_AI" ]; then echo "Error: RTMP_TARGET_AI not set." >&2; exi
 
 FORMAT_SELECTOR="bestvideo[height<=360][vcodec^=avc][dynamic_range!=HDR][ext=mp4]+bestaudio[acodec=aac][ext=m4a]/bestvideo[height<=360][vcodec^=avc][ext=mp4]+bestaudio[acodec=aac][ext=m4a]/bestvideo[height<=360][vcodec^=avc]+bestaudio/bestvideo[height<=360]+bestaudio/best[height<=360]"
 
-KEYFRAME_GOP_SIZE="60"  # 2 seconds at 30fps
-PRE_ENCODE_VIDEO_OPTS="-c:v libx264 -g $KEYFRAME_GOP_SIZE -keyint_min $KEYFRAME_GOP_SIZE -preset veryfast -tune zerolatency -pix_fmt yuv420p -crf 28 -profile:v baseline -level 3.0 -sc_threshold 0 -r 30 -fps_mode cfr -vf scale=in_range=limited:out_range=limited"
+PRE_ENCODE_VIDEO_OPTS="-c:v libx264 -preset veryfast -tune zerolatency -pix_fmt yuv420p -crf 28 -profile:v baseline -level 3.0 -sc_threshold 0 -r 30 -fps_mode cfr -vf scale=in_range=limited:out_range=limited"
 PRE_ENCODE_AUDIO_OPTS="-c:a aac -ar 44100 -b:a 128k"
 
 calculate_backoff() {
@@ -201,21 +200,13 @@ stream_dual_to_rtmp() {
             -c:a copy \
             -bufsize 3000k \
             -maxrate 1500k \
-            -g $KEYFRAME_GOP_SIZE \
-            -keyint_min $KEYFRAME_GOP_SIZE \
             -f flv "$RTMP_TARGET_LP" \
             -c:v copy \
             -an \
             -bufsize 3000k \
             -maxrate 1500k \
-            -g $KEYFRAME_GOP_SIZE \
-            -keyint_min $KEYFRAME_GOP_SIZE \
             -f flv "$RTMP_TARGET_AI" \
             -loglevel info \
-            -reconnect 1 \
-            -reconnect_at_eof 1 \
-            -reconnect_streamed 1 \
-            -reconnect_delay_max 30 \
             2>&1 | while IFS= read -r line; do 
                 if [[ "$line" =~ "Connection reset by peer" ]] || [[ "$line" =~ "Broken pipe" ]] || [[ "$line" =~ "Error writing trailer" ]]; then
                     echo "[DUAL] CRITICAL: $line"
@@ -270,6 +261,8 @@ stream_dual_to_rtmp() {
 monitor_stream_health() {
     echo "=== Starting stream health monitor ==="
     local last_check=0
+    local stream_start_time=$(date +%s)
+    local restart_interval=1800  # 30 minutes in seconds
     local health_check_interval=60  # Check every 60 seconds
     local network_failures=0
     local max_network_failures=3
@@ -278,6 +271,27 @@ monitor_stream_health() {
         sleep $health_check_interval
         
         current_time=$(date +%s)
+        
+        if [ $((current_time - stream_start_time)) -ge $restart_interval ]; then
+            echo "[MONITOR] 30 minutes elapsed, restarting stream for stability..."
+            
+            if kill -0 $STREAM_PID 2>/dev/null; then
+                kill $STREAM_PID 2>/dev/null || true
+                sleep 5
+            fi
+            
+            pkill -f "ffmpeg.*$RTMP_TARGET_LP" 2>/dev/null || true
+            pkill -f "ffmpeg.*$RTMP_TARGET_AI" 2>/dev/null || true
+            sleep 5
+            
+            echo "[MONITOR] Starting fresh stream after 30-minute restart..."
+            stream_dual_to_rtmp &
+            STREAM_PID=$!
+            stream_start_time=$(date +%s)
+            network_failures=0
+            echo "[MONITOR] Stream restarted (new PID: $STREAM_PID)"
+            continue
+        fi
         
         if ! ping -c 1 -W 5 8.8.8.8 >/dev/null 2>&1; then
             network_failures=$((network_failures + 1))
@@ -289,7 +303,16 @@ monitor_stream_health() {
                     kill $STREAM_PID 2>/dev/null || true
                     sleep 5
                 fi
+                
+                pkill -f "ffmpeg.*$RTMP_TARGET_LP" 2>/dev/null || true
+                pkill -f "ffmpeg.*$RTMP_TARGET_AI" 2>/dev/null || true
+                sleep 5
+                
+                stream_dual_to_rtmp &
+                STREAM_PID=$!
+                stream_start_time=$(date +%s) 
                 network_failures=0
+                echo "[MONITOR] Restarted stream after network failures (new PID: $STREAM_PID)"
             fi
         else
             network_failures=0
@@ -316,9 +339,12 @@ monitor_stream_health() {
             
             stream_dual_to_rtmp &
             STREAM_PID=$!
+            stream_start_time=$(date +%s)
             echo "[MONITOR] Restarted stream process (new PID: $STREAM_PID)"
         else
-            echo "[MONITOR] Stream process is healthy (PID: $STREAM_PID)"
+            time_until_restart=$((restart_interval - (current_time - stream_start_time)))
+            minutes_until_restart=$((time_until_restart / 60))
+            echo "[MONITOR] Stream process is healthy (PID: $STREAM_PID) - Next restart in ${minutes_until_restart} minutes"
         fi
         
         available_space=$(df "$DOWNLOAD_DIR" | awk 'NR==2 {print $4}')
@@ -334,7 +360,9 @@ monitor_stream_health() {
         fi
         
         if [ $((current_time - last_check)) -ge 300 ]; then  # Every 5 minutes
-            echo "[MONITOR] Status: Stream running, network OK, disk space: ${available_space}KB"
+            time_since_start=$((current_time - stream_start_time))
+            minutes_running=$((time_since_start / 60))
+            echo "[MONITOR] Status: Stream running for ${minutes_running} minutes, network OK, disk space: ${available_space}KB"
             last_check=$current_time
         fi
     done
