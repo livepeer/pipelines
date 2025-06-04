@@ -95,9 +95,9 @@ jobs:
             fi
 
             echo "Setting secrets for app '$CURRENT_APP_NAME'..."
-            # Updated secret names to reflect the new SOURCE_URL naming
+            # Updated secret names to match the new environment variable names
             flyctl secrets set -a "$CURRENT_APP_NAME" --stage \
-              YOUTUBE_URL_STREAM1="$CURRENT_SOURCE_URL" \
+              SOURCE_URL="$CURRENT_SOURCE_URL" \
               RTMP_TARGET_LP="$CURRENT_RTMP_TARGET_LP" \
               RTMP_TARGET_AI="$CURRENT_RTMP_TARGET_AI" \
               YOUTUBE_COOKIES_BASE64="$YOUTUBE_COOKIES_BASE64" \

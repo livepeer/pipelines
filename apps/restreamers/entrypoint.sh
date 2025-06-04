@@ -25,14 +25,14 @@ elif [ -n "${YOUTUBE_COOKIES:-}" ]; then
     echo "$YOUTUBE_COOKIES" > "$COOKIES_FILE"
 fi
 
-if [ -z "$SOURCE_URL" ]; then echo "Error: YOUTUBE_URL_STREAM1 not set." >&2; exit 1; fi
-if [ -z "$RTMP_TARGET_LP" ]; then echo "Error: RTMP_TARGET_STREAM1 not set." >&2; exit 1; fi
-if [ -z "$RTMP_TARGET_AI" ]; then echo "Error: RTMP_TARGET_STREAM2 not set." >&2; exit 1; fi
+if [ -z "$SOURCE_URL" ]; then echo "Error: SOURCE_URL not set." >&2; exit 1; fi
+if [ -z "$RTMP_TARGET_LP" ]; then echo "Error: RTMP_TARGET_LP not set." >&2; exit 1; fi
+if [ -z "$RTMP_TARGET_AI" ]; then echo "Error: RTMP_TARGET_AI not set." >&2; exit 1; fi
 
 FORMAT_SELECTOR="bestvideo[height<=360][vcodec^=avc][dynamic_range!=HDR][ext=mp4]+bestaudio[acodec=aac][ext=m4a]/bestvideo[height<=360][vcodec^=avc][ext=mp4]+bestaudio[acodec=aac][ext=m4a]/bestvideo[height<=360][vcodec^=avc]+bestaudio/bestvideo[height<=360]+bestaudio/best[height<=360]"
 
 KEYFRAME_GOP_SIZE="60"  # 2 seconds at 30fps
-PRE_ENCODE_VIDEO_OPTS="-c:v libx264 -g $KEYFRAME_GOP_SIZE -keyint_min $KEYFRAME_GOP_SIZE -preset veryfast -tune zerolatency -pix_fmt yuv420p -crf 28 -profile:v baseline -level 3.0 -sc_threshold 0 -r 30 -vsync cfr -vf scale=in_range=limited:out_range=limited"
+PRE_ENCODE_VIDEO_OPTS="-c:v libx264 -g $KEYFRAME_GOP_SIZE -keyint_min $KEYFRAME_GOP_SIZE -preset veryfast -tune zerolatency -pix_fmt yuv420p -crf 28 -profile:v baseline -level 3.0 -sc_threshold 0 -r 30 -fps_mode cfr -vf scale=in_range=limited:out_range=limited"
 PRE_ENCODE_AUDIO_OPTS="-c:a aac -ar 44100 -b:a 128k"
 
 calculate_backoff() {
@@ -124,7 +124,6 @@ prepare_video_youtube() {
 }
 
 prepare_video_direct() {
-    # Extract filename from URL
     FILENAME=$(basename "$SOURCE_URL" | cut -d'?' -f1)
     if [ -z "$FILENAME" ] || [[ "$FILENAME" != *.* ]]; then
         FILENAME="video.mp4"
@@ -186,20 +185,31 @@ stream_dual_to_rtmp() {
         echo "[DUAL] Livepeer RTMP: $RTMP_TARGET_LP (with audio)"
         echo "[DUAL] AI RTMP: $RTMP_TARGET_AI (video only, no audio)"
         
-        # Use multiple outputs to send the same stream to both RTMP endpoints
-        # Livepeer gets video + audio, AI gets video only (-an)
+        # Livepeer gets video + audio, AI gets video only (no audio)
         ffmpeg -re \
             -stream_loop -1 \
             -i "$STREAMING_VIDEO_FILE" \
+            -avoid_negative_ts make_zero \
+            -start_at_zero \
+            -copytb 1 \
+            -muxdelay 0 \
+            -muxpreload 0 \
+            -fps_mode cfr \
+            -async 1 \
+            -shortest \
             -c:v copy \
             -c:a copy \
             -bufsize 3000k \
             -maxrate 1500k \
+            -g $KEYFRAME_GOP_SIZE \
+            -keyint_min $KEYFRAME_GOP_SIZE \
             -f flv "$RTMP_TARGET_LP" \
             -c:v copy \
             -an \
             -bufsize 3000k \
             -maxrate 1500k \
+            -g $KEYFRAME_GOP_SIZE \
+            -keyint_min $KEYFRAME_GOP_SIZE \
             -f flv "$RTMP_TARGET_AI" \
             -loglevel info \
             -reconnect 1 \
@@ -365,7 +375,6 @@ stream_dual_to_rtmp &
 STREAM_PID=$!
 echo "Started dual streaming (PID: $STREAM_PID)"
 
-# Start health monitor in background
 monitor_stream_health &
 MONITOR_PID=$!
 echo "Started stream monitor (PID: $MONITOR_PID)"
