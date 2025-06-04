@@ -86,6 +86,7 @@ export function usePromptQueue(streamKey: string | undefined) {
             message,
           );
 
+          console.log("MT", message.type);
           switch (message.type) {
             case "initial":
               setCurrentPrompt(message.payload.currentPrompt);

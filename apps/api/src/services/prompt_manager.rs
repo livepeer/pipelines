@@ -1,4 +1,4 @@
-use crate::models::{Prompt, WsMessage};
+use crate::models::WsMessage;
 use crate::services::stream_api;
 use crate::state::AppState;
 use anyhow::Result;
@@ -8,7 +8,7 @@ use std::sync::Arc;
 use tokio::time;
 use tracing::{error, info};
 
-const RANDOM_PROMPTS: &[&str] = &[
+const _RANDOM_PROMPTS: &[&str] = &[
     "hyperrealistic portrait of an alien queen --quality 3",
     "fantasy castle floating among clouds at sunset --creativity 0.8",
     "cybernetic ((animal)) with glowing parts --quality 2",
@@ -39,7 +39,6 @@ pub async fn run(state: Arc<AppState>) -> Result<()> {
 
     let mut interval = time::interval(time::Duration::from_secs(1));
     let failure_tracker: Arc<DashMap<String, DateTime<Utc>>> = Arc::new(DashMap::new());
-    let last_prompt_activity: Arc<DashMap<String, DateTime<Utc>>> = Arc::new(DashMap::new());
 
     loop {
         interval.tick().await;
@@ -52,23 +51,6 @@ pub async fn run(state: Arc<AppState>) -> Result<()> {
                     if Utc::now() - last_failure < cooldown_duration {
                         continue;
                     }
-                }
-            }
-
-            match check_and_add_random_prompt_if_needed(&state, stream_key, &last_prompt_activity)
-                .await
-            {
-                Ok(added) => {
-                    if added {
-                        info!("Random prompt added for inactive stream: {}", stream_key);
-                        last_prompt_activity.insert(stream_key.to_string(), Utc::now());
-                    }
-                }
-                Err(e) => {
-                    error!(
-                        "Error adding random prompt for stream {}: {}",
-                        stream_key, e
-                    );
                 }
             }
 
@@ -86,47 +68,6 @@ pub async fn run(state: Arc<AppState>) -> Result<()> {
             }
         }
     }
-}
-
-async fn check_and_add_random_prompt_if_needed(
-    state: &Arc<AppState>,
-    stream_key: &str,
-    last_activity_tracker: &Arc<DashMap<String, DateTime<Utc>>>,
-) -> Result<bool> {
-    let queue_length = state.redis.get_queue_length(stream_key).await?;
-
-    if queue_length > 0 {
-        last_activity_tracker.insert(stream_key.to_string(), Utc::now());
-        return Ok(false);
-    }
-
-    let now = Utc::now();
-    let should_add_random = match last_activity_tracker.get(stream_key) {
-        Some(last_activity_entry) => {
-            let last_activity = *last_activity_entry;
-            let idle_duration = now - last_activity;
-            idle_duration >= Duration::seconds(20)
-        }
-        None => {
-            last_activity_tracker.insert(stream_key.to_string(), now);
-            false
-        }
-    };
-
-    if should_add_random {
-        let random_index = (now.timestamp_millis() as usize) % RANDOM_PROMPTS.len();
-        let random_prompt_text = RANDOM_PROMPTS[random_index];
-
-        let prompt = Prompt::new(random_prompt_text.to_string(), stream_key.to_string());
-        state.redis.add_prompt_to_queue(prompt).await?;
-        info!(
-            "Added random prompt to stream {}: {}",
-            stream_key, random_prompt_text
-        );
-        return Ok(true);
-    }
-
-    Ok(false)
 }
 
 async fn check_and_update_prompt(state: &Arc<AppState>, stream_key: &str) -> Result<bool> {
