@@ -98,6 +98,16 @@ function connectWebSocket(streamKey: string) {
           break;
 
         case "CurrentPrompt":
+          if (currentEntry.currentPrompt?.prompt?.id !== message.payload.prompt?.prompt?.id) {
+            const updatedPositions = new Map<string, number>();
+            currentEntry.queuePositions.forEach((position, promptId) => {
+              if (position > 1) {
+                updatedPositions.set(promptId, position - 1);
+              }
+            });
+            currentEntry.queuePositions = updatedPositions;
+          }
+          
           currentEntry.currentPrompt = message.payload.prompt;
           notifySubscribers(streamKey);
           break;
