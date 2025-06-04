@@ -112,55 +112,53 @@ stream_dual_to_rtmp() {
     
     while true; do
         echo "[DUAL] Streaming to both endpoints (attempt $((retry_count + 1)))"
-        echo "[DUAL] Livepeer RTMP: $RTMP_TARGET_LP"
-        echo "[DUAL] AI RTMP: $RTMP_TARGET_AI"
+        echo "[DUAL] Livepeer RTMP: $RTMP_TARGET_LP (with audio)"
+        echo "[DUAL] AI RTMP: $RTMP_TARGET_AI (video only, no audio)"
         
-        timeout 3600 ffmpeg -re \
+        # Use multiple outputs to send the same stream to both RTMP endpoints
+        # Livepeer gets video + audio, AI gets video only (-an)
+        ffmpeg -re \
             -stream_loop -1 \
             -i "$STREAMING_VIDEO_FILE" \
             -c:v copy \
             -c:a copy \
-            -bufsize 2000k \
-            -maxrate 1200k \
-            -rtmp_live 1 \
-            -rtmp_buffer 1000 \
-            -rtmp_conn_timeout 10 \
+            -bufsize 3000k \
+            -maxrate 1500k \
             -f flv "$RTMP_TARGET_LP" \
             -c:v copy \
-            -c:a copy \
-            -bufsize 2000k \
-            -maxrate 1200k \
-            -rtmp_live 1 \
-            -rtmp_buffer 1000 \
+            -an \
+            -bufsize 3000k \
+            -maxrate 1500k \
             -f flv "$RTMP_TARGET_AI" \
-            -loglevel warning \
-            2>&1 | while IFS= read -r line; do
-                echo "[DUAL] $line"
-                if [[ "$line" =~ "Error muxing a packet" ]] || [[ "$line" =~ "Connection reset by peer" ]] || [[ "$line" =~ "Broken pipe" ]] || [[ "$line" =~ "I/O error" ]]; then
-                    echo "[DUAL] CRITICAL ERROR detected: $line"
-                    pkill -f "ffmpeg.*$RTMP_TARGET_LP.*$RTMP_TARGET_AI" 2>/dev/null || true
+            -loglevel info \
+            -reconnect 1 \
+            -reconnect_at_eof 1 \
+            -reconnect_streamed 1 \
+            -reconnect_delay_max 30 \
+            2>&1 | while IFS= read -r line; do 
+                if [[ "$line" =~ "Connection reset by peer" ]] || [[ "$line" =~ "Broken pipe" ]] || [[ "$line" =~ "Error writing trailer" ]]; then
+                    echo "[DUAL] CRITICAL: $line"
+                elif [[ "$line" =~ "HTTP error" ]] || [[ "$line" =~ "Failed to" ]]; then
+                    echo "[DUAL] WARNING: $line"
+                else
+                    echo "[DUAL] $line"
                 fi
             done
         
-        local exit_code=$?
+        local exit_code=${PIPESTATUS[0]}
         
         if [ $exit_code -eq 0 ]; then
             echo "[DUAL] Stream ended normally"
             consecutive_failures=0
             retry_count=0
             retry_delay=$INITIAL_RETRY_DELAY
-        elif [ $exit_code -eq 124 ]; then
-            echo "[DUAL] Stream timeout after 1 hour (normal rotation)"
-            consecutive_failures=0
-            retry_count=0
-            retry_delay=5
         else
             echo "[DUAL] Stream failed with exit code: $exit_code"
             consecutive_failures=$((consecutive_failures + 1))
             retry_count=$((retry_count + 1))
             
             if [ $consecutive_failures -ge 3 ]; then
-                echo "[DUAL] Multiple consecutive failures, increasing delay..."
+                echo "[DUAL] Multiple consecutive failures detected, using longer delay..."
                 retry_delay=$MAX_RETRY_DELAY
                 consecutive_failures=0
             elif [ $retry_count -ge $MAX_RETRIES ]; then
@@ -170,6 +168,17 @@ stream_dual_to_rtmp() {
             else
                 retry_delay=$(calculate_backoff $retry_count)
             fi
+            
+            echo "[DUAL] Performing health check before retry..."
+            if [ -f "$STREAMING_VIDEO_FILE" ]; then
+                echo "[DUAL] Source video file is accessible"
+            else
+                echo "[DUAL] ERROR: Source video file is missing, attempting to re-prepare..."
+                if ! prepare_video; then
+                    echo "[DUAL] Failed to re-prepare video, waiting longer..."
+                    retry_delay=$((retry_delay * 2))
+                fi
+            fi
         fi
         
         echo "[DUAL] Waiting ${retry_delay}s before retry..."
@@ -177,20 +186,93 @@ stream_dual_to_rtmp() {
     done
 }
 
-health_check() {
+monitor_stream_health() {
+    echo "=== Starting stream health monitor ==="
+    local last_check=0
+    local health_check_interval=60  # Check every 60 seconds
+    local network_failures=0
+    local max_network_failures=3
+    
     while true; do
-        sleep 60  # Check every 5 minutes
+        sleep $health_check_interval
+        
+        current_time=$(date +%s)
+        
+        if ! ping -c 1 -W 5 8.8.8.8 >/dev/null 2>&1; then
+            network_failures=$((network_failures + 1))
+            echo "[MONITOR] Network connectivity issue detected ($network_failures/$max_network_failures)"
+            
+            if [ $network_failures -ge $max_network_failures ]; then
+                echo "[MONITOR] Multiple network failures, restarting stream..."
+                if kill -0 $STREAM_PID 2>/dev/null; then
+                    kill $STREAM_PID 2>/dev/null || true
+                    sleep 5
+                fi
+                network_failures=0
+            fi
+        else
+            network_failures=0
+        fi
         
         if ! kill -0 $STREAM_PID 2>/dev/null; then
-            echo "[HEALTH] Dual stream process died, restarting..."
+            echo "[MONITOR] Stream process (PID: $STREAM_PID) has died, restarting..."
+            
+            pkill -f "ffmpeg.*$RTMP_TARGET_LP" 2>/dev/null || true
+            pkill -f "ffmpeg.*$RTMP_TARGET_AI" 2>/dev/null || true
+            sleep 5
+            
+            echo "[MONITOR] Testing RTMP endpoint connectivity..."
+            LP_HOST=$(echo "$RTMP_TARGET_LP" | sed 's|rtmp://||' | cut -d'/' -f1 | cut -d':' -f1)
+            AI_HOST=$(echo "$RTMP_TARGET_AI" | sed 's|rtmp://||' | cut -d'/' -f1 | cut -d':' -f1)
+            
+            if ! nc -z -w5 "$LP_HOST" 1935 2>/dev/null; then
+                echo "[MONITOR] WARNING: Livepeer RTMP endpoint ($LP_HOST:1935) not reachable"
+            fi
+            
+            if ! nc -z -w5 "$AI_HOST" 1935 2>/dev/null; then
+                echo "[MONITOR] WARNING: AI RTMP endpoint ($AI_HOST:1935) not reachable"
+            fi
+            
             stream_dual_to_rtmp &
             STREAM_PID=$!
+            echo "[MONITOR] Restarted stream process (new PID: $STREAM_PID)"
+        else
+            echo "[MONITOR] Stream process is healthy (PID: $STREAM_PID)"
+        fi
+        
+        available_space=$(df "$DOWNLOAD_DIR" | awk 'NR==2 {print $4}')
+        if [ "$available_space" -lt 1048576 ]; then  # Less than 1GB
+            echo "[MONITOR] WARNING: Low disk space ($available_space KB available)"
+        fi
+        
+        if [ ! -f "$STREAMING_VIDEO_FILE" ] || [ ! -r "$STREAMING_VIDEO_FILE" ]; then
+            echo "[MONITOR] ERROR: Source video file missing or unreadable, attempting recovery..."
+            if ! prepare_video; then
+                echo "[MONITOR] Failed to recover video file"
+            fi
+        fi
+        
+        if [ $((current_time - last_check)) -ge 300 ]; then  # Every 5 minutes
+            echo "[MONITOR] Status: Stream running, network OK, disk space: ${available_space}KB"
+            last_check=$current_time
         fi
     done
 }
 
 cleanup() {
     echo "Cleaning up..."
+    
+    if [ -n "${MONITOR_PID:-}" ]; then
+        kill $MONITOR_PID 2>/dev/null || true
+    fi
+    
+    if [ -n "${STREAM_PID:-}" ]; then
+        kill $STREAM_PID 2>/dev/null || true
+    fi
+    
+    pkill -f "ffmpeg.*$RTMP_TARGET_LP" 2>/dev/null || true
+    pkill -f "ffmpeg.*$RTMP_TARGET_AI" 2>/dev/null || true
+    
     jobs -p | xargs -r kill 2>/dev/null || true
     wait
     exit 0
@@ -198,11 +280,10 @@ cleanup() {
 
 trap cleanup INT TERM EXIT
 
-echo "=== YouTube to Independent Dual RTMP Streaming ==="
+echo "=== YouTube to Dual RTMP Streaming ==="
 echo "YouTube URL: $YOUTUBE_URL"
 echo "Livepeer RTMP: $RTMP_TARGET_LP"
 echo "AI RTMP: $RTMP_TARGET_AI"
-echo "Strategy: Single process with enhanced error handling"
 
 if ! prepare_video; then
     echo "Failed to prepare video"
@@ -213,10 +294,12 @@ stream_dual_to_rtmp &
 STREAM_PID=$!
 echo "Started dual streaming (PID: $STREAM_PID)"
 
-health_check &
-HEALTH_PID=$!
-echo "Started health check (PID: $HEALTH_PID)"
+# Start health monitor in background
+monitor_stream_health &
+MONITOR_PID=$!
+echo "Started stream monitor (PID: $MONITOR_PID)"
 
-echo "Stream started. Press Ctrl+C to stop."
+echo "All processes started. Press Ctrl+C to stop."
+echo "Stream status: Livepeer (with audio) + AI (video only)"
 
 wait 
