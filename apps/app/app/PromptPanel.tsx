@@ -47,6 +47,7 @@ export default function PromptPanel() {
   const { isMobile } = useMobileStore();
   const { currentStream } = useMultiplayerStreamStore();
   const [promptValue, setPromptValue] = useState("");
+  const [isTextareaHighlighted, setIsTextareaHighlighted] = useState(false);
 
   const { currentPrompt, recentPrompts, isSubmitting, submitPrompt } =
     usePromptQueue(currentStream?.streamKey);
@@ -58,6 +59,10 @@ export default function PromptPanel() {
 
   const handleTrendingPromptClick = (prompt: string) => {
     setPromptValue(prompt);
+    setIsTextareaHighlighted(true);
+    setTimeout(() => {
+      setIsTextareaHighlighted(false);
+    }, 1500);
   };
 
   const handlePastPromptClick = (prompt: string) => {
@@ -284,6 +289,7 @@ export default function PromptPanel() {
             promptValue={promptValue}
             setPromptValue={setPromptValue}
             isMobile={isMobile}
+            isTextareaHighlighted={isTextareaHighlighted}
           />
           {!isMobile && (
             <p className="text-sm italic text-gray-500 mt-4 text-center">
@@ -313,6 +319,56 @@ export default function PromptPanel() {
         .animate-fadeSlideIn {
           animation: fadeSlideIn 0.3s ease-out;
         }
+        @keyframes pulse {
+          0% {
+            transform: scale(1);
+          }
+          25% {
+            transform: scale(1.01);
+          }
+          50% {
+            transform: scale(1.02);
+          }
+          75% {
+            transform: scale(1.01);
+          }
+          100% {
+            transform: scale(1);
+          }
+        }
+        @keyframes pulseAndGlow {
+          0% {
+            transform: scale(1);
+            boxshadow: 0 0 2px 1px rgba(59, 130, 246, 0.2);
+          }
+          15% {
+            transform: scale(1.02);
+            boxshadow: 0 0 5px 2px rgba(59, 130, 246, 0.3);
+          }
+          30% {
+            transform: scale(1);
+            boxshadow: 0 0 2px 1px rgba(59, 130, 246, 0.2);
+          }
+          45% {
+            transform: scale(1.015);
+            boxshadow: 0 0 4px 1px rgba(59, 130, 246, 0.25);
+          }
+          60% {
+            transform: scale(1);
+            boxshadow: 0 0 2px 1px rgba(59, 130, 246, 0.2);
+          }
+          75% {
+            transform: scale(1.01);
+            boxshadow: 0 0 3px 1px rgba(59, 130, 246, 0.2);
+          }
+          100% {
+            transform: scale(1);
+            boxshadow: 0 0 2px 1px rgba(59, 130, 246, 0.2);
+          }
+        }
+        .animate-pulse-scale {
+          animation: pulseAndGlow 0.8s ease-in-out;
+        }
       `}</style>
     </div>
   );
@@ -324,12 +380,14 @@ function PromptSubmissionForm({
   promptValue,
   setPromptValue,
   isMobile = false,
+  isTextareaHighlighted,
 }: {
   onSubmitPrompt: (text: string) => Promise<boolean>;
   isSubmitting: boolean;
   promptValue: string;
   setPromptValue: (value: string) => void;
   isMobile?: boolean;
+  isTextareaHighlighted: boolean;
 }) {
   const { profanity, exceedsMaxLength } = useValidateInput(promptValue);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -402,7 +460,11 @@ function PromptSubmissionForm({
             isMobile ? "" : "shadow-[8px_12px_24px_0px_#0D131E26]"
           } resize-none overflow-hidden ${
             profanity || exceedsMaxLength ? "border-red-500" : ""
-          }`}
+          } ${
+            isTextareaHighlighted && !profanity && !exceedsMaxLength
+              ? "border-sky-400 shadow-[0_0_0_3px_rgba(56,189,248,0.1)] animate-pulse-scale"
+              : ""
+          } transition-all duration-300 ease-in-out`}
           value={promptValue}
           onChange={handleChange}
           onKeyDown={handleKeyDown}
