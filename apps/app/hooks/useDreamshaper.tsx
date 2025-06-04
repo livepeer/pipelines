@@ -23,7 +23,7 @@ import { usePlayerStore } from "@/components/welcome/featured/player";
 
 export const DEFAULT_PIPELINE_ID = "pip_DRQREDnSei4HQyC8"; // Staging Dreamshaper ID
 export const DEFAULT_MOBILE_PIPELINE_ID =
-  "pip_00527Gdb247b202591d-portrait-9-16"; // Default Mobile Pipeline ID
+  "pip_00527Gdb247b202591d-portrait-9-16"; // Default Staging Mobile Pipeline ID
 export const DUMMY_USER_ID_FOR_NON_AUTHENTICATED_USERS =
   "did:privy:cm4x2cuiw007lh8fcj34919fu"; // Infra Email User ID
 

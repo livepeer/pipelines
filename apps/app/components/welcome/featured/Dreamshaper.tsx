@@ -456,7 +456,7 @@ export default function Dreamshaper({
             <div
               ref={playerRef}
               className={cn(
-                "w-full max-w-[calc(min(100%,calc((100vh-16rem)*16/9)))] mx-auto md:aspect-video aspect-square bg-sidebar rounded-2xl overflow-hidden relative",
+                "w-full max-w-[calc(min(100%,calc((100vh-16rem)*16/9)))] mx-auto md:aspect-video aspect-[9/16] bg-sidebar rounded-2xl overflow-hidden relative",
                 isFullscreen && "w-full h-full max-w-none rounded-none",
                 "md:min-w-[596px]",
                 isOverlayOpen && !isMobile && "md:aspect-auto md:h-[70vh]",
