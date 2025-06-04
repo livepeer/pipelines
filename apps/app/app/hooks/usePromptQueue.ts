@@ -1,6 +1,6 @@
 import track from "@/lib/track";
 import { usePrivy } from "@privy-io/react-auth";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 
 export interface CurrentPrompt {
   prompt: {
@@ -18,160 +18,257 @@ export interface RecentPromptItem {
   timestamp: number;
 }
 
-export function usePromptQueue(streamKey: string | undefined) {
-  const [currentPrompt, setCurrentPrompt] = useState<CurrentPrompt | null>(
-    null,
+// Global cache for shared state and WebSocket connections
+interface CacheEntry {
+  currentPrompt: CurrentPrompt | null;
+  recentPrompts: RecentPromptItem[];
+  isSubmitting: boolean;
+  ws: WebSocket | null;
+  subscribers: Set<() => void>;
+  reconnectTimer: NodeJS.Timeout | null;
+}
+
+const promptQueueCache: Map<string, CacheEntry> = new Map();
+
+function getCacheEntry(streamKey: string): CacheEntry {
+  if (!promptQueueCache.has(streamKey)) {
+    promptQueueCache.set(streamKey, {
+      currentPrompt: null,
+      recentPrompts: [],
+      isSubmitting: false,
+      ws: null,
+      subscribers: new Set(),
+      reconnectTimer: null,
+    });
+  }
+  return promptQueueCache.get(streamKey)!;
+}
+
+function notifySubscribers(streamKey: string) {
+  const entry = promptQueueCache.get(streamKey);
+  if (entry) {
+    entry.subscribers.forEach(callback => callback());
+  }
+}
+
+function connectWebSocket(streamKey: string) {
+  const entry = getCacheEntry(streamKey);
+
+  if (entry.ws) {
+    entry.ws.close();
+    entry.ws = null;
+  }
+
+  if (entry.reconnectTimer) {
+    clearTimeout(entry.reconnectTimer);
+    entry.reconnectTimer = null;
+  }
+
+  const wsUrl = process.env.NEXT_PUBLIC_API_WS_URL || "ws://localhost:8080";
+  const ws = new WebSocket(
+    `${wsUrl}/ws?streamKey=${encodeURIComponent(streamKey)}`,
   );
-  const [recentPrompts, setRecentPrompts] = useState<RecentPromptItem[]>([]);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const wsRef = useRef<WebSocket | null>(null);
-  const currentStreamKeyRef = useRef<string | undefined>(streamKey);
-  const { authenticated } = usePrivy();
 
-  useEffect(() => {
-    if (currentStreamKeyRef.current !== streamKey) {
-      setCurrentPrompt(null);
-      setRecentPrompts([]);
-      setIsSubmitting(false);
-      currentStreamKeyRef.current = streamKey;
+  ws.onopen = () => {
+    const currentEntry = promptQueueCache.get(streamKey);
+    if (currentEntry && currentEntry.subscribers.size > 0) {
+      currentEntry.ws = ws;
+    } else {
+      ws.close();
     }
+  };
 
-    if (!streamKey) {
-      if (wsRef.current) {
-        wsRef.current.close();
-        wsRef.current = null;
-      }
+  ws.onmessage = event => {
+    const currentEntry = promptQueueCache.get(streamKey);
+    if (!currentEntry || currentEntry.ws !== ws) {
       return;
     }
 
-    if (wsRef.current) {
-      console.log("Closing previous WebSocket connection");
-      wsRef.current.close();
-      wsRef.current = null;
+    try {
+      const message = JSON.parse(event.data);
+      console.log("onmessage", message.type);
+
+      switch (message.type) {
+        case "initial":
+          currentEntry.currentPrompt = message.payload.currentPrompt;
+          currentEntry.recentPrompts = message.payload.recentPrompts || [];
+          notifySubscribers(streamKey);
+          break;
+
+        case "CurrentPrompt":
+          currentEntry.currentPrompt = message.payload.prompt;
+          notifySubscribers(streamKey);
+          break;
+
+        case "RecentPromptsUpdate":
+          currentEntry.recentPrompts = message.payload.recent_prompts || [];
+          notifySubscribers(streamKey);
+          break;
+
+        default:
+      }
+    } catch (error) {
+      console.error("Error parsing WebSocket message:", error);
+    }
+  };
+
+  ws.onclose = event => {
+    const currentEntry = promptQueueCache.get(streamKey);
+    if (!currentEntry || currentEntry.ws !== ws) {
+      return;
     }
 
-    const connectWebsocket = () => {
-      const wsUrl = process.env.NEXT_PUBLIC_API_WS_URL || "ws://localhost:8080";
-      const ws = new WebSocket(
-        `${wsUrl}/ws?streamKey=${encodeURIComponent(streamKey)}`,
-      );
+    currentEntry.ws = null;
 
-      ws.onopen = () => {
-        if (currentStreamKeyRef.current === streamKey) {
-          wsRef.current = ws;
-        } else {
-          ws.close();
+    if (
+      event.code !== 1000 &&
+      event.code !== 1001 &&
+      currentEntry.subscribers.size > 0
+    ) {
+      console.log("Attempting to reconnect in 3 seconds...");
+      currentEntry.reconnectTimer = setTimeout(() => {
+        const stillCurrentEntry = promptQueueCache.get(streamKey);
+        if (stillCurrentEntry && stillCurrentEntry.subscribers.size > 0) {
+          connectWebSocket(streamKey);
         }
-      };
+      }, 3000);
+    }
+  };
 
-      ws.onmessage = event => {
-        if (wsRef.current !== ws || currentStreamKeyRef.current !== streamKey) {
-          return;
-        }
+  ws.onerror = error => {
+    console.error("WebSocket error for streamKey:", streamKey, error);
+  };
+}
 
-        try {
-          const message = JSON.parse(event.data);
+function cleanupCacheEntry(streamKey: string) {
+  const entry = promptQueueCache.get(streamKey);
+  if (!entry) return;
 
-          switch (message.type) {
-            case "initial":
-              setCurrentPrompt(message.payload.currentPrompt);
-              setRecentPrompts(message.payload.recentPrompts || []);
-              break;
+  if (entry.subscribers.size === 0) {
+    if (entry.ws) {
+      entry.ws.close();
+      entry.ws = null;
+    }
+    if (entry.reconnectTimer) {
+      clearTimeout(entry.reconnectTimer);
+      entry.reconnectTimer = null;
+    }
+    promptQueueCache.delete(streamKey);
+  }
+}
 
-            case "CurrentPrompt":
-              setCurrentPrompt(message.payload.prompt);
-              break;
+export function usePromptQueue(streamKey: string | undefined) {
+  const [, forceUpdate] = useState({});
+  const currentStreamKeyRef = useRef<string | undefined>(streamKey);
+  const { authenticated } = usePrivy();
 
-            case "RecentPromptsUpdate":
-              setRecentPrompts(message.payload.recent_prompts || []);
-              break;
+  const rerender = useCallback(() => {
+    forceUpdate({});
+  }, []);
 
-            default:
-          }
-        } catch (error) {
-          console.error("Error parsing WebSocket message:", error);
-        }
-      };
+  useEffect(() => {
+    // Clean up previous subscription if streamKey changed
+    if (
+      currentStreamKeyRef.current &&
+      currentStreamKeyRef.current !== streamKey
+    ) {
+      const prevEntry = promptQueueCache.get(currentStreamKeyRef.current);
+      if (prevEntry) {
+        prevEntry.subscribers.delete(rerender);
+        cleanupCacheEntry(currentStreamKeyRef.current);
+      }
+    }
 
-      ws.onclose = event => {
-        if (wsRef.current !== ws || currentStreamKeyRef.current !== streamKey) {
-          return;
-        }
+    currentStreamKeyRef.current = streamKey;
 
-        if (
-          event.code !== 1000 &&
-          event.code !== 1001 &&
-          currentStreamKeyRef.current === streamKey
-        ) {
-          console.log("Attempting to reconnect in 3 seconds...");
-          setTimeout(() => {
-            if (currentStreamKeyRef.current === streamKey) {
-              connectWebsocket();
-            }
-          }, 3000);
-        }
-      };
+    if (!streamKey) {
+      return;
+    }
 
-      ws.onerror = error => {
-        console.error("WebSocket error for streamKey:", streamKey, error);
-      };
-    };
+    const entry = getCacheEntry(streamKey);
+    entry.subscribers.add(rerender);
 
-    connectWebsocket();
+    // Connect WebSocket if not already connected
+    if (!entry.ws && entry.subscribers.size === 1) {
+      connectWebSocket(streamKey);
+    }
 
     return () => {
-      if (wsRef.current) {
-        wsRef.current.close();
-        wsRef.current = null;
+      if (streamKey) {
+        const currentEntry = promptQueueCache.get(streamKey);
+        if (currentEntry) {
+          currentEntry.subscribers.delete(rerender);
+          cleanupCacheEntry(streamKey);
+        }
       }
     };
-  }, [streamKey]);
+  }, [streamKey, rerender]);
 
-  const getHighlightedIndex = () => {
+  // Get current state from cache
+  const entry = streamKey ? promptQueueCache.get(streamKey) : null;
+  const currentPrompt = entry?.currentPrompt || null;
+  const recentPrompts = entry?.recentPrompts || [];
+  const isSubmitting = entry?.isSubmitting || false;
+
+  const getHighlightedIndex = useCallback(() => {
     if (!currentPrompt?.prompt?.id) return -1;
     return recentPrompts.findIndex(item => item.id === currentPrompt.prompt.id);
-  };
+  }, [currentPrompt, recentPrompts]);
 
-  const submitPrompt = async (text: string) => {
-    if (!text.trim() || !streamKey || isSubmitting) return false;
+  const submitPrompt = useCallback(
+    async (text: string) => {
+      if (!text.trim() || !streamKey || isSubmitting) return false;
 
-    setIsSubmitting(true);
-    try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
-      const response = await fetch(`${apiUrl}/prompts`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          text: text.trim(),
-          streamKey,
-        }),
-      });
+      const entry = getCacheEntry(streamKey);
+      entry.isSubmitting = true;
+      notifySubscribers(streamKey);
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      try {
+        const apiUrl =
+          process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+        const response = await fetch(`${apiUrl}/prompts`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            text: text.trim(),
+            streamKey,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+
+        track("daydream_landing_page_prompt_submitted", {
+          is_authenticated: authenticated,
+          prompt: text,
+          nsfw: result?.wasCensored || false,
+          stream_key: streamKey,
+        });
+
+        return true;
+      } catch (error) {
+        return false;
+      } finally {
+        const currentEntry = promptQueueCache.get(streamKey);
+        if (currentEntry) {
+          currentEntry.isSubmitting = false;
+          notifySubscribers(streamKey);
+        }
       }
+    },
+    [streamKey, isSubmitting, authenticated],
+  );
 
-      const result = await response.json();
-
-      track("daydream_landing_page_prompt_submitted", {
-        is_authenticated: authenticated,
-        prompt: text,
-        nsfw: result?.wasCensored || false,
-        stream_key: streamKey,
-      });
-
-      return true;
-    } catch (error) {
-      return false;
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const addRandomPrompt = async () => {
+  const addRandomPrompt = useCallback(async () => {
     if (!streamKey || isSubmitting) return false;
 
-    setIsSubmitting(true);
+    const entry = getCacheEntry(streamKey);
+    entry.isSubmitting = true;
+    notifySubscribers(streamKey);
+
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
       const response = await fetch(
@@ -189,15 +286,19 @@ export function usePromptQueue(streamKey: string | undefined) {
     } catch (error) {
       return false;
     } finally {
-      setIsSubmitting(false);
+      const currentEntry = promptQueueCache.get(streamKey);
+      if (currentEntry) {
+        currentEntry.isSubmitting = false;
+        notifySubscribers(streamKey);
+      }
     }
-  };
+  }, [streamKey, isSubmitting]);
 
   return {
     currentPrompt,
     recentPrompts,
     isSubmitting,
-    wsRef,
+    wsRef: { current: entry?.ws || null },
     getHighlightedIndex,
     submitPrompt,
     addRandomPrompt,
