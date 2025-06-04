@@ -57,8 +57,13 @@ export default function StreamPromptPage() {
     }
   }, [streamId]);
 
-  const { currentPrompt, recentPrompts, isSubmitting, submitPrompt, getQueuePosition } =
-    usePromptQueue(streamInfo?.streamKey);
+  const {
+    currentPrompt,
+    recentPrompts,
+    isSubmitting,
+    submitPrompt,
+    getQueuePosition,
+  } = usePromptQueue(streamInfo?.streamKey);
 
   // Find user's position in queue
   const userQueuePosition = useMemo(() => {
@@ -177,7 +182,7 @@ export default function StreamPromptPage() {
                   <p className="text-gray-600 mb-6">
                     {userQueuePosition === 1
                       ? "You're next!"
-                      : `${userQueuePosition - 1} prompt${userQueuePosition - 1 === 1 ? '' : 's'} ahead of you`}
+                      : `${userQueuePosition - 1} prompt${userQueuePosition - 1 === 1 ? "" : "s"} ahead of you`}
                   </p>
 
                   <div className="bg-gray-100 rounded-2xl p-4">

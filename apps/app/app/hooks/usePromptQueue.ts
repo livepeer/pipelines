@@ -254,7 +254,7 @@ export function usePromptQueue(streamKey: string | undefined) {
         const result = await response.json();
 
         // Store the queue position
-        if (result.id && typeof result.queue_position === 'number') {
+        if (result.id && typeof result.queue_position === "number") {
           entry.queuePositions.set(result.id, result.queue_position);
         }
 
@@ -319,6 +319,9 @@ export function usePromptQueue(streamKey: string | undefined) {
     getHighlightedIndex,
     submitPrompt,
     addRandomPrompt,
-    getQueuePosition: useCallback((promptId: string) => queuePositions.get(promptId), [queuePositions]),
+    getQueuePosition: useCallback(
+      (promptId: string) => queuePositions.get(promptId),
+      [queuePositions],
+    ),
   };
 }
