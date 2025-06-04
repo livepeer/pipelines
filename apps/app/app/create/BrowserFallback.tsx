@@ -12,7 +12,7 @@ interface BrowserFallbackProps {
 }
 
 export default function BrowserFallback({ platform }: BrowserFallbackProps) {
-  const linkToCopy = "https://daydream.live/";
+  const linkToCopy = `https://daydream.live/?utm_source=${platform}&utm_medium=browser_fallback`;
   const [isCopied, setIsCopied] = useState(false);
 
   const handleCopyLink = async () => {
