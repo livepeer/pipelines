@@ -3,7 +3,6 @@ set -euo pipefail
 
 YOUTUBE_URL="${YOUTUBE_URL_STREAM1}"
 RTMP_TARGET_LP="${RTMP_TARGET_STREAM1}"
-HLS_SOURCE_URL="${HLS_URL_STREAM2}"
 RTMP_TARGET_AI="${RTMP_TARGET_STREAM2}"
 
 DOWNLOAD_DIR="/app/data"
@@ -28,7 +27,6 @@ fi
 
 if [ -z "$YOUTUBE_URL" ]; then echo "Error: YOUTUBE_URL_STREAM1 not set." >&2; exit 1; fi
 if [ -z "$RTMP_TARGET_LP" ]; then echo "Error: RTMP_TARGET_STREAM1 not set." >&2; exit 1; fi
-if [ -z "$HLS_SOURCE_URL" ]; then echo "Error: HLS_URL_STREAM2 not set." >&2; exit 1; fi
 if [ -z "$RTMP_TARGET_AI" ]; then echo "Error: RTMP_TARGET_STREAM2 not set." >&2; exit 1; fi
 
 FORMAT_SELECTOR="bestvideo[height<=360][vcodec^=avc][dynamic_range!=HDR][ext=mp4]+bestaudio[acodec=aac][ext=m4a]/bestvideo[height<=360][vcodec^=avc][ext=mp4]+bestaudio[acodec=aac][ext=m4a]/bestvideo[height<=360][vcodec^=avc]+bestaudio/bestvideo[height<=360]+bestaudio/best[height<=360]"
@@ -106,36 +104,45 @@ prepare_video() {
     return 0
 }
 
-stream_to_livepeer() {
-    echo "=== Starting stream to Livepeer ==="
+stream_dual_to_rtmp() {
+    echo "=== Starting dual stream to both RTMP endpoints ==="
     local retry_count=0
     local retry_delay=$INITIAL_RETRY_DELAY
     
     while true; do
-        echo "[LP] Streaming to: $RTMP_TARGET_LP (attempt $((retry_count + 1)))"
+        echo "[DUAL] Streaming to both endpoints (attempt $((retry_count + 1)))"
+        echo "[DUAL] Livepeer RTMP: $RTMP_TARGET_LP"
+        echo "[DUAL] AI RTMP: $RTMP_TARGET_AI"
         
+        # Use multiple outputs to send the same stream to both RTMP endpoints
         ffmpeg -re \
             -stream_loop -1 \
             -i "$STREAMING_VIDEO_FILE" \
-            -c copy \
+            -c:v copy \
+            -c:a copy \
             -bufsize 3000k \
             -maxrate 1500k \
             -f flv "$RTMP_TARGET_LP" \
+            -c:v copy \
+            -c:a copy \
+            -bufsize 3000k \
+            -maxrate 1500k \
+            -f flv "$RTMP_TARGET_AI" \
             -loglevel info \
-            2>&1 | while IFS= read -r line; do echo "[LP] $line"; done
+            2>&1 | while IFS= read -r line; do echo "[DUAL] $line"; done
         
         local exit_code=${PIPESTATUS[0]}
         
         if [ $exit_code -eq 0 ]; then
-            echo "[LP] Stream ended normally"
+            echo "[DUAL] Stream ended normally"
             retry_count=0
             retry_delay=$INITIAL_RETRY_DELAY
         else
-            echo "[LP] Stream failed with exit code: $exit_code"
+            echo "[DUAL] Stream failed with exit code: $exit_code"
             retry_count=$((retry_count + 1))
             
             if [ $retry_count -ge $MAX_RETRIES ]; then
-                echo "[LP] Max retries reached, resetting counter but continuing..."
+                echo "[DUAL] Max retries reached, resetting counter but continuing..."
                 retry_count=0
                 retry_delay=$MAX_RETRY_DELAY
             else
@@ -143,127 +150,8 @@ stream_to_livepeer() {
             fi
         fi
         
-        echo "[LP] Waiting ${retry_delay}s before retry..."
+        echo "[DUAL] Waiting ${retry_delay}s before retry..."
         sleep $retry_delay
-    done
-}
-
-check_hls_with_retry() {
-    local url="$1"
-    local max_retries=30
-    local retry_count=0
-    
-    while [ $retry_count -lt $max_retries ]; do
-        if curl -s -L -f -o /dev/null --max-time 10 "$url"; then
-            echo "[HLS] Stream is available!"
-            return 0
-        fi
-        
-        retry_count=$((retry_count + 1))
-        echo "[HLS] Not ready yet (attempt $retry_count/$max_retries)..."
-        sleep 5
-    done
-    
-    echo "[HLS] ERROR: Stream not available after $max_retries attempts"
-    return 1
-}
-
-stream_to_ai() {
-    echo "=== Starting stream to AI ingest ==="
-    local retry_count=0
-    local retry_delay=$INITIAL_RETRY_DELAY
-    local consecutive_failures=0
-    
-    echo "[AI] Waiting 90s for Livepeer HLS to initialize..."
-    sleep 90
-    
-    while true; do
-        echo "[AI] Checking HLS availability: $HLS_SOURCE_URL"
-        
-        if check_hls_with_retry "$HLS_SOURCE_URL"; then
-            echo "[AI] Starting stream to: $RTMP_TARGET_AI (attempt $((retry_count + 1)))"
-            
-            local error_count=0
-            
-            ffmpeg -rw_timeout 10000000 -timeout 10000000 \
-                -re \
-                -i "$HLS_SOURCE_URL" \
-                -c copy \
-                -an \
-                -f flv "$RTMP_TARGET_AI" \
-                -loglevel info \
-                2>&1 | while IFS= read -r line; do
-                    if [[ "$line" =~ "Connection reset by peer" ]] || [[ "$line" =~ "Broken pipe" ]] || [[ "$line" =~ "Error writing trailer" ]]; then
-                        echo "[AI] CRITICAL: $line"
-                    elif [[ "$line" =~ "HTTP error" ]] || [[ "$line" =~ "Failed to reload" ]]; then
-                        if [ $error_count -lt $ERROR_LOG_LIMIT ]; then
-                            echo "[AI] $line"
-                            error_count=$((error_count + 1))
-                        elif [ $error_count -eq $ERROR_LOG_LIMIT ]; then
-                            echo "[AI] [Suppressing further HTTP/reload errors...]"
-                            error_count=$((error_count + 1))
-                        fi
-                    else
-                        echo "[AI] $line"
-                    fi
-                done
-            
-            local exit_code=${PIPESTATUS[0]}
-            
-            if [ $exit_code -eq 0 ]; then
-                echo "[AI] Stream ended normally"
-                consecutive_failures=0
-                retry_count=0
-                retry_delay=$INITIAL_RETRY_DELAY
-            else
-                echo "[AI] Stream failed with exit code: $exit_code"
-                consecutive_failures=$((consecutive_failures + 1))
-                retry_count=$((retry_count + 1))
-                
-                if [ $consecutive_failures -ge 3 ]; then
-                    echo "[AI] Multiple consecutive failures detected, waiting longer..."
-                    retry_delay=$MAX_RETRY_DELAY
-                    consecutive_failures=0
-                elif [ $retry_count -ge $MAX_RETRIES ]; then
-                    echo "[AI] Max retries reached, resetting counter but continuing..."
-                    retry_count=0
-                    retry_delay=$MAX_RETRY_DELAY
-                else
-                    retry_delay=$(calculate_backoff $retry_count)
-                fi
-            fi
-            
-            echo "[AI] Waiting ${retry_delay}s before retry..."
-            sleep $retry_delay
-        else
-            echo "[AI] HLS not available, waiting 60s..."
-            sleep 60
-            consecutive_failures=$((consecutive_failures + 1))
-            
-            if [ $consecutive_failures -ge 5 ]; then
-                echo "[AI] HLS has been unavailable for extended period, waiting 5 minutes..."
-                sleep 300
-                consecutive_failures=0
-            fi
-        fi
-    done
-}
-
-health_check() {
-    while true; do
-        sleep 300
-        
-        if ! kill -0 $LP_PID 2>/dev/null; then
-            echo "[HEALTH] Livepeer stream process died, restarting..."
-            stream_to_livepeer &
-            LP_PID=$!
-        fi
-        
-        if ! kill -0 $AI_PID 2>/dev/null; then
-            echo "[HEALTH] AI stream process died, restarting..."
-            stream_to_ai &
-            AI_PID=$!
-        fi
     done
 }
 
@@ -276,10 +164,9 @@ cleanup() {
 
 trap cleanup INT TERM EXIT
 
-echo "=== Unified YouTube -> Livepeer -> AI Streaming ==="
+echo "=== YouTube to Dual RTMP Streaming ==="
 echo "YouTube URL: $YOUTUBE_URL"
 echo "Livepeer RTMP: $RTMP_TARGET_LP"
-echo "HLS Source: $HLS_SOURCE_URL"
 echo "AI RTMP: $RTMP_TARGET_AI"
 
 if ! prepare_video; then
@@ -287,21 +174,10 @@ if ! prepare_video; then
     exit 1
 fi
 
-stream_to_livepeer &
-LP_PID=$!
-echo "Started Livepeer streaming (PID: $LP_PID)"
+stream_dual_to_rtmp &
+STREAM_PID=$!
+echo "Started dual streaming (PID: $STREAM_PID)"
 
-sleep 10
-
-stream_to_ai &
-AI_PID=$!
-echo "Started AI streaming (PID: $AI_PID)"
-
-health_check &
-HEALTH_PID=$!
-echo "Started health checker (PID: $HEALTH_PID)"
-
-echo "All processes started."
-echo "Press Ctrl+C to stop."
+echo "Stream started. Press Ctrl+C to stop."
 
 wait 
