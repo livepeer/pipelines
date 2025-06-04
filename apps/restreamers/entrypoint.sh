@@ -132,7 +132,6 @@ stream_dual_to_rtmp() {
             -maxrate 1200k \
             -rtmp_live 1 \
             -rtmp_buffer 1000 \
-            -rtmp_conn_timeout 10 \
             -f flv "$RTMP_TARGET_AI" \
             -loglevel warning \
             2>&1 | while IFS= read -r line; do
