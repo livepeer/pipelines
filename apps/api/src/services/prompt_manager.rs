@@ -8,32 +8,6 @@ use std::sync::Arc;
 use tokio::time;
 use tracing::{error, info};
 
-const _RANDOM_PROMPTS: &[&str] = &[
-    "hyperrealistic portrait of an alien queen --quality 3",
-    "fantasy castle floating among clouds at sunset --creativity 0.8",
-    "cybernetic ((animal)) with glowing parts --quality 2",
-    "dreamlike surreal landscape with impossible physics --creativity 0.9",
-    "ancient ruins overgrown with (((luminescent plants))) --quality 3",
-    "deep sea creature inspired by ((bioluminescent)) life --quality 2.5",
-    "clockwork automaton with intricate mechanical details --creativity 0.8",
-    "volcanic landscape with rivers of glowing (((molten lava))) --quality 3",
-    "cosmic deity with stars and galaxies as part of its form --creativity 0.9",
-    "psychedelic dreamscape with fractals and impossible colors --quality 2.5",
-    "biomechanical fusion of nature and ((advanced technology)) --creativity 0.8",
-    "crystal palace with rainbow light refractions --quality 3",
-    "ancient temple in a jungle with mystical fog --quality 2.8",
-    "futuristic city with hovering vehicles and holographic ads --creativity 0.9",
-    "magical underwater kingdom with merfolk architecture --quality 3",
-    "cosmic gateway with swirling energy patterns --creativity 0.85",
-    "crystal forest with rainbow light refractions --quality 2.7",
-    "surreal dreamscape with floating islands and impossible physics --creativity 0.95",
-    "ancient mechanical clockwork city --quality 3",
-    "bioluminescent deep sea creatures in the abyss --creativity 0.8",
-    "floating islands with waterfalls cascading into the void --quality 2.9",
-    "enchanted forest with magical creatures and fairy lights --creativity 0.75",
-    "cybernetic dragon with glowing circuit patterns --quality 3",
-];
-
 pub async fn run(state: Arc<AppState>) -> Result<()> {
     info!("Prompt manager started");
 
