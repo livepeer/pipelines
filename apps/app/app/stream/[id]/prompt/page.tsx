@@ -183,7 +183,9 @@ export default function StreamPromptPage() {
 
                   <div className="bg-gray-100 rounded-2xl p-4">
                     <p className="text-sm text-gray-700 italic">
-                      &ldquo;{recentPrompts.find(p => p.id === userPromptId)?.text}&rdquo;
+                      &ldquo;
+                      {recentPrompts.find(p => p.id === userPromptId)?.text}
+                      &rdquo;
                     </p>
                   </div>
                 </div>
