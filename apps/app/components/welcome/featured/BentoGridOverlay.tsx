@@ -112,7 +112,7 @@ export const BentoGridOverlay = () => {
         fetch(`/api/clips/user?page=0&limit=48`)
           .then(res => res.json())
           .then(data => {
-            setMyClips(data.clips);
+            setMyClips(data.clips ?? []);
             setIsLoadingMyClips(false);
           })
           .catch(error => {
