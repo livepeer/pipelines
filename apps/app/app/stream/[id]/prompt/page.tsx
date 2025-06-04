@@ -12,6 +12,7 @@ import {
   useValidateInput,
 } from "@/components/welcome/featured/useValidateInput";
 import { getStream } from "@/app/api/streams/get";
+import { Button } from "@repo/design-system/components/ui/button";
 
 interface StreamInfo {
   streamKey: string;
@@ -27,6 +28,10 @@ export default function StreamPromptPage() {
   const [promptValue, setPromptValue] = useState("");
   const [userPromptId, setUserPromptId] = useState<string | null>(null);
   const [isTextareaHighlighted, setIsTextareaHighlighted] = useState(false);
+
+  const handleReset = () => {
+    setUserPromptId(null);
+  };
 
   // Fetch stream info on mount
   useEffect(() => {
@@ -227,6 +232,13 @@ export default function StreamPromptPage() {
                   <p className="text-gray-600 mb-6">
                     Your prompt is now being processed live
                   </p>
+
+                  <Button
+                    onClick={handleReset}
+                    className="px-8 py-3 bg-gray-900 hover:bg-gray-800 text-white rounded-full font-medium transition-all duration-300"
+                  >
+                    Submit Another
+                  </Button>
                 </motion.div>
               </motion.div>
             )}
