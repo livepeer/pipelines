@@ -114,6 +114,7 @@ export const LivepeerPlayer = () => {
     }
     const fetchPlaybackInfo = async () => {
       const info = await getStreamPlaybackInfo(stream?.output_playback_id!);
+      if (navigator.webdriver) console.log("[E2E Test] PlaybackInfo", info);
       setPlaybackInfo(info);
     };
     fetchPlaybackInfo();
@@ -125,10 +126,15 @@ export const LivepeerPlayer = () => {
   ]);
 
   if (loading || !playbackUrl) {
+    if (navigator.webdriver) console.log("[E2E Test] Loading");
+
     return <PlayerLoading />;
   }
 
   if (iframePlayerFallback) {
+    if (navigator.webdriver)
+      console.log("[E2E Test] IframePlayerFallback", iframePlayerFallback);
+
     return (
       <LPPLayer
         output_playback_id={stream?.output_playback_id!}
@@ -139,6 +145,9 @@ export const LivepeerPlayer = () => {
   }
 
   if (useVideoJS && pipeline) {
+    if (navigator.webdriver)
+      console.log("[E2E Test] VideoJSFallback", useVideoJS);
+
     return (
       <VideoJSPlayer
         src={playbackUrl}
@@ -154,6 +163,8 @@ export const LivepeerPlayer = () => {
   const src = getSrc(useMediamtx ? playbackUrl : playbackInfo);
 
   if (!src) {
+    if (navigator.webdriver) console.log("[E2E Test] No src");
+
     return (
       <div className="w-full relative h-full bg-black/50 backdrop-blur data-[visible=true]:animate-in data-[visible=false]:animate-out data-[visible=false]:fade-out-0 data-[visible=true]:fade-in-0">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
