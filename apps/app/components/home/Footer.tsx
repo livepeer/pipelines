@@ -1,17 +1,12 @@
 import { cn } from "@repo/design-system/lib/utils";
-import { TrackedButton } from "../analytics/TrackedButton";
 import { SquareDashedBottomCode, Workflow } from "lucide-react";
+import { TrackedButton } from "../analytics/TrackedButton";
 
-interface FooterProps {
-  isMobile?: boolean;
-}
-
-export const Footer = ({ isMobile = false }: FooterProps) => {
-  if (isMobile) return null;
+export const Footer = () => {
   return (
     <div
       className={cn(
-        isMobile ? "bg-white" : "bg-white/20 backdrop-blur-md",
+        "hidden md:block bg-white/20 backdrop-blur-md",
         "flex justify-center transition-opacity duration-300 opacity-100 h-12 w-full",
       )}
     >
@@ -20,7 +15,7 @@ export const Footer = ({ isMobile = false }: FooterProps) => {
           trackingEvent="footer_request_api_access_clicked"
           trackingProperties={{ location: "footer" }}
           variant="ghost"
-          className={`${isMobile ? "text-sm" : "text-medium"} text-gray-600 rounded-xl hover:text-gray-500 transition-colors duration-200 font-medium`}
+          className="text-medium text-gray-600 rounded-xl hover:text-gray-500 transition-colors duration-200 font-medium"
           onClick={() =>
             window.open(
               "https://share.hsforms.com/2c2Uw6JsHTtiiAyAH0-4itA3o1go",
@@ -29,7 +24,7 @@ export const Footer = ({ isMobile = false }: FooterProps) => {
             )
           }
         >
-          {isMobile ? "API access" : "Request API Access"}
+          Request API Access
           <SquareDashedBottomCode className="w-4 h-4 ml-2" />
         </TrackedButton>
         <div className="w-px h-6 bg-gray-300 mx-3" />
@@ -37,7 +32,7 @@ export const Footer = ({ isMobile = false }: FooterProps) => {
           trackingEvent="footer_build_with_comfystream_clicked"
           trackingProperties={{ location: "footer" }}
           variant="ghost"
-          className={`${isMobile ? "text-sm" : "text-medium"} text-gray-600 rounded-xl hover:text-gray-500 transition-colors duration-200 font-medium`}
+          className="text-medium text-gray-600 rounded-xl hover:text-gray-500 transition-colors duration-200 font-medium"
           onClick={() =>
             window.open(
               "https://comfystream.org/",
@@ -46,7 +41,7 @@ export const Footer = ({ isMobile = false }: FooterProps) => {
             )
           }
         >
-          {isMobile ? "Build" : "Build with ComfyStream"}
+          Build with ComfyStream
           <Workflow className="w-4 h-4 ml-2" />
         </TrackedButton>
       </div>

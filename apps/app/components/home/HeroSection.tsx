@@ -6,22 +6,10 @@ import { TrackedButton } from "../analytics/TrackedButton";
 import { cn } from "@repo/design-system/lib/utils";
 import { getIframeUrl, useMultiplayerStreamStore } from "./VideoSection";
 import useMobileStore from "@/hooks/useMobileStore";
+import { usePromptQueue } from "@/app/hooks/usePromptQueue";
+import { usePrivy } from "@/hooks/usePrivy";
 
-interface HeroSectionProps {
-  handlePromptSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
-  promptValue: string;
-  setPromptValue: (value: string) => void;
-  submitPromptForm: () => void;
-  isAuthenticated?: boolean;
-}
-
-export const HeroSection = ({
-  handlePromptSubmit,
-  promptValue,
-  setPromptValue,
-  submitPromptForm,
-  isAuthenticated = false,
-}: HeroSectionProps) => {
+export const HeroSection = () => {
   const router = useRouter();
   const [localPrompt, setLocalPrompt] = useState("");
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
@@ -30,6 +18,10 @@ export const HeroSection = ({
   const [typingSpeed, setTypingSpeed] = useState(100);
   const { currentStream } = useMultiplayerStreamStore();
   const { isMobile } = useMobileStore();
+  const { submitPrompt, isSubmitting } = usePromptQueue(
+    currentStream?.streamKey,
+  );
+  const { authenticated } = usePrivy();
 
   const placeholders = [
     "an art style",
@@ -65,12 +57,13 @@ export const HeroSection = ({
     return () => clearTimeout(timer);
   }, [displayText, isDeleting, placeholderIndex, placeholders]);
 
-  const handleSubmit = () => {
-    if (localPrompt.trim()) {
-      setPromptValue(localPrompt);
-      setTimeout(() => {
-        submitPromptForm();
-      }, 0);
+  const handleSubmit = async () => {
+    if (!localPrompt.trim() || isSubmitting) return;
+
+    const success = await submitPrompt(localPrompt);
+    if (success) {
+      setLocalPrompt("");
+      // Scroll to player section
       document.getElementById("player")?.scrollIntoView({
         behavior: "smooth",
         block: "start",
@@ -124,7 +117,7 @@ export const HeroSection = ({
             variant="default"
             className={cn("px-8 py-2 h-10 rounded-lg")}
           >
-            {isAuthenticated ? "Create" : "Sign in"}
+            {authenticated ? "Create" : "Sign in"}
           </TrackedButton>
         </div>
       </header>
@@ -166,11 +159,14 @@ export const HeroSection = ({
               )}
               <button
                 onClick={handleSubmit}
+                disabled={isSubmitting}
                 className={cn(
-                  "absolute right-4 top-1/2 -translate-y-1/2 px-6 py-2 bg-gray-800 text-white rounded-full shadow-lg hover:bg-gray-600 transition-colors flex items-center gap-2",
+                  "absolute right-4 top-1/2 -translate-y-1/2 px-6 py-2 bg-gray-800 text-white rounded-full shadow-lg hover:bg-gray-600 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed",
                 )}
               >
-                <span className="hidden sm:inline">See transformation</span>
+                <span className="hidden sm:inline">
+                  {isSubmitting ? "Submitting..." : "See transformation"}
+                </span>
                 <WandSparkles className="w-5 h-5" />
               </button>
             </div>
