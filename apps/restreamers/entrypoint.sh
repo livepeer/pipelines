@@ -108,40 +108,63 @@ stream_dual_to_rtmp() {
     echo "=== Starting dual stream to both RTMP endpoints ==="
     local retry_count=0
     local retry_delay=$INITIAL_RETRY_DELAY
+    local consecutive_failures=0
     
     while true; do
         echo "[DUAL] Streaming to both endpoints (attempt $((retry_count + 1)))"
         echo "[DUAL] Livepeer RTMP: $RTMP_TARGET_LP"
         echo "[DUAL] AI RTMP: $RTMP_TARGET_AI"
         
-        # Use multiple outputs to send the same stream to both RTMP endpoints
-        ffmpeg -re \
+        timeout 3600 ffmpeg -re \
             -stream_loop -1 \
             -i "$STREAMING_VIDEO_FILE" \
             -c:v copy \
             -c:a copy \
-            -bufsize 3000k \
-            -maxrate 1500k \
+            -bufsize 2000k \
+            -maxrate 1200k \
+            -rtmp_live 1 \
+            -rtmp_buffer 1000 \
+            -rtmp_conn_timeout 10 \
             -f flv "$RTMP_TARGET_LP" \
             -c:v copy \
             -c:a copy \
-            -bufsize 3000k \
-            -maxrate 1500k \
+            -bufsize 2000k \
+            -maxrate 1200k \
+            -rtmp_live 1 \
+            -rtmp_buffer 1000 \
+            -rtmp_conn_timeout 10 \
             -f flv "$RTMP_TARGET_AI" \
-            -loglevel info \
-            2>&1 | while IFS= read -r line; do echo "[DUAL] $line"; done
+            -loglevel warning \
+            2>&1 | while IFS= read -r line; do
+                echo "[DUAL] $line"
+                if [[ "$line" =~ "Error muxing a packet" ]] || [[ "$line" =~ "Connection reset by peer" ]] || [[ "$line" =~ "Broken pipe" ]] || [[ "$line" =~ "I/O error" ]]; then
+                    echo "[DUAL] CRITICAL ERROR detected: $line"
+                    pkill -f "ffmpeg.*$RTMP_TARGET_LP.*$RTMP_TARGET_AI" 2>/dev/null || true
+                fi
+            done
         
-        local exit_code=${PIPESTATUS[0]}
+        local exit_code=$?
         
         if [ $exit_code -eq 0 ]; then
             echo "[DUAL] Stream ended normally"
+            consecutive_failures=0
             retry_count=0
             retry_delay=$INITIAL_RETRY_DELAY
+        elif [ $exit_code -eq 124 ]; then
+            echo "[DUAL] Stream timeout after 1 hour (normal rotation)"
+            consecutive_failures=0
+            retry_count=0
+            retry_delay=5
         else
             echo "[DUAL] Stream failed with exit code: $exit_code"
+            consecutive_failures=$((consecutive_failures + 1))
             retry_count=$((retry_count + 1))
             
-            if [ $retry_count -ge $MAX_RETRIES ]; then
+            if [ $consecutive_failures -ge 3 ]; then
+                echo "[DUAL] Multiple consecutive failures, increasing delay..."
+                retry_delay=$MAX_RETRY_DELAY
+                consecutive_failures=0
+            elif [ $retry_count -ge $MAX_RETRIES ]; then
                 echo "[DUAL] Max retries reached, resetting counter but continuing..."
                 retry_count=0
                 retry_delay=$MAX_RETRY_DELAY
@@ -155,6 +178,18 @@ stream_dual_to_rtmp() {
     done
 }
 
+health_check() {
+    while true; do
+        sleep 60  # Check every 5 minutes
+        
+        if ! kill -0 $STREAM_PID 2>/dev/null; then
+            echo "[HEALTH] Dual stream process died, restarting..."
+            stream_dual_to_rtmp &
+            STREAM_PID=$!
+        fi
+    done
+}
+
 cleanup() {
     echo "Cleaning up..."
     jobs -p | xargs -r kill 2>/dev/null || true
@@ -164,10 +199,11 @@ cleanup() {
 
 trap cleanup INT TERM EXIT
 
-echo "=== YouTube to Dual RTMP Streaming ==="
+echo "=== YouTube to Independent Dual RTMP Streaming ==="
 echo "YouTube URL: $YOUTUBE_URL"
 echo "Livepeer RTMP: $RTMP_TARGET_LP"
 echo "AI RTMP: $RTMP_TARGET_AI"
+echo "Strategy: Single process with enhanced error handling"
 
 if ! prepare_video; then
     echo "Failed to prepare video"
@@ -177,6 +213,10 @@ fi
 stream_dual_to_rtmp &
 STREAM_PID=$!
 echo "Started dual streaming (PID: $STREAM_PID)"
+
+health_check &
+HEALTH_PID=$!
+echo "Started health check (PID: $HEALTH_PID)"
 
 echo "Stream started. Press Ctrl+C to stop."
 
