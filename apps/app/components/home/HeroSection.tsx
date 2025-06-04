@@ -60,8 +60,8 @@ export const HeroSection = () => {
   const handleSubmit = async () => {
     if (!localPrompt.trim() || isSubmitting) return;
 
-    const success = await submitPrompt(localPrompt);
-    if (success) {
+    const result = await submitPrompt(localPrompt);
+    if (result.success) {
       setLocalPrompt("");
       // Scroll to player section
       document.getElementById("player")?.scrollIntoView({

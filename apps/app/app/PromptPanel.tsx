@@ -382,7 +382,9 @@ function PromptSubmissionForm({
   isMobile = false,
   isTextareaHighlighted,
 }: {
-  onSubmitPrompt: (text: string) => Promise<boolean>;
+  onSubmitPrompt: (
+    text: string,
+  ) => Promise<{ success: boolean; promptId: string }>;
   isSubmitting: boolean;
   promptValue: string;
   setPromptValue: (value: string) => void;
@@ -396,8 +398,8 @@ function PromptSubmissionForm({
     e.preventDefault();
     if (profanity || exceedsMaxLength || !promptValue.trim()) return;
 
-    const success = await onSubmitPrompt(promptValue);
-    if (success) {
+    const result = await onSubmitPrompt(promptValue);
+    if (result.success) {
       setPromptValue("");
     }
   };

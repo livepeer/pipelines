@@ -217,7 +217,8 @@ export function usePromptQueue(streamKey: string | undefined) {
 
   const submitPrompt = useCallback(
     async (text: string) => {
-      if (!text.trim() || !streamKey || isSubmitting) return false;
+      if (!text.trim() || !streamKey || isSubmitting)
+        return { success: false, promptId: null };
 
       const entry = getCacheEntry(streamKey);
       entry.isSubmitting = true;
@@ -248,9 +249,9 @@ export function usePromptQueue(streamKey: string | undefined) {
           stream_key: streamKey,
         });
 
-        return true;
+        return { success: true, promptId: result.id };
       } catch (error) {
-        return false;
+        return { success: false, promptId: null };
       } finally {
         const currentEntry = promptQueueCache.get(streamKey);
         if (currentEntry) {
