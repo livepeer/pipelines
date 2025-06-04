@@ -61,7 +61,7 @@ export function ManagedBroadcast() {
             isMobile
               ? cn(
                   "flex-shrink-0 [&>div]:!pb-0 [&>div]:h-full",
-                  collapsed ? "h-8" : "h-64",
+                  collapsed ? "h-8" : "h-[28rem]",
                 )
               : cn(
                   "rounded-xl overflow-hidden",

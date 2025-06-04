@@ -141,7 +141,7 @@ export function BroadcastWithControls({ className }: { className?: string }) {
       mirrored={false}
       video
       noIceGathering
-      aspectRatio={16 / 9}
+      aspectRatio={isMobile ? 9 / 16 : 16 / 9}
       ingestUrl={ingestUrl}
       {...({
         iceServers: {
