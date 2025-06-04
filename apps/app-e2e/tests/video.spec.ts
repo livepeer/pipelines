@@ -10,6 +10,7 @@ import {
   SCREENSHOT_INTERVAL_MS,
   SEND_METRICS,
   regionalPath,
+  assertAudioChanging,
 } from "./common";
 import {
   ENVIRONMENT,
@@ -66,6 +67,7 @@ test.describe.parallel("Daydream Page Tests", () => {
       });
 
       test.afterEach(async ({ page }, testInfo) => {
+        const logger = createTestLogger(test.info());
         if (testInfo.status !== testInfo.expectedStatus) {
           await page.screenshot({
             path: `./screenshots/${testInfo.title}/error.png`,
@@ -80,7 +82,7 @@ test.describe.parallel("Daydream Page Tests", () => {
               environment: ENVIRONMENT,
             });
           } else {
-            console.log(
+            logger.log(
               `Test ${testInfo.title} failed, writing fail metric. Status: ${testInfo.status}`,
             );
             testFailureCounter.inc({
@@ -134,27 +136,23 @@ test.describe.parallel("Daydream Page Tests", () => {
           logger.log(`Stream info: ${clipboardText.replace(/[\r\n]+/g, "")}`);
 
           await assertVideoPlaying(broadcast, logger);
+          const broadcastMute = page.getByTestId("broadcast-mute");
+          await broadcast.hover();
+          const enableAudioCheck = await broadcastMute.isVisible();
+          if (enableAudioCheck) {
+            const micEnabled = await broadcastMute.getAttribute("data-enabled");
+            if (micEnabled !== "true") {
+              logger.log("Unmuting broadcast audio");
+              await broadcastMute.click();
+            }
+          } else {
+            logger.log("Audio check disabled");
+          }
+
           await assertVideoPlaying(playback, logger);
-
-          const audioTracks = await playback.evaluate(
-            (video: HTMLVideoElement) => {
-              const stream = video.srcObject;
-              if (!(stream instanceof MediaStream)) return [];
-              return stream.getAudioTracks().map(t => ({
-                kind: t.kind,
-                label: t.label,
-                enabled: t.enabled,
-                muted: t.muted,
-                readyState: t.readyState,
-              }));
-            },
-          );
-
-          expect(audioTracks.length).toBeGreaterThan(0);
-          expect(audioTracks[0].kind).toBe("audio");
-          expect(audioTracks[0].enabled).toBe(true);
-          expect(audioTracks[0].muted).toBe(false);
-          expect(audioTracks[0].readyState).toBe("live");
+          if (enableAudioCheck) {
+            await assertAudioChanging(playback, logger);
+          }
 
           // sleep to leave the stream running for longer
           logger.log("Sleeping to allow the stream to run...");

@@ -14,6 +14,7 @@ import { Loader2, Maximize, Minimize } from "lucide-react";
 import { useDreamshaperStore } from "../../../hooks/useDreamshaper";
 import Overlay from "./Overlay";
 import { LivepeerPlayer, usePlayerStore } from "./player";
+import { useOverlayStore } from "@/hooks/useOverlayStore";
 
 export const MainContent = () => {
   const { stream, loading } = useDreamshaperStore();
@@ -22,6 +23,7 @@ export const MainContent = () => {
   const { timeRemaining, formattedTime } = useTrialTimer();
   const { isPlaying } = usePlayerStore();
   const { isFullscreen, toggleFullscreen } = useFullscreenStore();
+  const { setIsOverlayOpen } = useOverlayStore();
 
   return (
     <>
@@ -43,7 +45,10 @@ export const MainContent = () => {
               variant="ghost"
               size="icon"
               className="bg-transparent hover:bg-transparent focus:outline-none focus-visible:ring-0 active:bg-transparent"
-              onClick={toggleFullscreen}
+              onClick={() => {
+                setIsOverlayOpen(false);
+                toggleFullscreen();
+              }}
             >
               {isFullscreen ? (
                 <Minimize className="h-4 w-4" />
@@ -80,17 +85,13 @@ export const MainContent = () => {
         <div className="w-full h-full flex items-center justify-center">
           <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
         </div>
-      ) : stream?.output_playback_id ? (
+      ) : (
         <>
           <div className="relative w-full h-full">
             <LivepeerPlayer />
           </div>
           {!isPlaying && <Overlay />}
         </>
-      ) : (
-        <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-          Waiting for stream to start...
-        </div>
       )}
     </>
   );

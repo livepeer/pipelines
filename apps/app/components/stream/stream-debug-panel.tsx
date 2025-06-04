@@ -75,7 +75,7 @@ export const StreamDebugPanel = () => {
 
   const handleCopyLogs = () => {
     const logs = JSON.stringify(fullResponse, null, 2);
-    navigator.clipboard.writeText(logs);
+    navigator.clipboard.writeText("```json\n" + logs + "\n```");
   };
 
   const isAdmin = useMemo(() => isLivepeerEmail(user), [user]);
@@ -137,7 +137,9 @@ export const StreamDebugPanel = () => {
           <div className="mb-2 font-mono">
             <span className="mr-2 font-semibold">State:</span>
             <span
-              className={`inline-block rounded px-2 py-1 text-xs font-bold font-mono ${getStatusClass(status)}`}
+              className={`inline-block rounded px-2 py-1 text-xs font-bold font-mono ${getStatusClass(
+                status,
+              )}`}
             >
               {status || "Unknown"}
             </span>

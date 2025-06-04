@@ -1,4 +1,4 @@
-import { expect, Locator, test } from "@playwright/test";
+import { expect, Locator, Page, test } from "@playwright/test";
 import sharp from "sharp";
 import {
   ENVIRONMENT,
@@ -27,6 +27,7 @@ export const SCREENSHOT_INTERVAL_MS = 250;
 export const MIN_DIFF_RATIO_THRESHOLD = 0.03;
 export const MIN_VARIANCE_THRESHOLD = 100;
 export const MIN_ENTROPY_THRESHOLD = 0.3;
+export const MIN_AUDIO_DIFF = 0.02;
 
 export const EXTENSION = "png";
 
@@ -325,4 +326,52 @@ export async function assertVideoContentChanging(
       );
     }
   });
+}
+
+export async function assertAudioChanging(
+  playback: Locator,
+  logger: Logger = console,
+) {
+  const maxChange = await playback.evaluate(async (video: HTMLVideoElement) => {
+    const context = new AudioContext();
+    const stream = video.srcObject as MediaStream;
+    if (!stream || stream.getAudioTracks().length === 0) return -1;
+
+    const analyser = context.createAnalyser();
+    const source = context.createMediaStreamSource(stream);
+    source.connect(analyser);
+
+    const bufferLength = analyser.frequencyBinCount;
+    const snapshots: Uint8Array[] = [];
+
+    for (let i = 0; i < 10; i++) {
+      const data = new Uint8Array(bufferLength);
+      analyser.getByteTimeDomainData(data);
+      snapshots.push(data);
+      await new Promise(res => setTimeout(res, 250));
+    }
+
+    function diff(a: Uint8Array, b: Uint8Array): number {
+      let totalDiff = 0,
+        totalMax = 0;
+      for (let i = 0; i < a.length; i++) {
+        totalDiff += Math.abs(a[i] - b[i]);
+        totalMax += Math.max(Math.abs(a[i]), Math.abs(b[i]));
+      }
+      return totalMax === 0 ? 0 : totalDiff / totalMax;
+    }
+
+    let maxChange = 0;
+    for (let i = 0; i < snapshots.length - 1; i++) {
+      maxChange = Math.max(maxChange, diff(snapshots[i], snapshots[i + 1]));
+    }
+
+    return maxChange;
+  });
+
+  logger.log(`🔊 Max audio change detected: ${(maxChange * 100).toFixed(2)}%`);
+  expect(
+    maxChange,
+    `Frames changed only ${(maxChange * 100).toFixed(2)}%, should exceed ${(MIN_AUDIO_DIFF * 100).toFixed(2)}%`,
+  ).toBeGreaterThan(MIN_AUDIO_DIFF);
 }
