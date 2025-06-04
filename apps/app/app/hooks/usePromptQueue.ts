@@ -26,6 +26,7 @@ interface CacheEntry {
   ws: WebSocket | null;
   subscribers: Set<() => void>;
   reconnectTimer: NodeJS.Timeout | null;
+  queuePositions: Map<string, number>; // Map of promptId -> position
 }
 
 const promptQueueCache: Map<string, CacheEntry> = new Map();
@@ -39,6 +40,7 @@ function getCacheEntry(streamKey: string): CacheEntry {
       ws: null,
       subscribers: new Set(),
       reconnectTimer: null,
+      queuePositions: new Map(),
     });
   }
   return promptQueueCache.get(streamKey)!;
@@ -209,6 +211,15 @@ export function usePromptQueue(streamKey: string | undefined) {
   const currentPrompt = entry?.currentPrompt || null;
   const recentPrompts = entry?.recentPrompts || [];
   const isSubmitting = entry?.isSubmitting || false;
+  const queuePositions = entry?.queuePositions || new Map();
+
+  // Clear queue position when prompt becomes active or is removed
+  useEffect(() => {
+    if (entry && currentPrompt?.prompt?.id) {
+      entry.queuePositions.delete(currentPrompt.prompt.id);
+      notifySubscribers(streamKey!);
+    }
+  }, [entry, currentPrompt?.prompt?.id, streamKey]);
 
   const getHighlightedIndex = useCallback(() => {
     if (!currentPrompt?.prompt?.id) return -1;
@@ -241,6 +252,11 @@ export function usePromptQueue(streamKey: string | undefined) {
         }
 
         const result = await response.json();
+
+        // Store the queue position
+        if (result.id && typeof result.queue_position === 'number') {
+          entry.queuePositions.set(result.id, result.queue_position);
+        }
 
         track("daydream_landing_page_prompt_submitted", {
           is_authenticated: authenticated,
@@ -303,5 +319,6 @@ export function usePromptQueue(streamKey: string | undefined) {
     getHighlightedIndex,
     submitPrompt,
     addRandomPrompt,
+    getQueuePosition: useCallback((promptId: string) => queuePositions.get(promptId), [queuePositions]),
   };
 }

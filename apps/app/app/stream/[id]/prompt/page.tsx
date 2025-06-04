@@ -57,18 +57,14 @@ export default function StreamPromptPage() {
     }
   }, [streamId]);
 
-  const { currentPrompt, recentPrompts, isSubmitting, submitPrompt } =
+  const { currentPrompt, recentPrompts, isSubmitting, submitPrompt, getQueuePosition } =
     usePromptQueue(streamInfo?.streamKey);
 
   // Find user's position in queue
   const userQueuePosition = useMemo(() => {
-    if (!userPromptId || !recentPrompts.length) return null;
-
-    const position = recentPrompts.findIndex(
-      prompt => prompt.id === userPromptId,
-    );
-    return position >= 0 ? position + 1 : null;
-  }, [userPromptId, recentPrompts]);
+    if (!userPromptId) return null;
+    return getQueuePosition(userPromptId);
+  }, [userPromptId, getQueuePosition]);
 
   // Check if user's prompt is currently active
   const isUserPromptActive = useMemo(() => {
@@ -78,14 +74,12 @@ export default function StreamPromptPage() {
   // Clear userPromptId when their prompt finishes being active
   useEffect(() => {
     if (userPromptId && currentPrompt?.prompt?.id !== userPromptId) {
-      const promptStillInQueue = recentPrompts.some(
-        prompt => prompt.id === userPromptId,
-      );
+      const promptStillInQueue = userQueuePosition !== undefined;
       if (!promptStillInQueue) {
         setUserPromptId(null);
       }
     }
-  }, [currentPrompt, userPromptId, recentPrompts]);
+  }, [currentPrompt, userPromptId, userQueuePosition]);
 
   const handleSubmitPrompt = async (text: string) => {
     const result = await submitPrompt(text);
@@ -183,7 +177,7 @@ export default function StreamPromptPage() {
                   <p className="text-gray-600 mb-6">
                     {userQueuePosition === 1
                       ? "You're next!"
-                      : `${userQueuePosition - 1} ahead of you`}
+                      : `${userQueuePosition - 1} prompt${userQueuePosition - 1 === 1 ? '' : 's'} ahead of you`}
                   </p>
 
                   <div className="bg-gray-100 rounded-2xl p-4">
