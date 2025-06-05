@@ -181,9 +181,14 @@ export default function StreamPromptPage() {
                   </motion.div>
 
                   <p className="text-gray-600 mb-6">
-                    {userQueuePosition === 1
-                      ? "You&apos;re next!"
-                      : `${userQueuePosition - 1} prompt${userQueuePosition - 1 === 1 ? "" : "s"} ahead of you`}
+                    {userQueuePosition === 1 ? (
+                      "You&apos;re next!"
+                    ) : (
+                      <>
+                        {userQueuePosition - 1} prompt
+                        {userQueuePosition - 1 === 1 ? "" : "s"} ahead of you
+                      </>
+                    )}
                   </p>
 
                   <div className="bg-gray-100 rounded-2xl p-4">
