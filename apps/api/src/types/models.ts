@@ -62,7 +62,6 @@ export type WsMessage =
     };
 
 export interface Config {
-  redis_url: string;
   port: number;
   prompt_min_duration_secs: number;
   stream_keys: string[];

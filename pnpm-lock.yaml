@@ -81,6 +81,9 @@ importers:
       fastify-plugin:
         specifier: ^5.0.0
         version: 5.0.1
+      ioredis:
+        specifier: ^5.6.1
+        version: 5.6.1
       livepeer:
         specifier: ^3.5.0
         version: 3.5.0(@babel/core@7.26.7)(@jest/transform@29.7.0)(@jest/types@29.6.3)(@types/node@22.14.1)(babel-jest@29.7.0(@babel/core@7.26.7))(esbuild@0.19.12)(ts-node@10.9.2(@types/node@22.14.1)(typescript@5.8.3))(typescript@5.8.3)(zod@3.24.1)

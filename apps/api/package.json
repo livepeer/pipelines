@@ -29,6 +29,7 @@
     "fastify": "^5.0.0",
     "fastify-cli": "^7.4.0",
     "fastify-plugin": "^5.0.0",
+    "ioredis": "^5.6.1",
     "livepeer": "^3.5.0",
     "nanoid": "^5.0.8",
     "postgres": "^3.4.5",

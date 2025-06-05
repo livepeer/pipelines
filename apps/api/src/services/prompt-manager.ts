@@ -2,6 +2,7 @@ import { FastifyInstance } from "fastify";
 import { Queue, Worker, Job } from "bullmq";
 import { WsMessage } from "../types/models";
 import { applyPromptToStream } from "./stream-api";
+import Redis from "ioredis";
 
 interface PromptCheckJobData {
   streamId: string;
@@ -16,10 +17,14 @@ export class PromptManager {
   constructor(fastify: FastifyInstance) {
     this.fastify = fastify;
 
-    const connection = {
-      host: "localhost",
-      port: 6379,
-    };
+    const connection = new Redis({
+      maxRetriesPerRequest: null,
+      host: process.env.REDIS_HOST,
+      port: parseInt(process.env.REDIS_PORT || "6379"),
+      password: process.env.REDIS_PASSWORD,
+      username: process.env.REDIS_USERNAME,
+      ...(process.env.NODE_ENV !== "development" && { family: 6 }),
+    });
 
     this.promptQueue = new Queue<PromptCheckJobData>("prompt-check", {
       connection,

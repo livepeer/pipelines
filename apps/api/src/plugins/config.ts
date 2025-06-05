@@ -10,7 +10,6 @@ declare module "fastify" {
 
 const configPlugin: FastifyPluginAsync = async fastify => {
   // Load environment variables
-  const redisUrl = process.env.REDIS_URL || "redis://localhost:6379";
   const serverPort = parseInt(process.env.PORT || "8080", 10);
   const promptMinDurationSecs = parseInt(
     process.env.PROMPT_MIN_DURATION_SECS || "10",
@@ -53,7 +52,6 @@ const configPlugin: FastifyPluginAsync = async fastify => {
   }
 
   const config: Config = {
-    redis_url: redisUrl,
     port: serverPort,
     prompt_min_duration_secs: promptMinDurationSecs,
     stream_keys: streamKeys,
@@ -64,7 +62,6 @@ const configPlugin: FastifyPluginAsync = async fastify => {
 
   fastify.decorate("config", config);
   fastify.log.info("Configuration loaded", {
-    redisUrl,
     serverPort,
     promptMinDurationSecs,
     streamKeys,
