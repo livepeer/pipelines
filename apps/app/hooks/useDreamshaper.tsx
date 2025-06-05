@@ -20,7 +20,14 @@ import { usePromptVersionStore } from "./usePromptVersionStore";
 import { useStreamStatus } from "./useStreamStatus";
 import { usePlayerStore } from "@/components/welcome/featured/player";
 
-// TODO: REMOVE THIS
+export const DEFAULT_PIPELINE_ID = "pip_DRQREDnSei4HQyC8"; // Staging Dreamshaper ID
+export const DUMMY_USER_ID_FOR_NON_AUTHENTICATED_USERS =
+  "did:privy:cm4x2cuiw007lh8fcj34919fu"; // Infra Email User ID
+
+export const DREAMSHAPER_PARAMS_STORAGE_KEY = "dreamshaper_latest_params";
+export const DREAMSHAPER_PARAMS_VERSION_KEY = "dreamshaper_params_version";
+export const CACHED_PARAMS_PIPELINE_ID_KEY = "cached_params_pipeline_id";
+
 const createDefaultValues = (pipeline: any) => {
   const inputs = pipeline.config.inputs;
   const primaryInput = inputs.primary;
@@ -44,13 +51,6 @@ const processInputValues = (inputValues: any) => {
     }),
   );
 };
-
-export const DEFAULT_PIPELINE_ID = "pip_DRQREDnSei4HQyC8"; // Staging Dreamshaper ID
-export const DUMMY_USER_ID_FOR_NON_AUTHENTICATED_USERS =
-  "did:privy:cm4x2cuiw007lh8fcj34919fu"; // Infra Email User ID
-
-export const DREAMSHAPER_PARAMS_STORAGE_KEY = "dreamshaper_latest_params";
-export const DREAMSHAPER_PARAMS_VERSION_KEY = "dreamshaper_params_version";
 
 const extractCommands = (promptText: string) => {
   // First, collect all commands and their values
@@ -90,27 +90,43 @@ const extractCommands = (promptText: string) => {
   return { cleanedPrompt, commands };
 };
 
-const storeParamsInLocalStorage = (params: any, pipelineVersion: string) => {
+const storeParamsInLocalStorage = (
+  params: any,
+  pipelineVersion: string,
+  pipelineId: string,
+) => {
   try {
     localStorage.setItem(
       DREAMSHAPER_PARAMS_STORAGE_KEY,
       JSON.stringify(params),
     );
     localStorage.setItem(DREAMSHAPER_PARAMS_VERSION_KEY, pipelineVersion);
+    localStorage.setItem(CACHED_PARAMS_PIPELINE_ID_KEY, pipelineId);
   } catch (error) {
     console.error("Error storing parameters in localStorage:", error);
   }
 };
 
-const getParamsFromLocalStorage = (currentPipelineVersion: string) => {
+const getParamsFromLocalStorage = (
+  currentPipelineVersion: string,
+  currentPipelineId: string,
+) => {
   try {
     const storedVersion = localStorage.getItem(DREAMSHAPER_PARAMS_VERSION_KEY);
     const storedParams = localStorage.getItem(DREAMSHAPER_PARAMS_STORAGE_KEY);
-
+    const storedPipelineId = localStorage.getItem(
+      CACHED_PARAMS_PIPELINE_ID_KEY,
+    );
     // If versions don't match or stored version doesn't exist, clear storage and return null
-    if (!storedVersion || storedVersion !== currentPipelineVersion) {
+    if (
+      !storedVersion ||
+      storedVersion !== currentPipelineVersion ||
+      !storedPipelineId ||
+      storedPipelineId !== currentPipelineId
+    ) {
       localStorage.removeItem(DREAMSHAPER_PARAMS_STORAGE_KEY);
       localStorage.removeItem(DREAMSHAPER_PARAMS_VERSION_KEY);
+      localStorage.removeItem(CACHED_PARAMS_PIPELINE_ID_KEY);
       return null;
     }
 
@@ -236,6 +252,23 @@ export function useParamsHandling() {
 
   useInputPromptHandling();
   useEffect(() => {
+    const currentPipelineId =
+      searchParams.get("pipeline_id") ||
+      process.env.NEXT_PUBLIC_SHOWCASE_PIPELINE_ID ||
+      DEFAULT_PIPELINE_ID;
+
+    const storedPipelineId = localStorage.getItem(
+      CACHED_PARAMS_PIPELINE_ID_KEY,
+    );
+
+    if (storedPipelineId && storedPipelineId !== currentPipelineId) {
+      localStorage.removeItem(DREAMSHAPER_PARAMS_STORAGE_KEY);
+      localStorage.removeItem(DREAMSHAPER_PARAMS_VERSION_KEY);
+      localStorage.removeItem(CACHED_PARAMS_PIPELINE_ID_KEY);
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
     const applySharedParams = async () => {
       const sharedId = searchParams.get("shared");
 
@@ -299,7 +332,11 @@ export function useParamsHandling() {
           });
 
           if (response.status == 200 || response.status == 201) {
-            storeParamsInLocalStorage(sharedParams, pipeline.version);
+            storeParamsInLocalStorage(
+              sharedParams,
+              pipeline.version,
+              pipeline.id,
+            );
           }
 
           setSharedParamsApplied(true);
@@ -337,7 +374,10 @@ export function useParamsHandling() {
     }
 
     const applyStoredParams = async () => {
-      const storedParams = getParamsFromLocalStorage(pipeline.version);
+      const storedParams = getParamsFromLocalStorage(
+        pipeline.version,
+        pipeline.id,
+      );
 
       if (!storedParams) {
         return;
@@ -493,7 +533,11 @@ export function useStreamUpdates() {
           });
         }
 
-        storeParamsInLocalStorage(updatedInputValues, freshPipeline.version);
+        storeParamsInLocalStorage(
+          updatedInputValues,
+          freshPipeline.version,
+          freshPipeline.id,
+        );
 
         if (!streamData?.gateway_host) {
           console.error("No gateway host found in stream data");
@@ -661,7 +705,10 @@ export const useShareLink = () => {
     }
 
     try {
-      const storedParams = getParamsFromLocalStorage(pipeline.version);
+      const storedParams = getParamsFromLocalStorage(
+        pipeline.version,
+        pipeline.id,
+      );
 
       if (!storedParams) {
         console.error("No parameters found in localStorage");
