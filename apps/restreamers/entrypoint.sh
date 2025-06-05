@@ -29,9 +29,9 @@ if [ -z "$SOURCE_URL" ]; then echo "Error: SOURCE_URL not set." >&2; exit 1; fi
 if [ -z "$RTMP_TARGET_LP" ]; then echo "Error: RTMP_TARGET_LP not set." >&2; exit 1; fi
 if [ -z "$RTMP_TARGET_AI" ]; then echo "Error: RTMP_TARGET_AI not set." >&2; exit 1; fi
 
-FORMAT_SELECTOR="bestvideo[height<=360][vcodec^=avc][dynamic_range!=HDR][ext=mp4]+bestaudio[acodec=aac][ext=m4a]/bestvideo[height<=360][vcodec^=avc][ext=mp4]+bestaudio[acodec=aac][ext=m4a]/bestvideo[height<=360][vcodec^=avc]+bestaudio/bestvideo[height<=360]+bestaudio/best[height<=360]"
+FORMAT_SELECTOR="bestvideo[height<=480][vcodec^=avc][dynamic_range!=HDR][ext=mp4]+bestaudio[acodec=aac][ext=m4a]/bestvideo[height<=480][vcodec^=avc][ext=mp4]+bestaudio[acodec=aac][ext=m4a]/bestvideo[height<=480][vcodec^=avc]+bestaudio/bestvideo[height<=480]+bestaudio/best[height<=480]"
 
-PRE_ENCODE_VIDEO_OPTS="-c:v libx264 -preset veryfast -tune zerolatency -pix_fmt yuv420p -crf 28 -profile:v baseline -level 3.0 -sc_threshold 0 -r 30 -fps_mode cfr -vf scale=in_range=limited:out_range=limited"
+PRE_ENCODE_VIDEO_OPTS="-c:v libx264 -preset veryfast -tune zerolatency -pix_fmt yuv420p -crf 28 -profile:v baseline -level 3.0 -sc_threshold 0 -r 30 -fps_mode cfr -vf scale=854:480:in_range=limited:out_range=limited"
 PRE_ENCODE_AUDIO_OPTS="-c:a aac -ar 44100 -b:a 128k"
 
 calculate_backoff() {
@@ -178,15 +178,45 @@ stream_dual_to_rtmp() {
     local retry_count=0
     local retry_delay=$INITIAL_RETRY_DELAY
     local consecutive_failures=0
+    local segment_duration=300  # 5 minutes in seconds
+    local current_position=0
+    local video_duration=0
+    
+    # Get video duration
+    echo "[DUAL] Getting video duration..."
+    video_duration=$(ffprobe -v quiet -select_streams v:0 -show_entries stream=duration -of csv=p=0 "$STREAMING_VIDEO_FILE" 2>/dev/null | cut -d'.' -f1)
+    if [ -z "$video_duration" ] || [ "$video_duration" -eq 0 ]; then
+        echo "[DUAL] Could not determine video duration, using format duration..."
+        video_duration=$(ffprobe -v quiet -show_entries format=duration -of csv=p=0 "$STREAMING_VIDEO_FILE" 2>/dev/null | cut -d'.' -f1)
+    fi
+    
+    if [ -z "$video_duration" ] || [ "$video_duration" -eq 0 ]; then
+        echo "[DUAL] Warning: Could not determine video duration, defaulting to 3600 seconds (1 hour)"
+        video_duration=3600
+    fi
+    
+    echo "[DUAL] Video duration: ${video_duration} seconds ($(($video_duration / 60)) minutes)"
+    echo "[DUAL] Will stream in ${segment_duration} second (5 minute) segments"
     
     while true; do
-        echo "[DUAL] Streaming to both endpoints (attempt $((retry_count + 1)))"
+        echo "[DUAL] Starting segment from ${current_position}s (attempt $((retry_count + 1)))"
         echo "[DUAL] Livepeer RTMP: $RTMP_TARGET_LP (with audio)"
         echo "[DUAL] AI RTMP: $RTMP_TARGET_AI (video only, no audio)"
         
+        # Calculate remaining time for this segment
+        local remaining_time=$((video_duration - current_position))
+        local segment_time=$segment_duration
+        
+        if [ $remaining_time -le $segment_duration ]; then
+            segment_time=$remaining_time
+            echo "[DUAL] Final segment: ${segment_time} seconds"
+        fi
+        
+        # Stream current segment
         # Livepeer gets video + audio, AI gets video only (no audio)
         ffmpeg -re \
-            -stream_loop -1 \
+            -ss $current_position \
+            -t $segment_time \
             -i "$STREAMING_VIDEO_FILE" \
             -avoid_negative_ts make_zero \
             -start_at_zero \
@@ -220,12 +250,26 @@ stream_dual_to_rtmp() {
         local exit_code=${PIPESTATUS[0]}
         
         if [ $exit_code -eq 0 ]; then
-            echo "[DUAL] Stream ended normally"
+            echo "[DUAL] Segment completed successfully"
             consecutive_failures=0
             retry_count=0
             retry_delay=$INITIAL_RETRY_DELAY
+            
+            # Move to next segment
+            current_position=$((current_position + segment_time))
+            
+            # Check if we've reached the end of the video
+            if [ $current_position -ge $video_duration ]; then
+                echo "[DUAL] Reached end of video, restarting from beginning..."
+                current_position=0
+            fi
+            
+            # Small delay between segments to allow RTMP servers to process
+            echo "[DUAL] Waiting 2 seconds before next segment..."
+            sleep 2
+            
         else
-            echo "[DUAL] Stream failed with exit code: $exit_code"
+            echo "[DUAL] Segment failed with exit code: $exit_code"
             consecutive_failures=$((consecutive_failures + 1))
             retry_count=$((retry_count + 1))
             
@@ -251,9 +295,12 @@ stream_dual_to_rtmp() {
                     retry_delay=$((retry_delay * 2))
                 fi
             fi
+            
+            # Don't advance position on failure, retry the same segment
+            echo "[DUAL] Will retry same segment from ${current_position}s"
         fi
         
-        echo "[DUAL] Waiting ${retry_delay}s before retry..."
+        echo "[DUAL] Waiting ${retry_delay}s before next attempt..."
         sleep $retry_delay
     done
 }
