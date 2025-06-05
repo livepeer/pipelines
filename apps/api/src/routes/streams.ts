@@ -20,7 +20,7 @@ const streamsRoute: FastifyPluginAsync = async fastify => {
           type: "object",
           required: ["pipeline_id"],
           properties: {
-            pipeline_id: { type: "string", minLength: 1 },
+            pipeline_id: { type: "string" },
             pipeline_params: { type: "object" },
             name: { type: "string" },
             from_playground: { type: "boolean" },
