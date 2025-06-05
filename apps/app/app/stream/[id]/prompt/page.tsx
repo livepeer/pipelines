@@ -182,7 +182,7 @@ export default function StreamPromptPage() {
 
                   <p className="text-gray-600 mb-6">
                     {userQueuePosition === 1 ? (
-                      "You&apos;re next!"
+                      <>You&apos;re next!</>
                     ) : (
                       <>
                         {userQueuePosition - 1} prompt
