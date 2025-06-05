@@ -90,7 +90,6 @@ function parsePromptParameters(promptText: string): PromptParameters {
     creativity,
   };
 }
-
 function buildComfyUIWorkflow(
   promptText: string,
   quality: number,
@@ -154,7 +153,7 @@ function buildComfyUIWorkflow(
         },
         inputs: {
           cfg: 1,
-          seed: Math.floor(Math.random() * 1000000000000000),
+          seed: 785664736216738,
           model: ["24", 0],
           steps: Math.floor(quality),
           denoise: 1,
@@ -175,7 +174,111 @@ function buildComfyUIWorkflow(
         },
         class_type: "ControlNetLoader",
       },
-      // Additional workflow nodes would be added here...
+      "9": {
+        _meta: {
+          title: "Apply ControlNet",
+        },
+        inputs: {
+          image: ["2", 0],
+          negative: ["6", 0],
+          positive: ["5", 0],
+          strength: creativity,
+          control_net: ["10", 0],
+          end_percent: 1,
+          start_percent: 0,
+        },
+        class_type: "ControlNetApplyAdvanced",
+      },
+      "10": {
+        _meta: {
+          title: "TorchCompileLoadControlNet",
+        },
+        inputs: {
+          mode: "reduce-overhead",
+          backend: "inductor",
+          fullgraph: false,
+          controlnet: ["8", 0],
+        },
+        class_type: "TorchCompileLoadControlNet",
+      },
+      "11": {
+        _meta: {
+          title: "Load VAE",
+        },
+        inputs: {
+          vae_name: "taesd",
+        },
+        class_type: "VAELoader",
+      },
+      "13": {
+        _meta: {
+          title: "TorchCompileLoadVAE",
+        },
+        inputs: {
+          vae: ["11", 0],
+          mode: "reduce-overhead",
+          backend: "inductor",
+          fullgraph: true,
+          compile_decoder: true,
+          compile_encoder: true,
+        },
+        class_type: "TorchCompileLoadVAE",
+      },
+      "14": {
+        _meta: {
+          title: "VAE Decode",
+        },
+        inputs: {
+          vae: ["13", 0],
+          samples: ["7", 0],
+        },
+        class_type: "VAEDecode",
+      },
+      "15": {
+        _meta: {
+          title: "Preview Image",
+        },
+        inputs: {
+          images: ["14", 0],
+        },
+        class_type: "PreviewImage",
+      },
+      "16": {
+        _meta: {
+          title: "Empty Latent Image",
+        },
+        inputs: {
+          width: 512,
+          height: 512,
+          batch_size: 1,
+        },
+        class_type: "EmptyLatentImage",
+      },
+      "23": {
+        _meta: {
+          title: "Load CLIP",
+        },
+        inputs: {
+          type: "stable_diffusion",
+          device: "default",
+          clip_name: "CLIPText/model.fp16.safetensors",
+        },
+        class_type: "CLIPLoader",
+      },
+      "24": {
+        _meta: {
+          title: "Feature Bank Attention Processor",
+        },
+        inputs: {
+          model: ["3", 0],
+          use_feature_injection: false,
+          feature_cache_interval: 4,
+          feature_bank_max_frames: 4,
+          feature_injection_strength: 0.8,
+          feature_similarity_threshold: 0.98,
+        },
+        class_type: "FeatureBankAttentionProcessor",
+      },
     },
   };
 }
