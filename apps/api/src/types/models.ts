@@ -2,7 +2,8 @@ export interface Prompt {
   id: string;
   content: string;
   submitted_at: Date;
-  stream_key: string;
+  stream_id: string;
+  submit_url: string;
 }
 
 export interface CurrentPrompt {
@@ -23,7 +24,7 @@ export interface PromptQueueEntry {
 
 export interface SubmitPromptRequest {
   text: string;
-  streamKey: string;
+  streamId: string;
 }
 
 export interface SubmitPromptResponse {
@@ -32,12 +33,8 @@ export interface SubmitPromptResponse {
   queue_position: number;
 }
 
-export interface PromptQuery {
-  streamKey: string;
-}
-
 export interface WsQuery {
-  streamKey?: string;
+  streamId?: string;
 }
 
 export type WsMessage =
@@ -45,14 +42,14 @@ export type WsMessage =
       type: "CurrentPrompt";
       payload: {
         prompt: CurrentPrompt | null;
-        stream_key: string;
+        stream_id: string;
       };
     }
   | {
       type: "RecentPromptsUpdate";
       payload: {
         recent_prompts: RecentPromptItem[];
-        stream_key: string;
+        stream_id: string;
       };
     }
   | {
@@ -60,7 +57,7 @@ export type WsMessage =
       payload: {
         currentPrompt: CurrentPrompt | null;
         recentPrompts: RecentPromptItem[];
-        streamKey: string;
+        streamId: string;
       };
     };
 

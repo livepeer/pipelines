@@ -1,12 +1,18 @@
 import fp from "fastify-plugin";
 import { PrivyClient } from "@privy-io/server-auth";
+import { FastifyReply, FastifyRequest } from "fastify";
 
 declare module "fastify" {
   interface FastifyInstance {
     privy: PrivyClient | null;
-    verifyAuth: (request: any) => Promise<{ userId: string | null; user: any }>;
+    authenticate: any;
   }
 }
+
+// TODO: Do this properly
+export const FISHTANK_API_KEY =
+  "lp_r51ndrgi90m8rcfxeox6vej8h46auz1ik0m086plqi96dg3yx1v9rzbdq74es8jw1eqseq";
+export const FISHTANK_USER_ID = "FISHTANK";
 
 export const DUMMY_USER_ID = "did:privy:cm4x2cuiw007lh8fcj34919fu"; // Dummy user id (infra email)
 
@@ -19,31 +25,36 @@ export default fp(async function (fastify) {
       "Privy credentials not configured - authentication disabled",
     );
 
-    // Mock authentication for development
-    fastify.decorate("privy", null);
-    fastify.decorate("verifyAuth", async (request: any) => {
-      return { userId: DUMMY_USER_ID, user: { userId: DUMMY_USER_ID } };
-    });
     return;
   }
 
   const privy = new PrivyClient(appId, appSecret);
 
   fastify.decorate("privy", privy);
-  fastify.decorate("verifyAuth", async (request: any) => {
-    const authHeader = request.headers.authorization;
-    const accessToken = authHeader?.replace(/^Bearer /, "");
+  fastify.decorate(
+    "authenticate",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const authHeader = request.headers.authorization;
+      const accessToken = authHeader?.replace(/^Bearer /, "");
 
-    if (!accessToken) {
-      return { userId: null, user: null };
-    }
+      if (!accessToken) {
+        throw new Error("No access token provided");
+      }
 
-    try {
-      const verifiedUser = await privy.verifyAuthToken(accessToken);
-      return { userId: verifiedUser.userId, user: verifiedUser };
-    } catch (error) {
-      fastify.log.error("Failed to verify Privy auth token:", error);
-      return { userId: null, user: null };
-    }
-  });
+      try {
+        if (accessToken === FISHTANK_API_KEY) {
+          request.headers["user-id"] = FISHTANK_USER_ID;
+          return;
+        }
+
+        const verifiedUser = await privy.verifyAuthToken(accessToken);
+        request.headers["user-id"] = verifiedUser.userId;
+        return;
+      } catch (error) {
+        fastify.log.error("Failed to verify Privy auth token:", error);
+        throw error;
+        return;
+      }
+    },
+  );
 });

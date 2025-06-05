@@ -50,7 +50,7 @@ export default function PromptPanel() {
   const [isTextareaHighlighted, setIsTextareaHighlighted] = useState(false);
 
   const { currentPrompt, recentPrompts, isSubmitting, submitPrompt } =
-    usePromptQueue(currentStream?.streamKey);
+    usePromptQueue(currentStream?.streamId);
 
   const trendingPrompts = useMemo(() => {
     const shuffled = [...allTrendingPrompts].sort(() => Math.random() - 0.5);

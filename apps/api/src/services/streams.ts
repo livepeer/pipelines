@@ -4,6 +4,7 @@ import { streams, pipelines } from "../db/schema";
 import { eq } from "drizzle-orm";
 import { LivepeerService } from "./livepeer";
 import { newId } from "./id";
+import { and } from "drizzle-orm";
 
 const createStreamSchema = z.object({
   pipeline_id: z.string(),
@@ -126,7 +127,6 @@ export class StreamsService {
       this.fastify.log.error("Failed to create Livepeer stream:", error);
     }
 
-    // Generate WHIP URL
     const customWhipServer = searchParams?.get("whipServer");
     const customOrchestrator = searchParams?.get("orchestrator");
     const whipUrl = getStreamUrl(
@@ -180,11 +180,11 @@ export class StreamsService {
     }
   }
 
-  async deleteStream(streamId: string) {
+  async deleteStream(streamId: string, userId: string) {
     try {
       const [deletedStream] = await this.fastify.db
         .delete(streams)
-        .where(eq(streams.id, streamId))
+        .where(and(eq(streams.id, streamId), eq(streams.author, userId)))
         .returning();
 
       if (!deletedStream) {

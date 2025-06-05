@@ -6,20 +6,13 @@ interface PromptParameters {
 
 export async function applyPromptToStream(
   promptText: string,
-  streamKey: string,
-  gatewayHost: string,
+  submitUrl: string,
   apiUser: string,
   apiPassword: string,
 ): Promise<void> {
   try {
-    await applyPromptAttempt(
-      promptText,
-      streamKey,
-      gatewayHost,
-      apiUser,
-      apiPassword,
-    );
-    console.log(`Successfully applied prompt to stream: ${streamKey}`);
+    await applyPromptAttempt(promptText, submitUrl, apiUser, apiPassword);
+    console.log(`Successfully applied prompt to stream: ${submitUrl}`);
   } catch (error) {
     throw new Error(`Failed to apply prompt: ${error}`);
   }
@@ -27,26 +20,20 @@ export async function applyPromptToStream(
 
 async function applyPromptAttempt(
   promptText: string,
-  streamKey: string,
-  gatewayHost: string,
+  submitUrl: string,
   apiUser: string,
   apiPassword: string,
 ): Promise<void> {
   const { cleanedPrompt, quality, creativity } =
     parsePromptParameters(promptText);
 
-  console.log(
-    `Applying prompt to stream ${streamKey} with quality=${quality}, creativity=${creativity}`,
-  );
-
   const workflow = buildComfyUIWorkflow(cleanedPrompt, quality, creativity);
 
-  const apiUrl = `https://${gatewayHost}/live/video-to-video/${streamKey}/update`;
   const auth = Buffer.from(`${apiUser}:${apiPassword}`).toString("base64");
 
-  console.log(`Sending request to ${apiUrl}`);
+  console.log(`Sending request to ${submitUrl}`);
 
-  const response = await fetch(apiUrl, {
+  const response = await fetch(submitUrl, {
     method: "POST",
     headers: {
       Authorization: `Basic ${auth}`,

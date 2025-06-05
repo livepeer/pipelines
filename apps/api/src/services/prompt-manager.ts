@@ -1,20 +1,49 @@
 import { FastifyInstance } from "fastify";
+import { Queue, Worker, Job } from "bullmq";
 import { WsMessage } from "../types/models";
 import { applyPromptToStream } from "./stream-api";
 
-interface FailureTracker {
-  [streamKey: string]: Date;
+interface PromptCheckJobData {
+  streamId: string;
 }
-
-const COOLDOWN_DURATION_MS = 20 * 1000; // 20 seconds
 
 export class PromptManager {
   private fastify: FastifyInstance;
+  private promptQueue: Queue<PromptCheckJobData>;
+  private worker: Worker<PromptCheckJobData>;
   private isRunning = false;
-  private failureTracker: FailureTracker = {};
 
   constructor(fastify: FastifyInstance) {
     this.fastify = fastify;
+
+    const connection = {
+      host: "localhost",
+      port: 6379,
+    };
+
+    this.promptQueue = new Queue<PromptCheckJobData>("prompt-check", {
+      connection,
+      defaultJobOptions: {
+        removeOnComplete: 10,
+        removeOnFail: 5,
+        attempts: 3,
+        backoff: {
+          type: "exponential",
+          delay: 2000,
+        },
+      },
+    });
+
+    this.worker = new Worker<PromptCheckJobData>(
+      "prompt-check",
+      async (job: Job<PromptCheckJobData>) => {
+        return this.processPromptCheck(job.data.streamId);
+      },
+      {
+        connection,
+        concurrency: 5,
+      },
+    );
   }
 
   async start(): Promise<void> {
@@ -23,65 +52,84 @@ export class PromptManager {
     }
 
     this.isRunning = true;
-    this.fastify.log.info("Prompt manager started");
+    this.fastify.log.info("Prompt manager started with BullMQ");
 
-    // Run the main loop
-    this.runLoop().catch(error => {
-      this.fastify.log.error("Prompt manager error:", error);
+    this.worker.on(
+      "failed",
+      (job: Job<PromptCheckJobData> | undefined, error: Error) => {
+        this.fastify.log.error(
+          `Prompt check job failed for stream ${job?.data?.streamId}:`,
+          error,
+        );
+      },
+    );
+
+    this.worker.on("completed", (job: Job<PromptCheckJobData>) => {
+      this.fastify.log.debug(
+        `Prompt check completed for stream ${job.data.streamId}`,
+      );
     });
   }
 
-  stop(): void {
+  async stop(): Promise<void> {
+    if (!this.isRunning) {
+      return;
+    }
+
     this.isRunning = false;
+    this.fastify.log.info("Stopping prompt manager...");
+
+    await this.worker.close();
+    await this.promptQueue.close();
     this.fastify.log.info("Prompt manager stopped");
   }
 
-  private async runLoop(): Promise<void> {
-    while (this.isRunning) {
-      await this.sleep(1000); // Check every second
+  async schedulePromptCheck(
+    streamId: string,
+    delay: number = 0,
+  ): Promise<void> {
+    if (!this.isRunning) {
+      return;
+    }
 
-      for (const streamKey of this.fastify.config.stream_keys) {
-        // Check cooldown
-        const lastFailure = this.failureTracker[streamKey];
-        if (
-          lastFailure &&
-          Date.now() - lastFailure.getTime() < COOLDOWN_DURATION_MS
-        ) {
-          continue;
-        }
-
-        try {
-          const updated = await this.checkAndUpdatePrompt(streamKey);
-          if (updated) {
-            this.fastify.log.info(`Prompt updated for stream: ${streamKey}`);
-          }
-          // Remove from failure tracker on success
-          delete this.failureTracker[streamKey];
-        } catch (error) {
-          const errorStr = error?.toString().toLowerCase() || "";
-          if (
-            errorStr.includes("broken pipe") ||
-            errorStr.includes("connection") ||
-            errorStr.includes("redis")
-          ) {
-            this.fastify.log.warn(
-              `Redis connection issue for stream ${streamKey}:`,
-              error,
-            );
-          } else {
-            this.fastify.log.error(
-              `Error in prompt manager for stream ${streamKey}:`,
-              error,
-            );
-          }
-          this.failureTracker[streamKey] = new Date();
-        }
-      }
+    try {
+      await this.promptQueue.add(
+        `check-${streamId}`,
+        { streamId },
+        {
+          delay,
+          jobId: `check-${streamId}-${Date.now()}`,
+        },
+      );
+    } catch (error) {
+      this.fastify.log.error(
+        `Failed to schedule prompt check for stream ${streamId}:`,
+        error,
+      );
     }
   }
 
-  private async checkAndUpdatePrompt(streamKey: string): Promise<boolean> {
-    const currentPrompt = await this.fastify.redis.getCurrentPrompt(streamKey);
+  private async processPromptCheck(streamId: string): Promise<boolean> {
+    try {
+      const updated = await this.checkAndUpdatePrompt(streamId);
+
+      if (updated) {
+        this.fastify.log.info(`Prompt updated for stream: ${streamId}`);
+
+        const nextDelay = this.fastify.config.prompt_min_duration_secs * 1000;
+        await this.schedulePromptCheck(streamId, nextDelay);
+      } else {
+        await this.schedulePromptCheck(streamId, 5000);
+      }
+
+      return updated;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  private async checkAndUpdatePrompt(streamId: string): Promise<boolean> {
+    const currentPrompt = await this.fastify.redis.getCurrentPrompt(streamId);
 
     const shouldUpdate = (() => {
       if (!currentPrompt) {
@@ -97,64 +145,48 @@ export class PromptManager {
       return false;
     }
 
-    const nextEntry = await this.fastify.redis.getNextPrompt(streamKey);
+    const nextEntry = await this.fastify.redis.getNextPrompt(streamId);
+
     if (!nextEntry) {
-      // No new prompts in queue, keep current prompt active
       return false;
     }
 
     const nextPrompt = nextEntry.prompt;
 
-    // Set as current prompt
     await this.fastify.redis.setCurrentPrompt(nextPrompt);
 
-    // Find the corresponding gateway host
-    const streamIndex = this.fastify.config.stream_keys.indexOf(streamKey);
-    const gatewayHost = this.fastify.config.gateway_hosts[streamIndex];
-
-    if (!gatewayHost) {
-      throw new Error(`No gateway host found for stream key: ${streamKey}`);
-    }
-
-    // Apply prompt to stream
     try {
       await applyPromptToStream(
         nextPrompt.content,
-        streamKey,
-        gatewayHost,
+        nextPrompt.submit_url,
         this.fastify.config.stream_api_user,
         this.fastify.config.stream_api_password,
       );
     } catch (error) {
       this.fastify.log.error(
-        `Failed to apply prompt to stream ${streamKey}:`,
+        `Failed to apply prompt to stream ${streamId}:`,
         error,
       );
     }
 
-    // Broadcast the current prompt update
-    const newCurrent = await this.fastify.redis.getCurrentPrompt(streamKey);
+    const newCurrent = await this.fastify.redis.getCurrentPrompt(streamId);
     if (newCurrent) {
       const wsMessage: WsMessage = {
         type: "CurrentPrompt",
         payload: {
           prompt: newCurrent,
-          stream_key: streamKey,
+          stream_id: streamId,
         },
       };
 
       this.fastify.broadcastMessage(wsMessage);
 
-      const queueLength = await this.fastify.redis.getQueueLength(streamKey);
+      const queueLength = await this.fastify.redis.getQueueLength(streamId);
       this.fastify.log.info(
-        `Stream ${streamKey} - Queue length: ${queueLength}`,
+        `Stream ${streamId} - Queue length: ${queueLength}`,
       );
     }
 
     return true;
-  }
-
-  private sleep(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
   }
 }

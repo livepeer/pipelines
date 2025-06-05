@@ -1,7 +1,6 @@
-import { FastifyPluginAsync } from "fastify";
+import { FastifyPluginAsync, FastifyRequest } from "fastify";
 import { z } from "zod";
 import { StreamsService, CreateStreamRequest } from "../services/streams";
-import { DUMMY_USER_ID } from "../plugins/auth";
 
 const ERROR_MESSAGES = {
   UNAUTHORIZED: "Authentication required",
@@ -15,6 +14,7 @@ const streamsRoute: FastifyPluginAsync = async fastify => {
   fastify.post<{ Body: CreateStreamRequest }>(
     "/streams",
     {
+      onRequest: [fastify.authenticate],
       schema: {
         body: {
           type: "object",
@@ -29,11 +29,13 @@ const streamsRoute: FastifyPluginAsync = async fastify => {
         },
       },
     },
-    async (request, reply) => {
+    async (request: FastifyRequest, reply) => {
       try {
-        const { userId } = await fastify.verifyAuth(request);
+        const userId = request.headers["user-id"] as string;
+        console.log("userId", userId);
 
-        const body = request.body;
+        const body = request.body as CreateStreamRequest;
+
         if (!body) {
           return reply.status(400).send({
             success: false,
@@ -52,7 +54,7 @@ const streamsRoute: FastifyPluginAsync = async fastify => {
 
         const result = await streamsService.createStream(
           body,
-          userId || DUMMY_USER_ID,
+          userId,
           searchParams,
         );
 
@@ -89,6 +91,7 @@ const streamsRoute: FastifyPluginAsync = async fastify => {
   fastify.get(
     "/streams",
     {
+      onRequest: [fastify.authenticate],
       schema: {
         querystring: {
           type: "object",
@@ -100,16 +103,16 @@ const streamsRoute: FastifyPluginAsync = async fastify => {
     },
     async (request, reply) => {
       try {
-        const { user_id } = request.query as { user_id?: string };
+        const userId = request.headers["user-id"] as string;
 
-        if (!user_id) {
+        if (!userId) {
           return reply.status(400).send({
             success: false,
             error: ERROR_MESSAGES.UNAUTHORIZED,
           });
         }
 
-        const result = await streamsService.getAllStreams(user_id);
+        const result = await streamsService.getAllStreams(userId);
 
         if (result.error) {
           return reply.status(500).send({
@@ -135,6 +138,7 @@ const streamsRoute: FastifyPluginAsync = async fastify => {
   fastify.delete<{ Querystring: { id: string } }>(
     "/streams",
     {
+      onRequest: [fastify.authenticate],
       schema: {
         querystring: {
           type: "object",
@@ -147,9 +151,12 @@ const streamsRoute: FastifyPluginAsync = async fastify => {
     },
     async (request, reply) => {
       try {
+        const userId = request.headers["user-id"] as string;
+        console.log("userId", userId);
+
         const { id } = request.query;
 
-        const result = await streamsService.deleteStream(id);
+        const result = await streamsService.deleteStream(id, userId);
 
         if (result.error) {
           if (result.error === "Stream not found") {

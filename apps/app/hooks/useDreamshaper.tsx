@@ -10,7 +10,6 @@ import { useCapacityCheck } from "@/hooks/useCapacityCheck";
 import { useGatewayHost } from "@/hooks/useGatewayHost";
 import { usePrivy } from "@/hooks/usePrivy";
 import { usePromptStore } from "@/hooks/usePromptStore";
-import { getAppConfig } from "@/lib/env";
 import track from "@/lib/track";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -19,6 +18,7 @@ import { create } from "zustand";
 import { usePromptVersionStore } from "./usePromptVersionStore";
 import { useStreamStatus } from "./useStreamStatus";
 import { usePlayerStore } from "@/components/welcome/featured/player";
+import { getAccessToken } from "@privy-io/react-auth";
 
 export const DEFAULT_PIPELINE_ID = "pip_DRQREDnSei4HQyC8"; // Staging Dreamshaper ID
 export const DUMMY_USER_ID_FOR_NON_AUTHENTICATED_USERS =
@@ -642,10 +642,11 @@ export function useInitialization() {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${await getAccessToken()}`,
           },
           body: JSON.stringify({
             pipeline_id: pipelineId,
-            pipeline_params: {}, // Will be set later through params handling
+            pipeline_params: {},
             from_playground: false,
             is_smoke_test: false,
           }),

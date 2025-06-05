@@ -7,7 +7,6 @@ export interface CurrentPrompt {
     id: string;
     content: string;
     submitted_at: string;
-    stream_key: string;
   };
   started_at: string;
 }
@@ -30,9 +29,9 @@ interface CacheEntry {
 
 const promptQueueCache: Map<string, CacheEntry> = new Map();
 
-function getCacheEntry(streamKey: string): CacheEntry {
-  if (!promptQueueCache.has(streamKey)) {
-    promptQueueCache.set(streamKey, {
+function getCacheEntry(streamId: string): CacheEntry {
+  if (!promptQueueCache.has(streamId)) {
+    promptQueueCache.set(streamId, {
       currentPrompt: null,
       recentPrompts: [],
       isSubmitting: false,
@@ -41,18 +40,18 @@ function getCacheEntry(streamKey: string): CacheEntry {
       reconnectTimer: null,
     });
   }
-  return promptQueueCache.get(streamKey)!;
+  return promptQueueCache.get(streamId)!;
 }
 
-function notifySubscribers(streamKey: string) {
-  const entry = promptQueueCache.get(streamKey);
+function notifySubscribers(streamId: string) {
+  const entry = promptQueueCache.get(streamId);
   if (entry) {
     entry.subscribers.forEach(callback => callback());
   }
 }
 
-function connectWebSocket(streamKey: string) {
-  const entry = getCacheEntry(streamKey);
+function connectWebSocket(streamId: string) {
+  const entry = getCacheEntry(streamId);
 
   if (entry.ws) {
     entry.ws.close();
@@ -66,11 +65,11 @@ function connectWebSocket(streamKey: string) {
 
   const wsUrl = process.env.NEXT_PUBLIC_API_WS_URL || "ws://localhost:8080";
   const ws = new WebSocket(
-    `${wsUrl}/ws?streamKey=${encodeURIComponent(streamKey)}`,
+    `${wsUrl}/ws?streamId=${encodeURIComponent(streamId)}`,
   );
 
   ws.onopen = () => {
-    const currentEntry = promptQueueCache.get(streamKey);
+    const currentEntry = promptQueueCache.get(streamId);
     if (currentEntry && currentEntry.subscribers.size > 0) {
       currentEntry.ws = ws;
     } else {
@@ -79,30 +78,29 @@ function connectWebSocket(streamKey: string) {
   };
 
   ws.onmessage = event => {
-    const currentEntry = promptQueueCache.get(streamKey);
+    const currentEntry = promptQueueCache.get(streamId);
     if (!currentEntry || currentEntry.ws !== ws) {
       return;
     }
 
     try {
       const message = JSON.parse(event.data);
-      console.log("onmessage", message.type);
 
       switch (message.type) {
         case "initial":
           currentEntry.currentPrompt = message.payload.currentPrompt;
           currentEntry.recentPrompts = message.payload.recentPrompts || [];
-          notifySubscribers(streamKey);
+          notifySubscribers(streamId);
           break;
 
         case "CurrentPrompt":
           currentEntry.currentPrompt = message.payload.prompt;
-          notifySubscribers(streamKey);
+          notifySubscribers(streamId);
           break;
 
         case "RecentPromptsUpdate":
           currentEntry.recentPrompts = message.payload.recent_prompts || [];
-          notifySubscribers(streamKey);
+          notifySubscribers(streamId);
           break;
 
         default:
@@ -113,7 +111,7 @@ function connectWebSocket(streamKey: string) {
   };
 
   ws.onclose = event => {
-    const currentEntry = promptQueueCache.get(streamKey);
+    const currentEntry = promptQueueCache.get(streamId);
     if (!currentEntry || currentEntry.ws !== ws) {
       return;
     }
@@ -127,21 +125,21 @@ function connectWebSocket(streamKey: string) {
     ) {
       console.log("Attempting to reconnect in 3 seconds...");
       currentEntry.reconnectTimer = setTimeout(() => {
-        const stillCurrentEntry = promptQueueCache.get(streamKey);
+        const stillCurrentEntry = promptQueueCache.get(streamId);
         if (stillCurrentEntry && stillCurrentEntry.subscribers.size > 0) {
-          connectWebSocket(streamKey);
+          connectWebSocket(streamId);
         }
       }, 3000);
     }
   };
 
   ws.onerror = error => {
-    console.error("WebSocket error for streamKey:", streamKey, error);
+    console.error("WebSocket error for streamId:", streamId, error);
   };
 }
 
-function cleanupCacheEntry(streamKey: string) {
-  const entry = promptQueueCache.get(streamKey);
+function cleanupCacheEntry(streamId: string) {
+  const entry = promptQueueCache.get(streamId);
   if (!entry) return;
 
   if (entry.subscribers.size === 0) {
@@ -153,13 +151,13 @@ function cleanupCacheEntry(streamKey: string) {
       clearTimeout(entry.reconnectTimer);
       entry.reconnectTimer = null;
     }
-    promptQueueCache.delete(streamKey);
+    promptQueueCache.delete(streamId);
   }
 }
 
-export function usePromptQueue(streamKey: string | undefined) {
+export function usePromptQueue(streamId: string | undefined) {
   const [, forceUpdate] = useState({});
-  const currentStreamKeyRef = useRef<string | undefined>(streamKey);
+  const currentStreamIdRef = useRef<string | undefined>(streamId);
   const { authenticated } = usePrivy();
 
   const rerender = useCallback(() => {
@@ -168,44 +166,40 @@ export function usePromptQueue(streamKey: string | undefined) {
 
   useEffect(() => {
     // Clean up previous subscription if streamKey changed
-    if (
-      currentStreamKeyRef.current &&
-      currentStreamKeyRef.current !== streamKey
-    ) {
-      const prevEntry = promptQueueCache.get(currentStreamKeyRef.current);
+    if (currentStreamIdRef.current && currentStreamIdRef.current !== streamId) {
+      const prevEntry = promptQueueCache.get(currentStreamIdRef.current);
       if (prevEntry) {
         prevEntry.subscribers.delete(rerender);
-        cleanupCacheEntry(currentStreamKeyRef.current);
+        cleanupCacheEntry(currentStreamIdRef.current);
       }
     }
 
-    currentStreamKeyRef.current = streamKey;
+    currentStreamIdRef.current = streamId;
 
-    if (!streamKey) {
+    if (!streamId) {
       return;
     }
 
-    const entry = getCacheEntry(streamKey);
+    const entry = getCacheEntry(streamId);
     entry.subscribers.add(rerender);
 
     // Connect WebSocket if not already connected
     if (!entry.ws && entry.subscribers.size === 1) {
-      connectWebSocket(streamKey);
+      connectWebSocket(streamId);
     }
 
     return () => {
-      if (streamKey) {
-        const currentEntry = promptQueueCache.get(streamKey);
+      if (streamId) {
+        const currentEntry = promptQueueCache.get(streamId);
         if (currentEntry) {
           currentEntry.subscribers.delete(rerender);
-          cleanupCacheEntry(streamKey);
+          cleanupCacheEntry(streamId);
         }
       }
     };
-  }, [streamKey, rerender]);
+  }, [streamId, rerender]);
 
-  // Get current state from cache
-  const entry = streamKey ? promptQueueCache.get(streamKey) : null;
+  const entry = streamId ? promptQueueCache.get(streamId) : null;
   const currentPrompt = entry?.currentPrompt || null;
   const recentPrompts = entry?.recentPrompts || [];
   const isSubmitting = entry?.isSubmitting || false;
@@ -217,21 +211,20 @@ export function usePromptQueue(streamKey: string | undefined) {
 
   const submitPrompt = useCallback(
     async (text: string) => {
-      if (!text.trim() || !streamKey || isSubmitting) return false;
+      if (!text.trim() || !streamId || isSubmitting) return false;
 
-      const entry = getCacheEntry(streamKey);
+      const entry = getCacheEntry(streamId);
       entry.isSubmitting = true;
-      notifySubscribers(streamKey);
+      notifySubscribers(streamId);
 
       try {
         const apiUrl =
           process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
-        const response = await fetch(`${apiUrl}/prompts`, {
+        const response = await fetch(`${apiUrl}/streams/${streamId}/prompts`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             text: text.trim(),
-            streamKey,
           }),
         });
 
@@ -245,38 +238,35 @@ export function usePromptQueue(streamKey: string | undefined) {
           is_authenticated: authenticated,
           prompt: text,
           nsfw: result?.wasCensored || false,
-          stream_key: streamKey,
+          stream_id: streamId,
         });
 
         return true;
       } catch (error) {
         return false;
       } finally {
-        const currentEntry = promptQueueCache.get(streamKey);
+        const currentEntry = promptQueueCache.get(streamId);
         if (currentEntry) {
           currentEntry.isSubmitting = false;
-          notifySubscribers(streamKey);
+          notifySubscribers(streamId);
         }
       }
     },
-    [streamKey, isSubmitting, authenticated],
+    [streamId, isSubmitting, authenticated],
   );
 
   const addRandomPrompt = useCallback(async () => {
-    if (!streamKey || isSubmitting) return false;
+    if (!streamId || isSubmitting) return false;
 
-    const entry = getCacheEntry(streamKey);
+    const entry = getCacheEntry(streamId);
     entry.isSubmitting = true;
-    notifySubscribers(streamKey);
+    notifySubscribers(streamId);
 
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
-      const response = await fetch(
-        `${apiUrl}/prompts?streamKey=${encodeURIComponent(streamKey)}`,
-        {
-          method: "PUT",
-        },
-      );
+      const response = await fetch(`${apiUrl}/streams/${streamId}/prompts`, {
+        method: "PUT",
+      });
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -286,13 +276,13 @@ export function usePromptQueue(streamKey: string | undefined) {
     } catch (error) {
       return false;
     } finally {
-      const currentEntry = promptQueueCache.get(streamKey);
+      const currentEntry = promptQueueCache.get(streamId);
       if (currentEntry) {
         currentEntry.isSubmitting = false;
-        notifySubscribers(streamKey);
+        notifySubscribers(streamId);
       }
     }
-  }, [streamKey, isSubmitting]);
+  }, [streamId, isSubmitting]);
 
   return {
     currentPrompt,

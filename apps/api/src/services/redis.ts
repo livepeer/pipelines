@@ -87,8 +87,8 @@ export class RedisClient {
   }
 
   async addPromptToQueue(prompt: Prompt): Promise<number> {
-    const queueKey = `${PROMPT_QUEUE_KEY_PREFIX}${prompt.stream_key}`;
-    const recentKey = `${RECENT_PROMPTS_KEY_PREFIX}${prompt.stream_key}`;
+    const queueKey = `${PROMPT_QUEUE_KEY_PREFIX}${prompt.stream_id}`;
+    const recentKey = `${RECENT_PROMPTS_KEY_PREFIX}${prompt.stream_id}`;
 
     const entry: PromptQueueEntry = {
       prompt,
@@ -111,8 +111,8 @@ export class RedisClient {
     });
   }
 
-  async getNextPrompt(streamKey: string): Promise<PromptQueueEntry | null> {
-    const queueKey = `${PROMPT_QUEUE_KEY_PREFIX}${streamKey}`;
+  async getNextPrompt(streamId: string): Promise<PromptQueueEntry | null> {
+    const queueKey = `${PROMPT_QUEUE_KEY_PREFIX}${streamId}`;
 
     return this.executeWithRetry(async () => {
       const entryJson = await this.client.lPop(queueKey);
@@ -129,8 +129,8 @@ export class RedisClient {
     });
   }
 
-  async getQueueLength(streamKey: string): Promise<number> {
-    const queueKey = `${PROMPT_QUEUE_KEY_PREFIX}${streamKey}`;
+  async getQueueLength(streamId: string): Promise<number> {
+    const queueKey = `${PROMPT_QUEUE_KEY_PREFIX}${streamId}`;
 
     return this.executeWithRetry(async () => {
       return await this.client.lLen(queueKey);
@@ -138,7 +138,7 @@ export class RedisClient {
   }
 
   async setCurrentPrompt(prompt: Prompt): Promise<void> {
-    const currentKey = `${CURRENT_PROMPT_KEY_PREFIX}${prompt.stream_key}`;
+    const currentKey = `${CURRENT_PROMPT_KEY_PREFIX}${prompt.stream_id}`;
 
     const currentPrompt: CurrentPrompt = {
       prompt,
@@ -150,8 +150,8 @@ export class RedisClient {
     });
   }
 
-  async getCurrentPrompt(streamKey: string): Promise<CurrentPrompt | null> {
-    const currentKey = `${CURRENT_PROMPT_KEY_PREFIX}${streamKey}`;
+  async getCurrentPrompt(streamId: string): Promise<CurrentPrompt | null> {
+    const currentKey = `${CURRENT_PROMPT_KEY_PREFIX}${streamId}`;
 
     return this.executeWithRetry(async () => {
       const currentJson = await this.client.get(currentKey);
@@ -169,10 +169,10 @@ export class RedisClient {
   }
 
   async getRecentPrompts(
-    streamKey: string,
+    streamId: string,
     limit: number,
   ): Promise<PromptQueueEntry[]> {
-    const recentKey = `${RECENT_PROMPTS_KEY_PREFIX}${streamKey}`;
+    const recentKey = `${RECENT_PROMPTS_KEY_PREFIX}${streamId}`;
 
     return this.executeWithRetry(async () => {
       const entriesJson = await this.client.lRange(recentKey, 0, limit - 1);
@@ -186,8 +186,8 @@ export class RedisClient {
     });
   }
 
-  async clearCurrentPrompt(streamKey: string): Promise<void> {
-    const currentKey = `${CURRENT_PROMPT_KEY_PREFIX}${streamKey}`;
+  async clearCurrentPrompt(streamId: string): Promise<void> {
+    const currentKey = `${CURRENT_PROMPT_KEY_PREFIX}${streamId}`;
 
     return this.executeWithRetry(async () => {
       await this.client.del(currentKey);
@@ -195,11 +195,16 @@ export class RedisClient {
   }
 }
 
-export function createPrompt(content: string, streamKey: string): Prompt {
+export function createPrompt(
+  content: string,
+  streamId: string,
+  submitUrl: string,
+): Prompt {
   return {
     id: uuidv4(),
     content,
     submitted_at: new Date(),
-    stream_key: streamKey,
+    stream_id: streamId,
+    submit_url: submitUrl,
   };
 }
