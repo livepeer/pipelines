@@ -7,7 +7,8 @@ import {
 } from "../types/models";
 import { createPrompt } from "../services/redis";
 import { streams } from "../db/schema";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
+import { applyPromptToStream } from "../services/stream-api";
 
 // const INITIAL_PROMPTS = [
 //   "cyberpunk cityscape with neon lights --quality 3",
@@ -38,6 +39,65 @@ import { eq } from "drizzle-orm";
 const promptsRoute: FastifyPluginAsync = async fastify => {
   fastify.post<{ Body: SubmitPromptRequest; Params: { streamId: string } }>(
     "/streams/:streamId/prompts",
+    {
+      onRequest: [fastify.authenticate],
+      schema: {
+        params: {
+          type: "object",
+          required: ["streamId"],
+          properties: {
+            streamId: { type: "string", minLength: 1 },
+          },
+        },
+        body: {
+          type: "object",
+          required: ["text"],
+          properties: {
+            text: { type: "string", minLength: 1 },
+          },
+        },
+      },
+    },
+
+    async (request, reply) => {
+      const { text } = request.body;
+      const { streamId } = request.params;
+      const userId = request.headers["user-id"] as string;
+
+      if (text.trim().length === 0) {
+        return reply.status(400).send({ error: "Text cannot be empty" });
+      }
+
+      try {
+        const stream = await fastify.db.query.streams.findFirst({
+          where: and(eq(streams.id, streamId), eq(streams.author, userId)),
+        });
+
+        if (!stream) {
+          return reply.status(404).send({ error: "Stream not found" });
+        }
+
+        if (!stream.gatewayHost || !stream.streamKey) {
+          return reply.status(404).send({ error: "Stream not ready yet" });
+        }
+
+        await applyPromptToStream(
+          text,
+          `https://${stream.gatewayHost}/live/video-to-video/${stream.streamKey}/update`,
+          fastify.config.stream_api_user,
+          fastify.config.stream_api_password,
+        );
+
+        return { success: true, message: "Prompt submitted successfully" };
+      } catch (error) {
+        fastify.log.error("Failed to add prompt to queue:", error);
+        return reply.status(500).send({ error: "Internal server error" });
+      }
+    },
+  );
+
+  fastify.post<{ Body: SubmitPromptRequest; Params: { streamId: string } }>(
+    "/streams/:streamId/prompts/queue",
     {
       schema: {
         params: {
@@ -132,7 +192,7 @@ const promptsRoute: FastifyPluginAsync = async fastify => {
   );
 
   fastify.get<{ Params: { streamId: string } }>(
-    "/streams/:streamId/prompts",
+    "/streams/:streamId/prompts/queue",
     {
       schema: {
         params: {
@@ -216,7 +276,7 @@ const promptsRoute: FastifyPluginAsync = async fastify => {
   );
 
   fastify.put<{ Params: { streamId: string } }>(
-    "/streams/:streamId/prompts",
+    "/streams/:streamId/prompts/queue",
     {
       schema: {
         params: {

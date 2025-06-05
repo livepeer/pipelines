@@ -220,13 +220,16 @@ export function usePromptQueue(streamId: string | undefined) {
       try {
         const apiUrl =
           process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
-        const response = await fetch(`${apiUrl}/streams/${streamId}/prompts`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            text: text.trim(),
-          }),
-        });
+        const response = await fetch(
+          `${apiUrl}/streams/${streamId}/prompts/queue`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              text: text.trim(),
+            }),
+          },
+        );
 
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -264,9 +267,12 @@ export function usePromptQueue(streamId: string | undefined) {
 
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
-      const response = await fetch(`${apiUrl}/streams/${streamId}/prompts`, {
-        method: "PUT",
-      });
+      const response = await fetch(
+        `${apiUrl}/streams/${streamId}/prompts/queue`,
+        {
+          method: "PUT",
+        },
+      );
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
