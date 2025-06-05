@@ -87,7 +87,12 @@ export const ClipButton = ({
         is_authenticated: isAuthenticated,
       });
     }
-    showRecordingOptions();
+
+    if (isMobile) {
+      recordClip("output-only", null);
+    } else {
+      showRecordingOptions();
+    }
   };
 
   const handleCreateClip = (
