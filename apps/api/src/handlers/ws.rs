@@ -163,7 +163,16 @@ async fn send_initial_data(
     });
 
     let json = serde_json::to_string(&initial_data)?;
-    sender.send(Message::Text(json.into())).await?;
+
+    if let Err(e) = sender.send(Message::Text(json.into())).await {
+        if e.to_string().to_lowercase().contains("broken pipe")
+            || e.to_string().to_lowercase().contains("connection")
+        {
+            return Err(anyhow::anyhow!("broken pipe"));
+        } else {
+            return Err(e.into());
+        }
+    }
 
     Ok(())
 }

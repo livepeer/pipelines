@@ -6,7 +6,7 @@ use chrono::{DateTime, Duration, Utc};
 use dashmap::DashMap;
 use std::sync::Arc;
 use tokio::time;
-use tracing::{error, info};
+use tracing::{error, info, warn};
 
 const _RANDOM_PROMPTS: &[&str] = &[
     "hyperrealistic portrait of an alien queen --quality 3",
@@ -62,7 +62,15 @@ pub async fn run(state: Arc<AppState>) -> Result<()> {
                     failure_tracker.remove(stream_key);
                 }
                 Err(e) => {
-                    error!("Error in prompt manager for stream {}: {}", stream_key, e);
+                    let error_str = e.to_string().to_lowercase();
+                    if error_str.contains("broken pipe")
+                        || error_str.contains("connection")
+                        || error_str.contains("redis")
+                    {
+                        warn!("Redis connection issue for stream {}: {}", stream_key, e);
+                    } else {
+                        error!("Error in prompt manager for stream {}: {}", stream_key, e);
+                    }
                     failure_tracker.insert(stream_key.to_string(), Utc::now());
                 }
             }
