@@ -9,6 +9,7 @@ import {
   useInitialization,
   useParamsHandling,
   useStreamUpdates,
+  CACHED_PARAMS_PIPELINE_ID_KEY,
 } from "@/hooks/useDreamshaper";
 import useFullscreenStore from "@/hooks/useFullscreenStore";
 import useMobileStore from "@/hooks/useMobileStore";
@@ -98,6 +99,7 @@ export default function Dreamshaper({
     if (hasInputPrompt || hasSharedParam) {
       localStorage.removeItem(DREAMSHAPER_PARAMS_STORAGE_KEY);
       localStorage.removeItem(DREAMSHAPER_PARAMS_VERSION_KEY);
+      localStorage.removeItem(CACHED_PARAMS_PIPELINE_ID_KEY);
     }
   });
 
