@@ -13,6 +13,7 @@ import {
 } from "@/components/welcome/featured/useValidateInput";
 import { getStream } from "@/app/api/streams/get";
 import { Button } from "@repo/design-system/components/ui/button";
+import Image from "next/image";
 
 interface StreamInfo {
   streamKey: string;
@@ -181,7 +182,7 @@ export default function StreamPromptPage() {
 
                   <p className="text-gray-600 mb-6">
                     {userQueuePosition === 1
-                      ? "You're next!"
+                      ? "You&apos;re next!"
                       : `${userQueuePosition - 1} prompt${userQueuePosition - 1 === 1 ? "" : "s"} ahead of you`}
                   </p>
 
@@ -213,9 +214,15 @@ export default function StreamPromptPage() {
                     initial={{ rotate: 0 }}
                     animate={{ rotate: 360 }}
                     transition={{ duration: 2, ease: "easeInOut" }}
-                    className="w-16 h-16 mx-auto mb-6 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center"
+                    className="w-16 h-16 mx-auto mb-6 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center overflow-hidden"
                   >
-                    <Sparkles className="w-8 h-8 text-white" />
+                    <Image
+                      src="/images/cloud-icon.png"
+                      alt="Prompt Icon"
+                      width={32}
+                      height={32}
+                      className="w-8 h-8"
+                    />
                   </motion.div>
 
                   <h2 className="text-3xl font-bold text-gray-900 mb-4">
