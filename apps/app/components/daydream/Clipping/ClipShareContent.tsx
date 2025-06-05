@@ -158,6 +158,53 @@ export default function ClipShareContent({ clipData }: ClipShareContentProps) {
     }, 100);
   };
 
+  const handleDownloadInput = async () => {
+    if (!clipData.inputClipUrl || !clipData.inputClipFilename) {
+      toast("Input clip not available", {
+        description: "The original input clip was not recorded",
+      });
+      return;
+    }
+
+    if (navigator.share && isMobile) {
+      try {
+        const response = await fetch(clipData.inputClipUrl);
+        const blob = await response.blob();
+
+        const fileExtension = clipData.inputClipFilename
+          .split(".")
+          .pop()
+          ?.toLowerCase();
+        const mimeType =
+          fileExtension === "mp4" ? "video/mp4" : blob.type || "video/mp4";
+
+        const file = new File([blob], clipData.inputClipFilename, {
+          type: mimeType,
+        });
+
+        await navigator.share({
+          title: "Daydream Input Clip",
+          text: "Original input clip from Daydream",
+          files: [file],
+        });
+
+        return;
+      } catch (error) {
+        console.error("Error sharing input file:", error);
+      }
+    }
+
+    const downloadLink = document.createElement("a");
+    downloadLink.href = clipData.inputClipUrl;
+    downloadLink.download = clipData.inputClipFilename;
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+
+    setTimeout(() => {
+      document.body.removeChild(downloadLink);
+    }, 100);
+  };
+
   return (
     <DialogContent className="max-w-lg mx-auto rounded-xl overflow-hidden flex flex-col gap-6 items-center py-12 px-6">
       <DialogHeader className="flex items-center">
@@ -195,18 +242,6 @@ export default function ClipShareContent({ clipData }: ClipShareContentProps) {
         <TrackedButton
           trackingEvent="daydream_clip_modal_share_clicked"
           trackingProperties={{
-            method: "download",
-          }}
-          onClick={() => handleDownload()}
-          className="animatedGradientButton w-12 h-12 !rounded-full bg-white border-2 border-transparent flex items-center justify-center relative overflow-hidden hover:bg-background"
-          aria-label="Download clip"
-        >
-          <DownloadIcon className="w-6 h-6 text-black" />
-        </TrackedButton>
-
-        <TrackedButton
-          trackingEvent="daydream_clip_modal_share_clicked"
-          trackingProperties={{
             method: "tiktok",
           }}
           onClick={() => handleSocialShare("tiktok")}
@@ -239,6 +274,33 @@ export default function ClipShareContent({ clipData }: ClipShareContentProps) {
           className="w-12 h-12 rounded-full flex items-center justify-center bg-black"
         >
           <XIcon />
+        </TrackedButton>
+      </div>
+
+      <div className="flex flex-col items-center gap-3 mt-4">
+        <TrackedButton
+          trackingEvent="daydream_clip_modal_share_clicked"
+          trackingProperties={{
+            method: "download",
+          }}
+          onClick={() => handleDownload()}
+          className="w-full bg-black text-white px-6 py-3 rounded-lg hover:bg-gray-800 transition-colors"
+        >
+          Download clip
+        </TrackedButton>
+
+        <p className="text-sm text-gray-500">or</p>
+
+        <TrackedButton
+          trackingEvent="daydream_clip_modal_share_clicked"
+          trackingProperties={{
+            method: "download_input",
+          }}
+          onClick={() => handleDownloadInput()}
+          variant="link"
+          className="text-gray-500 hover:text-gray-700 underline text-sm"
+        >
+          Download input clip
         </TrackedButton>
       </div>
     </DialogContent>
