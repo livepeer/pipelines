@@ -214,7 +214,7 @@ export default function StreamPromptPage() {
                     initial={{ rotate: 0 }}
                     animate={{ rotate: 360 }}
                     transition={{ duration: 2, ease: "easeInOut" }}
-                    className="w-16 h-16 mx-auto mb-6 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center overflow-hidden"
+                    className="w-16 h-16 mx-auto mb-6 bg-gradient-to-r from-blue-200 to-blue-100 rounded-full flex items-center justify-center overflow-hidden"
                   >
                     <Image
                       src="/images/cloud-icon.png"
