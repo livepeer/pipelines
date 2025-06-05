@@ -6,7 +6,6 @@ import { LoaderCircleIcon } from "lucide-react";
 import LoggedOutComponent from "@/components/modals/logged-out";
 import StreamForm from "@/components/stream/stream-form";
 import { getStream } from "@/app/api/streams/get";
-import { upsertStream } from "@/app/api/streams/upsert";
 import { ExternalToast, toast } from "sonner";
 import { useRouter } from "next/navigation";
 import Modals from "@/components/modals";
@@ -87,10 +86,66 @@ export default function Stream({
         updatedStream.from_playground = false; //set flag indicating this is not ephemeral stream being shown in the Try/Playground components/views
 
         try {
-          const { data: savedStream, error } = await upsertStream(
-            updatedStream,
-            updatedStream.author,
-          );
+          let savedStream, error;
+
+          if (streamInputId === "create") {
+            // Create new stream
+            // Build URL with search params for WHIP URL generation
+            const apiUrl = new URL("/api/streams", window.location.origin);
+            // Forward relevant search params to the API
+            const searchParams = new URLSearchParams(window.location.search);
+            const relevantParams = ["whipServer", "orchestrator"];
+            relevantParams.forEach(param => {
+              const value = searchParams.get(param);
+              if (value) {
+                apiUrl.searchParams.set(param, value);
+              }
+            });
+
+            const result = await fetch(apiUrl.toString(), {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "x-user-id": user?.id || "",
+              },
+              body: JSON.stringify({
+                pipeline_id: updatedStream.pipeline_id,
+                pipeline_params: updatedStream.pipeline_params,
+                name: updatedStream.name,
+                from_playground: false,
+                is_smoke_test: false,
+              }),
+            });
+
+            const resultData = await result.json();
+            if (result.ok) {
+              savedStream = resultData.data;
+              error = null;
+            } else {
+              error = resultData.error;
+            }
+          } else {
+            // Update existing stream using PATCH API
+            const response = await fetch(`/api/streams/${streamInputId}`, {
+              method: "PATCH",
+              headers: {
+                "Content-Type": "application/json",
+                "x-user-id": user?.id || "",
+              },
+              body: JSON.stringify({
+                name: updatedStream.name,
+                pipeline_params: updatedStream.pipeline_params,
+              }),
+            });
+
+            const result = await response.json();
+            if (response.ok) {
+              savedStream = result.data;
+              error = null;
+            } else {
+              error = result.error;
+            }
+          }
 
           if (error) {
             console.error("Save error:", error);
