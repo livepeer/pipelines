@@ -601,11 +601,6 @@ export function useInitialization() {
     const fetchPipeline = async () => {
       try {
         const pipeline = await getPipeline(stream.pipeline_id!);
-        console.log(">>>>>>>>>>>>>>>>");
-        console.log(">>>>>>>>>>>>>>>>");
-        console.log(">>>>>>>>>>>>>>>>");
-        console.log(">>>>>>>>>>>>>>>>");
-        console.log(pipeline);
         setPipeline(pipeline);
       } catch (error) {
         console.error("Error fetching pipeline:", error);
@@ -632,7 +627,7 @@ export function useInitialization() {
 
     const fetchData = async () => {
       try {
-        const apiUrl = new URL("/api/streams", window.location.origin);
+        const apiUrl = new URL("/streams", process.env.NEXT_PUBLIC_API_URL);
 
         const relevantParams = ["whipServer", "orchestrator"];
 
@@ -656,13 +651,11 @@ export function useInitialization() {
           }),
         });
 
-        const result = await response.json();
-        const stream = result.data;
-        const error = result.error;
+        const stream = await response.json();
 
-        if (error || !response.ok) {
+        if (!response.ok) {
           toast.error(
-            `Error creating stream for playback ${error || response.statusText}`,
+            `Error creating stream for playback ${response.statusText}`,
           );
           return;
         }
@@ -671,8 +664,8 @@ export function useInitialization() {
         setStream(stream);
 
         // Set stream URL from the created stream (no additional API call needed)
-        if (stream?.whip_url) {
-          setStreamUrl(stream.whip_url);
+        if (stream?.whipUrl) {
+          setStreamUrl(stream.whipUrl);
         }
       } catch (error) {
         console.error(error);

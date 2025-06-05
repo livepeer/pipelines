@@ -118,10 +118,6 @@ export class PromptManager {
 
     // Apply prompt to stream
     try {
-      console.log(
-        this.fastify.config.stream_api_password,
-        this.fastify.config.stream_api_user,
-      );
       await applyPromptToStream(
         nextPrompt.content,
         streamKey,

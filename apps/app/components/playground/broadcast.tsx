@@ -91,6 +91,7 @@ const videoId = "live-video";
 
 export function BroadcastWithControls({ className }: { className?: string }) {
   const { streamUrl: ingestUrl } = useDreamshaperStore();
+
   const [isPiP, setIsPiP] = useState(false);
 
   const { collapsed, setCollapsed, toggleCollapsed } = useBroadcastUIStore();
