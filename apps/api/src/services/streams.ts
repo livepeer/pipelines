@@ -7,14 +7,16 @@ import { newId } from "./id";
 import { and } from "drizzle-orm";
 
 const createStreamSchema = z.object({
-  pipeline_id: z.string(),
+  pipeline_id: z.string().optional(),
   pipeline_params: z.record(z.any()).optional().default({}),
   name: z.string().optional(),
   from_playground: z.boolean().optional(),
-  is_smoke_test: z.boolean().default(false),
+  is_smoke_test: z.boolean().optional().default(false),
 });
 
 export type CreateStreamRequest = z.infer<typeof createStreamSchema>;
+
+const DEFAULT_PIPELINE_ID = "pip_DRQREDnSei4HQyC8";
 
 const createDefaultValues = (pipeline: any) => {
   const inputs = pipeline.config.inputs;
@@ -79,9 +81,38 @@ const addOrchestratorParam = (
 
 export class StreamsService {
   private livepeerService: LivepeerService;
+  private pipelineCache: Map<string, { data: any; timestamp: number }> =
+    new Map();
+  private readonly CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
   constructor(private fastify: FastifyInstance) {
     this.livepeerService = new LivepeerService();
+  }
+
+  private async getCachedPipeline(pipelineId: string) {
+    const cached = this.pipelineCache.get(pipelineId);
+
+    if (cached && Date.now() - cached.timestamp < this.CACHE_TTL) {
+      return cached.data;
+    }
+
+    const pipeline = await this.fastify.db
+      .select()
+      .from(pipelines)
+      .where(eq(pipelines.id, pipelineId))
+      .limit(1);
+
+    if (pipeline.length === 0) {
+      throw new Error(`Pipeline not found: ${pipelineId}`);
+    }
+
+    const pipelineData = pipeline[0];
+    this.pipelineCache.set(pipelineId, {
+      data: pipelineData,
+      timestamp: Date.now(),
+    });
+
+    return pipelineData;
   }
 
   async createStream(
@@ -98,17 +129,9 @@ export class StreamsService {
     const streamId = newId("stream");
     const streamKey = newId("stream_key");
 
-    const pipeline = await this.fastify.db
-      .select()
-      .from(pipelines)
-      .where(eq(pipelines.id, streamData.pipeline_id))
-      .limit(1);
+    const pipelineId = streamData.pipeline_id || DEFAULT_PIPELINE_ID;
 
-    if (pipeline.length === 0) {
-      throw new Error(`Pipeline not found: ${streamData.pipeline_id}`);
-    }
-
-    const pipelineData = pipeline[0];
+    const pipelineData = await this.getCachedPipeline(pipelineId);
     const inputValues = createDefaultValues(pipelineData);
     const processedInputValues = processInputValues(inputValues);
 
@@ -146,7 +169,7 @@ export class StreamsService {
       whipUrl,
       streamKey: streamKey,
       pipelineParams: processedInputValues,
-      pipelineId: streamData.pipeline_id,
+      pipelineId,
       author: userId,
       fromPlayground: streamData.from_playground,
       gatewayHost: "",
