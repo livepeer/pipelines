@@ -108,6 +108,11 @@ test.describe.parallel("Daydream Page Tests", () => {
           logger.log(
             `Running test ${i + 1} for region ${region} with path ${path}`,
           );
+
+          page.on("console", msg => {
+            logger.log(`Browser console: ${msg.text()}`);
+          });
+
           await page.goto(path);
           test.setTimeout(OVERALL_TEST_TIMEOUT_MS);
           const testName = test.info().title;
