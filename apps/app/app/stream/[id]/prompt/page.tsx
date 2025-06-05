@@ -218,7 +218,7 @@ export default function StreamPromptPage() {
                   <motion.div
                     initial={{ rotate: 0 }}
                     animate={{ rotate: 360 }}
-                    transition={{ duration: 2, ease: "easeInOut" }}
+                    transition={{ duration: 3, ease: "easeInOut" }}
                     className="w-16 h-16 mx-auto mb-6 bg-gradient-to-r from-blue-200 to-blue-100 rounded-full flex items-center justify-center overflow-hidden"
                   >
                     <Image
@@ -226,7 +226,7 @@ export default function StreamPromptPage() {
                       alt="Prompt Icon"
                       width={32}
                       height={32}
-                      className="w-8 h-8"
+                      className="w-9 h-9"
                     />
                   </motion.div>
 
@@ -299,7 +299,7 @@ function PromptForm({
         !exceedsMaxLength &&
         canSubmit
       ) {
-        e.currentTarget.form?.requestSubmit();
+        handleSubmit(e as unknown as React.FormEvent<HTMLFormElement>);
       }
     }
   };
@@ -322,7 +322,7 @@ function PromptForm({
 
   return (
     <form onSubmit={handleSubmit} className="w-full">
-      <div className="relative">
+      <div className="relative mb-4">
         <Textarea
           ref={textareaRef}
           placeholder={isDisabled ? "Wait..." : "Anime style..."}
@@ -342,32 +342,34 @@ function PromptForm({
           onKeyDown={handleKeyDown}
           disabled={isDisabled}
           rows={1}
+          spellCheck="false"
+          autoCorrect="off"
+          autoCapitalize="off"
+          data-gramm="false"
           style={{
             minHeight: "60px",
           }}
         />
-
-        <div className="absolute right-3 bottom-3 flex items-center justify-center">
-          <button
-            type="submit"
-            className={cn(
-              "bg-gray-900 text-white rounded-full w-10 h-10 flex items-center justify-center",
-              "transition-all duration-200",
-              "hover:bg-gray-800 active:scale-95",
-              (isDisabled ||
-                !promptValue.trim() ||
-                profanity ||
-                exceedsMaxLength) &&
-                "opacity-50 cursor-not-allowed hover:bg-gray-900",
-            )}
-            disabled={
-              isDisabled || !promptValue.trim() || profanity || exceedsMaxLength
-            }
-          >
-            <Send className="h-5 w-5" />
-          </button>
-        </div>
       </div>
+
+      <button
+        type="submit"
+        className={cn(
+          "w-full py-4 text-lg font-medium bg-gray-900 hover:bg-gray-800 text-white rounded-full",
+          "shadow-lg hover:shadow-xl transition-all duration-300",
+          "flex items-center justify-center gap-2",
+          (isDisabled ||
+            !promptValue.trim() ||
+            profanity ||
+            exceedsMaxLength) &&
+            "opacity-50 cursor-not-allowed hover:bg-gray-900",
+        )}
+        disabled={
+          isDisabled || !promptValue.trim() || profanity || exceedsMaxLength
+        }
+      >
+        Submit
+      </button>
 
       {errorMsg && (
         <div className="text-xs text-red-600 mt-2 text-center">{errorMsg}</div>
