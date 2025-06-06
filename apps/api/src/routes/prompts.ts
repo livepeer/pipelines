@@ -38,7 +38,7 @@ import { applyPromptToStream } from "../services/stream-api";
 
 const promptsRoute: FastifyPluginAsync = async fastify => {
   fastify.post<{ Body: SubmitPromptRequest; Params: { streamId: string } }>(
-    "/streams/:streamId/prompts",
+    "/v1/streams/:streamId/prompts",
     {
       onRequest: [fastify.authenticate],
       schema: {
@@ -97,7 +97,7 @@ const promptsRoute: FastifyPluginAsync = async fastify => {
   );
 
   fastify.post<{ Body: SubmitPromptRequest; Params: { streamId: string } }>(
-    "/streams/:streamId/prompts/queue",
+    "/v1/streams/:streamId/prompts/queue",
     {
       schema: {
         params: {
@@ -192,7 +192,7 @@ const promptsRoute: FastifyPluginAsync = async fastify => {
   );
 
   fastify.get<{ Params: { streamId: string } }>(
-    "/streams/:streamId/prompts/queue",
+    "/v1/streams/:streamId/prompts/queue",
     {
       schema: {
         params: {
@@ -276,7 +276,7 @@ const promptsRoute: FastifyPluginAsync = async fastify => {
   );
 
   fastify.put<{ Params: { streamId: string } }>(
-    "/streams/:streamId/prompts/queue",
+    "/v1/streams/:streamId/prompts/queue",
     {
       schema: {
         params: {

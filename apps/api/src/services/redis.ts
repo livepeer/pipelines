@@ -14,8 +14,19 @@ export class RedisClient {
   private client: RedisClientType;
   private isConnected = false;
 
-  constructor(redisUrl: string) {
-    this.client = createClient({ url: redisUrl });
+  constructor(
+    host: string,
+    port: number = 6379,
+    password?: string,
+    username?: string,
+  ) {
+    if (password && username) {
+      this.client = createClient({
+        url: `redis://${username}:${password}@${host}:${port}`,
+      });
+    } else {
+      this.client = createClient({ url: `redis://${host}:${port}` });
+    }
 
     this.client.on("error", err => {
       console.error("Redis Client Error:", err);

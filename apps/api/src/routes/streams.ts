@@ -12,13 +12,12 @@ const streamsRoute: FastifyPluginAsync = async fastify => {
   const streamsService = new StreamsService(fastify);
 
   fastify.post<{ Body: CreateStreamRequest }>(
-    "/streams",
+    "/v1/streams",
     {
       onRequest: [fastify.authenticate],
       schema: {
         body: {
           type: "object",
-          required: ["pipeline_id"],
           properties: {
             pipeline_id: { type: "string" },
             pipeline_params: { type: "object" },
@@ -89,7 +88,7 @@ const streamsRoute: FastifyPluginAsync = async fastify => {
   );
 
   fastify.get(
-    "/streams",
+    "/v1/streams",
     {
       onRequest: [fastify.authenticate],
       schema: {
@@ -136,7 +135,7 @@ const streamsRoute: FastifyPluginAsync = async fastify => {
   );
 
   fastify.delete<{ Querystring: { id: string } }>(
-    "/streams",
+    "/v1/streams",
     {
       onRequest: [fastify.authenticate],
       schema: {

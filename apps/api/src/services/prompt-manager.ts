@@ -21,8 +21,12 @@ export class PromptManager {
       maxRetriesPerRequest: null,
       host: process.env.REDIS_HOST,
       port: parseInt(process.env.REDIS_PORT || "6379"),
-      password: process.env.REDIS_PASSWORD,
-      username: process.env.REDIS_USERNAME,
+      ...(process.env.REDIS_PASSWORD && {
+        password: process.env.REDIS_PASSWORD,
+      }),
+      ...(process.env.REDIS_USERNAME && {
+        username: process.env.REDIS_USERNAME,
+      }),
       ...(process.env.NODE_ENV !== "development" && { family: 6 }),
     });
 

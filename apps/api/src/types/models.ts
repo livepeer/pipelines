@@ -64,8 +64,6 @@ export type WsMessage =
 export interface Config {
   port: number;
   prompt_min_duration_secs: number;
-  stream_keys: string[];
-  gateway_hosts: string[];
   stream_api_user: string;
   stream_api_password: string;
 }

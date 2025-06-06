@@ -16,26 +16,6 @@ const configPlugin: FastifyPluginAsync = async fastify => {
     10,
   );
 
-  const streamKeys = (process.env.MULTIPLAYER_STREAM_KEY || "default-stream")
-    .split(",")
-    .map(s => s.trim())
-    .filter(s => s.length > 0);
-
-  const gatewayHosts = (process.env.GATEWAY_HOST || "")
-    .split(",")
-    .map(s => s.trim())
-    .filter(s => s.length > 0);
-
-  if (!process.env.GATEWAY_HOST) {
-    throw new Error("GATEWAY_HOST environment variable is required");
-  }
-
-  if (gatewayHosts.length !== streamKeys.length) {
-    throw new Error(
-      `Number of gateway hosts (${gatewayHosts.length}) must match number of stream keys (${streamKeys.length})`,
-    );
-  }
-
   const streamApiUser = process.env.STREAM_STATUS_ENDPOINT_USER;
   const streamApiPassword = process.env.STREAM_STATUS_ENDPOINT_PASSWORD;
 
@@ -54,8 +34,6 @@ const configPlugin: FastifyPluginAsync = async fastify => {
   const config: Config = {
     port: serverPort,
     prompt_min_duration_secs: promptMinDurationSecs,
-    stream_keys: streamKeys,
-    gateway_hosts: gatewayHosts,
     stream_api_user: streamApiUser,
     stream_api_password: streamApiPassword,
   };
@@ -64,8 +42,6 @@ const configPlugin: FastifyPluginAsync = async fastify => {
   fastify.log.info("Configuration loaded", {
     serverPort,
     promptMinDurationSecs,
-    streamKeys,
-    gatewayHostsCount: gatewayHosts.length,
   });
 };
 

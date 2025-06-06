@@ -16,8 +16,6 @@ const createStreamSchema = z.object({
 
 export type CreateStreamRequest = z.infer<typeof createStreamSchema>;
 
-const DEFAULT_PIPELINE_ID = "pip_DRQREDnSei4HQyC8";
-
 const createDefaultValues = (pipeline: any) => {
   const inputs = pipeline.config.inputs;
   const primaryInput = inputs.primary;
@@ -46,7 +44,7 @@ const getStreamUrl = (
   customWhipServer?: string,
   customOrchestrator?: string,
 ): string => {
-  const defaultWhipUrl = process.env.WHIP_URL;
+  const defaultWhipUrl = process.env.WHIP_URL!;
 
   if (customWhipServer) {
     if (customWhipServer.includes("<STREAM_KEY>")) {
@@ -56,13 +54,13 @@ const getStreamUrl = (
       );
     }
     return addOrchestratorParam(
-      `${customWhipServer}${streamKey}/whip`,
+      `${customWhipServer}${customWhipServer.endsWith("/") ? "" : "/"}${streamKey}/whip`,
       customOrchestrator ?? null,
     );
   }
 
   return addOrchestratorParam(
-    `${defaultWhipUrl}${streamKey}/whip`,
+    `${defaultWhipUrl}${defaultWhipUrl.endsWith("/") ? "" : "/"}${streamKey}/whip`,
     customOrchestrator ?? null,
   );
 };
@@ -129,7 +127,7 @@ export class StreamsService {
     const streamId = newId("stream");
     const streamKey = newId("stream_key");
 
-    const pipelineId = streamData.pipeline_id || DEFAULT_PIPELINE_ID;
+    const pipelineId = streamData.pipeline_id || process.env.PIPELINE_ID!;
 
     const pipelineData = await this.getCachedPipeline(pipelineId);
     const inputValues = createDefaultValues(pipelineData);

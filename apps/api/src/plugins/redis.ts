@@ -10,7 +10,10 @@ declare module "fastify" {
 
 const redisPlugin: FastifyPluginAsync = async fastify => {
   const redis = new RedisClient(
-    `redis://${process.env.REDIS_USERNAME}:${process.env.REDIS_PASSWORD}@${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
+    process.env.REDIS_HOST || "localhost",
+    parseInt(process.env.REDIS_PORT || "6379"),
+    process.env.REDIS_PASSWORD,
+    process.env.REDIS_USERNAME,
   );
 
   await redis.connect();
