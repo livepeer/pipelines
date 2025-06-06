@@ -186,7 +186,10 @@ export default function StreamPromptPage() {
                     ) : (
                       <>
                         {userQueuePosition - 1}
-                        {userQueuePosition - 1 === 1 ? " people" : " person"} ahead of you
+                        {userQueuePosition - 1 === 1
+                          ? " people"
+                          : " person"}{" "}
+                        ahead of you
                       </>
                     )}
                   </p>
@@ -241,7 +244,8 @@ export default function StreamPromptPage() {
                   </div>
 
                   <p className="text-gray-600 mb-6">
-                  It’s your moment! Your prompt currently is applied to the stream.
+                    It’s your moment! Your prompt currently is applied to the
+                    stream.
                   </p>
 
                   <Button
