@@ -224,9 +224,9 @@ export function usePromptQueue(streamId: string | undefined) {
   useEffect(() => {
     if (entry && currentPrompt?.prompt?.id) {
       entry.queuePositions.delete(currentPrompt.prompt.id);
-      notifySubscribers(streamKey!);
+      notifySubscribers(streamId!);
     }
-  }, [entry, currentPrompt?.prompt?.id, streamKey]);
+  }, [entry, currentPrompt?.prompt?.id, streamId]);
 
   const getHighlightedIndex = useCallback(() => {
     if (!currentPrompt?.prompt?.id) return -1;
