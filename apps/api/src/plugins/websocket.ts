@@ -14,7 +14,7 @@ const websocketPlugin: FastifyPluginAsync = async fastify => {
   await fastify.register(require("@fastify/websocket"));
 
   const broadcastEmitter = new EventEmitter();
-  broadcastEmitter.setMaxListeners(1000); // Allow many WebSocket connections
+  broadcastEmitter.setMaxListeners(1000);
 
   fastify.decorate("websocketBroadcast", broadcastEmitter);
 

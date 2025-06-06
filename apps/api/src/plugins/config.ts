@@ -9,7 +9,6 @@ declare module "fastify" {
 }
 
 const configPlugin: FastifyPluginAsync = async fastify => {
-  // Load environment variables
   const serverPort = parseInt(process.env.PORT || "8080", 10);
   const promptMinDurationSecs = parseInt(
     process.env.PROMPT_MIN_DURATION_SECS || "10",

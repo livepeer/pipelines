@@ -13,10 +13,8 @@ const promptManagerPlugin: FastifyPluginAsync = async fastify => {
 
   fastify.decorate("promptManager", promptManager);
 
-  // Start the prompt manager
   await promptManager.start();
 
-  // Stop the prompt manager when the server closes
   fastify.addHook("onClose", async () => {
     promptManager.stop();
   });
