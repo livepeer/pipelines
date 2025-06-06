@@ -196,7 +196,7 @@ export default function StreamPromptPage() {
 
                   <Button
                     onClick={handleReset}
-                    className="px-8 py-3 bg-gray-900 hover:bg-gray-800 text-white rounded-full font-medium transition-all duration-300"
+                    className="w-full py-4 text-lg font-medium bg-gray-900 hover:bg-gray-800 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center"
                   >
                     Go again
                   </Button>

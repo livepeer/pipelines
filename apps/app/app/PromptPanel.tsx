@@ -48,6 +48,7 @@ export default function PromptPanel() {
   const { currentStream } = useMultiplayerStreamStore();
   const [promptValue, setPromptValue] = useState("");
   const [isTextareaHighlighted, setIsTextareaHighlighted] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const { currentPrompt, recentPrompts, isSubmitting, submitPrompt } =
     usePromptQueue(currentStream?.streamId);
@@ -63,6 +64,16 @@ export default function PromptPanel() {
     setTimeout(() => {
       setIsTextareaHighlighted(false);
     }, 1500);
+
+    // Focus the textarea after setting the prompt
+    setTimeout(() => {
+      if (textareaRef.current) {
+        textareaRef.current.focus();
+        // Move cursor to the end of the text
+        const length = textareaRef.current.value.length;
+        textareaRef.current.setSelectionRange(length, length);
+      }
+    }, 50);
   };
 
   const handlePastPromptClick = (prompt: string) => {
@@ -289,6 +300,7 @@ export default function PromptPanel() {
           setPromptValue={setPromptValue}
           isMobile={isMobile}
           isTextareaHighlighted={isTextareaHighlighted}
+          textareaRef={textareaRef}
         />
         {!isMobile && (
           <p className="text-sm italic text-gray-500 mt-4 text-center">
@@ -379,6 +391,7 @@ function PromptSubmissionForm({
   setPromptValue,
   isMobile = false,
   isTextareaHighlighted,
+  textareaRef,
 }: {
   onSubmitPrompt: (
     text: string,
@@ -388,9 +401,9 @@ function PromptSubmissionForm({
   setPromptValue: (value: string) => void;
   isMobile?: boolean;
   isTextareaHighlighted: boolean;
+  textareaRef: React.RefObject<HTMLTextAreaElement>;
 }) {
   const { profanity, exceedsMaxLength } = useValidateInput(promptValue);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
