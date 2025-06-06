@@ -6,6 +6,7 @@ import { LivepeerPlayer } from "./LivepeerPlayer";
 import { Button } from "@repo/design-system/components/ui/button";
 import { cn } from "@repo/design-system/lib/utils";
 import useMobileStore from "@/hooks/useMobileStore";
+import { QRCodeComponent } from "../QRCode";
 
 const env = process.env.NEXT_PUBLIC_ENV;
 
@@ -61,6 +62,17 @@ export function VideoSection() {
           {isLoading && (
             <div className="absolute inset-0 flex items-center justify-center bg-black z-10">
               <div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+            </div>
+          )}
+
+          {/* QR Code for mobile prompt page */}
+          {currentStream && (
+            <div className="absolute top-4 left-4 z-40">
+              <QRCodeComponent
+                url={`${typeof window !== "undefined" ? window.location.origin : ""}/stream/${currentStream.streamId}/prompt`}
+                size={80}
+                className="opacity-90 hover:opacity-100 transition-opacity"
+              />
             </div>
           )}
 
