@@ -140,7 +140,7 @@ export default function StreamPromptPage() {
                 className="w-full max-w-md text-center"
               >
                 <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4 leading-tight">
-                  Submit your prompt to the queue
+                  Describe your vision
                 </h2>
                 <p className="text-gray-600 mb-12 text-lg">
                   Bend reality to your will
@@ -185,8 +185,8 @@ export default function StreamPromptPage() {
                       <>You&apos;re next!</>
                     ) : (
                       <>
-                        {userQueuePosition - 1} prompt
-                        {userQueuePosition - 1 === 1 ? "" : "s"} ahead of you
+                        {userQueuePosition - 1}
+                        {userQueuePosition - 1 === 1 ? " people" : " person"} ahead of you
                       </>
                     )}
                   </p>
@@ -241,14 +241,14 @@ export default function StreamPromptPage() {
                   </div>
 
                   <p className="text-gray-600 mb-6">
-                    Your prompt is now being processed live
+                  It’s your moment! Your prompt currently is applied to the stream.
                   </p>
 
                   <Button
                     onClick={handleReset}
                     className="px-8 py-3 bg-gray-900 hover:bg-gray-800 text-white rounded-full font-medium transition-all duration-300"
                   >
-                    Submit Another
+                    Go again
                   </Button>
                 </motion.div>
               </motion.div>
