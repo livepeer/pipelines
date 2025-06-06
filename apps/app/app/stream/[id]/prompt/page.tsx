@@ -133,8 +133,8 @@ export default function StreamPromptPage() {
                       <>
                         {userQueuePosition - 1}
                         {userQueuePosition - 1 === 1
-                          ? " people"
-                          : " person"}{" "}
+                          ? " person"
+                          : " people"}{" "}
                         ahead of you
                       </>
                     )}
