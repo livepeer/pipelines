@@ -25,6 +25,7 @@ interface CacheEntry {
   ws: WebSocket | null;
   subscribers: Set<() => void>;
   reconnectTimer: NodeJS.Timeout | null;
+  queuePositions: Map<string, number>; // Map of promptId -> position
 }
 
 const promptQueueCache: Map<string, CacheEntry> = new Map();
@@ -38,6 +39,7 @@ function getCacheEntry(streamId: string): CacheEntry {
       ws: null,
       subscribers: new Set(),
       reconnectTimer: null,
+      queuePositions: new Map(),
     });
   }
   return promptQueueCache.get(streamId)!;
@@ -94,6 +96,19 @@ function connectWebSocket(streamId: string) {
           break;
 
         case "CurrentPrompt":
+          if (
+            currentEntry.currentPrompt?.prompt?.id !==
+            message.payload.prompt?.prompt?.id
+          ) {
+            const updatedPositions = new Map<string, number>();
+            currentEntry.queuePositions.forEach((position, promptId) => {
+              if (position > 1) {
+                updatedPositions.set(promptId, position - 1);
+              }
+            });
+            currentEntry.queuePositions = updatedPositions;
+          }
+
           currentEntry.currentPrompt = message.payload.prompt;
           notifySubscribers(streamId);
           break;
@@ -203,6 +218,15 @@ export function usePromptQueue(streamId: string | undefined) {
   const currentPrompt = entry?.currentPrompt || null;
   const recentPrompts = entry?.recentPrompts || [];
   const isSubmitting = entry?.isSubmitting || false;
+  const queuePositions = entry?.queuePositions || new Map();
+
+  // Clear queue position when prompt becomes active or is removed
+  useEffect(() => {
+    if (entry && currentPrompt?.prompt?.id) {
+      entry.queuePositions.delete(currentPrompt.prompt.id);
+      notifySubscribers(streamId!);
+    }
+  }, [entry, currentPrompt?.prompt?.id, streamId]);
 
   const getHighlightedIndex = useCallback(() => {
     if (!currentPrompt?.prompt?.id) return -1;
@@ -211,7 +235,8 @@ export function usePromptQueue(streamId: string | undefined) {
 
   const submitPrompt = useCallback(
     async (text: string) => {
-      if (!text.trim() || !streamId || isSubmitting) return false;
+      if (!text.trim() || !streamId || isSubmitting)
+        return { success: false, promptId: null };
 
       const entry = getCacheEntry(streamId);
       entry.isSubmitting = true;
@@ -237,6 +262,11 @@ export function usePromptQueue(streamId: string | undefined) {
 
         const result = await response.json();
 
+        // Store the queue position
+        if (result.id && typeof result.queue_position === "number") {
+          entry.queuePositions.set(result.id, result.queue_position);
+        }
+
         track("daydream_landing_page_prompt_submitted", {
           is_authenticated: authenticated,
           prompt: text,
@@ -244,9 +274,9 @@ export function usePromptQueue(streamId: string | undefined) {
           stream_id: streamId,
         });
 
-        return true;
+        return { success: true, promptId: result.id };
       } catch (error) {
-        return false;
+        return { success: false, promptId: null };
       } finally {
         const currentEntry = promptQueueCache.get(streamId);
         if (currentEntry) {
@@ -298,5 +328,9 @@ export function usePromptQueue(streamId: string | undefined) {
     getHighlightedIndex,
     submitPrompt,
     addRandomPrompt,
+    getQueuePosition: useCallback(
+      (promptId: string) => queuePositions.get(promptId),
+      [queuePositions],
+    ),
   };
 }
