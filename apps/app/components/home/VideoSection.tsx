@@ -148,7 +148,7 @@ interface MultiplayerStream {
   name: string;
   originalPlaybackId: string;
   transformedPlaybackId: string;
-  streamKey: string;
+  streamId: string;
 }
 
 interface MultiplayerStreamStore {
@@ -173,14 +173,14 @@ export const useMultiplayerStreamStore = create<MultiplayerStreamStore>(
         process.env.NEXT_PUBLIC_ORIGINAL_PLAYBACK_ID?.split(",") || [];
       const transformedIds =
         process.env.NEXT_PUBLIC_TRANSFORMED_PLAYBACK_ID?.split(",") || [];
-      const streamKeys =
-        process.env.NEXT_PUBLIC_MULTIPLAYER_STREAM_KEY?.split(",") || [];
+      const streamIds =
+        process.env.NEXT_PUBLIC_MULTIPLAYER_STREAM_ID?.split(",") || [];
 
       const minLength = Math.min(
         names.length,
         originalIds.length,
         transformedIds.length,
-        streamKeys.length,
+        streamIds.length,
       );
 
       if (minLength === 0) return [];
@@ -190,7 +190,7 @@ export const useMultiplayerStreamStore = create<MultiplayerStreamStore>(
 
         originalPlaybackId: originalIds[i].trim(),
         transformedPlaybackId: transformedIds[i].trim(),
-        streamKey: streamKeys[i].trim(),
+        streamId: streamIds[i].trim(),
       }));
     })(),
     get currentStream() {
@@ -226,12 +226,12 @@ const MultiplayerStreamSelector = () => {
     >
       {streams.map((stream, index) => (
         <Button
-          key={stream.streamKey}
+          key={stream.streamId}
           size="sm"
           variant="outline"
           className={cn(
             `rounded-md bg-white text-black text-xs `,
-            currentStream?.streamKey === stream.streamKey
+            currentStream?.streamId === stream.streamId
               ? isMobile
                 ? "outline outline-2 outline-offset-1"
                 : "outline outline-2 outline-offset-2 outline-white"
@@ -239,7 +239,7 @@ const MultiplayerStreamSelector = () => {
             isMobile ? "min-w-[calc(30%)]" : "",
           )}
           onClick={() => {
-            if (currentStream?.streamKey === stream.streamKey) return;
+            if (currentStream?.streamId === stream.streamId) return;
             setCurrentStream(stream);
           }}
         >

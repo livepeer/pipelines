@@ -19,7 +19,7 @@ export const HeroSection = () => {
   const { currentStream } = useMultiplayerStreamStore();
   const { isMobile } = useMobileStore();
   const { submitPrompt, isSubmitting } = usePromptQueue(
-    currentStream?.streamKey,
+    currentStream?.streamId,
   );
   const { authenticated } = usePrivy();
 

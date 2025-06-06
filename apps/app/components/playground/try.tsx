@@ -10,7 +10,6 @@ import {
   SelectValue,
 } from "@repo/design-system/components/ui/select";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
-import { upsertStream } from "@/app/api/streams/upsert";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Switch } from "@repo/design-system/components/ui/switch";
 import { Slider } from "@repo/design-system/components/ui/slider";
@@ -252,21 +251,45 @@ export default function Try({
       }),
     );
 
-    const { data: stream, error } = await upsertStream(
-      {
+    // Build URL with search params for WHIP URL generation
+    const apiUrl = new URL("/api/streams", window.location.origin);
+    // Forward relevant search params to the API
+    const searchParams = new URLSearchParams(window.location.search);
+    const relevantParams = ["whipServer", "orchestrator"];
+    relevantParams.forEach(param => {
+      const value = searchParams.get(param);
+      if (value) {
+        apiUrl.searchParams.set(param, value);
+      }
+    });
+
+    const response = await fetch(apiUrl.toString(), {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
         pipeline_id: pipeline.id,
         pipeline_params: processedInputValues,
-      },
-      user?.id ?? "did:privy:cm4x2cuiw007lh8fcj34919fu", // Dummy user id for non-authenticated users
-    );
+        from_playground: true,
+        is_smoke_test: false,
+      }),
+    });
 
-    if (error) {
-      toast.error(`Error creating stream for playback ${error}`);
+    const result = await response.json();
+    const stream = result.data;
+    const error = result.error;
+
+    if (error || !response.ok) {
+      toast.error(
+        `Error creating stream for playback ${error || response.statusText}`,
+      );
       return;
     }
+
     setStreamId(stream.id);
     setStreamInfo(stream);
-    setStreamUrl(`${appConfig.whipUrl}${stream.stream_key}/whip`);
+    setStreamUrl(stream.whip_url);
     setStreamKey(stream.stream_key);
     console.log("stream", stream);
     setGatewayHost(stream.gateway_host);

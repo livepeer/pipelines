@@ -8,7 +8,7 @@ primary_region = "fra"
   strategy = "rolling"
 
 [env]
-  SERVER_PORT = "8080"
+  NODE_ENV = "production"
 
 [http_service]
   internal_port = 8080
@@ -20,10 +20,17 @@ primary_region = "fra"
   
   [http_service.concurrency]
     type = "connections"
-    hard_limit = 500
-    soft_limit = 250
+    hard_limit = 1000
+    soft_limit = 500
+
+[[http_service.checks]]
+  grace_period = "10s"
+  interval = "30s"
+  method = "GET"
+  timeout = "5s"
+  path = "/health"
 
 [[vm]]
-  cpu_kind = "performance"
-  cpus = 2
-  memory_mb = 4096
+  cpu_kind = "shared"
+  cpus = 1
+  memory_mb = 1024
