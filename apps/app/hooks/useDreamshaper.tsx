@@ -5,12 +5,11 @@ import {
   getSharedParams,
 } from "@/app/api/streams/share-params";
 import { updateParams } from "@/app/api/streams/update-params";
-import { Stream, upsertStream } from "@/app/api/streams/upsert";
+import { Stream } from "@/app/api/streams/upsert";
 import { useCapacityCheck } from "@/hooks/useCapacityCheck";
 import { useGatewayHost } from "@/hooks/useGatewayHost";
 import { usePrivy } from "@/hooks/usePrivy";
 import { usePromptStore } from "@/hooks/usePromptStore";
-import { getAppConfig } from "@/lib/env";
 import track from "@/lib/track";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -19,6 +18,7 @@ import { create } from "zustand";
 import { usePromptVersionStore } from "./usePromptVersionStore";
 import { useStreamStatus } from "./useStreamStatus";
 import { usePlayerStore } from "@/components/welcome/featured/player";
+import { getAccessToken } from "@privy-io/react-auth";
 
 export const DEFAULT_PIPELINE_ID = "pip_DRQREDnSei4HQyC8"; // Staging Dreamshaper ID
 export const DUMMY_USER_ID_FOR_NON_AUTHENTICATED_USERS =
@@ -39,47 +39,7 @@ const createDefaultValues = (pipeline: any) => {
   }, {});
 };
 
-export const getStreamUrl = (
-  streamKey: string,
-  searchParams: URLSearchParams,
-  storedWhipUrl?: string | null,
-): string => {
-  const customWhipServer = searchParams.get("whipServer");
-  const customOrchestrator = searchParams.get("orchestrator");
-
-  const app = getAppConfig(searchParams);
-
-  if (customWhipServer) {
-    if (customWhipServer.includes("<STREAM_KEY>")) {
-      return addOrchestratorParam(
-        customWhipServer.replace("<STREAM_KEY>", streamKey),
-        customOrchestrator,
-      );
-    }
-    return addOrchestratorParam(
-      `${customWhipServer}${streamKey}/whip`,
-      customOrchestrator,
-    );
-  }
-
-  return addOrchestratorParam(
-    `${app.newWhipUrl}${streamKey}/whip`,
-    customOrchestrator,
-  );
-};
-
-const addOrchestratorParam = (
-  url: string,
-  orchestrator: string | null,
-): string => {
-  if (orchestrator) {
-    const urlObj = new URL(url);
-    urlObj.searchParams.set("orchestrator", orchestrator);
-    return urlObj.toString();
-  }
-  return url;
-};
-
+// TODO: REMOVE THIS
 const processInputValues = (inputValues: any) => {
   return Object.fromEntries(
     Object.entries(inputValues).map(([key, value]) => {
@@ -614,7 +574,7 @@ export function useStreamUpdates() {
         setUpdating(false);
       }
     },
-    [stream, setUpdating],
+    [stream, pipeline, setUpdating],
   );
 
   return { handleStreamUpdate };
@@ -634,6 +594,22 @@ export function useInitialization() {
     process.env.NEXT_PUBLIC_SHOWCASE_PIPELINE_ID ||
     DEFAULT_PIPELINE_ID;
 
+  // Fetch pipeline when stream is set
+  useEffect(() => {
+    if (!stream?.pipeline_id) return;
+
+    const fetchPipeline = async () => {
+      try {
+        const pipeline = await getPipeline(stream.pipeline_id!);
+        setPipeline(pipeline);
+      } catch (error) {
+        console.error("Error fetching pipeline:", error);
+      }
+    };
+
+    fetchPipeline();
+  }, [stream, setPipeline]);
+
   useEffect(() => {
     // Skip initialization entirely if we don't have capacity
     if (capacityLoading) {
@@ -651,60 +627,46 @@ export function useInitialization() {
 
     const fetchData = async () => {
       try {
-        const pipeline = await getPipeline(pipelineId);
-        if (!isMounted) return;
-        setPipeline(pipeline);
+        const apiUrl = new URL("/streams", process.env.NEXT_PUBLIC_API_URL);
 
-        const inputValues = createDefaultValues(pipeline);
-        const processedInputValues = processInputValues(inputValues);
+        const relevantParams = ["whipServer", "orchestrator"];
 
-        const currentUserId =
-          user?.id ?? DUMMY_USER_ID_FOR_NON_AUTHENTICATED_USERS;
+        relevantParams.forEach(param => {
+          const value = searchParams.get(param);
+          if (value) {
+            apiUrl.searchParams.set(param, value);
+          }
+        });
 
-        const { data: stream, error } = await upsertStream(
-          {
-            pipeline_id: pipeline.id,
-            pipeline_params: processedInputValues,
+        const response = await fetch(apiUrl.toString(), {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${await getAccessToken()}`,
           },
-          currentUserId,
-        );
+          body: JSON.stringify({
+            pipeline_id: pipelineId,
+            pipeline_params: {},
+            from_playground: false,
+            is_smoke_test: false,
+          }),
+        });
 
-        if (error) {
-          toast.error(`Error creating stream for playback ${error}`);
+        const stream = await response.json();
+
+        if (!response.ok) {
+          toast.error(
+            `Error creating stream for playback ${response.statusText}`,
+          );
           return;
         }
 
         if (!isMounted) return;
         setStream(stream);
 
-        if (stream && stream.stream_key) {
-          const whipUrl = getStreamUrl(
-            stream.stream_key,
-            searchParams,
-            stream.whip_url,
-          );
-
-          if (!stream.whip_url || stream.whip_url !== whipUrl) {
-            const updatedStream = {
-              ...stream,
-              whip_url: whipUrl,
-              name: stream.name || "",
-              from_playground: false,
-            };
-
-            const { data: updatedStreamData, error: updateError } =
-              await upsertStream(updatedStream, currentUserId);
-
-            if (updateError) {
-              console.error(
-                "Error updating stream with WHIP URL:",
-                updateError,
-              );
-            } else if (updatedStreamData && isMounted) {
-              setStream(updatedStreamData);
-              console.log("Stream state updated with new data");
-            }
-          }
+        // Set stream URL from the created stream (no additional API call needed)
+        if (stream?.whipUrl) {
+          setStreamUrl(stream.whipUrl);
         }
       } catch (error) {
         console.error(error);
@@ -721,15 +683,6 @@ export function useInitialization() {
       isMounted = false;
     };
   }, [pathname, ready, user, searchParams, capacityLoading, hasCapacity]);
-
-  useEffect(() => {
-    if (!stream || !stream.stream_key) {
-      return;
-    }
-    setStreamUrl(
-      getStreamUrl(stream?.stream_key, searchParams, stream.whip_url),
-    );
-  }, [stream]);
 
   return { capacityLoading, hasCapacity };
 }
