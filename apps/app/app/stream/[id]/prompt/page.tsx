@@ -11,21 +11,12 @@ import {
   MAX_PROMPT_LENGTH,
   useValidateInput,
 } from "@/components/welcome/featured/useValidateInput";
-import { getStream } from "@/app/api/streams/get";
 import { Button } from "@repo/design-system/components/ui/button";
 import Image from "next/image";
-
-interface StreamInfo {
-  streamKey: string;
-  streamName: string;
-}
 
 export default function StreamPromptPage() {
   const params = useParams();
   const streamId = params.id as string;
-  const [streamInfo, setStreamInfo] = useState<StreamInfo | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [promptValue, setPromptValue] = useState("");
   const [userPromptId, setUserPromptId] = useState<string | null>(null);
   const [isTextareaHighlighted, setIsTextareaHighlighted] = useState(false);
@@ -33,30 +24,6 @@ export default function StreamPromptPage() {
   const handleReset = () => {
     setUserPromptId(null);
   };
-
-  // Fetch stream info on mount
-  useEffect(() => {
-    const fetchStreamInfo = async () => {
-      try {
-        const { data: stream, error } = await getStream(streamId);
-        if (error || !stream) {
-          throw new Error("Stream not found");
-        }
-        setStreamInfo({
-          streamKey: stream.stream_key,
-          streamName: stream.name || "Live Stream",
-        });
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load stream");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (streamId) {
-      fetchStreamInfo();
-    }
-  }, [streamId]);
 
   const {
     currentPrompt,
@@ -96,27 +63,6 @@ export default function StreamPromptPage() {
     }
     return false;
   };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-blue-100">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-blue-100 p-4">
-        <div className="text-center">
-          <h1 className="text-xl font-semibold text-gray-800 mb-2">
-            Stream Not Found
-          </h1>
-          <p className="text-gray-600">{error}</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 relative overflow-hidden">
