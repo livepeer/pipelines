@@ -16,6 +16,14 @@ const streamsRoute: FastifyPluginAsync = async fastify => {
     {
       onRequest: [fastify.authenticate],
       schema: {
+        querystring: {
+          type: "object",
+          properties: {
+            gateway: { type: "string" },
+            orchestrator: { type: "string" },
+            whipServer: { type: "string" },
+          },
+        },
         body: {
           type: "object",
           properties: {
@@ -31,7 +39,6 @@ const streamsRoute: FastifyPluginAsync = async fastify => {
     async (request: FastifyRequest, reply) => {
       try {
         const userId = request.headers["user-id"] as string;
-        console.log("userId", userId);
 
         const body = request.body as CreateStreamRequest;
 
@@ -43,6 +50,7 @@ const streamsRoute: FastifyPluginAsync = async fastify => {
         }
 
         const searchParams = new URLSearchParams();
+
         if (request.query) {
           Object.entries(request.query as Record<string, string>).forEach(
             ([key, value]) => {
