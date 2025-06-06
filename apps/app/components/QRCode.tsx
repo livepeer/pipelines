@@ -9,7 +9,11 @@ interface QRCodeProps {
   className?: string;
 }
 
-export function QRCodeComponent({ url, size = 80, className = "" }: QRCodeProps) {
+export function QRCodeComponent({
+  url,
+  size = 80,
+  className = "",
+}: QRCodeProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -26,11 +30,11 @@ export function QRCodeComponent({ url, size = 80, className = "" }: QRCodeProps)
           light: "#FFFFFF",
         },
       },
-      (error) => {
+      error => {
         if (error) {
           console.error("QR Code generation error:", error);
         }
-      }
+      },
     );
   }, [url, size]);
 
@@ -43,4 +47,4 @@ export function QRCodeComponent({ url, size = 80, className = "" }: QRCodeProps)
       />
     </div>
   );
-} 
+}

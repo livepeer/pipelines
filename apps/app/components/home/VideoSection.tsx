@@ -69,7 +69,7 @@ export function VideoSection() {
           {currentStream && (
             <div className="absolute top-4 left-4 z-40">
               <QRCodeComponent
-                url={`${typeof window !== 'undefined' ? window.location.origin : ''}/stream/${currentStream.streamId}/prompt`}
+                url={`${typeof window !== "undefined" ? window.location.origin : ""}/stream/${currentStream.streamId}/prompt`}
                 size={80}
                 className="opacity-90 hover:opacity-100 transition-opacity"
               />
