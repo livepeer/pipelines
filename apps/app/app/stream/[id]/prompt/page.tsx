@@ -64,7 +64,7 @@ export default function StreamPromptPage() {
     isSubmitting,
     submitPrompt,
     getQueuePosition,
-  } = usePromptQueue(streamInfo?.streamKey);
+  } = usePromptQueue(streamId);
 
   // Find user's position in queue
   const userQueuePosition = useMemo(() => {
