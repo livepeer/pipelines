@@ -190,8 +190,8 @@ export default function StreamPromptPage() {
                   </div>
 
                   <p className="text-gray-600 mb-6">
-                    It&apos;s your moment! Your prompt currently is applied to the
-                    stream.
+                    It&apos;s your moment! Your prompt currently is applied to
+                    the stream.
                   </p>
 
                   <Button
