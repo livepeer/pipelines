@@ -1,6 +1,6 @@
 procs:
   api:
-    shell: "cd apps/api && cargo watch -x run"
+    shell: "cd apps/api && pnpm dev"
     autostart: false
     stop:
       "send-keys": ["<C-c>"]

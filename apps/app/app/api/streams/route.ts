@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
-import { upsertStream } from "./upsert";
+import { createStream } from "./create";
 import { getAllStreams } from "./get-all";
 import { z } from "zod";
 import { deleteStream } from "./delete";
+import { getPrivyUser } from "@/lib/auth";
 
 const ERROR_MESSAGES = {
   UNAUTHORIZED: "Authentication required",
@@ -10,17 +11,27 @@ const ERROR_MESSAGES = {
   INTERNAL_ERROR: "An unexpected error occurred",
 } as const;
 
+const DUMMY_USER_ID = "did:privy:cm4x2cuiw007lh8fcj34919fu"; // Dummy user id (infra email)
+
 export async function POST(request: Request) {
   try {
-    const userId = "did:privy:cm4x2cuiw007lh8fcj34919fu"; // Dummy user id (infra email)
+    const userId = (await getPrivyUser())?.userId || DUMMY_USER_ID;
 
     const body = await request.json().catch(() => null);
     if (!body) {
       return createErrorResponse(400, ERROR_MESSAGES.INVALID_INPUT);
     }
 
-    const pipeline = await upsertStream(body, userId);
-    return NextResponse.json(pipeline, { status: 201 });
+    const url = new URL(request.url);
+    const searchParams = url.searchParams;
+
+    const result = await createStream(body, userId, searchParams);
+
+    if (result.error) {
+      return createErrorResponse(500, result.error);
+    }
+
+    return NextResponse.json(result, { status: 201 });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return createErrorResponse(400, error.issues);

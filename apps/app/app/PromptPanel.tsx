@@ -50,7 +50,7 @@ export default function PromptPanel() {
   const [isTextareaHighlighted, setIsTextareaHighlighted] = useState(false);
 
   const { currentPrompt, recentPrompts, isSubmitting, submitPrompt } =
-    usePromptQueue(currentStream?.streamKey);
+    usePromptQueue(currentStream?.streamId);
 
   const trendingPrompts = useMemo(() => {
     const shuffled = [...allTrendingPrompts].sort(() => Math.random() - 0.5);
@@ -106,44 +106,6 @@ export default function PromptPanel() {
         isMobile && isSafari && "pb-16",
       )}
     >
-      {/* Trending prompts section - desktop only */}
-      {!isMobile && (
-        <div className="w-full mb-3">
-          <div
-            className="w-full bg-white rounded-lg p-3"
-            style={{
-              boxShadow: "0 2px 6px rgba(0,0,0,0.05)",
-              borderRadius: "8px",
-            }}
-          >
-            <div className="flex items-center gap-1.5 mb-3">
-              <Flame className="h-4 w-4 text-orange-500" />
-              <div className="text-sm font-semibold text-black">Trending</div>
-            </div>
-            <div className="flex gap-2">
-              {trendingPrompts.map((item, index) => (
-                <TrackedButton
-                  key={index}
-                  variant="outline"
-                  size="sm"
-                  className="alwaysAnimatedButton rounded-md text-xs flex-1 min-w-0"
-                  onClick={() => handleTrendingPromptClick(item.prompt)}
-                  trackingEvent="trending_prompt_clicked"
-                  trackingProperties={{
-                    prompt: item.prompt,
-                    display_text: item.display,
-                    index,
-                  }}
-                  disabled={isSubmitting}
-                >
-                  <span className="truncate">{item.display}</span>
-                </TrackedButton>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Main panel */}
       <div
         className={cn(
@@ -209,26 +171,24 @@ export default function PromptPanel() {
                         </div>
                       </div>
                     );
-                  } else if (item.type === "current") {
-                    return (
-                      <div
-                        key={`prompt-current-${item.prompt.id}`}
-                        className="p-3 px-4 text-sm md:text-base text-white md:text-black font-bold flex items-center animate-fadeSlideIn relative alwaysAnimatedButton bg-white/90 rounded-xl w-full cursor-pointer hover:bg-white"
-                        style={{
-                          transition: "all 0.3s ease-out",
-                          borderRadius: "12px",
-                        }}
-                        onClick={() => handlePastPromptClick(item.prompt.text)}
-                      >
-                        <div className="min-w-0 flex-1">
-                          <span className="truncate block w-full">
-                            {item.prompt.text}
-                          </span>
-                        </div>
-                      </div>
-                    );
                   }
-                  return null;
+                  return (
+                    <div
+                      key={`prompt-current-${item.prompt.id}`}
+                      className="p-3 px-4 text-sm md:text-base text-white md:text-black font-bold flex items-center animate-fadeSlideIn relative alwaysAnimatedButton bg-white/90 rounded-xl w-full cursor-pointer hover:bg-white"
+                      style={{
+                        transition: "all 0.3s ease-out",
+                        borderRadius: "12px",
+                      }}
+                      onClick={() => handlePastPromptClick(item.prompt.text)}
+                    >
+                      <div className="min-w-0 flex-1">
+                        <span className="truncate block w-full">
+                          {item.prompt.text}
+                        </span>
+                      </div>
+                    </div>
+                  );
                 })}
               </div>
             </div>
@@ -246,57 +206,95 @@ export default function PromptPanel() {
             </div>
           )}
         </div>
+      </div>
 
-        {/* Mobile trending prompts */}
-        <div
-          className={cn(
-            "flex flex-row gap-2 overflow-x-auto mb-2 px-4",
-            isMobile ? "flex" : "hidden",
-          )}
-        >
-          {trendingPrompts.map((item, index) => (
-            <TrackedButton
-              key={index}
-              variant="outline"
-              size="sm"
-              className="text-xs flex-1 min-w-0 bg-white rounded-full"
-              onClick={() => handleTrendingPromptClick(item.prompt)}
-              trackingEvent="trending_prompt_clicked"
-              trackingProperties={{
-                prompt: item.prompt,
-                display_text: item.display,
-                index,
-              }}
-              disabled={isSubmitting}
-            >
-              <span className="truncate">{item.display}</span>
-            </TrackedButton>
-          ))}
+      {/* Trending prompts section - moved outside main panel */}
+      {!isMobile && (
+        <div className="w-full mt-4 mb-3">
+          <div
+            className="w-full bg-white rounded-lg p-3"
+            style={{
+              boxShadow: "0 2px 6px rgba(0,0,0,0.05)",
+              borderRadius: "8px",
+            }}
+          >
+            <div className="flex items-center gap-1.5 mb-3">
+              <Flame className="h-4 w-4 text-orange-500" />
+              <div className="text-sm font-semibold text-black">Trending</div>
+            </div>
+            <div className="flex gap-2">
+              {trendingPrompts.map((item, index) => (
+                <TrackedButton
+                  key={index}
+                  variant="outline"
+                  size="sm"
+                  className="alwaysAnimatedButton rounded-md text-xs flex-1 min-w-0"
+                  onClick={() => handleTrendingPromptClick(item.prompt)}
+                  trackingEvent="trending_prompt_clicked"
+                  trackingProperties={{
+                    prompt: item.prompt,
+                    display_text: item.display,
+                    index,
+                  }}
+                  disabled={isSubmitting}
+                >
+                  <span className="truncate">{item.display}</span>
+                </TrackedButton>
+              ))}
+            </div>
+          </div>
         </div>
+      )}
 
-        {/* Prompt Form */}
-        <div
-          className={cn(
-            "pt-0 relative z-10 px-4",
-            isMobile
-              ? "px-0 bg-transparent py-1"
-              : "pb-4 md:border-b border-t md:border-t-0 border-gray-200/30",
-          )}
-        >
-          <PromptSubmissionForm
-            onSubmitPrompt={submitPrompt}
-            isSubmitting={isSubmitting}
-            promptValue={promptValue}
-            setPromptValue={setPromptValue}
-            isMobile={isMobile}
-            isTextareaHighlighted={isTextareaHighlighted}
-          />
-          {!isMobile && (
-            <p className="text-sm italic text-gray-500 mt-4 text-center">
-              Each prompt is applied for 5 seconds
-            </p>
-          )}
-        </div>
+      {/* Mobile trending prompts */}
+      <div
+        className={cn(
+          "flex flex-row gap-2 overflow-x-auto mb-2 px-4",
+          isMobile ? "flex" : "hidden",
+        )}
+      >
+        {trendingPrompts.map((item, index) => (
+          <TrackedButton
+            key={index}
+            variant="outline"
+            size="sm"
+            className="text-xs flex-1 min-w-0 bg-white rounded-full"
+            onClick={() => handleTrendingPromptClick(item.prompt)}
+            trackingEvent="trending_prompt_clicked"
+            trackingProperties={{
+              prompt: item.prompt,
+              display_text: item.display,
+              index,
+            }}
+            disabled={isSubmitting}
+          >
+            <span className="truncate">{item.display}</span>
+          </TrackedButton>
+        ))}
+      </div>
+
+      {/* Prompt Form - moved outside main panel */}
+      <div
+        className={cn(
+          "w-full mt-4 pt-0 relative z-10 px-4",
+          isMobile
+            ? "px-0 bg-transparent py-1"
+            : "pb-4 md:border-b border-t md:border-t-0 border-gray-200/30",
+        )}
+      >
+        <PromptSubmissionForm
+          onSubmitPrompt={submitPrompt}
+          isSubmitting={isSubmitting}
+          promptValue={promptValue}
+          setPromptValue={setPromptValue}
+          isMobile={isMobile}
+          isTextareaHighlighted={isTextareaHighlighted}
+        />
+        {!isMobile && (
+          <p className="text-sm italic text-gray-500 mt-4 text-center">
+            Each prompt is applied for 5 seconds
+          </p>
+        )}
       </div>
 
       <style jsx global>{`

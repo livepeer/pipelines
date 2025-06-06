@@ -68,7 +68,7 @@ jobs:
           echo "Setting application secrets..."
           flyctl secrets set --stage --app "$FLY_APP_NAME" \
             REDIS_URL="${{ secrets.REDIS_URL }}" \
-            SERVER_PORT="${{ secrets.SERVER_PORT }}" \
+            PORT="${{ secrets.PORT }}" \
             MAX_CHAT_MESSAGES="${{ secrets.MAX_CHAT_MESSAGES }}" \
             PROMPT_MIN_DURATION_SECS="${{ secrets.PROMPT_MIN_DURATION_SECS }}" \
             NEXT_PUBLIC_MULTIPLAYER_STREAM_KEY="${{ secrets.NEXT_PUBLIC_MULTIPLAYER_STREAM_KEY }}" \

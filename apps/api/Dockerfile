@@ -1,34 +1,41 @@
-FROM rust:latest as builder
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-COPY Cargo.toml Cargo.lock ./
+RUN npm install -g pnpm
 
-RUN mkdir src && echo "fn main() {}" > src/main.rs
+COPY package.json ./
 
-RUN cargo build --release
+RUN pnpm install
 
-COPY src ./src
+COPY . .
 
-RUN touch src/main.rs && cargo build --release
+RUN pnpm run build:ts
 
-FROM debian:bookworm-slim
+FROM node:20-alpine AS runner
 
-RUN apt-get update && apt-get install -y \
-    ca-certificates \
-    libssl3 \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache dumb-init
 
-RUN groupadd -r app && useradd -r -g app app
+RUN addgroup -g 1001 -S nodejs
+RUN adduser -S app -u 1001
 
 WORKDIR /app
 
-COPY --from=builder /app/target/release/api /app/api
+RUN npm install -g pnpm
 
-RUN chown -R app:app /app
+COPY package.json ./
+
+RUN pnpm install --prod
+
+COPY --from=builder --chown=app:nodejs /app/dist ./dist
+
 USER app
 
 EXPOSE 8080
 
-CMD ["./api"]
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:8080/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) }).on('error', () => process.exit(1))"
+
+ENTRYPOINT ["dumb-init", "--"]
+
+CMD ["./node_modules/.bin/fastify", "start", "-l", "info", "--address", "0.0.0.0", "dist/app.js"] 
