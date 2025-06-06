@@ -41,11 +41,10 @@ const processInputValues = (inputValues: any) => {
 
 const getStreamUrl = (
   streamKey: string,
+  whipUrl: string,
   customWhipServer?: string,
   customOrchestrator?: string,
 ): string => {
-  const defaultWhipUrl = process.env.WHIP_URL!;
-
   if (customWhipServer) {
     if (customWhipServer.includes("<STREAM_KEY>")) {
       return addOrchestratorParam(
@@ -60,7 +59,7 @@ const getStreamUrl = (
   }
 
   return addOrchestratorParam(
-    `${defaultWhipUrl}${defaultWhipUrl.endsWith("/") ? "" : "/"}${streamKey}/whip`,
+    `${whipUrl}${whipUrl.endsWith("/") ? "" : "/"}${streamKey}/whip`,
     customOrchestrator ?? null,
   );
 };
@@ -150,8 +149,12 @@ export class StreamsService {
 
     const customWhipServer = searchParams?.get("whipServer");
     const customOrchestrator = searchParams?.get("orchestrator");
+    const gateway = searchParams?.get("gateway");
+    const isSecondary = gateway === "secondary";
+
     const whipUrl = getStreamUrl(
       streamKey,
+      isSecondary ? process.env.WHIP_URL_SECONDARY! : process.env.WHIP_URL!,
       customWhipServer || undefined,
       customOrchestrator || undefined,
     );

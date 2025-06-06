@@ -629,7 +629,7 @@ export function useInitialization() {
       try {
         const apiUrl = new URL("/v1/streams", process.env.NEXT_PUBLIC_API_URL);
 
-        const relevantParams = ["whipServer", "orchestrator"];
+        const relevantParams = ["gateway", "orchestrator", "whipServer"];
 
         relevantParams.forEach(param => {
           const value = searchParams.get(param);
