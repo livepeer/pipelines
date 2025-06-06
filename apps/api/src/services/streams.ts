@@ -126,7 +126,10 @@ export class StreamsService {
     const streamId = newId("stream");
     const streamKey = newId("stream_key");
 
-    const pipelineId = streamData.pipeline_id || process.env.PIPELINE_ID!;
+    const pipelineId =
+      streamData.pipeline_id ||
+      searchParams?.get("pipeline_id") ||
+      process.env.PIPELINE_ID!;
 
     const pipelineData = await this.getCachedPipeline(pipelineId);
     const inputValues = createDefaultValues(pipelineData);

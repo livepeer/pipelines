@@ -19,6 +19,7 @@ const streamsRoute: FastifyPluginAsync = async fastify => {
         querystring: {
           type: "object",
           properties: {
+            pipeline_id: { type: "string" }, // Backward compatibility
             gateway: { type: "string" },
             orchestrator: { type: "string" },
             whipServer: { type: "string" },
