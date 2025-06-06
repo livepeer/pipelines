@@ -190,13 +190,13 @@ export default function StreamPromptPage() {
                   </div>
 
                   <p className="text-gray-600 mb-6">
-                    It’s your moment! Your prompt currently is applied to the
+                    It&apos;s your moment! Your prompt currently is applied to the
                     stream.
                   </p>
 
                   <Button
                     onClick={handleReset}
-                    className="w-full py-4 text-lg font-medium bg-gray-900 hover:bg-gray-800 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center"
+                    className="px-8 py-3 bg-gray-900 hover:bg-gray-800 text-white rounded-full font-medium transition-all duration-300 w-full"
                   >
                     Go again
                   </Button>
