@@ -627,7 +627,7 @@ export function useInitialization() {
 
     const fetchData = async () => {
       try {
-        const apiUrl = new URL("/streams", process.env.NEXT_PUBLIC_API_URL);
+        const apiUrl = new URL("/v1/streams", process.env.NEXT_PUBLIC_API_URL);
 
         const relevantParams = ["whipServer", "orchestrator"];
 
