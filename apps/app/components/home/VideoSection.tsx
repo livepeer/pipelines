@@ -23,13 +23,13 @@ export function getIframeUrl({
 export function VideoSection() {
   const { isMobile } = useMobileStore();
   const [isLoading, setIsLoading] = useState(true);
-  const [useLivepeerPlayer, setUseLivepeerPlayer] = useState(false);
+  // const [useLivepeerPlayer, setUseLivepeerPlayer] = useState(false);
   const { currentStream } = useMultiplayerStreamStore();
 
   useEffect(() => {
     if (typeof window !== "undefined") {
       const urlParams = new URLSearchParams(window.location.search);
-      setUseLivepeerPlayer(urlParams.get("lpPlayer") === "true");
+      // setUseLivepeerPlayer(urlParams.get("lpPlayer") === "true");
     }
 
     const timer = setTimeout(() => {
@@ -40,6 +40,7 @@ export function VideoSection() {
   }, []);
 
   if (!currentStream) return null;
+  const useLivepeerPlayer = false;
 
   return (
     <div

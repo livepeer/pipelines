@@ -28,26 +28,23 @@ jobs:
       - name: Parse Inputs and Deploy in Loop
         env:
           APP_NAMES_STR: ${{ vars.RESTREAMER_APP_NAMES }}
-          YOUTUBE_URLS_STR: ${{ vars.RESTREAMER_ORIGINAL_YOUTUBE_URLS }}
-          RTMP_TARGETS1_STR: ${{ vars.RESTREAMER_ORIGINAL_RTMP_TARGETS }}
-          HLS_URLS_STR: ${{ vars.RESTREAMER_TRANSFORMED_HLS_URLS }}
-          RTMP_TARGETS2_STR: ${{ vars.RESTREAMER_TRANSFORMED_RTMP_TARGETS }}
+          SOURCE_URLS_STR: ${{ vars.RESTREAMER_SOURCE_URLS }}
+          RTMP_TARGETS_LP_STR: ${{ vars.RESTREAMER_RTMP_TARGETS_LP }}
+          RTMP_TARGETS_AI_STR: ${{ vars.RESTREAMER_RTMP_TARGETS_AI }}
           YOUTUBE_COOKIES_BASE64: ${{ secrets.YOUTUBE_COOKIES_BASE64 }}
           FLY_ORG: livepeer-673
           FLY_REGION: fra
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
         run: |
           IFS=',' read -r -a APP_NAME_ARRAY <<< "$APP_NAMES_STR"
-          IFS=',' read -r -a YOUTUBE_URL_ARRAY <<< "$YOUTUBE_URLS_STR"
-          IFS=',' read -r -a RTMP_TARGET1_ARRAY <<< "$RTMP_TARGETS1_STR"
-          IFS=',' read -r -a HLS_URL_ARRAY <<< "$HLS_URLS_STR"
-          IFS=',' read -r -a RTMP_TARGET2_ARRAY <<< "$RTMP_TARGETS2_STR"
+          IFS=',' read -r -a SOURCE_URL_ARRAY <<< "$SOURCE_URLS_STR"
+          IFS=',' read -r -a RTMP_TARGETS_LP_ARRAY <<< "$RTMP_TARGETS_LP_STR"
+          IFS=',' read -r -a RTMP_TARGETS_AI_ARRAY <<< "$RTMP_TARGETS_AI_STR"
 
           num_app_names=${#APP_NAME_ARRAY[@]}
-          if [[ $num_app_names -ne ${#YOUTUBE_URL_ARRAY[@]} || \
-                $num_app_names -ne ${#RTMP_TARGET1_ARRAY[@]} || \
-                $num_app_names -ne ${#HLS_URL_ARRAY[@]} || \
-                $num_app_names -ne ${#RTMP_TARGET2_ARRAY[@]} ]]; then
+          if [[ $num_app_names -ne ${#SOURCE_URL_ARRAY[@]} || \
+                $num_app_names -ne ${#RTMP_TARGETS_LP_ARRAY[@]} || \
+                $num_app_names -ne ${#RTMP_TARGETS_AI_ARRAY[@]} ]]; then
             echo "Error: Input CSV lists have mismatched lengths. Ensure all lists (including app_names_csv) have the same number of items."
             exit 1
           fi
@@ -63,10 +60,9 @@ jobs:
 
           for i in "${!APP_NAME_ARRAY[@]}"; do
             CURRENT_APP_NAME="${APP_NAME_ARRAY[$i]}"
-            CURRENT_YOUTUBE_URL="${YOUTUBE_URL_ARRAY[$i]}"
-            CURRENT_RTMP_TARGET1="${RTMP_TARGET1_ARRAY[$i]}"
-            CURRENT_HLS_URL="${HLS_URL_ARRAY[$i]}"
-            CURRENT_RTMP_TARGET2="${RTMP_TARGET2_ARRAY[$i]}"
+            CURRENT_SOURCE_URL="${SOURCE_URL_ARRAY[$i]}"
+            CURRENT_RTMP_TARGET_LP="${RTMP_TARGETS_LP_ARRAY[$i]}"
+            CURRENT_RTMP_TARGET_AI="${RTMP_TARGETS_AI_ARRAY[$i]}"
 
             # Validate current app name (basic check, Fly will do the final validation)
             if [[ -z "$CURRENT_APP_NAME" ]]; then
@@ -77,7 +73,7 @@ jobs:
             echo ""
             echo "---------------------------------------------------------------------"
             echo "Processing configuration #$((i+1)) for App: $CURRENT_APP_NAME"
-            echo "YouTube URL: $CURRENT_YOUTUBE_URL"
+            echo "Source URL: $CURRENT_SOURCE_URL"
             echo "---------------------------------------------------------------------"
 
             echo "::group::Deploying app: $CURRENT_APP_NAME"
@@ -99,12 +95,11 @@ jobs:
             fi
 
             echo "Setting secrets for app '$CURRENT_APP_NAME'..."
-            # Corrected secret names
+            # Updated secret names to match the new environment variable names
             flyctl secrets set -a "$CURRENT_APP_NAME" --stage \
-              YOUTUBE_URL_STREAM1="$CURRENT_YOUTUBE_URL" \
-              RTMP_TARGET_STREAM1="$CURRENT_RTMP_TARGET1" \
-              HLS_URL_STREAM2="$CURRENT_HLS_URL" \
-              RTMP_TARGET_STREAM2="$CURRENT_RTMP_TARGET2" \
+              SOURCE_URL="$CURRENT_SOURCE_URL" \
+              RTMP_TARGET_LP="$CURRENT_RTMP_TARGET_LP" \
+              RTMP_TARGET_AI="$CURRENT_RTMP_TARGET_AI" \
               YOUTUBE_COOKIES_BASE64="$YOUTUBE_COOKIES_BASE64" \
               PYTHONUNBUFFERED="1"
 
